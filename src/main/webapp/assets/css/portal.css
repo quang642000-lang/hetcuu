@@ -1,0 +1,98 @@
+/* =========================================================================
+TEA POS - CUSTOMER ONLINE PORTAL WEB STYLES
+========================================================================= */
+
+/* Hero Banner Home Portal */
+.portal-banner {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-radius: var(--radius-lg);
+    padding: 60px;
+    margin-top: 30px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+.portal-banner h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1b5e20;
+    margin-bottom: 16px;
+}
+
+/* Rounded Categories Circle */
+.portal-categories-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 50px;
+}
+.portal-cat-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-main);
+}
+.portal-cat-img-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+.portal-cat-circle:hover .portal-cat-img-wrapper {
+    transform: scale(1.08);
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+/* Product Detail Selection */
+.detail-product-img {
+    width: 100%;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+.option-group-box {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.option-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: var(--text-main);
+}
+
+/* Selector buttons for Ice/Sugar */
+.selection-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.selection-radio-input {
+    display: none;
+}
+.selection-label {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.selection-radio-input:checked + .selection-label {
+    border-color: var(--primary-color);
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}

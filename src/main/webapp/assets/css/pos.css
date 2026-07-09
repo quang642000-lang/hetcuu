@@ -1,0 +1,160 @@
+/* =========================================================================
+TEA POS - POINT OF SALE LAYOUT STYLE (3-COLUMNS)
+========================================================================= */
+
+.pos-container {
+    display: flex;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+    background-color: #f1f5f9;
+}
+
+/* CỘT 1: Sidebar danh mục (Trái) */
+.pos-categories-col {
+    width: 120px;
+    background-color: #ffffff;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.pos-category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+.pos-category-btn i {
+    font-size: 24px;
+}
+.pos-category-btn.active, .pos-category-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* CỘT 2: Danh sách sản phẩm (Giữa) */
+.pos-products-col {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+.pos-product-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+.pos-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+.pos-product-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border-radius: var(--radius-sm);
+}
+.pos-product-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.pos-product-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* CỘT 3: Hóa đơn & Giỏ hàng (Phải) */
+.pos-cart-col {
+    width: 420px;
+    background-color: #ffffff;
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 10px rgba(0,0,0,0.03);
+}
+.pos-cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.pos-cart-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    background-color: var(--secondary-color);
+    border-radius: var(--radius-sm);
+    gap: 12px;
+}
+.cart-item-details {
+    flex-grow: 1;
+}
+.cart-item-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+.cart-item-options {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.cart-item-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 4px;
+}
+
+/* Khối Thanh Toán & Chốt Tiền mặt */
+.pos-checkout-section {
+    border-top: 1px solid var(--border-color);
+    padding: 20px;
+    background-color: #ffffff;
+}
+.pos-summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+.pos-total-line {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    border-top: 1px dashed var(--border-color);
+    padding-top: 10px;
+    margin-top: 10px;
+}

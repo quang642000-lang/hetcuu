@@ -1,9 +1,9 @@
 package controller.pos;
 
-import com.teapos.model.entity.DonHang;
-import com.teapos.model.entity.NhanVien;
-import com.teapos.service.IDonHangService;
-import com.teapos.service.impl.DonHangServiceImpl;
+import model.entity.DonHang;
+import model.entity.NhanVien;
+import service.IDonHangService;
+import service.impl.DonHangServiceImpl;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

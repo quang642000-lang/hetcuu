@@ -1,0 +1,134 @@
+/* =========================================================================
+TEA POS - DESIGN SYSTEM GLOBAL STYLES
+========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Color System */
+    --primary-color: #2e7d32;       /* Xanh lá trà chủ đạo */
+    --primary-hover: #1b5e20;       /* Xanh lá đậm khi hover */
+    --primary-light: #e8f5e9;       /* Xanh lá nhạt nền */
+    --secondary-color: #f8fafc;     /* Xám nền nhạt */
+    --border-color: #e2e8f0;        /* Xám nhạt đường viền */
+    --text-main: #0f172a;           /* Đen Slate chính */
+    --text-muted: #64748b;          /* Xám Slate phụ */
+
+    /* Semantic Colors */
+    --success: #10b981;             /* Xanh lá thành công */
+    --warning: #f59e0b;             /* Cam cảnh báo */
+    --danger: #ef4444;              /* Đỏ báo lỗi */
+    --info: #0284c7;                /* Xanh dương thông tin */
+
+    /* Layout & Shadows */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.05), 0 2px 4px -1px rgba(15,23,42,0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: #f1f5f9;
+    line-height: 1.5;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Utility Cards & Elements */
+.card-teapos {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 20px;
+}
+
+/* Button UI Components */
+.btn-teapos {
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.btn-primary-teapos {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+.btn-primary-teapos:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+.btn-secondary-teapos {
+    background-color: var(--secondary-color);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+.btn-secondary-teapos:hover {
+    background-color: #e2e8f0;
+}
+
+/* Form Inputs */
+.form-control-teapos {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: #ffffff;
+    transition: border-color 0.2s ease;
+}
+.form-control-teapos:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+/* Badges Status Systems */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 4px;
+}
+/* Order status */
+.status-pending { background-color: #fef3c7; color: #d97706; }    /* Chờ xác nhận */
+.status-confirmed { background-color: #e0f2fe; color: #0284c7; }  /* Đã xác nhận */
+.status-processing { background-color: #e0e7ff; color: #4f46e5; } /* Đang pha chế */
+.status-ready { background-color: #fae8ff; color: #a21caf; }      /* Chờ lấy */
+.status-completed { background-color: #d1fae5; color: #065f46; }  /* Hoàn thành */
+.status-cancelled { background-color: #fee2e2; color: #991b1b; }  /* Đã hủy */
+
+/* Payment status */
+.payment-unpaid { background-color: #ffe4e6; color: #9f1239; }    /* Chưa thanh toán */
+.payment-paid { background-color: #d1fae5; color: #065f46; }      /* Đã thanh toán */
+.payment-refunded { background-color: #f1f5f9; color: #475569; }  /* Đã hoàn tiền */

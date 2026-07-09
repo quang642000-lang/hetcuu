@@ -1,8 +1,8 @@
 package controller.pos;
 
-import com.teapos.model.entity.*;
-import com.teapos.service.*;
-import com.teapos.service.impl.*;
+import model.entity.*;
+import service.*;
+import service.impl.*;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -146,7 +146,7 @@ public class BanHangPOSController extends HttpServlet {
                         for (String tpRaw : toppingsRaw) {
                             String[] parts = tpRaw.split("_");
                             if (parts.length == 3) { // maTp_soLuong_giaChot
-                                int maTp = Integer.parseInt(parts);
+                                int maTp = Integer.parseInt(parts[0]);
                                 int soLuongTp = Integer.parseInt(parts[1]);
                                 int giaChotTp = Integer.parseInt(parts[2]);
 

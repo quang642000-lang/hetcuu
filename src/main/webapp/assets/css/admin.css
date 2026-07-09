@@ -1,0 +1,133 @@
+/* =========================================================================
+TEA POS - ADMIN PORTAL MANAGEMENT STYLE
+========================================================================= */
+
+/* Layout Grid */
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styling */
+.admin-sidebar {
+    width: 260px;
+    background-color: #1e293b; /* Đen Slate sẫm */
+    color: #f8fafc;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+.sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid #334155;
+    text-align: center;
+}
+.sidebar-menu {
+    list-style: none;
+    padding: 16px 0;
+    flex-grow: 1;
+}
+.sidebar-item a {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-weight: 500;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+.sidebar-item.active a, .sidebar-item a:hover {
+    color: #ffffff;
+    background-color: #334155;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Header & Container */
+.admin-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+}
+.admin-header {
+    height: 70px;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+}
+
+/* KPI Dashboards Metrics */
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    padding: 24px;
+}
+.kpi-card {
+    background-color: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.kpi-info h3 {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+.kpi-info p {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+/* Custom Table Component for Records */
+.admin-table-container {
+    background-color: #ffffff;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    margin: 0 24px 24px 24px;
+    overflow: hidden;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.admin-table th {
+    background-color: #f1f5f9;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: left;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.admin-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+.admin-table tbody tr:hover {
+    background-color: #f8fafc;
+}

@@ -1,20 +1,17 @@
 package filter;
 
 import model.entity.NhanVien;
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebFilter(filterName = "POSAuthFilter", urlPatterns = "/pos/*")
 public class POSAuthFilter implements Filter {
-
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Không cần cấu hình
-    }
+    public void init(FilterConfig filterConfig) throws ServletException {}
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -27,11 +24,10 @@ public class POSAuthFilter implements Filter {
         boolean hasAccess = false;
 
         if (session != null) {
-            NhanVien nhanVien = (NhanVien) session.getAttribute("currentUser");
+            NhanVien nhanVien = (NhanVien) session.getAttribute("user"); // Đã đồng bộ Key "user"
             if (nhanVien != null) {
                 loggedIn = true;
-                // Cho phép Admin (ma_vt = 1) và Thu ngân (ma_vt = 2) [2-4]
-                if (nhanVien.getMaVt() == 1 || nhanVien.getMaVt() == 2) {
+                if (nhanVien.getMaVt() == 1 || nhanVien.getMaVt() == 2) { // Quản lý hoặc Thu ngân
                     hasAccess = true;
                 }
             }
@@ -41,13 +37,11 @@ public class POSAuthFilter implements Filter {
             chain.doFilter(request, response);
         } else {
             session = httpRequest.getSession();
-            session.setAttribute("errorMessage", "Vui lòng đăng nhập bằng tài khoản thu ngân hoặc quản lý để vào quầy POS.");
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login-admin");
+            session.setAttribute("errorMessage", "Vui lòng đăng nhập bằng tài khoản thu ngân hoặc quản lý để vào POS.");
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
         }
     }
 
     @Override
-    public void destroy() {
-        // Dọn dẹp tài nguyên
-    }
+    public void destroy() {}
 }

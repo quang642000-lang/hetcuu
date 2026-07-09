@@ -34,11 +34,6 @@
       <version>2.3.3</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>jstl</artifactId>
-      <version>1.2</version>
-    </dependency>
 
     <!-- 3. Microsoft JDBC Driver cho SQL Server (Sử dụng jre11 cho Java 11+) -->
     <dependency>
