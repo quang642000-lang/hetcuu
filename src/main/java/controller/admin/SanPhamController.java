@@ -126,8 +126,8 @@ public class SanPhamController extends HttpServlet {
         sp.setHinhAnh(hinhAnh);
         sp.setChoPhepDoiDa(choPhepDoiDa);
         sp.setChoPhepDoiDuong(choPhepDoiDuong);
-        sp.setNew(isNew);
-        sp.setBestseller(isBestseller);
+        sp.setIsNew(isNew); // Đã sửa
+        sp.setIsBestseller(isBestseller); // Đã sửa
         sp.setTrangThai(trangThai);
 
         // Đọc cấu hình kích cỡ (Sizes) từ Form gửi lên
@@ -179,8 +179,8 @@ public class SanPhamController extends HttpServlet {
             sp.setHinhAnh(hinhAnh);
             sp.setChoPhepDoiDa(choPhepDoiDa);
             sp.setChoPhepDoiDuong(choPhepDoiDuong);
-            sp.setNew(isNew);
-            sp.setBestseller(isBestseller);
+            sp.setIsNew(isNew); // Đã sửa
+            sp.setIsBestseller(isBestseller); // Đã sửa
             sp.setTrangThai(trangThai);
 
             List<KichCo> allSizes = kichCoRepository.getAll();

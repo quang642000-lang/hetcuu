@@ -3,7 +3,6 @@ package controller.admin;
 import model.entity.NhanVien;
 import service.INhanVienService;
 import service.impl.NhanVienServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,13 +22,11 @@ public class AdminSettingController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
         NhanVien currentAdmin = (NhanVien) session.getAttribute("user");
-        // Nạp lại thông tin mới nhất từ database
         NhanVien freshAdmin = nhanVienService.getNhanVienById(currentAdmin.getMaNv());
-
         request.setAttribute("adminProfile", freshAdmin);
-        request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
+        // SỬA LỖI: settings.jsp -> cai_dat.jsp khớp 100% sơ đồ thư mục của nhóm
+        request.getRequestDispatcher("/views/admin/cai_dat.jsp").forward(request, response);
     }
 
     @Override
@@ -45,38 +42,34 @@ public class AdminSettingController extends HttpServlet {
     private void performUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         NhanVien freshAdmin = (NhanVien) session.getAttribute("user");
-
         String hoTen = request.getParameter("hoTen");
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
-        String username = request.getParameter("tenDangNhap");
 
         freshAdmin.setHoTen(hoTen);
         freshAdmin.setSoDienThoai(sdt);
         freshAdmin.setEmail(email);
-        freshAdmin.setTenDangNhap(username);
 
         boolean success = nhanVienService.updateNhanVien(freshAdmin);
         if (success) {
-            session.setAttribute("user", freshAdmin); // Lưu trữ session mới
+            session.setAttribute("user", freshAdmin);
             response.sendRedirect(request.getContextPath() + "/admin/settings?msg=updatesuccess");
         } else {
             request.setAttribute("adminProfile", freshAdmin);
-            request.setAttribute("errorProfile", "Cập nhật không thành công. Số điện thoại, Email hoặc Username đã tồn tại!");
-            request.getRequestDispatcher("/views/admin/settings.jsp").forward(request, response);
+            request.setAttribute("errorProfile", "Số điện thoại hoặc Email đã được đăng ký cho tài khoản khác!");
+            request.getRequestDispatcher("/views/admin/cai_dat.jsp").forward(request, response);
         }
     }
 
     private void performChangePassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         NhanVien currentAdmin = (NhanVien) session.getAttribute("user");
-
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
         if (newPassword == null || !newPassword.equals(confirmPassword)) {
-            request.setAttribute("errorPassword", "Mật khẩu mới và mật khẩu xác nhận không trùng khớp!");
+            request.setAttribute("errorPassword", "Mật khẩu mới và xác nhận mật khẩu không khớp!");
             doGet(request, response);
             return;
         }

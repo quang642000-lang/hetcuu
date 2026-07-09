@@ -39,10 +39,13 @@ public class SanPham {
     public void setChoPhepDoiDa(boolean choPhepDoiDa) { this.choPhepDoiDa = choPhepDoiDa; }
     public boolean isChoPhepDoiDuong() { return choPhepDoiDuong; }
     public void setChoPhepDoiDuong(boolean choPhepDoiDuong) { this.choPhepDoiDuong = choPhepDoiDuong; }
-    public boolean isNew() { return isNew; }
-    public void setNew(boolean isNew) { this.isNew = isNew; }
-    public boolean isBestseller() { return isBestseller; }
-    public void setBestseller(boolean isBestseller) { this.isBestseller = isBestseller; }
+    // Đổi isNew() thành getIsNew()
+    public boolean getIsNew() { return isNew; }
+    public void setIsNew(boolean isNew) { this.isNew = isNew; }
+
+    // Đổi isBestseller() thành getIsBestseller()
+    public boolean getIsBestseller() { return isBestseller; }
+    public void setIsBestseller(boolean isBestseller) { this.isBestseller = isBestseller; }
     public boolean isTrangThai() { return trangThai; }
     public void setTrangThai(boolean trangThai) { this.trangThai = trangThai; }
     public Timestamp getThoiGianTao() { return thoiGianTao; }

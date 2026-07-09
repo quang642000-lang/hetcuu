@@ -82,8 +82,8 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, entity.isChoPhepDoiDa());
             ps.setBoolean(2, entity.isChoPhepDoiDuong());
-            ps.setBoolean(3, entity.isNew());
-            ps.setBoolean(4, entity.isBestseller());
+            ps.setBoolean(3, entity.getIsNew()); // Đã sửa
+            ps.setBoolean(4, entity.getIsBestseller()); // Đã sửa
             ps.setBoolean(5, entity.isTrangThai());
             ps.setString(6, entity.getMaSp());
             ps.executeUpdate();
@@ -101,8 +101,8 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
             ps.setString(4, entity.getHinhAnh());
             ps.setBoolean(5, entity.isChoPhepDoiDa());
             ps.setBoolean(6, entity.isChoPhepDoiDuong());
-            ps.setBoolean(7, entity.isNew());
-            ps.setBoolean(8, entity.isBestseller());
+            ps.setBoolean(7, entity.getIsNew()); // Đã sửa
+            ps.setBoolean(8, entity.getIsBestseller()); // Đã sửa
             ps.setBoolean(9, entity.isTrangThai());
             ps.setString(10, entity.getMaSp());
             return ps.executeUpdate() > 0;
