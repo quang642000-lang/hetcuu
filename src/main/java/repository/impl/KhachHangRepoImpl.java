@@ -59,14 +59,16 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
         String sql = "{call sp_ThemKhachHang(?, ?, ?, ?)}";
         try (Connection conn = DBConnect.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
+
             cs.setString(1, entity.getTenKh());
             cs.setString(2, entity.getSoDienThoai());
             cs.setString(3, entity.getEmail());
             cs.setString(4, entity.getMatKhau());
+
             try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     entity.setMaKh(rs.getString("ma_kh"));
-                    updateKhachHangBoSung(entity);
+                    updateKhachHangBoSung(entity, conn); // Truyền conn vào đây!
                     return true;
                 }
             }
@@ -76,10 +78,9 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
         return false;
     }
 
-    private void updateKhachHangBoSung(KhachHang entity) throws SQLException {
+    private void updateKhachHangBoSung(KhachHang entity, Connection conn) throws SQLException {
         String sql = "UPDATE KHACH_HANG SET ma_hang = ?, ngay_sinh = ?, gioi_tinh = ?, dia_chi_lien_he = ?, hinh_anh_url = ?, diem_tich_luy = ?, trang_thai = ? WHERE ma_kh = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) { // Tái sử dụng conn, không tạo mới!
             ps.setInt(1, entity.getMaHang() <= 0 ? 1 : entity.getMaHang());
             ps.setDate(2, entity.getNgaySinh());
             ps.setString(3, entity.getGioiTinh());

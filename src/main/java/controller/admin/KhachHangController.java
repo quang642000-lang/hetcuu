@@ -51,7 +51,7 @@ public class KhachHangController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<KhachHang> list = khachHangService.getAllKhachHang();
         request.setAttribute("customers", list);
-        request.getRequestDispatcher("/views/admin/khachhang-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/khach_hang.jsp").forward(request, response);
     }
 
     private void showDetailTabs(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -67,7 +67,7 @@ public class KhachHangController extends HttpServlet {
             request.setAttribute("customer", kh);
             request.setAttribute("orders", donHangs);
             request.setAttribute("vouchers", vouchers);
-            request.getRequestDispatcher("/views/admin/khachhang-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/khach_hang.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/khachhang?msg=notfound");
         }
@@ -78,7 +78,7 @@ public class KhachHangController extends HttpServlet {
         KhachHang kh = khachHangService.getKhachHangById(id);
         if (kh != null) {
             request.setAttribute("customer", kh);
-            request.getRequestDispatcher("/views/admin/khachhang-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/khach_hang.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/khachhang?msg=notfound");
         }

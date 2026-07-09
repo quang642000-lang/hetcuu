@@ -45,12 +45,12 @@ public class DanhMucController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<DanhMuc> list = danhMucService.getAllDanhMuc();
         request.setAttribute("categories", list);
-        request.getRequestDispatcher("/views/admin/danhmuc-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("formTitle", "THÊM DANH MỤC MỚI");
-        request.getRequestDispatcher("/views/admin/danhmuc-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -60,7 +60,7 @@ public class DanhMucController extends HttpServlet {
             if (dm != null) {
                 request.setAttribute("category", dm);
                 request.setAttribute("formTitle", "CẬP NHẬT DANH MỤC");
-                request.getRequestDispatcher("/views/admin/danhmuc-form.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=notfound");
             }
@@ -117,7 +117,7 @@ public class DanhMucController extends HttpServlet {
             request.setAttribute("category", dm);
             request.setAttribute("error", "Tên danh mục đã tồn tại trong hệ thống!");
             request.setAttribute("formTitle", "THÊM DANH MỤC MỚI");
-            request.getRequestDispatcher("/views/admin/danhmuc-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
         }
     }
 
@@ -147,7 +147,7 @@ public class DanhMucController extends HttpServlet {
                 request.setAttribute("category", dm);
                 request.setAttribute("error", "Không thể cập nhật. Tên danh mục bị trùng lặp!");
                 request.setAttribute("formTitle", "CẬP NHẬT DANH MỤC");
-                request.getRequestDispatcher("/views/admin/danhmuc-form.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");

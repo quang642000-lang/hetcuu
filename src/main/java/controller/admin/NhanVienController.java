@@ -45,12 +45,12 @@ public class NhanVienController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<NhanVien> list = nhanVienService.getAllNhanVien();
         request.setAttribute("employees", list);
-        request.getRequestDispatcher("/views/admin/nhanvien-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/nhan_vien.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("formTitle", "THÊM NHÂN VIÊN MỚI");
-        request.getRequestDispatcher("/views/admin/nhanvien-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/nhan_vien.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,7 +59,7 @@ public class NhanVienController extends HttpServlet {
         if (nv != null) {
             request.setAttribute("employee", nv);
             request.setAttribute("formTitle", "CẬP NHẬT NHÂN VIÊN");
-            request.getRequestDispatcher("/views/admin/nhanvien-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/nhan_vien.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=notfound");
         }
@@ -101,7 +101,7 @@ public class NhanVienController extends HttpServlet {
             request.setAttribute("employee", nv);
             request.setAttribute("error", "Lỗi: Số điện thoại, Email hoặc Tên đăng nhập đã tồn tại!");
             request.setAttribute("formTitle", "THÊM NHÂN VIÊN MỚI");
-            request.getRequestDispatcher("/views/admin/nhanvien-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/nhan_vien.jsp").forward(request, response);
         }
     }
 
@@ -130,7 +130,7 @@ public class NhanVienController extends HttpServlet {
                 request.setAttribute("employee", nv);
                 request.setAttribute("error", "Lỗi: Số điện thoại, Email hoặc Tên đăng nhập bị trùng lặp!");
                 request.setAttribute("formTitle", "CẬP NHẬT NHÂN VIÊN");
-                request.getRequestDispatcher("/views/admin/nhanvien-form.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/admin/nhan_vien.jsp").forward(request, response);
             }
         }
     }

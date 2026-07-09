@@ -46,12 +46,12 @@ public class VoucherController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<KhuyenMai> list = khuyenMaiService.getAllKhuyenMai();
         request.setAttribute("vouchers", list);
-        request.getRequestDispatcher("/views/admin/voucher-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
-        request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -60,7 +60,7 @@ public class VoucherController extends HttpServlet {
         if (km != null) {
             request.setAttribute("voucher", km);
             request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=notfound");
         }
@@ -109,7 +109,7 @@ public class VoucherController extends HttpServlet {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
             request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
             return;
         }
 
@@ -120,7 +120,7 @@ public class VoucherController extends HttpServlet {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Mã Code khuyến mãi bị trùng lặp trong hệ thống!");
             request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
         }
     }
 
@@ -150,7 +150,7 @@ public class VoucherController extends HttpServlet {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
             request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
             return;
         }
 
@@ -161,7 +161,7 @@ public class VoucherController extends HttpServlet {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Không thể cập nhật Voucher!");
             request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
         }
     }
 }

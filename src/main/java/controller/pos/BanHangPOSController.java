@@ -46,7 +46,7 @@ public class BanHangPOSController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("toppings", toppings);
-        request.getRequestDispatcher("/views/pos/pos.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/pos/ban_hang.jsp").forward(request, response);
     }
 
     private void performSearchCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {

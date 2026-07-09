@@ -36,12 +36,12 @@ public class LoginController extends HttpServlet {
 
         // Điều phối hiển thị giao diện đăng nhập tương ứng
         if (uri.endsWith("/customer/login")) {
-            request.getRequestDispatcher("/views/auth/login-customer.jsp").forward(request, response);
+            // Sửa gạch ngang (-) thành gạch dưới (_)
+            request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
         } else {
-            request.getRequestDispatcher("/views/auth/login-staff.jsp").forward(request, response);
-        }
-    }
-
+            // Sửa login-staff.jsp thành login_admin.jsp cho đúng file của nhóm
+            request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
+        }}
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
@@ -62,7 +62,7 @@ public class LoginController extends HttpServlet {
             if (kh != null) {
                 // Đăng nhập thành công -> Lưu thông tin vào Session và đưa về trang chủ Portal
                 session.setAttribute("customer", kh);
-                response.sendRedirect(request.getContextPath() + "/home");
+                response.sendRedirect(request.getContextPath() + "/trang_chu");
             } else {
                 request.setAttribute("error", "Tài khoản, mật khẩu không chính xác hoặc chưa được kích hoạt OTP.");
                 request.setAttribute("username", username);

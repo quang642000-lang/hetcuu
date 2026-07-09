@@ -36,7 +36,7 @@ public class NhanDonOnlineController extends HttpServlet {
 
         request.setAttribute("onlineOrders", onlineOrders);
         request.setAttribute("currentStatus", filterStatus);
-        request.getRequestDispatcher("/views/pos/nhandon-online.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/pos/nhan_don.jsp").forward(request, response);
     }
 
     @Override

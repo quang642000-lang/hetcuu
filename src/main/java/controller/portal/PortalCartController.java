@@ -32,7 +32,7 @@ public class PortalCartController extends HttpServlet {
         GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
 
         request.setAttribute("cart", gh);
-        request.getRequestDispatcher("/views/portal/cart.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/portal/gio_hang.jsp").forward(request, response);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class PortalCartController extends HttpServlet {
                 for (String tpIdStr : arrToppings) {
                     int maTp = Integer.parseInt(tpIdStr);
                     // Mặc định số lượng là 1 phần topping cho mỗi ly nước
-                    toppingList.add(new ChiTietToppingGioHang(0, maTp, 1));
+                    toppingList.add(new ChiTietToppingGioHang(0L, maTp, 1));
                 }
             }
 

@@ -68,7 +68,7 @@ public class PortalProductController extends HttpServlet {
             request.setAttribute("categories", categories);
             request.setAttribute("selectedCategory", maDmStr);
             request.setAttribute("searchKeyword", keyword);
-            request.getRequestDispatcher("/views/portal/products.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/portal/danh_sach_san_pham.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
             LOGGER.log(Level.WARNING, "Định dạng mã danh mục không hợp lệ: " + maDmStr, e);
@@ -91,7 +91,7 @@ public class PortalProductController extends HttpServlet {
                 request.setAttribute("product", sp);
                 request.setAttribute("sizes", sizes);
                 request.setAttribute("toppings", toppings);
-                request.getRequestDispatcher("/views/portal/product-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/portal/chi_tiet_san_pham.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/products?msg=notfound");
             }

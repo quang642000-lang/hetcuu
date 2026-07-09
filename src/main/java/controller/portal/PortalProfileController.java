@@ -44,16 +44,16 @@ public class PortalProfileController extends HttpServlet {
             // Tải lịch sử đơn hàng cá nhân tự đặt trước Click & Collect
             List<DonHang> myOrders = donHangService.getDonHangByKhachHang(freshCustomer.getMaKh());
             request.setAttribute("orders", myOrders);
-            request.getRequestDispatcher("/views/portal/profile-orders.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/portal/theo_doi_don.jsp").forward(request, response);
         } else if (uri.endsWith("/profile/vouchers")) {
             // Tải ví Voucher cá nhân tương thích theo mốc hạng thẻ
             List<KhuyenMai> myVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(100000, freshCustomer.getMaKh());
             request.setAttribute("vouchers", myVouchers);
-            request.getRequestDispatcher("/views/portal/profile-vouchers.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/portal/kho_voucher.jsp").forward(request, response);
         } else {
             // Mặc định: Hiển thị giao diện sửa thông tin cá nhân
             request.setAttribute("customerProfile", freshCustomer);
-            request.getRequestDispatcher("/views/portal/profile.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/portal/ho_so.jsp").forward(request, response);
         }
     }
 

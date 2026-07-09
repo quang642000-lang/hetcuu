@@ -55,7 +55,7 @@ public class SanPhamController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<SanPham> list = sanPhamService.getAllSanPham();
         request.setAttribute("products", list);
-        request.getRequestDispatcher("/views/admin/sanpham-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/san_pham.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -65,7 +65,7 @@ public class SanPhamController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.setAttribute("sizes", sizes);
         request.setAttribute("formTitle", "THÊM SẢN PHẨM MỚI");
-        request.getRequestDispatcher("/views/admin/sanpham-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/san_pham.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

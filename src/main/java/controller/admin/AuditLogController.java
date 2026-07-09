@@ -44,7 +44,7 @@ public class AuditLogController extends HttpServlet {
 
         request.setAttribute("logs", logs);
         request.setAttribute("filterNhanVien", filterNv);
-        request.getRequestDispatcher("/views/admin/audit-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/nhat_ky.jsp").forward(request, response);
     }
 
     private void showLogDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -62,7 +62,7 @@ public class AuditLogController extends HttpServlet {
 
         if (targetLog != null) {
             request.setAttribute("log", targetLog);
-            request.getRequestDispatcher("/views/admin/audit-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/nhat_ky.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/auditlog?msg=notfound");
         }

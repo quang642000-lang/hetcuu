@@ -48,12 +48,12 @@ public class ToppingController extends HttpServlet {
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Topping> list = toppingService.getAllTopping();
         request.setAttribute("toppings", list);
-        request.getRequestDispatcher("/views/admin/topping-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/topping.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("formTitle", "THÊM TOPPING MỚI");
-        request.getRequestDispatcher("/views/admin/topping-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/topping.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -63,7 +63,7 @@ public class ToppingController extends HttpServlet {
             if (tp != null) {
                 request.setAttribute("topping", tp);
                 request.setAttribute("formTitle", "CẬP NHẬT TOPPING");
-                request.getRequestDispatcher("/views/admin/topping-form.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/admin/topping.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin/topping?msg=notfound");
             }
@@ -119,7 +119,7 @@ public class ToppingController extends HttpServlet {
             request.setAttribute("topping", tp);
             request.setAttribute("error", "Lỗi tạo mới Topping!");
             request.setAttribute("formTitle", "THÊM TOPPING MỚI");
-            request.getRequestDispatcher("/views/admin/topping-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/topping.jsp").forward(request, response);
         }
     }
 
@@ -141,7 +141,7 @@ public class ToppingController extends HttpServlet {
                 request.setAttribute("topping", tp);
                 request.setAttribute("error", "Lỗi cập nhật Topping!");
                 request.setAttribute("formTitle", "CẬP NHẬT TOPPING");
-                request.getRequestDispatcher("/views/admin/topping-form.jsp").forward(request, response);
+                request.getRequestDispatcher("/views/admin/topping.jsp").forward(request, response);
             }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");

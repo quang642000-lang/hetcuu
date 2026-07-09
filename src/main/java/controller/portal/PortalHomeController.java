@@ -32,7 +32,7 @@ public class PortalHomeController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.setAttribute("bestsellers", bestsellers);
         request.setAttribute("newArrivals", newArrivals);
-        request.getRequestDispatcher("/views/portal/home.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/portal/trang_chu.jsp").forward(request, response);
     }
 
     @Override

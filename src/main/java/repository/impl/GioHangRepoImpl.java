@@ -183,17 +183,23 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh) {
         List<ChiTietToppingGioHang> list = new ArrayList<>();
-        String sql = "SELECT ma_ctgh, ma_tp, so_luong_tp FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh = ?";
+        // Thêm JOIN với bảng TOPPING để lấy gia_ban
+        String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban " +
+                "FROM CHI_TIET_TOPPING_GIO_HANG ct " +
+                "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
+                "WHERE ct.ma_ctgh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, maCtgh);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new ChiTietToppingGioHang(
+                    ChiTietToppingGioHang tp = new ChiTietToppingGioHang(
                             rs.getLong("ma_ctgh"),
                             rs.getInt("ma_tp"),
                             rs.getInt("so_luong_tp")
-                    ));
+                    );
+                    tp.setGiaTp(rs.getInt("gia_ban")); // Gán giá bán thực tế của Topping vào đối tượng!
+                    list.add(tp);
                 }
             }
         } catch (SQLException e) {
@@ -201,6 +207,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
         }
         return list;
     }
+
 
     @Override
     public boolean addToppingToGioHang(long maCtgh, int maTp, int soLuongTp) {

@@ -51,7 +51,7 @@ public class HoaDonController extends HttpServlet {
 
         request.setAttribute("orders", orders);
         request.setAttribute("statusFilter", statusStr);
-        request.getRequestDispatcher("/views/admin/hoadon-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/admin/hoa_don.jsp").forward(request, response);
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,7 +59,7 @@ public class HoaDonController extends HttpServlet {
         DonHang dh = donHangService.getDonHangById(id);
         if (dh != null) {
             request.setAttribute("order", dh);
-            request.getRequestDispatcher("/views/admin/hoadon-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/views/admin/hoa_don.jsp").forward(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/hoadon?msg=notfound");
         }

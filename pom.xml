@@ -19,62 +19,85 @@
   </properties>
 
   <dependencies>
-    <!-- 1. Java Servlet API (Phục vụ Controller, Filter, Listener) -->
+
+    <!-- ========================================== -->
+    <!-- 1. CÁC THƯ VIỆN ĐƯỢC TOMCAT 11 CUNG CẤP SẴN -->
+    <!-- ========================================== -->
+
+    <!-- Servlet API (Tomcat 11 sử dụng Jakarta Servlet 6.0) -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
 
-    <!-- 2. JavaServer Pages API & JSTL (Phục vụ hiển thị giao diện JSP) -->
+    <!-- JSP API (Phục vụ hiển thị giao diện JSP) -->
     <dependency>
-      <groupId>javax.servlet.jsp</groupId>
-      <artifactId>javax.servlet.jsp-api</artifactId>
-      <version>2.3.3</version>
+      <groupId>jakarta.servlet.jsp</groupId>
+      <artifactId>jakarta.servlet.jsp-api</artifactId>
+      <version>3.1.1</version>
       <scope>provided</scope>
     </dependency>
 
-    <!-- 3. Microsoft JDBC Driver cho SQL Server (Sử dụng jre11 cho Java 11+) -->
+
+    <!-- ========================================== -->
+    <!-- 2. CÁC THƯ VIỆN CẦN ĐÓNG GÓI VÀO WEB-INF/lib -->
+    <!-- ========================================== -->
+
+    <!-- JSTL API (LƯU Ý: KHÔNG ĐƯỢC để scope provided vì Tomcat không có sẵn JSTL) -->
+    <dependency>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
+    <!-- Glassfish JSTL Implementation (Bộ thực thi JSTL) -->
+    <dependency>
+      <groupId>org.glassfish.web</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+
+    <!-- Microsoft JDBC Driver cho SQL Server -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
       <version>12.4.2.jre11</version>
     </dependency>
 
-    <!-- 4. HikariCP (Connection Pool tối ưu kết nối siêu tốc - đổi sang 5.0.0 để né lỗi cache .lastUpdated) -->
+    <!-- HikariCP (Connection Pool tối ưu kết nối) -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <version>5.0.0</version>
     </dependency>
 
-    <!-- 5. Google Gson (Phân tích, xử lý chuỗi JSON) -->
+    <!-- Google Gson (Xử lý chuỗi JSON) -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
 
-    <!-- 6. JavaMail API (Phục vụ gửi OTP xác thực tài khoản qua Email) -->
+    <!-- Eclipse Angus Mail (Bản nâng cấp của JavaMail, tương thích với Jakarta EE) -->
     <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
-      <version>1.6.2</version>
+      <groupId>org.eclipse.angus</groupId>
+      <artifactId>jakarta.mail</artifactId>
+      <version>2.0.3</version>
     </dependency>
 
-    <!-- 7. JUnit 5 (Dành cho việc viết Unit Test) -->
+
+    <!-- ========================================== -->
+    <!-- 3. THƯ VIỆN PHỤC VỤ TESTING                -->
+    <!-- ========================================== -->
+
+    <!-- JUnit 5 -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.10.2</version>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <version>6.0.0</version> <scope>provided</scope>
     </dependency>
 
   </dependencies>

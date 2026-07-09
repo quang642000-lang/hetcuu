@@ -61,7 +61,7 @@ public class PortalCheckoutController extends HttpServlet {
         request.setAttribute("checkoutItems", checkoutItems);
         request.setAttribute("tongTienHang", tongTienHang);
         request.setAttribute("activeVouchers", activeVouchers);
-        request.getRequestDispatcher("/views/portal/checkout.jsp").forward(request, response);
+        request.getRequestDispatcher("/views/portal/thanh_toan.jsp").forward(request, response);
     }
 
     @Override
