@@ -1,39 +1,28 @@
-/**
- * =========================================================================
- * TEA POS - QUẦY BÁN HÀNG POS CONTROLLER (SMART CART realtime)
- * =========================================================================
- */
-
 let posCart = [];
 let customerInfo = null;
 
-/**
- * Tải Popup cấu hình chi tiết khi click vào Sản phẩm mẹ
- */
+function getContextPath() {
+    return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+}
+
 function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
     const rawOptions = JSON.parse(decodeURIComponent(optionsJsonStr));
-
     let html = `
         <div class="text-start" id="posCustomizer" data-masp="${maSp}" data-tensp="${tenSp}">
             <h5 class="fw-bold text-success mb-3">${tenSp}</h5>
-            
             <div class="mb-3">
                 <label class="fw-semibold small mb-2 d-block">CHỌN KÍCH CỠ (SIZE)</label>
                 <div class="selection-btn-group">
     `;
-
-    // Tạo ô chọn Sizes
     rawOptions.sizes.forEach((s, idx) => {
         html += `
-            <input type="radio" class="selection-radio-input size-radio" name="popup_size" 
-                   id="sz_${s.maSize}" value="${s.maSize}" data-price="${s.giaBan}" ${idx === 0 ? 'checked' : ''}>
+            <input type="radio" class="selection-radio-input size-radio" name="popup_size"
+                id="sz_${s.maSize}" value="${s.maSize}" data-price="${s.giaBan}" ${idx === 0 ? 'checked' : ''}>
             <label class="selection-label" for="sz_${s.maSize}">${s.tenSize} (+${formatVND(s.giaBan)})</label>
         `;
     });
-
     html += `</div></div>`;
 
-    // Tạo ô chọn Đường & Đá nếu cho phép
     if (rawOptions.choPhepDoiDuong) {
         html += `
             <div class="mb-3">
@@ -70,13 +59,12 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
         `;
     }
 
-    // Danh sách Toppings
     html += `<div class="mb-3"><label class="fw-semibold small mb-2 d-block">THÊM TOPPING</label>`;
     rawOptions.allToppings.forEach(tp => {
         html += `
             <div class="form-check d-flex justify-content-between align-items-center mb-2">
-                <input class="form-check-input topping-chk" type="checkbox" value="${tp.maTp}" 
-                       data-price="${tp.giaBan}" data-name="${tp.tenTp}" id="tp_${tp.maTp}">
+                <input class="form-check-input topping-chk" type="checkbox" value="${tp.maTp}"
+                    data-price="${tp.giaBan}" data-name="${tp.tenTp}" id="tp_${tp.maTp}">
                 <label class="form-check-label flex-grow-1 ms-2" for="tp_${tp.maTp}">
                     ${tp.tenTp} (+${formatVND(tp.giaBan)})
                 </label>
@@ -85,7 +73,6 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
     });
     html += `</div>`;
 
-    // Ghi chú & Số lượng
     html += `
         <div class="mb-3">
             <label class="fw-semibold small mb-2">Ghi chú pha chế</label>
@@ -105,7 +92,6 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
         showConfirmButton: false,
         showCloseButton: true,
         didOpen: () => {
-            // Đăng ký sự kiện tính tiền realtime khi click
             document.querySelectorAll('.size-radio, .topping-chk').forEach(el => {
                 el.addEventListener('change', recalculatePopupPrice);
             });
@@ -117,18 +103,13 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
 function recalculatePopupPrice() {
     const checkedSize = document.querySelector('.size-radio:checked');
     let sizePrice = checkedSize ? parseInt(checkedSize.dataset.price) : 0;
-
     let toppingPrice = 0;
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
         toppingPrice += parseInt(tp.dataset.price);
     });
-
     document.getElementById('popup_total').innerText = formatVND(sizePrice + toppingPrice);
 }
 
-/**
- * Thêm ly nước đã tùy biến vào giỏ hàng POS
- */
 function addCustomizedToCart() {
     const el = document.getElementById('posCustomizer');
     const maSp = el.dataset.masp;
@@ -137,16 +118,16 @@ function addCustomizedToCart() {
     const maSize = parseInt(checkedSize.value);
     const tenSize = checkedSize.nextElementSibling.innerText.split(' ');
     const giaBan = parseInt(checkedSize.dataset.price);
-
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
-    const mucDa = sugarEl ? sugarEl.value : "100%";
+    const mucDuong = sugarEl ? sugarEl.value : "100%";
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
-    const mucDuong = iceEl ? iceEl.value : "100%";
+    const mucDa = iceEl ? iceEl.value : "100%";
     const ghiChuMon = document.getElementById('popup_note').value;
 
     let toppingsList = [];
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
-        toppingsList.add({
+        // CHỈNH SỬA SỬA LỖI: Sửa hàm .add() sai cú pháp thành .push() đúng chuẩn JS
+        toppingsList.push({
             maTp: parseInt(tp.value),
             tenTp: tp.dataset.name,
             giaTp: parseInt(tp.dataset.price),
@@ -154,7 +135,6 @@ function addCustomizedToCart() {
         });
     });
 
-    // Gộp trùng lặp nếu có món giống nhau 100%
     const existing = posCart.find(item =>
         item.maSp === maSp && item.maSize === maSize &&
         item.mucDa === mucDa && item.mucDuong === mucDuong &&
@@ -170,30 +150,24 @@ function addCustomizedToCart() {
             toppings: toppingsList
         });
     }
-
     Swal.close();
     renderPosCart();
 }
 
-/**
- * Vẽ danh sách giỏ hàng POS phía cột phải
- */
 function renderPosCart() {
     const container = document.getElementById('posCartItems');
     container.innerHTML = '';
-
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingTotal = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
         tongTienHang += rowPrice;
-
         container.innerHTML += `
             <div class="pos-cart-item">
                 <div class="cart-item-details">
                     <span class="cart-item-title">${item.tenSp} (${item.tenSize})</span>
                     <div class="cart-item-options">
-                        Đá: ${item.mucDa} | Đường: ${item.mucDuong} 
+                        Đá: ${item.mucDa} | Đường: ${item.mucDuong}
                         ${item.toppings.map(t => `<br>+ ${t.tenTp}`).join('')}
                     </div>
                     <div class="cart-item-price">${formatVND(rowPrice)}</div>
@@ -211,10 +185,8 @@ function renderPosCart() {
             </div>
         `;
     });
-
-    // Ghi nhận tổng tiền lên hóa đơn
     document.getElementById('totalRawPrice').innerText = formatVND(tongTienHang);
-    let vatPrice = Math.round(tongTienHang * 0.08); // 8% VAT
+    let vatPrice = Math.round(tongTienHang * 0.08);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(tongTienHang + vatPrice);
 }
@@ -232,25 +204,23 @@ function removeCartItem(idx) {
     renderPosCart();
 }
 
-/**
- * Gọi AJAX tìm kiếm Khách hàng thành viên CRM bằng SĐT
- */
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value;
     if (!sdt) return;
 
-    fetch('/pos/search-customer?sdt=' + sdt)
+    // Ghép Context Path tự động tránh lỗi 404
+    fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'SUCCESS') {
                 customerInfo = data;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
-                document.getElementById('customerPoints').innerText = 'Điểm tích lũy: ' + data.diemTichLuy;
+                document.getElementById('customerPoints').innerText = 'Hạng ' + (data.maHang === 1 ? 'Đồng' : data.maHang === 2 ? 'Bạc' : data.maHang === 3 ? 'Vàng' : 'Kim cương') + ' | ' + data.diemTichLuy + ' Điểm';
                 showToast('success', 'Tìm thấy thành viên: ' + data.tenKh);
             } else {
                 customerInfo = null;
                 document.getElementById('customerNameResult').innerText = "Khách vãng lai";
-                document.getElementById('customerPoints').innerText = "Điểm tích lũy: 0";
+                document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 showToast('warning', 'Không tìm thấy số điện thoại khách hàng!');
             }
         });

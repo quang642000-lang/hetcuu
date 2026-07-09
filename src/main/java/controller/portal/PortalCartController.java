@@ -67,13 +67,12 @@ public class PortalCartController extends HttpServlet {
             String mucDuong = request.getParameter("mucDuong");
             String ghiChuMon = request.getParameter("ghiChuMon");
 
-            // Bóc tách danh sách Toppings chọn đi kèm ly nước này từ Form
             String[] arrToppings = request.getParameterValues("toppings[]");
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
                     int maTp = Integer.parseInt(tpIdStr);
-                    // Mặc định số lượng là 1 phần topping cho mỗi ly nước
+                    // SỬA LỖI: Sử dụng hậu tố "L" (0L) để khớp với kiểu dữ liệu Long của mã chi tiết giỏ hàng
                     toppingList.add(new ChiTietToppingGioHang(0L, maTp, 1));
                 }
             }

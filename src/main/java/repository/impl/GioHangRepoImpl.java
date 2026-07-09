@@ -183,7 +183,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh) {
         List<ChiTietToppingGioHang> list = new ArrayList<>();
-        // Thêm JOIN với bảng TOPPING để lấy gia_ban
+        // CHỈNH SỬA: Thực hiện INNER JOIN để kéo cột gia_ban của topping lên đối tượng
         String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban " +
                 "FROM CHI_TIET_TOPPING_GIO_HANG ct " +
                 "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
@@ -198,7 +198,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                             rs.getInt("ma_tp"),
                             rs.getInt("so_luong_tp")
                     );
-                    tp.setGiaTp(rs.getInt("gia_ban")); // Gán giá bán thực tế của Topping vào đối tượng!
+                    tp.setGiaTp(rs.getInt("gia_ban")); // Gán giá trị bán lẻ chốt cứng của topping
                     list.add(tp);
                 }
             }

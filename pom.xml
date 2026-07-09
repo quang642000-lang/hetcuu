@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Thông tin dự án -->
   <groupId>com.teapos</groupId>
   <artifactId>TEA_POS_PROJECT</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -12,27 +11,19 @@
   <name>TEA POS Webapp</name>
 
   <properties>
-    <!-- Cấu hình phiên bản Java 17 và Encoding -->
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencies>
-
-    <!-- ========================================== -->
-    <!-- 1. CÁC THƯ VIỆN ĐƯỢC TOMCAT 11 CUNG CẤP SẴN -->
-    <!-- ========================================== -->
-
-    <!-- Servlet API (Tomcat 11 sử dụng Jakarta Servlet 6.0) -->
+    <!-- 1. CÁC THƯ VIỆN ĐƯỢC TOMCAT CUNG CẤP SẴN -->
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- JSP API (Phục vụ hiển thị giao diện JSP) -->
     <dependency>
       <groupId>jakarta.servlet.jsp</groupId>
       <artifactId>jakarta.servlet.jsp-api</artifactId>
@@ -40,73 +31,59 @@
       <scope>provided</scope>
     </dependency>
 
-
-    <!-- ========================================== -->
-    <!-- 2. CÁC THƯ VIỆN CẦN ĐÓNG GÓI VÀO WEB-INF/lib -->
-    <!-- ========================================== -->
-
-    <!-- JSTL API (LƯU Ý: KHÔNG ĐƯỢC để scope provided vì Tomcat không có sẵn JSTL) -->
+    <!-- 2. CÁC THƯ VIỆN ĐÓNG GÓI CHẠY RUNTIME (BẮT BUỘC KHÔNG ĐỂ SCOPE PROVIDED) -->
+    <!-- JSTL API & Implementation chuẩn Jakarta EE 10 -->
     <dependency>
       <groupId>jakarta.servlet.jsp.jstl</groupId>
       <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
       <version>3.0.0</version>
     </dependency>
-
-    <!-- Glassfish JSTL Implementation (Bộ thực thi JSTL) -->
     <dependency>
       <groupId>org.glassfish.web</groupId>
       <artifactId>jakarta.servlet.jsp.jstl</artifactId>
       <version>3.0.1</version>
     </dependency>
 
-    <!-- Microsoft JDBC Driver cho SQL Server -->
+    <!-- Microsoft SQL Server JDBC Driver -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
       <version>12.4.2.jre11</version>
     </dependency>
 
-    <!-- HikariCP (Connection Pool tối ưu kết nối) -->
+    <!-- HikariCP (Connection Pool) -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <version>5.0.0</version>
     </dependency>
 
-    <!-- Google Gson (Xử lý chuỗi JSON) -->
+    <!-- Google Gson (Xử lý Chuỗi JSON trong Audit Log) -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
 
-    <!-- Eclipse Angus Mail (Bản nâng cấp của JavaMail, tương thích với Jakarta EE) -->
+    <!-- Eclipse Angus Mail (JavaMail nâng cấp chạy trên Jakarta EE 10) -->
     <dependency>
       <groupId>org.eclipse.angus</groupId>
       <artifactId>jakarta.mail</artifactId>
       <version>2.0.3</version>
     </dependency>
 
-
-    <!-- ========================================== -->
-    <!-- 3. THƯ VIỆN PHỤC VỤ TESTING                -->
-    <!-- ========================================== -->
-
-    <!-- JUnit 5 -->
+    <!-- 3. THƯ VIỆN PHỤC VỤ TESTING -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
-    <!-- Tên file war khi build ra sẽ là teapos.war -->
     <finalName>teapos</finalName>
     <plugins>
-      <!-- Compiler Plugin: Ép build bằng Java 17 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -117,8 +94,6 @@
           <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
-
-      <!-- WAR Plugin: Hỗ trợ build ra file WAR chuẩn -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
