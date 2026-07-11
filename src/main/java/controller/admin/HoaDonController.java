@@ -1,9 +1,17 @@
 package controller.admin;
 
 import model.entity.DonHang;
+import model.entity.ChiTietDonHang;
+import model.entity.ChiTietTopping;
 import model.entity.NhanVien;
+import model.entity.KhachHang;
 import service.IDonHangService;
+import service.IKhachHangService;
+import service.INhanVienService;
 import service.impl.DonHangServiceImpl;
+import service.impl.KhachHangServiceImpl;
+import service.impl.NhanVienServiceImpl;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +24,8 @@ import java.util.List;
 @WebServlet(name = "HoaDonController", urlPatterns = {"/admin/hoadon"})
 public class HoaDonController extends HttpServlet {
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
+    private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
+    private final INhanVienService nhanVienService = NhanVienServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -24,7 +34,6 @@ public class HoaDonController extends HttpServlet {
             action = "list";
         }
 
-        // TÍCH HỢP ĐỒNG BỘ: Tạo Endpoint API trả về chuỗi JSON chi tiết hóa đơn phục vụ in hóa đơn AJAX
         if ("detailJson".equals(action)) {
             response.setContentType("application/json;charset=UTF-8");
             String id = request.getParameter("id");
@@ -35,26 +44,41 @@ public class HoaDonController extends HttpServlet {
                 json.append("\"status\":\"SUCCESS\",");
                 json.append("\"maDh\":\"").append(dh.getMaDh()).append("\",");
                 json.append("\"thoiGianTao\":\"").append(dh.getThoiGianTao().toString().substring(0, 19)).append("\",");
-                json.append("\"tenKhachHang\":").append(dh.getMaKh() != null ? "\"" + dh.getMaKh() + "\"" : "null").append(",");
-                json.append("\"tenNhanVien\":").append(dh.getMaNv() != null ? "\"" + dh.getMaNv() + "\"" : "null").append(",");
+
+                String tenKh = "Khách lẻ vãng lai";
+                if (dh.getMaKh() != null) {
+                    KhachHang kh = khachHangService.getKhachHangById(dh.getMaKh());
+                    if (kh != null) tenKh = kh.getTenKh();
+                }
+                json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
+
+                String tenNv = "Hệ thống tự động";
+                if (dh.getMaNv() != null) {
+                    NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
+                    if (nv != null) tenNv = nv.getHoTen();
+                }
+                json.append("\"tenNhanVien\":\"").append(tenNv).append("\",");
+
                 json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
                 json.append("\"tienGiamGia\":").append(dh.getTienGiamGia()).append(",");
                 json.append("\"diemSuDung\":").append(dh.getDiemSuDung()).append(",");
                 json.append("\"tienTruDiem\":").append(dh.getTienTruDiem()).append(",");
                 json.append("\"tongPhaiTra\":").append(dh.getTongPhaiTra()).append(",");
                 json.append("\"items\":[");
+
                 for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
-                    var item = dh.getChiTietDonHangList().get(i);
+                    ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
                     json.append("{");
-                    json.append("\"tenMon\":\"SP").append(item.getMaSp()).append("\",");
-                    json.append("\"tenSize\":\"").append(item.getMaSize() == 1 ? "S" : (item.getMaSize() == 2 ? "M" : "L")).append("\",");
+                    json.append("\"tenMon\":\"").append(item.getMaSp()).append("\",");
+                    json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\","); // ĐỒNG BỘ: Sử dụng tenSize động
                     json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
                     json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
                     json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
                     json.append("\"giaChot\":").append(item.getGiaChot()).append(",");
                     json.append("\"toppings\":[");
+
                     for (int j = 0; j < item.getToppingsList().size(); j++) {
-                        var tp = item.getToppingsList().get(j);
+                        ChiTietTopping tp = item.getToppingsList().get(j);
                         json.append("{");
                         json.append("\"tenTopping\":\"TP").append(tp.getMaTp()).append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");

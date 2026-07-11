@@ -15,7 +15,6 @@
 </head>
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-5">
     <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cart3 text-success me-2"></i>GIỎ HÀNG CỦA BẠN</h3>
     <div class="row g-4">
@@ -26,7 +25,6 @@
                     <c:when test="${not empty cart.chiTietGioHangList}">
                         <!-- Khởi tạo biến tích lũy tổng tiền hàng -->
                         <c:set var="subtotalPrice" value="0"/>
-
                         <c:forEach var="item" items="${cart.chiTietGioHangList}">
                             <!-- Tính tổng giá toppings của ly trà sữa hiện tại -->
                             <c:set var="toppingSum" value="0"/>
@@ -36,7 +34,6 @@
                             <c:set var="itemUnitTotal" value="${item.giaBan + toppingSum}"/>
                             <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
 
-                            <!-- SỬA LỖI JAVABEANS: Đổi item.isChonMua -> item.chonMua -->
                             <c:if test="${item.chonMua}">
                                 <c:set var="subtotalPrice" value="${subtotalPrice + itemRowTotal}"/>
                             </c:if>
@@ -44,7 +41,6 @@
                             <div class="row align-items-center mb-3 pb-3 border-bottom g-3">
                                 <!-- Checkbox chọn mua món ăn -->
                                 <div class="col-1 text-center">
-                                    <!-- SỬA LỖI JAVABEANS: Đổi item.isChonMua -> item.chonMua -->
                                     <input type="checkbox" class="form-check-input select-item-checkbox border-secondary"
                                            data-id="${item.maCtgh}" ${item.chonMua ? 'checked' : ''} onchange="toggleCartSelection(this)">
                                 </div>
@@ -64,7 +60,7 @@
                                 <!-- Tên trà sữa, kích cỡ nạp động từ CSDL -->
                                 <div class="col-4">
                                     <strong class="text-dark d-block" style="font-size: 15px;">
-                                        <c:out value="${item.tenSp}"/> (Size ${item.maSize == 1 ? "S" : (item.maSize == 2 ? "M" : "L")})
+                                        <c:out value="${item.tenSp}"/> (Size ${item.tenSize})
                                     </strong>
                                     <small class="text-muted d-block" style="font-size: 11px;">Đá: ${item.mucDa} | Đường: ${item.mucDuong}</small>
 
@@ -129,6 +125,7 @@
                     <c:when test="${not empty cart.chiTietGioHangList && subtotalPrice > 0}">
                         <c:set var="vatPrice" value="${subtotalPrice * 0.08}"/>
                         <c:set var="finalPayablePrice" value="${subtotalPrice + vatPrice}"/>
+
                         <div class="d-flex justify-content-between mb-3 small">
                             <span class="text-muted">Tổng tiền cốc & Toppings:</span>
                             <strong class="text-dark" id="subtotalCart">
@@ -165,7 +162,6 @@
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
 <script>
     // AJAX cập nhật tăng/giảm số lượng
@@ -179,12 +175,12 @@
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-            .then(res => res.text())
-            .then(data => {
+            .then(function(res) { return res.text(); })
+            .then(function(data) {
                 if (data === 'SUCCESS') {
                     qtyEl.innerText = newQty;
                     showToast('success', 'Đã cập nhật số lượng giỏ hàng!');
-                    setTimeout(() => location.reload(), 600);
+                    setTimeout(function() { location.reload(); }, 600);
                 } else {
                     showToast('error', 'Cập nhật thất bại!');
                 }
@@ -195,15 +191,16 @@
     function toggleCartSelection(checkbox) {
         const maCtgh = checkbox.dataset.id;
         const isChecked = checkbox.checked ? '1' : '0';
+
         fetch('${pageContext.request.contextPath}/cart/toggle-select?maCtgh=' + maCtgh + '&chon=' + isChecked, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-            .then(res => res.text())
-            .then(data => {
+            .then(function(res) { return res.text(); })
+            .then(function(data) {
                 if (data === 'SUCCESS') {
                     showToast('success', 'Đã lưu lựa chọn đặt hàng!');
-                    setTimeout(() => location.reload(), 600);
+                    setTimeout(function() { location.reload(); }, 600);
                 }
             });
     }

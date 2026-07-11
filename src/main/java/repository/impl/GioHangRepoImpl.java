@@ -11,7 +11,9 @@ import java.util.List;
 
 public class GioHangRepoImpl implements IGioHangRepository {
     private static GioHangRepoImpl instance;
+
     private GioHangRepoImpl() {}
+
     public static synchronized GioHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new GioHangRepoImpl();
@@ -57,13 +59,14 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietGioHang> getChiTietGioHang(int maGh) {
         List<ChiTietGioHang> list = new ArrayList<>();
-        // SỬA LỖI: Thực hiện JOIN 3 bảng để bóc tách lấy chính xác Tên sản phẩm (ten_sp) và hình ảnh (hinh_anh)
+        // ĐỒNG BỘ: JOIN thêm KICH_CO để lấy chính xác ten_size động của mốc kích cỡ
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
                 "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
-                "s.ten_sp, s.hinh_anh " +
+                "s.ten_sp, s.hinh_anh, kc.ten_size " +
                 "FROM CHI_TIET_GIO_HANG ct " +
                 "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
                 "JOIN SAN_PHAM s ON ct.ma_sp = s.ma_sp " +
+                "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
                 "WHERE ct.ma_gh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -81,13 +84,13 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public ChiTietGioHang getChiTietBySpAndSize(int maGh, String maSp, int maSize) {
-        // SỬA LỖI: Thực hiện JOIN 3 bảng để bóc tách thông tin khi kiểm tra trùng lặp
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
                 "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
-                "s.ten_sp, s.hinh_anh " +
+                "s.ten_sp, s.hinh_anh, kc.ten_size " +
                 "FROM CHI_TIET_GIO_HANG ct " +
                 "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
                 "JOIN SAN_PHAM s ON ct.ma_sp = s.ma_sp " +
+                "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
                 "WHERE ct.ma_gh = ? AND ct.ma_sp = ? AND ct.ma_size = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -108,7 +111,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public boolean addOrUpdateChiTiet(ChiTietGioHang chiTiet) {
         if (chiTiet.getMaCtgh() > 0) {
-            // SỬA LỖI CHÍ MẠNG: Chỉ cập nhật số lượng và trạng thái chọn mua để tránh ghi đè các trường đá, đường, ghi chú thành NULL khi gọi từ updateSoLuongChiTiet
             String sql = "UPDATE CHI_TIET_GIO_HANG SET so_luong = ?, is_chon_mua = ? WHERE ma_ctgh = ?";
             try (Connection conn = DBConnect.getConnection();
                  PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -191,7 +193,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh) {
         List<ChiTietToppingGioHang> list = new ArrayList<>();
-        // SỬA LỖI: Thực hiện JOIN thêm bảng TOPPING để lấy tiếng Việt có dấu của topping (ten_tp) [2]
         String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban, t.ten_tp " +
                 "FROM CHI_TIET_TOPPING_GIO_HANG ct " +
                 "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
@@ -207,7 +208,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                             rs.getInt("so_luong_tp")
                     );
                     tp.setGiaTp(rs.getInt("gia_ban"));
-                    tp.setTenTp(rs.getString("ten_tp")); // Nạp chính xác tên topping có dấu [2]
+                    tp.setTenTp(rs.getString("ten_tp"));
                     list.add(tp);
                 }
             }
@@ -269,6 +270,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
         ct.setGiaBan(rs.getInt("gia_ban"));
         ct.setTenSp(rs.getString("ten_sp"));
         ct.setHinhAnh(rs.getString("hinh_anh"));
+        ct.setTenSize(rs.getString("ten_size")); // GÁN CHẶT TÊN SIZE ĐỘNG TỪ DATABASE JOIN
         return ct;
     }
 }

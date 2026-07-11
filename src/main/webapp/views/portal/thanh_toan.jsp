@@ -34,10 +34,8 @@
 </head>
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-5">
     <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cash-coin text-success me-2"></i>ĐẶT HÀNG CLICK & COLLECT</h3>
-
     <form action="${pageContext.request.contextPath}/checkout/place" method="POST" id="checkoutForm">
         <!-- Các trường dữ liệu ẩn gửi về Controller để chốt DB -->
         <input type="hidden" name="tongTienHang" id="param_tongTienHang" value="${tongTienHang}">
@@ -54,12 +52,10 @@
                 <div class="card checkout-card p-4 shadow-sm mb-4">
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC</h5>
                     <p class="small text-muted mb-3">Vui lòng thiết lập mốc thời gian nhận nước tại quầy (Đảm bảo tối thiểu cách 15 phút so với hiện tại để Barista kịp chuẩn bị pha chế tốt nhất).</p>
-
                     <div class="mb-3">
                         <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Chọn ngày giờ đến lấy <span class="text-danger">*</span></label>
                         <input type="datetime-local" class="form-control form-control-teapos" id="thoiGianHenLay" name="thoiGianHenLay" required>
                     </div>
-
                     <div class="mb-3">
                         <label for="ghiChuDon" class="form-label fw-bold small text-dark">Lời nhắn dặn dò riêng cho thợ pha chế</label>
                         <textarea class="form-control" id="ghiChuDon" name="ghiChuDon" rows="2" placeholder="Ví dụ: Lấy túi giấy mang đi xa, không đá mang về tự cho đá sau..."></textarea>
@@ -115,7 +111,7 @@
                                     </c:choose>
                                 </div>
                                 <div class="col-7">
-                                    <strong class="text-dark small d-block"><c:out value="${item.tenSp}"/> (Size ${item.maSize == 1 ? "S" : (item.maSize == 2 ? "M" : "L")})</strong>
+                                    <strong class="text-dark small d-block"><c:out value="${item.tenSp}"/> (Size ${item.tenSize})</strong>
                                     <small class="text-muted d-block" style="font-size: 10px;">Đá: ${item.mucDa} | Đường: ${item.mucDuong} | SL: x${item.soLuong}</small>
 
                                     <!-- HIỂN THỊ ĐỦ TOPPINGS ĐÃ CHỌN -->
@@ -197,59 +193,49 @@
         </div>
     </form>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
 
 <script>
-    // Điểm CRM khả dụng nạp từ Session Scope
     const userMaxPointsAvailable = ${not empty sessionScope.customer.diemTichLuy ? sessionScope.customer.diemTichLuy : 0};
     const rawBillTotal = ${tongTienHang};
 
-    // Tự động gán mốc giờ tối thiểu (Hiện tại + 15 phút) vào thẻ datetime-local
     document.addEventListener("DOMContentLoaded", function() {
         const now = new Date();
-        now.setMinutes(now.getMinutes() + 15); // Cộng tối thiểu 15 phút
-
+        now.setMinutes(now.getMinutes() + 15);
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
+        const minDateTimeString = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
 
-        const minDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
         const inputDateTime = document.getElementById("thoiGianHenLay");
         inputDateTime.min = minDateTimeString;
         inputDateTime.value = minDateTimeString;
 
-        // Chạy tính toán hóa đơn ban đầu
         calculateRealtimeBill();
     });
 
-    // Dùng tối đa điểm CRM
     function useMaxPoints() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         inputPoints.value = userMaxPointsAvailable;
         calculateRealtimeBill();
     }
 
-    // Độc lập tính toán số điểm CRM và chiết khấu tương ứng
     function calculateRedeemPointsRealtime() {
         calculateRealtimeBill();
     }
 
-    // Thuật toán đồng bộ hóa dồn tiền hóa đơn Click & Collect
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;
         let pointsDiscount = 0;
 
-        // 1. Tính toán Voucher giảm giá
         const select = document.getElementById("selectVoucher");
         const selectedOpt = select.options[select.selectedIndex];
-
         if (selectedOpt && selectedOpt.value !== "") {
             const code = selectedOpt.value;
-            const type = parseInt(selectedOpt.dataset.type); // 1: Trừ tiền mặt, 2: Trừ %
+            const type = parseInt(selectedOpt.dataset.type);
             const value = parseInt(selectedOpt.dataset.value);
             const maxVal = parseInt(selectedOpt.dataset.max);
             const minVal = parseInt(selectedOpt.dataset.min);
@@ -270,12 +256,10 @@
             } else if (type === 2) {
                 voucherDiscount = (rawSum * value) / 100;
                 if (maxVal > 0 && voucherDiscount > maxVal) {
-                    voucherDiscount = maxVal; // Chặn giảm tối đa
+                    voucherDiscount = maxVal;
                 }
             }
-
             if (voucherDiscount > rawSum) voucherDiscount = rawSum;
-
             document.getElementById("param_maKm").value = selectedOpt.dataset.id;
             document.getElementById("param_tienGiamGia").value = voucherDiscount;
             document.getElementById("display_discount").innerText = '-' + voucherDiscount.toLocaleString('vi-VN') + ' đ';
@@ -285,7 +269,6 @@
             document.getElementById("display_discount").innerText = '-0 đ';
         }
 
-        // 2. Tính toán điểm tích lũy CRM sử dụng (1 điểm = 1000đ)
         const inputPoints = document.getElementById("inputRedeemPoints");
         let pointsToUse = parseInt(inputPoints.value);
         if (isNaN(pointsToUse) || pointsToUse < 0) {
@@ -293,20 +276,16 @@
             inputPoints.value = "";
         }
 
-        // Ràng buộc 1: Không dùng quá ví hiện có
         if (pointsToUse > userMaxPointsAvailable) {
             pointsToUse = userMaxPointsAvailable;
             inputPoints.value = pointsToUse;
             showToast('warning', 'Quý khách chỉ có tối đa ' + userMaxPointsAvailable + ' điểm CRM!');
         }
 
-        // Tính toán số tiền được giảm từ điểm
         pointsDiscount = pointsToUse * 1000;
         const limitPrePoints = rawSum - voucherDiscount;
-
-        // Ràng buộc 2: Chống dồn âm tiền đơn nước
         if (pointsDiscount > limitPrePoints) {
-            pointsDiscount = Math.floor(limitPrePoints / 1000) * 1000; // Tự chốt số lượng điểm tối đa khả dụng
+            pointsDiscount = Math.floor(limitPrePoints / 1000) * 1000;
             pointsToUse = pointsDiscount / 1000;
             inputPoints.value = pointsToUse > 0 ? pointsToUse : "";
         }
@@ -315,7 +294,6 @@
             document.getElementById("displayPointsRow").style.display = 'flex';
             document.getElementById("txtPointsRedeemed").innerText = pointsToUse;
             document.getElementById("display_pointsDiscount").innerText = '-' + pointsDiscount.toLocaleString('vi-VN') + ' đ';
-
             document.getElementById("param_diemSuDung").value = pointsToUse;
             document.getElementById("param_tienTruDiem").value = pointsDiscount;
         } else {
@@ -324,18 +302,13 @@
             document.getElementById("param_tienTruDiem").value = 0;
         }
 
-        // 3. Tính toán Thuế VAT 8% dựa trên tiền thực thu trước thuế
         let billBeforeTax = rawSum - voucherDiscount - pointsDiscount;
         if (billBeforeTax < 0) billBeforeTax = 0;
-
         let vatPrice = Math.round(billBeforeTax * 0.08);
         let finalPayable = billBeforeTax + vatPrice;
 
-        // Nạp kết quả tính toán động ra giao diện (SỬA LỖI ĐÃ ĐÓNG NHÁY ĐƠN: 'vi-VN')
         document.getElementById("display_vat").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
         document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN') + ' đ';
-
-        // Nạp các biến tham số chốt gửi lên Server
         document.getElementById("param_tongPhaiTra").value = finalPayable;
     }
 </script>

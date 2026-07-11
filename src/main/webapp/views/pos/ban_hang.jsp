@@ -4,9 +4,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS PRO - Quầy Bán Hàng Tại Chọc & Điều Phối Đơn Hàng</title>
+    <title>TEA POS PRO - Quầy Bán Hàng Tại Chỗ & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Nạp Thư viện CSS hiện đại nhất -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
@@ -36,12 +37,14 @@
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
+        /* 3-Cột POS Layout */
         .pos-layout {
             display: flex;
             height: calc(100vh - 60px);
             overflow: hidden;
         }
 
+        /* CỘT MỘT: THỰC ĐƠN DANH MỤC TRÁI (Category Sidebar) */
         .pos-category-sidebar {
             width: 110px;
             background-color: var(--pos-secondary);
@@ -91,6 +94,7 @@
             border-left: 4px solid #ffffff;
         }
 
+        /* CỘT HAI: LƯỚI SẢN PHẨM Ở GIỮA (Middle Product Grid Area) */
         .pos-menu-area {
             flex-grow: 1;
             display: flex;
@@ -143,6 +147,7 @@
             font-size: 16px;
         }
 
+        /* Grid hiển thị sản phẩm dạng mượt mà */
         .pos-product-container {
             flex-grow: 1;
             overflow-y: auto;
@@ -155,6 +160,7 @@
             gap: 16px;
         }
 
+        /* Card sản phẩm tinh tế, tăng tỉ lệ chạm gõ */
         .pos-card {
             background-color: #ffffff;
             border-radius: 12px;
@@ -212,6 +218,7 @@
             color: var(--pos-primary);
         }
 
+        /* CỘT BA: CHI TIẾT HÓA ĐƠN & VẬN HÀNH THANH TOÁN (Hữu khu điều phối bên phải) */
         .pos-billing-area {
             width: 420px;
             background-color: #ffffff;
@@ -231,6 +238,7 @@
             background-color: #ffffff;
         }
 
+        /* Khu chứa danh sách giỏ hàng POS */
         .pos-cart-items-wrapper {
             flex-grow: 1;
             overflow-y: auto;
@@ -274,6 +282,7 @@
             margin-top: 4px;
         }
 
+        /* CRM ví điểm & Khách hàng */
         .pos-crm-panel {
             padding: 14px 20px;
             background-color: var(--pos-bg);
@@ -281,6 +290,7 @@
             border-bottom: 1.5px solid var(--pos-border);
         }
 
+        /* Khu thanh toán hóa đơn chốt hạ */
         .pos-checkout-panel {
             padding: 16px 20px;
             background-color: #ffffff;
@@ -317,6 +327,7 @@
             color: #dc2626;
         }
 
+        /* Bố cục bàn phím gõ nhanh tiền mặt thối lại chuẩn máy POS */
         .pos-cash-calculator {
             background-color: var(--pos-bg);
             border-radius: 8px;
@@ -342,6 +353,7 @@
             border-color: var(--pos-primary-dark);
         }
 
+        /* Nút chốt đơn chính */
         .pos-btn-submit {
             background-color: var(--pos-primary);
             color: #ffffff;
@@ -368,6 +380,7 @@
 </head>
 <body>
 
+<!-- HEADER MÁY POS THƯƠNG HIỆU CAO CẤP -->
 <nav class="navbar navbar-dark bg-dark px-3 shadow-sm" style="height: 60px; z-index: 100;">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
@@ -393,6 +406,7 @@
 </nav>
 
 <div class="pos-layout">
+    <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÒN DỌC (HÀNG TẬP TRUNG) -->
     <div class="pos-category-sidebar">
         <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
             <i class="bi bi-grid-fill"></i>
@@ -406,6 +420,7 @@
         </c:forEach>
     </div>
 
+    <!-- CỘT 2: LƯỚI SẢN PHẨM & THANH TRA CỨU NHANH (GIỮA) -->
     <div class="pos-menu-area">
         <div class="pos-menu-header">
             <div class="pos-search-wrapper">
@@ -423,13 +438,13 @@
         <div class="pos-product-container">
             <div class="pos-grid" id="posProductGrid">
                 <c:forEach var="sp" items="${products}">
+                    <!-- Đăng ký sẵn cấu hình Object JSON cho Javascript bóc tách khi chạm Card -->
                     <script>
                         window['sp_opt_' + '${sp.maSp}'] = {
                             choPhepDoiDa: ${sp.choPhepDoiDa},
                             choPhepDoiDuong: ${sp.choPhepDoiDuong},
                             sizes: [
                                 <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
-                                // ĐỒNG BỘ ĐỘNG: Đọc trực tiếp sz.tenSize
                                 { maSize: ${sz.maSize}, tenSize: '${sz.tenSize}', giaBan: ${sz.giaBan} }${not sLoop.last ? ',' : ''}
                                 </c:forEach>
                             ],
@@ -455,6 +470,7 @@
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
+                                <!-- Tag nhỏ góc ảnh -->
                                 <c:if test="${sp.isNew}">
                                     <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-1" style="font-size: 9px; font-weight: 800;">MỚI</span>
                                 </c:if>
@@ -475,6 +491,7 @@
         </div>
     </div>
 
+    <!-- CỘT 3: CHI TIẾT HÓA ĐƠN, ĐỐI SOÁT & THANH TOÁN (PHẢI) -->
     <div class="pos-billing-area">
         <div class="pos-billing-header">
             <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
@@ -486,6 +503,7 @@
             </button>
         </div>
 
+        <!-- LIST SẢN PHẨM TRONG ĐƠN -->
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
                 <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
@@ -493,6 +511,7 @@
             </div>
         </div>
 
+        <!-- CRM ĐỐI SOÁT HỘI VIÊN CHUYÊN SÂU -->
         <div class="pos-crm-panel">
             <div class="input-group input-group-sm mb-2 shadow-sm" style="border-radius: 6px; overflow: hidden;">
                 <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-telephone-fill"></i></span>
@@ -515,7 +534,7 @@
                 </button>
             </div>
 
-            <!-- Voucher thủ công hoặc tự gán -->
+            <!-- Công cụ CRM dồn điểm thăng hạng và Voucher VIP -->
             <div id="crmLoyaltyArea" style="display: none;" class="border-top pt-2 mt-2">
                 <div class="row g-2">
                     <div class="col-6">
@@ -528,10 +547,11 @@
             </div>
         </div>
 
+        <!-- FORM GỬI THANH TOÁN LÊN BACKEND -->
         <form id="posCheckoutForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST">
             <input type="hidden" name="maKh" id="submit_maKh">
-            <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
-            <input type="hidden" name="maPt" id="submit_maPt" value="1">
+            <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1"> <!-- 1: Tại quán -->
+            <input type="hidden" name="maPt" id="submit_maPt" value="1"> <!-- 1: Tiền mặt -->
             <input type="hidden" name="maKm" id="submit_maKm">
             <input type="hidden" name="tongTienHang" id="submit_tongTienHang">
             <input type="hidden" name="tienGiamGia" id="submit_tienGiamGia" value="0">
@@ -539,11 +559,11 @@
             <input type="hidden" name="tienTruDiem" id="submit_tienTruDiem" value="0">
             <input type="hidden" name="tongPhaiTra" id="submit_tongPhaiTra">
             <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
-            <div id="submitItemsContainer"></div>
+            <div id="submitItemsContainer"></div> <!-- Nơi lưu các mảng song song gửi về Java -->
 
             <div class="pos-checkout-panel bg-white border-top">
                 <div class="mb-2">
-                    <div class="input-group input-group-sm">
+                    <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
                         <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-ticket-perforated-fill"></i></span>
                         <input type="text" class="form-control border-start-0" id="manualVoucherInput" placeholder="Nhập mã Voucher thủ công...">
                         <button class="btn btn-outline-success fw-bold" type="button" onclick="applyManualVoucherCode()">ÁP MÃ</button>
@@ -572,6 +592,7 @@
                     <span class="pos-total-val" id="totalPayablePrice">0 đ</span>
                 </div>
 
+                <!-- Phân hệ tính tiền thối lại realtime chuẩn máy quầy -->
                 <div class="pos-cash-calculator">
                     <div class="row align-items-center g-2 mb-2">
                         <div class="col-5">
@@ -593,6 +614,7 @@
                     </div>
                 </div>
 
+                <!-- Chọn phương thức thanh toán -->
                 <div class="mb-3">
                     <div class="btn-group w-100" role="group">
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onclick="changePaymentMethod(1)">
@@ -665,12 +687,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    // Toàn cục giỏ hàng POS
-    let posCart = [];
-    let customerInfo = null;
-    let appliedVoucher = null;
-    let appliedPoints = 0;
-
     // 1. Đồng hồ thời gian thực tại quầy thu ngân
     function updatePOSClock() {
         const now = new Date();
@@ -687,7 +703,7 @@
         }
     }
 
-    // 3. Quy đổi tiền thối lại khách hàng
+    // 3. Tính toán tiền trả lại khách hàng
     function calculateChangeRefund() {
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
         const customerCash = parseInt(document.getElementById('inputCustomerCash').value) || 0;
@@ -702,6 +718,7 @@
         }
     }
 
+    // Gợi ý bấm nhanh tiền mặt
     function suggestCashAmount(amount) {
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
         if (amount === 0) {
@@ -795,7 +812,7 @@
         document.getElementById('submit_maPt').value = maPt;
     }
 
-    // 9. Submit đơn hàng POS
+    // 9. Submit đơn hàng POS - SỬA LỖI TRỰC TIẾP TRÁNH CLASH EL JAVASCRIPT
     function submitPOSOrderTransaction() {
         if (posCart.length === 0) {
             showToast('warning', 'Giỏ hàng POS trống, không thể in hóa đơn!');
@@ -812,6 +829,7 @@
             container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
             container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
 
+            // Định dạng chuỗi Topping gửi lên Java Controller: maTp_soLuong_giaChot
             let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
             container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
         });
@@ -841,7 +859,7 @@
         });
     }
 
-    // 10. Mở popup custom pha chế - ĐỒNG BỘ ĐỌC TRỰC TIẾP DATA-NAME CHỮA BIẾN THỂ SIZE ĐỘNG XL/GIANT CHUẨN XỊN
+    // 10. Tùy biến popup pha chế - CHUYỂN TOÀN BỘ SANG CHUỒI KHÔNG CHỨA BIỂU THỨC EL ĐỂ AN TOÀN TUYỆT ĐỐI
     function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
         const rawOptions = JSON.parse(decodeURIComponent(optionsJsonStr));
         let html = '';
@@ -854,7 +872,6 @@
 
         rawOptions.sizes.forEach((s, idx) => {
             let checkedAttr = (idx === 0) ? 'checked' : '';
-            // GẮN CHẶT DATA-NAME LÀM GIÁ TRỊ GỐC TRÁNH BỊ CẮT XÉN CHỮ CÁI KHI CO GIAO DIỆN
             html += '<input type="radio" class="selection-radio-input size-radio" name="popup_size" ' +
                 'id="sz_' + s.maSize + '" value="' + s.maSize + '" data-price="' + s.giaBan + '" data-name="' + s.tenSize + '" ' + checkedAttr + '>';
             html += '<label class="selection-label" for="sz_' + s.maSize + '">Size ' + s.tenSize + ' (+' + formatVND(s.giaBan) + ')</label>';
@@ -928,6 +945,7 @@
         });
     }
 
+    // 11. Tính lại tiền trong Customize Popup
     function recalculatePopupPrice() {
         const checkedSize = document.querySelector('.size-radio:checked');
         let sizePrice = checkedSize ? parseInt(checkedSize.dataset.price) : 0;
@@ -938,7 +956,7 @@
         document.getElementById('popup_total').innerText = formatVND(sizePrice + toppingPrice);
     }
 
-    // 11. Đẩy cốc nước sau cấu hình vào giỏ hàng POS - ĐỌC DATA-NAME CHO SỐ KÍ TỰ TỰ DO
+    // 12. Thêm món sau cấu hình vào giỏ hàng POS
     function addCustomizedToCart() {
         const el = document.getElementById('posCustomizer');
         const maSp = el.dataset.masp;
@@ -946,7 +964,7 @@
         const checkedSize = document.querySelector('.size-radio:checked');
         const maSize = parseInt(checkedSize.value);
 
-        // ĐỌC CHUẨN TRỰC TIẾP TỪ DATASET TRÁNH LỖI CUTOFF KHI CÓ SIZE TÊN DÀI (GIANT, COCONUT,...)
+        // Tách nhãn tên size động từ dataset cực chuẩn
         const tenSize = checkedSize.dataset.name;
         const giaBan = parseInt(checkedSize.dataset.price);
         const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
@@ -984,7 +1002,7 @@
         renderPosCart();
     }
 
-    // 12. Render giỏ hàng POS trực quan
+    // 13. Kết xuất giao diện giỏ hàng POS - SỬA LỖI JAVASCRIPT STRING CONCAT CHỐNG CLASH EL
     function renderPosCart() {
         const container = document.getElementById('posCartItems');
         if (posCart.length === 0) {
@@ -1003,6 +1021,7 @@
             let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
             tongTienHang += rowPrice;
 
+            // Khởi dựng chuỗi topping
             let toppingsText = '';
             if (item.toppings && item.toppings.length > 0) {
                 item.toppings.forEach(t => {
@@ -1034,6 +1053,7 @@
         recalculatePOSBill(tongTienHang);
     }
 
+    // 14. Tăng giảm số lượng sản phẩm trong giỏ hàng
     function changeQty(idx, change) {
         posCart[idx].soLuong += change;
         if (posCart[idx].soLuong <= 0) {
@@ -1042,16 +1062,16 @@
         renderPosCart();
     }
 
+    // 15. Xóa 1 phần tử trong giỏ hàng
     function removeCartItem(idx) {
         posCart.splice(idx, 1);
         renderPosCart();
     }
 
-    // 13. Tính toán hóa đơn, dồn Voucher & Điểm CRM
+    // 16. Tính toán dồn tiền, chiết khấu, dồn mã KM
     function recalculatePOSBill(tongTienHang) {
         let rawSum = tongTienHang;
         let discount = 0;
-
         if (appliedVoucher) {
             if (rawSum >= appliedVoucher.donToiThieu) {
                 if (appliedVoucher.loaiGiam === 1) {
@@ -1080,6 +1100,7 @@
         if (pointsDiscount > (rawSum - discount)) {
             pointsDiscount = rawSum - discount;
         }
+
         if (appliedPoints > 0) {
             document.getElementById("summaryPointsRow").style.display = "flex";
             document.getElementById("txtUsedPoints").innerText = appliedPoints;
@@ -1094,7 +1115,6 @@
 
         let billBeforeTax = rawSum - discount - pointsDiscount;
         if (billBeforeTax < 0) billBeforeTax = 0;
-
         let vatPrice = Math.round(billBeforeTax * 0.08);
         let finalPayable = billBeforeTax + vatPrice;
 
@@ -1104,11 +1124,10 @@
 
         document.getElementById('submit_tongTienHang').value = rawSum;
         document.getElementById('submit_tongPhaiTra').value = finalPayable;
-
         calculateChangeRefund();
     }
 
-    // 14. Gọi AJAX xác thực thành viên CRM bằng SĐT
+    // 17. Gọi AJAX xác thực thành viên CRM bằng SĐT
     function searchCustomerCRM() {
         const sdt = document.getElementById('customerPhoneSearch').value.trim();
         if (!sdt || sdt.length < 10) return;
@@ -1120,7 +1139,6 @@
                     customerInfo = data;
                     document.getElementById('submit_maKh').value = data.maKh;
                     document.getElementById('customerNameResult').innerText = data.tenKh;
-
                     let rankName = 'MỚI';
                     if (data.maHang === 1) rankName = 'ĐỒNG';
                     else if (data.maHang === 2) rankName = 'BẠC';
@@ -1132,13 +1150,12 @@
                     document.getElementById("crmLoyaltyArea").style.display = "block";
                     document.getElementById("posAddCustomerArea").style.display = "none";
                 } else {
-                    // SĐT KHÔNG TỒN TẠI -> HỎI ĐĂNG KÝ NHANH THÀNH VIÊN CRM MỚI
                     customerInfo = null;
                     document.getElementById('submit_maKh').value = "";
                     document.getElementById('customerNameResult').innerText = "Khách lẻ vãng lai";
                     document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                     document.getElementById("crmLoyaltyArea").style.display = "none";
-                    document.getElementById("posAddCustomerArea").style.display = "block"; // Trượt mở nút thêm nhanh thành viên
+                    document.getElementById("posAddCustomerArea").style.display = "block"; // Bật mở nút đăng ký nhanh
 
                     Swal.fire({
                         icon: 'question',
@@ -1150,21 +1167,19 @@
                         confirmButtonText: 'Tạo tài khoản mới',
                         cancelButtonText: 'Để sau'
                     }).then((res) => {
-                        if (result.isConfirmed) {
+                        if (res.isConfirmed) {
                             openQuickAddCustomerModal();
                         }
                     });
-
                     resetVoucherAndPoints();
                     renderPosCart();
                 }
             });
     }
 
-    // 15. Mở Popup Đăng Ký nhanh Hội viên mới qua Email & Tên
+    // 18. Popup Đăng Ký nhanh Hội viên mới qua Email & Tên
     function openQuickAddCustomerModal() {
         const sdt = document.getElementById('customerPhoneSearch').value.trim();
-
         let html = '';
         html += '<div class="text-start">';
         html += '<div class="mb-3">';
@@ -1220,14 +1235,12 @@
                     .then(data => {
                         Swal.close();
                         if (data.status === 'SUCCESS') {
-                            // Nạp luôn hội viên VIP vừa khởi tạo vào đơn hàng POS đang chốt
                             customerInfo = data;
                             document.getElementById('submit_maKh').value = data.maKh;
                             document.getElementById('customerNameResult').innerText = data.tenKh;
                             document.getElementById('customerPoints').innerText = 'Hạng: ĐỒNG | 0 Điểm';
                             document.getElementById("crmLoyaltyArea").style.display = "block";
                             document.getElementById("posAddCustomerArea").style.display = "none";
-
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Thành công',
@@ -1247,7 +1260,7 @@
         });
     }
 
-    // 16. Áp dụng mã Voucher giảm giá thủ công tự gõ
+    // 19. Áp dụng mã Voucher giảm giá thủ công tự gõ
     function applyManualVoucherCode() {
         const code = document.getElementById("manualVoucherInput").value.trim();
         if (!code) {
@@ -1262,7 +1275,6 @@
         }
 
         const maKh = document.getElementById("submit_maKh").value;
-
         Swal.fire({
             title: 'Đang áp mã Voucher...',
             allowOutsideClick: false,
@@ -1298,7 +1310,7 @@
             });
     }
 
-    // 17. Popup Chọn Voucher VIP có sẵn của khách hàng
+    // 20. Popup Chọn Voucher VIP có sẵn của khách hàng
     function showVoucherSelectionModal() {
         if (!customerInfo) {
             showToast('warning', 'Hãy xác thực thành viên CRM trước!');
@@ -1317,6 +1329,7 @@
             });
             return;
         }
+
         let selectHtml = '<select id="posVoucherSelector" class="form-select mb-2"><option value="">-- Bỏ áp dụng Voucher --</option>';
         customerInfo.vouchers.forEach(v => {
             let txtType = v.loaiGiam === 1 ? formatVND(v.giaTriGiam) : v.giaTriGiam + "%";
@@ -1350,7 +1363,7 @@
         });
     }
 
-    // 18. Quy đổi tiêu điểm CRM
+    // 21. Quy đổi tiêu điểm CRM
     function applyPointsDiscount() {
         if (!customerInfo) {
             showToast('warning', 'Yêu cầu xác thực thành viên CRM trước!');
@@ -1365,6 +1378,7 @@
             });
             return;
         }
+
         Swal.fire({
             title: 'QUY ĐỔI ĐIỂM CRM',
             text: 'Hội viên hiện đang sở hữu ' + customerInfo.diemTichLuy + ' điểm tích lũy. Nhập số điểm muốn tiêu dùng quy đổi (1 Điểm = 1.000 VNĐ):',
@@ -1395,9 +1409,8 @@
         });
     }
 
-    // 19. BẬT POPUP IN HÓA ĐƠN NHIỆT (Thermal Bill Receipt) bằng AJAX nạp dữ liệu không bị chặn bởi Admin Filter
+    // 22. BẬT POPUP IN HÓA ĐƠN NHIỆT (Thermal Bill Receipt) bằng AJAX nạp dữ liệu không bị chặn bởi Admin Filter
     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-
     function loadAndShowPrintReceipt(maDh) {
         fetch('${pageContext.request.contextPath}/pos/bill-detail?id=' + maDh)
             .then(res => res.json())
@@ -1407,7 +1420,6 @@
                     document.getElementById('billThoiGian').innerText = data.thoiGianTao;
                     document.getElementById('billTenNv').innerText = data.tenNhanVien;
                     document.getElementById('billTenKh').innerText = data.tenKhachHang;
-
                     document.getElementById('billRawPrice').innerText = formatVND(data.tongTienHang);
 
                     if (data.tienGiamGia > 0) {
@@ -1428,7 +1440,6 @@
 
                     let container = document.getElementById('billItemsContainer');
                     container.innerHTML = '';
-
                     data.items.forEach(item => {
                         let html = '<div style="margin-bottom: 6px;">';
                         html += '<div class="d-flex justify-content-between">';
@@ -1436,7 +1447,6 @@
                         html += '<span>' + item.soLuong + ' x ' + formatVND(item.giaChot) + '</span>';
                         html += '</div>';
                         html += '<div style="font-size: 8.5px; color: #555; padding-left: 6px;">Pha chế: Đá ' + item.mucDa + ' | Đường ' + item.mucDuong + '</div>';
-
                         if (item.toppings && item.toppings.length > 0) {
                             html += '<div style="font-size: 8.5px; color: #555; padding-left: 6px;">';
                             item.toppings.forEach(tp => {
@@ -1447,7 +1457,6 @@
                         html += '</div>';
                         container.innerHTML += html;
                     });
-
                     printModal.show();
                 } else {
                     showToast('error', 'Không thể lấy dữ liệu in hóa đơn!');
@@ -1491,6 +1500,11 @@
             });
         }
     });
+
+    // Hàm phụ lấy context path tự động
+    function getContextPath() {
+        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    }
 </script>
 </body>
 </html>

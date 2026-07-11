@@ -191,10 +191,10 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 }
 
-                newSize.setTrangThai(true); // Gán kích hoạt hoạt động trở lại
-
+                // KHÔNG TỰ ĐỘNG ĐÈ TRẠNG THÁI THÀNH TRUE NỮA!
+                // Giữ nguyên thuộc tính trangThai được gửi lên từ controller (mở bán hay ngừng bán)
                 if (existsInDb) {
-                    // Đã tồn tại -> Cập nhật giá bán, định lượng mới và mở lại trạng thái bán
+                    // Đã tồn tại -> Cập nhật giá bán, định lượng và trạng thái hoạt động mới
                     boolean updatedSize = sanPhamKichCoRepository.update(newSize);
                     if (!updatedSize) {
                         conn.rollback();

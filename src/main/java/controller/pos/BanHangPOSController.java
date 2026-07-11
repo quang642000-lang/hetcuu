@@ -76,9 +76,6 @@ public class BanHangPOSController extends HttpServlet {
         }
     }
 
-    /**
-     * Tra cứu thành viên CRM qua SĐT
-     */
     private void performSearchCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String sdt = request.getParameter("sdt");
@@ -89,7 +86,6 @@ public class BanHangPOSController extends HttpServlet {
 
         KhachHang kh = khachHangService.getKhachHangBySdt(sdt.trim());
         if (kh != null && kh.isTrangThai()) {
-            // Lấy danh sách Voucher khả dụng cho khách hàng này tại quầy (tính theo mốc đơn giả lập tối thiểu 10.000đ)
             List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(10000, kh.getMaKh());
 
             StringBuilder json = new StringBuilder();
@@ -120,9 +116,6 @@ public class BanHangPOSController extends HttpServlet {
         }
     }
 
-    /**
-     * Đăng ký nhanh thành viên mới trực tiếp tại quầy POS và tự động kích hoạt
-     */
     private void performCreateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String tenKh = request.getParameter("tenKh");
@@ -135,22 +128,19 @@ public class BanHangPOSController extends HttpServlet {
         }
 
         try {
-            // Mật khẩu mặc định khi khởi tạo tại quầy là 12345678
             KhachHang kh = khachHangService.registerCustomer(tenKh, sdt, email, "12345678");
             if (kh != null) {
-                // Đăng ký thành công -> Tiến hành kích hoạt hoạt động ngay lập tức tại quầy để nạp điểm
                 kh.setTrangThai(true);
                 khachHangService.updateCustomerProfile(kh);
 
-                // Trả về thông tin khách hàng mới vừa đăng ký thành công
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append("\"status\":\"SUCCESS\",");
                 json.append("\"maKh\":\"").append(kh.getMaKh()).append("\",");
                 json.append("\"tenKh\":\"").append(kh.getTenKh()).append("\",");
                 json.append("\"diemTichLuy\":0,");
-                json.append("\"maHang\":1,"); // Mặc định hạng ĐỒNG
-                json.append("\"vouchers\":[]"); // Thành viên mới chưa có voucher
+                json.append("\"maHang\":1,");
+                json.append("\"vouchers\":[]");
                 json.append("}");
                 response.getWriter().write(json.toString());
             } else {
@@ -162,9 +152,6 @@ public class BanHangPOSController extends HttpServlet {
         }
     }
 
-    /**
-     * Xác thực và áp dụng Voucher thủ công do nhân viên nhập hoặc khách cung cấp
-     */
     private void performApplyVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String code = request.getParameter("code");
@@ -199,7 +186,6 @@ public class BanHangPOSController extends HttpServlet {
             json.append("}");
             response.getWriter().write(json.toString());
         } else {
-            // Kiểm tra nguyên nhân không hợp lệ để phản hồi cụ thể cho nhân viên
             KhuyenMai km = khuyenMaiService.getKhuyenMaiByCode(code.trim());
             String errorMsg = "Mã Voucher không tồn tại hoặc đã ngừng hoạt động!";
             if (km != null) {
@@ -215,9 +201,6 @@ public class BanHangPOSController extends HttpServlet {
         }
     }
 
-    /**
-     * Lấy chi tiết hóa đơn (JSON) cho nhân viên thu ngân in bill mà không bị chặn bởi Admin Filter
-     */
     private void performGetBillDetail(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String id = request.getParameter("id");
@@ -234,7 +217,6 @@ public class BanHangPOSController extends HttpServlet {
             json.append("\"maDh\":\"").append(dh.getMaDh()).append("\",");
             json.append("\"thoiGianTao\":\"").append(dh.getThoiGianTao().toString().substring(0, 19)).append("\",");
 
-            // Tìm kiếm thông tin tên khách hàng hiển thị
             String tenKh = "Khách lẻ vãng lai";
             if (dh.getMaKh() != null) {
                 KhachHang kh = khachHangService.getKhachHangById(dh.getMaKh());
@@ -242,7 +224,6 @@ public class BanHangPOSController extends HttpServlet {
             }
             json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
 
-            // Tìm kiếm thông tin tên nhân viên
             String tenNv = "Hệ thống tự động";
             if (dh.getMaNv() != null) {
                 NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
@@ -260,14 +241,13 @@ public class BanHangPOSController extends HttpServlet {
             for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
                 ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
 
-                // Lấy tên sản phẩm hiển thị đầy đủ tiếng Việt có dấu
                 String tenSp = "Sản phẩm " + item.getMaSp();
                 SanPham sp = sanPhamService.getSanPhamById(item.getMaSp());
                 if (sp != null) tenSp = sp.getTenSp();
 
                 json.append("{");
                 json.append("\"tenMon\":\"").append(tenSp).append("\",");
-                json.append("\"tenSize\":\"").append(item.getMaSize() == 1 ? "S" : (item.getMaSize() == 2 ? "M" : "L")).append("\",");
+                json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\","); // ĐỒNG BỘ ĐỘNG
                 json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
                 json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
                 json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
@@ -277,7 +257,6 @@ public class BanHangPOSController extends HttpServlet {
                 for (int j = 0; j < item.getToppingsList().size(); j++) {
                     ChiTietTopping tp = item.getToppingsList().get(j);
 
-                    // Lấy tên topping hiển thị tiếng Việt có dấu
                     String tenTp = "Topping " + tp.getMaTp();
                     Topping topping = toppingService.getToppingById(tp.getMaTp());
                     if (topping != null) tenTp = topping.getTenTp();
@@ -301,9 +280,6 @@ public class BanHangPOSController extends HttpServlet {
         }
     }
 
-    /**
-     * Nhận và chốt thanh toán hóa đơn quầy POS
-     */
     private void performPOSCheckout(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
@@ -324,7 +300,6 @@ public class BanHangPOSController extends HttpServlet {
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             String ghiChuDon = request.getParameter("ghiChuDon");
 
-            // Chống lỗi lưu khóa chính bị NULL hoặc Race Condition: sinh ID duy nhất
             String maDh = "TEA" + System.currentTimeMillis();
 
             DonHang dh = new DonHang();
@@ -340,8 +315,8 @@ public class BanHangPOSController extends HttpServlet {
             dh.setTienTruDiem(tienTruDiem);
             dh.setTongPhaiTra(tongPhaiTra);
             dh.setGhiChuDon(ghiChuDon);
-            dh.setTrangThaiThanhToan(1); // POS luôn mặc định là Đã thanh toán
-            dh.setTrangThaiDon(4);       // Hoàn thành luôn sau khi chốt giao dịch
+            dh.setTrangThaiThanhToan(1);
+            dh.setTrangThaiDon(4);
 
             String[] arrMaSp = request.getParameterValues("item_maSp[]");
             String[] arrMaSize = request.getParameterValues("item_maSize[]");
@@ -384,7 +359,6 @@ public class BanHangPOSController extends HttpServlet {
 
             boolean isCheckedOut = donHangService.checkoutPOS(dh, items, currentStaff.getMaNv());
             if (isCheckedOut) {
-                // Redirect kèm thông số tạo hóa đơn thành công
                 response.sendRedirect(request.getContextPath() + "/pos?msg=createsuccess&orderId=" + dh.getMaDh());
             } else {
                 request.setAttribute("error", "Đã xảy ra lỗi hệ thống trong quá trình chốt giao dịch POS!");

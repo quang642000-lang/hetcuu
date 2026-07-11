@@ -5,13 +5,11 @@ import model.entity.DonHang;
 import model.entity.ChiTietDonHang;
 import model.entity.ChiTietTopping;
 import repository.IDonHangRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
-
     private static DonHangRepoImpl instance;
 
     private DonHangRepoImpl() {}
@@ -66,18 +64,14 @@ public class DonHangRepoImpl implements IDonHangRepository {
         PreparedStatement psDh = null;
         PreparedStatement psCtdh = null;
         PreparedStatement psCttp = null;
-
         String sqlDh = "INSERT INTO DON_HANG (ma_dh, ma_kh, ma_nv, ma_pt, ma_km, loai_don_hang, thoi_gian_hen_lay, " +
                 "tong_tien_hang, tien_giam_gia, diem_su_dung, tien_tru_diem, tong_phai_tra, ghi_chu_don, ly_do_huy, " +
                 "trang_thai_thanh_toan, trang_thai_don, thoi_gian_tao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
-
         String sqlCtdh = "INSERT INTO CHI_TIET_DON_HANG (ma_dh, ma_sp, ma_size, so_luong, gia_chot, muc_da, muc_duong, ghi_chu_mon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCttp = "INSERT INTO CHI_TIET_TOPPING (ma_ctdh, ma_tp, so_luong, gia_chot_tp) VALUES (?, ?, ?, ?)";
-
         try {
             conn = DBConnect.getConnection();
             conn.setAutoCommit(false);
-
             psDh = conn.prepareStatement(sqlDh);
             psDh.setString(1, entity.getMaDh());
             psDh.setString(2, entity.getMaKh());
@@ -99,7 +93,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
 
             psCtdh = conn.prepareStatement(sqlCtdh, Statement.RETURN_GENERATED_KEYS);
             psCttp = conn.prepareStatement(sqlCttp);
-
             for (ChiTietDonHang detail : entity.getChiTietDonHangList()) {
                 psCtdh.setString(1, entity.getMaDh());
                 psCtdh.setString(2, detail.getMaSp());
@@ -110,14 +103,12 @@ public class DonHangRepoImpl implements IDonHangRepository {
                 psCtdh.setString(7, detail.getMucDuong());
                 psCtdh.setString(8, detail.getGhiChuMon());
                 psCtdh.executeUpdate();
-
                 long generatedCtdhId = -1;
                 try (ResultSet rsKeys = psCtdh.getGeneratedKeys()) {
                     if (rsKeys.next()) {
                         generatedCtdhId = rsKeys.getLong(1);
                     }
                 }
-
                 if (generatedCtdhId != -1) {
                     for (ChiTietTopping topping : detail.getToppingsList()) {
                         psCttp.setLong(1, generatedCtdhId);
@@ -129,16 +120,11 @@ public class DonHangRepoImpl implements IDonHangRepository {
                     psCttp.executeBatch();
                 }
             }
-
             conn.commit();
             return true;
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
             e.printStackTrace();
             return false;
@@ -151,9 +137,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                     conn.setAutoCommit(true);
                     conn.close();
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 
@@ -273,13 +257,17 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietDonHang> getChiTietDonHang(String maDh) {
         List<ChiTietDonHang> list = new ArrayList<>();
-        String sql = "SELECT ma_ctdh, ma_dh, ma_sp, ma_size, so_luong, gia_chot, muc_da, muc_duong, ghi_chu_mon FROM CHI_TIET_DON_HANG WHERE ma_dh = ?";
+        // ĐỒNG BỘ: JOIN thêm KICH_CO để lấy chính xác ten_size động của hóa đơn lịch sử
+        String sql = "SELECT ct.ma_ctdh, ct.ma_dh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.gia_chot, ct.muc_da, ct.muc_duong, ct.ghi_chu_mon, kc.ten_size " +
+                "FROM CHI_TIET_DON_HANG ct " +
+                "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
+                "WHERE ct.ma_dh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maDh);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new ChiTietDonHang(
+                    ChiTietDonHang ctdh = new ChiTietDonHang(
                             rs.getLong("ma_ctdh"),
                             rs.getString("ma_dh"),
                             rs.getString("ma_sp"),
@@ -289,7 +277,9 @@ public class DonHangRepoImpl implements IDonHangRepository {
                             rs.getString("muc_da"),
                             rs.getString("muc_duong"),
                             rs.getString("ghi_chu_mon")
-                    ));
+                    );
+                    ctdh.setTenSize(rs.getString("ten_size")); // GÁN CHẶT TÊN SIZE ĐỘNG TỪ DATABASE JOIN
+                    list.add(ctdh);
                 }
             }
         } catch (SQLException e) {

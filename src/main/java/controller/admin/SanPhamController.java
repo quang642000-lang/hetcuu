@@ -10,6 +10,7 @@ import service.IDanhMucService;
 import service.ISanPhamService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
+import config.DBConnect;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +18,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -48,6 +53,9 @@ public class SanPhamController extends HttpServlet {
                 break;
             case "delete":
                 performDelete(request, response);
+                break;
+            case "checkSizeOrder":
+                performCheckSizeOrder(request, response);
                 break;
             default:
                 showList(request, response);
@@ -83,7 +91,33 @@ public class SanPhamController extends HttpServlet {
         if (sp != null) {
             List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
             List<KichCo> sizes = kichCoRepository.getAll();
-            List<SanPhamKichCo> currentPrices = sanPhamService.getSizesBySanPham(id);
+
+            // ĐỒNG BỘ ĐỘNG: Load toàn bộ size cũ đã cấu hình (Kể cả size đang Tắt/Ngừng hoạt động)
+            List<SanPhamKichCo> currentPrices = new ArrayList<>();
+            String sql = "SELECT pk.ma_sp, pk.ma_size, pk.gia_ban, pk.dinh_luong, pk.trang_thai, kc.ten_size " +
+                    "FROM SAN_PHAM_KICH_CO pk " +
+                    "JOIN KICH_CO kc ON pk.ma_size = kc.ma_size " +
+                    "WHERE pk.ma_sp = ?";
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        SanPhamKichCo spkc = new SanPhamKichCo(
+                                rs.getString("ma_sp"),
+                                rs.getInt("ma_size"),
+                                rs.getInt("gia_ban"),
+                                rs.getString("dinh_luong"),
+                                rs.getBoolean("trang_thai")
+                        );
+                        spkc.setTenSize(rs.getString("ten_size"));
+                        currentPrices.add(spkc);
+                    }
+                }
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Lỗi nạp mảng size cấu hình trong showEditForm", e);
+            }
+
             request.setAttribute("product", sp);
             request.setAttribute("categories", categories);
             request.setAttribute("sizes", sizes);
@@ -105,6 +139,42 @@ public class SanPhamController extends HttpServlet {
         }
     }
 
+    /**
+     * Endpoint API AJAX: Kiểm tra xem một size của đồ uống đã phát sinh hóa đơn bán lẻ nào chưa
+     */
+    private void performCheckSizeOrder(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        String maSp = request.getParameter("maSp");
+        String maSizeStr = request.getParameter("maSize");
+        if (maSp == null || maSizeStr == null) {
+            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Tham số đầu vào bị thiếu!\"}");
+            return;
+        }
+        try {
+            int maSize = Integer.parseInt(maSizeStr);
+            boolean hasOrders = false;
+            String sql = "SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ? AND ma_size = ?";
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, maSp);
+                ps.setInt(2, maSize);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        hasOrders = true;
+                    }
+                }
+            }
+            if (hasOrders) {
+                response.getWriter().write("{\"status\":\"HAS_ORDERS\"}");
+            } else {
+                response.getWriter().write("{\"status\":\"NO_ORDERS\"}");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi kiểm tra lịch sử hóa đơn của biến thể size", e);
+            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi kiểm tra đơn!\"}");
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -117,9 +187,6 @@ public class SanPhamController extends HttpServlet {
         }
     }
 
-    /**
-     * Endpoint API AJAX: Thêm nhanh tên kích cỡ mới vào bảng KICH_CO
-     */
     private void performAddSizeAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String tenSize = request.getParameter("tenSize");
@@ -127,25 +194,18 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Tên kích cỡ không được trống!\"}");
             return;
         }
-
         try {
-            // Chuẩn hóa tên viết hoa
             String normalized = tenSize.trim().toUpperCase();
             KichCo existing = kichCoRepository.getByTenSize(normalized);
             if (existing != null) {
-                // Đã tồn tại -> Trả về thông tin của size đã có sẵn
                 response.getWriter().write("{\"status\":\"SUCCESS\",\"maSize\":" + existing.getMaSize() + ",\"tenSize\":\"" + existing.getTenSize() + "\",\"message\":\"Kích cỡ này đã có sẵn!\"}");
                 return;
             }
-
-            // Chưa tồn tại -> Thêm mới
             KichCo newSize = new KichCo();
             newSize.setTenSize(normalized);
-            newSize.setThuTuHienThi(10); // Thứ tự hiển thị ưu tiên mặc định
-
+            newSize.setThuTuHienThi(10);
             boolean added = kichCoRepository.add(newSize);
             if (added) {
-                // Truy vấn lại để lấy ma_size IDENTITY vừa tự sinh từ SQL Server
                 KichCo saved = kichCoRepository.getByTenSize(normalized);
                 if (saved != null) {
                     response.getWriter().write("{\"status\":\"SUCCESS\",\"maSize\":" + saved.getMaSize() + ",\"tenSize\":\"" + saved.getTenSize() + "\"}");
@@ -170,7 +230,6 @@ public class SanPhamController extends HttpServlet {
                 showCreateForm(request, response);
                 return;
             }
-
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
             String hinhAnh = request.getParameter("hinhAnh");
@@ -201,7 +260,9 @@ public class SanPhamController extends HttpServlet {
                         if (priceParam != null && !priceParam.trim().isEmpty()) {
                             int giaBan = Integer.parseInt(priceParam.trim());
                             String dinhLuong = request.getParameter("size_volume_" + kc.getMaSize());
-                            SanPhamKichCo spkc = new SanPhamKichCo(null, kc.getMaSize(), giaBan, dinhLuong, true);
+                            // Đọc trạng thái mở bán từ form switch
+                            boolean sizeStatus = request.getParameter("size_status_" + kc.getMaSize()) != null;
+                            SanPhamKichCo spkc = new SanPhamKichCo(null, kc.getMaSize(), giaBan, dinhLuong, sizeStatus);
                             selectedSizes.add(spkc);
                         }
                     } catch (NumberFormatException e) {
@@ -210,14 +271,11 @@ public class SanPhamController extends HttpServlet {
                 }
             }
 
-            // Đọc thêm các size mới sinh động có thể được thêm trực tiếp từ client-side AJAX
-            // Chúng ta quét toàn bộ tham số gửi lên để tìm các checkbox có dạng size_active_X mà có thể chưa có trong danh sách allSizes cũ
             java.util.Enumeration<String> parameterNames = request.getParameterNames();
             while (parameterNames.hasMoreElements()) {
                 String paramName = parameterNames.nextElement();
                 if (paramName.startsWith("size_active_")) {
                     int maSize = Integer.parseInt(paramName.replace("size_active_", ""));
-                    // Kiểm tra xem đã thêm size này vào selectedSizes chưa
                     boolean alreadyProcessed = false;
                     for (SanPhamKichCo sk : selectedSizes) {
                         if (sk.getMaSize() == maSize) {
@@ -231,7 +289,8 @@ public class SanPhamController extends HttpServlet {
                             if (priceParam != null && !priceParam.trim().isEmpty()) {
                                 int giaBan = Integer.parseInt(priceParam.trim());
                                 String dinhLuong = request.getParameter("size_volume_" + maSize);
-                                SanPhamKichCo spkc = new SanPhamKichCo(null, maSize, giaBan, dinhLuong, true);
+                                boolean sizeStatus = request.getParameter("size_status_" + maSize) != null;
+                                SanPhamKichCo spkc = new SanPhamKichCo(null, maSize, giaBan, dinhLuong, sizeStatus);
                                 selectedSizes.add(spkc);
                             }
                         } catch (NumberFormatException e) {
@@ -273,7 +332,6 @@ public class SanPhamController extends HttpServlet {
                 showEditForm(request, response);
                 return;
             }
-
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
             String hinhAnh = request.getParameter("hinhAnh");
@@ -306,7 +364,9 @@ public class SanPhamController extends HttpServlet {
                             if (priceParam != null && !priceParam.trim().isEmpty()) {
                                 int giaBan = Integer.parseInt(priceParam.trim());
                                 String dinhLuong = request.getParameter("size_volume_" + maSize);
-                                SanPhamKichCo spkc = new SanPhamKichCo(maSp, maSize, giaBan, dinhLuong, true);
+                                // Đọc trạng thái bán của size từ switch gửi lên
+                                boolean sizeStatus = request.getParameter("size_status_" + maSize) != null;
+                                SanPhamKichCo spkc = new SanPhamKichCo(maSp, maSize, giaBan, dinhLuong, sizeStatus);
                                 selectedSizes.add(spkc);
                             }
                         } catch (NumberFormatException e) {

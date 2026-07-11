@@ -4,6 +4,31 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <!-- Khởi tạo các biến an toàn để phòng tránh NullPointerException và lỗi ép kiểu nghiêm ngặt trong Tomcat 11 / EL 6.0 -->
+    <c:set var="maSp" value="SPxxxx (Tự động sinh)" />
+    <c:set var="tenSp" value="" />
+    <c:set var="maDm" value="" />
+    <c:set var="hinhAnh" value="" />
+    <c:set var="moTa" value="" />
+    <c:set var="choPhepDoiDa" value="true" />
+    <c:set var="choPhepDoiDuong" value="true" />
+    <c:set var="isNew" value="false" />
+    <c:set var="isBestseller" value="false" />
+    <c:set var="trangThai" value="true" />
+
+    <c:if test="${not empty product}">
+        <c:set var="maSp" value="${product.maSp}" />
+        <c:set var="tenSp" value="${product.tenSp}" />
+        <c:set var="maDm" value="${product.maDm}" />
+        <c:set var="hinhAnh" value="${product.hinhAnh}" />
+        <c:set var="moTa" value="${product.moTa}" />
+        <c:set var="choPhepDoiDa" value="${product.choPhepDoiDa}" />
+        <c:set var="choPhepDoiDuong" value="${product.choPhepDoiDuong}" />
+        <c:set var="isNew" value="${product.getIsNew()}" />
+        <c:set var="isBestseller" value="${product.getIsBestseller()}" />
+        <c:set var="trangThai" value="${product.trangThai}" />
+    </c:if>
+
     <title>TEA POS - ${not empty product ? "Cập Nhật" : "Thêm"} Sản Phẩm Đồ Uống</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,15 +85,13 @@
                 <!-- TIÊU ĐỀ BIỂU MẪU -->
                 <h4 class="fw-bold mb-4 text-success border-bottom pb-3">
                     <i class="bi bi-gear-wide-connected me-2 text-success"></i>
-                    ${formTitle}
+                    <c:out value="${formTitle}" />
                 </h4>
 
                 <form id="productForm" action="${pageContext.request.contextPath}/admin/sanpham" method="POST">
                     <!-- Các trường giá trị ẩn để xác định luồng -->
-                    <input type="hidden" name="action" value="${not empty product ? 'edit' : 'create'}">
-                    <c:if test="${not empty product}">
-                        <input type="hidden" name="maSp" value="${product.maSp}">
-                    </c:if>
+                    <input type="hidden" name="action" id="formAction" value="${not empty product ? 'edit' : 'create'}">
+                    <input type="hidden" name="maSp" id="formMaSp" value="${not empty product ? maSp : ''}">
 
                     <div class="row g-4">
                         <!-- PHẦN THÔNG TIN CHUNG BÊN TRÁI -->
@@ -77,17 +100,17 @@
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-success"></i> 1. Thông Tin Đồ Uống Cơ Bản</h6>
 
                                 <div class="row g-3">
-                                    <!-- Mã sản phẩm (Tự sinh) -->
+                                    <!-- Mã sản phẩm (Tự sinh hoặc tải từ biến an toàn) -->
                                     <div class="col-12 col-md-4">
                                         <label class="form-label fw-bold small text-muted">Mã Đồ Uống</label>
                                         <input type="text" class="form-control form-control-teapos bg-white"
-                                               value="${not empty product ? product.maSp : 'SPxxxx (Tự động sinh)'}" readonly style="font-weight: 700; color: #1e293b;">
+                                               value="${maSp}" readonly style="font-weight: 700; color: #1e293b;">
                                     </div>
                                     <!-- Tên sản phẩm -->
                                     <div class="col-12 col-md-8">
                                         <label for="tenSp" class="form-label fw-bold small text-dark">Tên Đồ Uống <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-teapos" id="tenSp" name="tenSp"
-                                               value="<c:out value="${product.tenSp}"/>" placeholder="Ví dụ: Trà Sữa Khoai Môn Trân Châu..." required autocomplete="off">
+                                               value="<c:out value="${tenSp}"/>" placeholder="Ví dụ: Trà Sữa Khoai Môn Trân Châu..." required autocomplete="off">
                                     </div>
                                     <!-- Danh mục -->
                                     <div class="col-12 col-md-6">
@@ -95,7 +118,7 @@
                                         <select class="form-select form-control-teapos" id="maDm" name="maDm" required>
                                             <option value="">-- Chọn danh mục --</option>
                                             <c:forEach var="cat" items="${categories}">
-                                                <option value="${cat.maDm}" ${product.maDm == cat.maDm ? 'selected' : ''}>
+                                                <option value="${cat.maDm}" ${maDm == cat.maDm ? 'selected' : ''}>
                                                     <c:out value="${cat.tenDm}"/>
                                                 </option>
                                             </c:forEach>
@@ -105,18 +128,18 @@
                                     <div class="col-12 col-md-6">
                                         <label for="hinhAnh" class="form-label fw-bold small text-dark">Đường dẫn Hình ảnh (URL)</label>
                                         <input type="text" class="form-control form-control-teapos" id="hinhAnh" name="hinhAnh"
-                                               value="<c:out value="${product.hinhAnh}"/>" placeholder="https://image-url..." onchange="previewImage(this.value)">
+                                               value="<c:out value="${hinhAnh}"/>" placeholder="https://image-url..." onchange="previewImage(this.value)">
                                     </div>
                                     <!-- Mô tả -->
                                     <div class="col-12">
                                         <label for="moTa" class="form-label fw-bold small text-dark">Mô tả chi tiết đồ uống</label>
                                         <textarea class="form-control" id="moTa" name="moTa" rows="3"
-                                                  placeholder="Mô tả hương vị, nguyên liệu pha chế, đặc sắc của cốc trà sữa..."><c:out value="${product.moTa}"/></textarea>
+                                                  placeholder="Mô tả hương vị, nguyên liệu pha chế, đặc sắc của cốc trà sữa..."><c:out value="${moTa}"/></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- THIẾT LẬP ĐẶC TÍNH SẢN PHẨM -->
+                            <!-- THIẾT LẬP ĐẶC TÍNH SẢN PHẨM (Đảm bảo an toàn không lỗi kiểu dữ liệu) -->
                             <div class="bg-light p-3.5 rounded mb-4" style="border: 1px solid var(--border-color);">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-gear-fill text-success"></i> 2. Thiết Lập Đặc Tính & Tùy Chọn Pha Chế</h6>
 
@@ -124,41 +147,41 @@
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDa" name="choPhepDoiDa" value="1"
-                                            ${empty product || product.choPhepDoiDa ? 'checked' : ''}>
+                                            ${choPhepDoiDa == 'true' || choPhepDoiDa == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDa">Đổi Đá (Ice)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDuong" name="choPhepDoiDuong" value="1"
-                                            ${empty product || product.choPhepDoiDuong ? 'checked' : ''}>
+                                            ${choPhepDoiDuong == 'true' || choPhepDoiDuong == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDuong">Đổi Đường (Sugar)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="isNew" name="isNew" value="1"
-                                            ${product.isNew ? 'checked' : ''}>
+                                            ${isNew == 'true' || isNew == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-warning small" for="isNew">✨ Nhãn Mới (New)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="isBestseller" name="isBestseller" value="1"
-                                            ${product.isBestseller ? 'checked' : ''}>
+                                            ${isBestseller == 'true' || isBestseller == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-danger small" for="isBestseller">🔥 Bán Chạy (Hot)</label>
                                         </div>
                                     </div>
                                     <div class="col-12 border-top pt-3 mt-3">
-                                        <label class="form-label fw-bold small text-dark d-block">Trạng thái bán</label>
+                                        <label class="form-label fw-bold small text-dark d-block">Trạng thái bán của sản phẩm mẹ</label>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="trangThai" id="statusActive" value="1"
-                                            ${empty product || product.trangThai ? 'checked' : ''}>
+                                            ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
                                             <label class="form-check-label text-success fw-bold" for="statusActive">Đang hoạt động (Mở bán)</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="trangThai" id="statusInactive" value="0"
-                                            ${not empty product && not product.trangThai ? 'checked' : ''}>
+                                            ${trangThai == 'false' || trangThai == false ? 'checked' : ''}>
                                             <label class="form-check-label text-danger" for="statusInactive">Ngừng hoạt động (Tạm dừng bán)</label>
                                         </div>
                                     </div>
@@ -171,7 +194,7 @@
                             <div class="bg-light p-3.5 rounded h-100" style="border: 1px solid var(--border-color);">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-image text-success"></i> Xem Trước Hình Ảnh</h6>
                                 <div class="preview-img-box mb-3 border shadow-sm">
-                                    <img id="imgPreview" src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" alt="Preview">
+                                    <img id="imgPreview" src="${not empty hinhAnh ? hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" alt="Preview">
                                 </div>
                                 <p class="small text-muted text-center" style="line-height: 1.4;">Đo lường tỉ lệ hiển thị tối ưu là 500x500px tỉ lệ vuông (1:1) để đồ uống hiển thị sắc nét nhất trên cả POS và Website.</p>
                             </div>
@@ -202,12 +225,14 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle bg-white rounded border overflow-hidden" id="sizesConfigTable">
-                                        <thead class="table-success">
-                                        <tr class="text-center">
+                                        <thead class="table-success text-center">
+                                        <tr>
                                             <th style="width: 100px;">Kích Hoạt</th>
-                                            <th style="width: 150px;">Kích Cỡ</th>
+                                            <th style="width: 120px;">Kích Cỡ</th>
                                             <th>Đơn Giá Bán Thực Tế (VNĐ) <span class="text-danger">*</span></th>
                                             <th>Định lượng cốc (Thể tích)</th>
+                                            <th style="width: 180px;">Trạng Thái Mở Bán</th>
+                                            <th style="width: 100px;">Thao Tác</th>
                                         </tr>
                                         </thead>
                                         <tbody id="sizesConfigTableBody">
@@ -216,11 +241,14 @@
                                             <c:set var="isConfigured" value="false"/>
                                             <c:set var="savedPrice" value=""/>
                                             <c:set var="savedVolume" value=""/>
+                                            <c:set var="sizeStatus" value="true"/>
+
                                             <c:forEach var="cp" items="${currentPrices}">
                                                 <c:if test="${cp.maSize == sz.maSize}">
                                                     <c:set var="isConfigured" value="true"/>
                                                     <c:set var="savedPrice" value="${cp.giaBan}"/>
                                                     <c:set var="savedVolume" value="${cp.dinhLuong}"/>
+                                                    <c:set var="sizeStatus" value="${cp.trangThai}"/>
                                                 </c:if>
                                             </c:forEach>
 
@@ -228,26 +256,43 @@
                                                 <td>
                                                     <input type="checkbox" name="size_active_${sz.maSize}" id="size_active_${sz.maSize}"
                                                            class="form-check-input size-check border-success" value="1"
-                                                        ${isConfigured ? 'checked' : ''} onchange="toggleSizeFields(${sz.maSize})">
+                                                        ${isConfigured == 'true' ? 'checked' : ''} onchange="toggleSizeFields(${sz.maSize})">
                                                 </td>
                                                 <td>
                                                     <label class="form-check-label fw-bold text-dark" for="size_active_${sz.maSize}">
-                                                        <!-- ĐỒNG BỘ ĐỘNG: Đọc trực tiếp sz.tenSize cực xịn -->
                                                         Size <span class="lbl-ten-size">${sz.tenSize}</span>
                                                     </label>
                                                 </td>
                                                 <td>
-                                                    <div class="input-group input-group-sm mx-auto" style="max-width: 250px;">
+                                                    <div class="input-group input-group-sm mx-auto" style="max-width: 200px;">
                                                         <input type="number" name="size_price_${sz.maSize}" id="size_price_${sz.maSize}"
                                                                class="form-control text-end fw-bold text-success size-price-input"
-                                                               value="${savedPrice}" ${isConfigured ? "" : "disabled"} required min="1000" step="1000" placeholder="Nhập giá VNĐ...">
+                                                               value="${savedPrice}" ${isConfigured == 'true' ? "" : "disabled"} required min="1000" step="1000" placeholder="Nhập giá VNĐ...">
                                                         <span class="input-group-text bg-light text-muted">đ</span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <input type="text" name="size_volume_${sz.maSize}" id="size_volume_${sz.maSize}"
-                                                           class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 200px;"
-                                                           value="<c:out value="${savedVolume}"/>" ${isConfigured ? "" : "disabled"} placeholder="Ví dụ: 350ml, 500ml...">
+                                                           class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 150px;"
+                                                           value="<c:out value="${savedVolume}"/>" ${isConfigured == 'true' ? "" : "disabled"} placeholder="Ví dụ: 350ml, 500ml...">
+                                                </td>
+                                                <td>
+                                                    <!-- Switch trạng thái bán độc lập của Size (Khử null an toàn bằng chuỗi so khớp) -->
+                                                    <div class="form-check form-switch d-inline-block ps-5">
+                                                        <input class="form-check-input size-status-switch" type="checkbox"
+                                                               name="size_status_${sz.maSize}" id="size_status_${sz.maSize}" value="1"
+                                                            ${isConfigured == 'false' || sizeStatus == 'true' || sizeStatus == true ? 'checked' : ''} ${isConfigured == 'true' ? '' : 'disabled'}>
+                                                        <label class="form-check-label fw-semibold text-muted small" id="lbl_status_${sz.maSize}" for="size_status_${sz.maSize}">
+                                                                ${isConfigured == 'false' || sizeStatus == 'true' || sizeStatus == true ? 'Mở bán' : 'Ngừng bán'}
+                                                        </label>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu -->
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="deleteSizeRow(${sz.maSize}, '${sz.tenSize}')">
+                                                        <i class="bi bi-trash-fill"></i> Xóa
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </c:forEach>
@@ -275,27 +320,54 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    // 1. Tự động bật tắt các ô nhập liệu Giá & Định lượng tương ứng khi bật/tắt checkbox Size
+    // 1. Tự động bật tắt các ô nhập liệu Giá & Định lượng & Switch hoạt động khi check/uncheck mốc Size
     function toggleSizeFields(maSize) {
         const check = document.getElementById("size_active_" + maSize);
         const priceInput = document.getElementById("size_price_" + maSize);
         const volumeInput = document.getElementById("size_volume_" + maSize);
+        const statusSwitch = document.getElementById("size_status_" + maSize);
+        const lblStatus = document.getElementById("lbl_status_" + maSize);
 
         if (check.checked) {
             priceInput.disabled = false;
             volumeInput.disabled = false;
+            statusSwitch.disabled = false;
+            statusSwitch.checked = true;
+            if (lblStatus) {
+                lblStatus.innerText = 'Mở bán';
+            }
             priceInput.focus();
         } else {
             priceInput.disabled = true;
             volumeInput.disabled = true;
+            statusSwitch.disabled = true;
+            statusSwitch.checked = false;
+            if (lblStatus) {
+                lblStatus.innerText = 'Ngừng bán';
+            }
             priceInput.value = "";
             volumeInput.value = "";
         }
     }
 
-    // 2. AJAX thêm nhanh kích cỡ mới vào bảng KICH_CO và render trực quan ngay tắp lự
+    // Lắng nghe sự kiện click switch trạng thái bán để đổi nhãn chữ realtime
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.size-status-switch').forEach(el => {
+            el.addEventListener('change', function() {
+                const maSize = this.id.replace("size_status_", "");
+                const lbl = document.getElementById("lbl_status_" + maSize);
+                if (lbl) {
+                    lbl.innerText = this.checked ? "Mở bán" : "Ngừng bán";
+                }
+            });
+        });
+    });
+
+    // 2. AJAX thêm nhanh kích cỡ mới vào bảng KICH_CO và tự động chèn Row dynamic
+    // TUYỆT ĐỐI KHÔNG DÙNG BACKTICKS (Dấu nháy ngược) VÀ `` ĐỂ TRÁNH LỖI BIÊN DỊCH TOMCAT JASPER
     function addNewSizeAjax() {
-        const tenSize = document.getElementById('newSizeNameInput').value.trim();
+        const tenSizeInput = document.getElementById('newSizeNameInput');
+        const tenSize = tenSizeInput.value.trim();
         if (!tenSize) {
             showToast('warning', 'Vui lòng điền tên kích cỡ mới (Ví dụ: XL)!');
             return;
@@ -304,11 +376,10 @@
         Swal.fire({
             title: 'Đang lưu kích cỡ...',
             allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
+            didOpen: function() { Swal.showLoading(); }
         });
 
-        // Ghép tự động đường dẫn Ajax chuẩn
-        const url = '${pageContext.request.contextPath}/admin/sanpham';
+        const url = getContextPath() + '/admin/sanpham';
         const params = new URLSearchParams();
         params.append('action', 'addSizeAjax');
         params.append('tenSize', tenSize);
@@ -318,69 +389,176 @@
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params
         })
-            .then(res => res.json())
-            .then(data => {
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 Swal.close();
                 if (data.status === 'SUCCESS') {
                     const maSize = data.maSize;
                     const normalizedTenSize = data.tenSize;
 
-                    // Kiểm tra xem hàng kích cỡ này đã tồn tại trong bảng form chưa
+                    // Kiểm tra trùng lắp row trên UI
                     if (document.getElementById('row_size_' + maSize)) {
                         showToast('info', 'Mốc kích cỡ này đã tồn tại trong danh sách chọn bên dưới!');
-                        document.getElementById('newSizeNameInput').value = '';
+                        tenSizeInput.value = '';
                         return;
                     }
 
-                    // Chèn thêm một Row mới tinh, check sẵn vào bảng cấu hình giá
+                    // CHÈN DÒNG ROW MỚI BẰNG CHUỖI GHÉP CỘNG THUẦN (String Concatenation) cực kì an toàn
                     const tbody = document.getElementById('sizesConfigTableBody');
                     const newRow = document.createElement('tr');
                     newRow.className = 'text-center';
                     newRow.id = 'row_size_' + maSize;
 
-                    newRow.innerHTML = `
-                    <td>
-                        <input type="checkbox" name="size_active_\${maSize}" id="size_active_\address\${maSize}"
-                               class="form-check-input size-check border-success" value="1" checked onchange="toggleSizeFields(\${maSize})">
-                    </td>
-                    <td>
-                        <label class="form-check-label fw-bold text-dark" for="size_active_\${maSize}">
-                            Size <span class="lbl-ten-size">\${normalizedTenSize}</span>
-                        </label>
-                    </td>
-                    <td>
-                        <div class="input-group input-group-sm mx-auto" style="max-width: 250px;">
-                            <input type="number" name="size_price_\${maSize}" id="size_price_\${maSize}"
-                                   class="form-control text-end fw-bold text-success size-price-input"
-                                   required min="1000" step="1000" placeholder="Nhập giá VNĐ...">
-                            <span class="input-group-text bg-light text-muted">đ</span>
-                        </div>
-                    </td>
-                    <td>
-                        <input type="text" name="size_volume_\${maSize}" id="size_volume_\${maSize}"
-                               class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 200px;"
-                               placeholder="Ví dụ: 350ml, 500ml...">
-                    </td>
-                `;
+                    let rowHtml = '';
+                    rowHtml += '<td>';
+                    rowHtml += '<input type="checkbox" name="size_active_' + maSize + '" id="size_active_' + maSize + '" ';
+                    rowHtml += 'class="form-check-input size-check border-success" value="1" checked onchange="toggleSizeFields(' + maSize + ')">';
+                    rowHtml += '</td>';
+                    rowHtml += '<td>';
+                    rowHtml += '<label class="form-check-label fw-bold text-dark" for="size_active_' + maSize + '">';
+                    rowHtml += 'Size <span class="lbl-ten-size">' + normalizedTenSize + '</span>';
+                    rowHtml += '</label>';
+                    rowHtml += '</td>';
+                    rowHtml += '<td>';
+                    rowHtml += '<div class="input-group input-group-sm mx-auto" style="max-width: 200px;">';
+                    rowHtml += '<input type="number" name="size_price_' + maSize + '" id="size_price_' + maSize + '" ';
+                    rowHtml += 'class="form-control text-end fw-bold text-success size-price-input" required min="1000" step="1000" placeholder="Nhập giá VNĐ...">';
+                    rowHtml += '<span class="input-group-text bg-light text-muted">đ</span>';
+                    rowHtml += '</div>';
+                    rowHtml += '</td>';
+                    rowHtml += '<td>';
+                    rowHtml += '<input type="text" name="size_volume_' + maSize + '" id="size_volume_' + maSize + '" ';
+                    rowHtml += 'class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 150px;" placeholder="Ví dụ: 350ml, 500ml...">';
+                    rowHtml += '</td>';
+                    rowHtml += '<td>';
+                    rowHtml += '<div class="form-check form-switch d-inline-block ps-5">';
+                    rowHtml += '<input class="form-check-input size-status-switch" type="checkbox" name="size_status_' + maSize + '" id="size_status_' + maSize + '" value="1" checked>';
+                    rowHtml += '<label class="form-check-label fw-semibold text-muted small" id="lbl_status_' + maSize + '" for="size_status_' + maSize + '">Mở bán</label>';
+                    rowHtml += '</div>';
+                    rowHtml += '</td>';
+                    rowHtml += '<td>';
+                    rowHtml += '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteSizeRow(' + maSize + ', \'' + normalizedTenSize + '\')">';
+                    rowHtml += '<i class="bi bi-trash-fill"></i> Xóa';
+                    rowHtml += '</button>';
+                    rowHtml += '</td>';
 
+                    newRow.innerHTML = rowHtml;
                     tbody.appendChild(newRow);
-                    showToast('success', 'Đã khởi tạo mốc kích cỡ ' + normalizedTenSize + ' thành công! Thao tác nhập giá ngay!');
-                    document.getElementById('newSizeNameInput').value = '';
 
-                    // Trượt focus tới input giá vừa sinh
+                    // Lắng nghe sự kiện thay đổi của Switch vừa sinh mới
+                    document.getElementById("size_status_" + maSize).addEventListener('change', function() {
+                        document.getElementById("lbl_status_" + maSize).innerText = this.checked ? "Mở bán" : "Ngừng bán";
+                    });
+
+                    showToast('success', 'Đã thêm thành công mốc kích cỡ ' + normalizedTenSize + ' vào biểu mẫu!');
+                    tenSizeInput.value = '';
                     document.getElementById('size_price_' + maSize).focus();
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Thao tác lỗi', text: data.message });
+                    Swal.fire({ icon: 'error', title: 'Thao tác thất bại', text: data.message, confirmButtonColor: '#2e7d32' });
                 }
             })
-            .catch(err => {
+            .catch(function(err) {
                 Swal.close();
                 console.error('Lỗi kết nối AJAX:', err);
                 showToast('error', 'Lỗi kết nối máy chủ!');
             });
     }
 
-    // 3. Tự động xem trước ảnh khi nạp liên kết URL hình ảnh
+    // 3. Nghiệp vụ sâu: Xóa mốc Size (Kiểm toán AJAX xem đã bán chưa)
+    function deleteSizeRow(maSize, tenSize) {
+        const action = document.getElementById("formAction").value;
+        const maSp = document.getElementById("formMaSp").value;
+
+        // Trường hợp 1: Đang thêm mới sản phẩm (Chưa ghi vào DB) -> Cho phép xóa row UI ngay lập tức
+        if (action === 'create' || !maSp) {
+            const row = document.getElementById("row_size_" + maSize);
+            if (row) {
+                // Tắt checkbox kích hoạt trước để form không submit dữ liệu
+                const check = document.getElementById("size_active_" + maSize);
+                if (check) {
+                    check.checked = false;
+                }
+                row.remove();
+                showToast('success', 'Đã gỡ bỏ kích cỡ Size ' + tenSize + ' khỏi biểu mẫu.');
+            }
+            return;
+        }
+
+        // Trường hợp 2: Đang sửa cấu hình sản phẩm đã có trong DB -> Phải gọi AJAX kiểm toán
+        Swal.fire({
+            title: 'Đang kiểm tra lịch sử bán...',
+            allowOutsideClick: false,
+            didOpen: function() { Swal.showLoading(); }
+        });
+
+        const checkUrl = getContextPath() + '/admin/sanpham?action=checkSizeOrder&maSp=' + maSp + '&maSize=' + maSize;
+        fetch(checkUrl)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                Swal.close();
+                if (data.status === 'HAS_ORDERS') {
+                    // Đã bán -> KHÔNG CHO XÓA CỨNG, chỉ cho tắt trạng thái bán (Soft delete)
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Không thể xóa cứng cấu hình!',
+                        html: 'Kích cỡ <strong>Size ' + tenSize + '</strong> của sản phẩm này đã phát sinh giao dịch trong lịch sử hóa đơn bán nước! Để tránh gây lỗi sập cấu trúc dữ liệu, hệ thống tự động tắt trạng thái của kích cỡ này sang <strong>Ngừng bán</strong> để ẩn khỏi thực đơn.',
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Đã hiểu'
+                    }).then(function() {
+                        // Tự động gạt switch trạng thái về OFF và đổi nhãn
+                        const sw = document.getElementById("size_status_" + maSize);
+                        if (sw) {
+                            sw.checked = false;
+                            const lbl = document.getElementById("lbl_status_" + maSize);
+                            if (lbl) {
+                                lbl.innerText = "Ngừng bán";
+                            }
+                        }
+                        // Đảm bảo vẫn giữ checkbox "Kích hoạt" được tích chọn để lưu trạng thái Ngừng bán lên DB
+                        const activeChk = document.getElementById("size_active_" + maSize);
+                        if (activeChk) {
+                            activeChk.checked = true;
+                            toggleSizeFields(maSize);
+                        }
+                    });
+                } else if (data.status === 'NO_ORDERS') {
+                    // Chưa bán -> Cho phép xóa cứng cấu hình an toàn
+                    Swal.fire({
+                        title: 'Xóa mốc kích cỡ?',
+                        html: 'Mốc <strong>Size ' + tenSize + '</strong> chưa hề phát sinh giao dịch bán lẻ nào. Bạn có chắc muốn xóa hoàn toàn cấu hình kích cỡ này khỏi đồ uống?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Đồng ý xóa cứng',
+                        cancelButtonText: 'Bỏ qua'
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            // Tắt checkbox để Controller bỏ qua khi submit
+                            const check = document.getElementById("size_active_" + maSize);
+                            if (check) {
+                                check.checked = false;
+                            }
+                            const row = document.getElementById("row_size_" + maSize);
+                            if (row) {
+                                row.remove();
+                            }
+                            showToast('success', 'Đã gỡ bỏ vĩnh viễn mốc kích cỡ Size ' + tenSize + ' thành công.');
+                        }
+                    });
+                } else {
+                    showToast('error', data.message || 'Lỗi kiểm toán mốc size!');
+                }
+            })
+            .catch(function(err) {
+                Swal.close();
+                console.error('Lỗi kiểm toán AJAX:', err);
+                showToast('error', 'Lỗi kết nối kiểm soát cơ sở dữ liệu!');
+            });
+    }
+
+    // 4. Tự động xem trước ảnh khi nạp liên kết URL hình ảnh
+    // (Kiểm tra và nạp ảnh mặc định nếu URL rỗng)
     function previewImage(url) {
         const preview = document.getElementById("imgPreview");
         if (url && url.trim() !== "") {
@@ -390,7 +568,12 @@
         }
     }
 
-    // 4. Thực hiện kiểm định ràng buộc Client-Side trước khi cho nộp dữ liệu lên Server
+    // Hàm phụ lấy Context Path tự động
+    function getContextPath() {
+        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    }
+
+    // 5. Thực hiện kiểm định ràng buộc Client-Side trước khi cho nộp dữ liệu lên Server
     document.getElementById("productForm").addEventListener("submit", function(e) {
         const activeChecks = document.querySelectorAll(".size-check:checked");
         if (activeChecks.length === 0) {
@@ -406,8 +589,7 @@
 
         // Ràng buộc giá trị tiền bán lớn hơn 0
         let invalidPrice = false;
-        activeChecks.forEach(chk => {
-            // bóc tách lấy maSize
+        activeChecks.forEach(function(chk) {
             const sizeId = chk.id.replace("size_active_", "");
             const priceEl = document.getElementById("size_price_" + sizeId);
             if (priceEl) {
@@ -429,6 +611,7 @@
         }
     });
 
+    // 6. Đón bắt lỗi đẩy ra từ Controller
     document.addEventListener("DOMContentLoaded", function() {
         <c:if test="${not empty error}">
         Swal.fire({
