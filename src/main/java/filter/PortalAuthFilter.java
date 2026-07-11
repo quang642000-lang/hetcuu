@@ -8,7 +8,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(filterName = "PortalAuthFilter", urlPatterns = { "/portal/*", "/cart", "/checkout", "/profile" })
+// SỬA LỖI: Thêm /* vào sau các pattern để lọc toàn bộ các API con (AJAX) của giỏ hàng và thanh toán
+@WebFilter(filterName = "PortalAuthFilter", urlPatterns = {
+        "/portal/*",
+        "/cart", "/cart/*",
+        "/checkout", "/checkout/*",
+        "/profile", "/profile/*",
+        "/portal/order/*"
+})
 public class PortalAuthFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {}
@@ -22,7 +29,7 @@ public class PortalAuthFilter implements Filter {
 
         boolean customerLoggedIn = false;
         if (session != null) {
-            KhachHang khachHang = (KhachHang) session.getAttribute("customer"); // Đã đồng bộ Key "customer"
+            KhachHang khachHang = (KhachHang) session.getAttribute("customer"); // Đồng bộ key "customer" [5]
             if (khachHang != null) {
                 customerLoggedIn = true;
             }
@@ -31,9 +38,22 @@ public class PortalAuthFilter implements Filter {
         if (customerLoggedIn) {
             chain.doFilter(request, response);
         } else {
-            session = httpRequest.getSession();
-            session.setAttribute("errorMessage", "Vui lòng đăng nhập tài khoản thành viên để thực hiện.");
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/customer/login");
+            // Nhận diện nếu là cuộc gọi AJAX (X-Requested-With) hoặc gọi fetch từ JS
+            String requestedWith = httpRequest.getHeader("X-Requested-With");
+            boolean isAjax = "XMLHttpRequest".equals(requestedWith)
+                    || httpRequest.getRequestURI().contains("/update")
+                    || httpRequest.getRequestURI().contains("/toggle-select");
+
+            if (isAjax) {
+                // Nếu là AJAX, trả về mã 401 kèm chuỗi ngắn gọn để JS xử lý hiển thị SweetAlert2 mượt mà
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.getWriter().write("SESSION_EXPIRED");
+            } else {
+                // Nếu là điều hướng trang vật lý, đưa về trang đăng nhập của khách hàng
+                session = httpRequest.getSession();
+                session.setAttribute("errorMessage", "Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập tài khoản thành viên để tiếp tục.");
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/customer/login"); // [5]
+            }
         }
     }
 

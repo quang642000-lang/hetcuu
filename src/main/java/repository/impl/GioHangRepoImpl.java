@@ -5,17 +5,13 @@ import model.entity.GioHang;
 import model.entity.ChiTietGioHang;
 import model.entity.ChiTietToppingGioHang;
 import repository.IGioHangRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GioHangRepoImpl implements IGioHangRepository {
-
     private static GioHangRepoImpl instance;
-
     private GioHangRepoImpl() {}
-
     public static synchronized GioHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new GioHangRepoImpl();
@@ -61,7 +57,12 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietGioHang> getChiTietGioHang(int maGh) {
         List<ChiTietGioHang> list = new ArrayList<>();
-        String sql = "SELECT ma_ctgh, ma_gh, ma_sp, ma_size, so_luong, muc_da, muc_duong, ghi_chu_mon, is_chon_mua, thoi_gian_them FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?";
+        // SỬA LỖI: Thực hiện JOIN để nạp giá trị gia_ban từ bảng SAN_PHAM_KICH_CO tránh giá trị bằng 0
+        String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
+                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban " +
+                "FROM CHI_TIET_GIO_HANG ct " +
+                "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
+                "WHERE ct.ma_gh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maGh);
@@ -78,7 +79,12 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public ChiTietGioHang getChiTietBySpAndSize(int maGh, String maSp, int maSize) {
-        String sql = "SELECT ma_ctgh, ma_gh, ma_sp, ma_size, so_luong, muc_da, muc_duong, ghi_chu_mon, is_chon_mua, thoi_gian_them FROM CHI_TIET_GIO_HANG WHERE ma_gh = ? AND ma_sp = ? AND ma_size = ?";
+        // SỬA LỖI: Thực hiện JOIN để lấy thông số giá bán gia_ban của biến thể
+        String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
+                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban " +
+                "FROM CHI_TIET_GIO_HANG ct " +
+                "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
+                "WHERE ct.ma_gh = ? AND ct.ma_sp = ? AND ct.ma_size = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maGh);
@@ -183,7 +189,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh) {
         List<ChiTietToppingGioHang> list = new ArrayList<>();
-        // CHỈNH SỬA: Thực hiện INNER JOIN để kéo cột gia_ban của topping lên đối tượng
         String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban " +
                 "FROM CHI_TIET_TOPPING_GIO_HANG ct " +
                 "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
@@ -198,7 +203,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                             rs.getInt("ma_tp"),
                             rs.getInt("so_luong_tp")
                     );
-                    tp.setGiaTp(rs.getInt("gia_ban")); // Gán giá trị bán lẻ chốt cứng của topping
+                    tp.setGiaTp(rs.getInt("gia_ban"));
                     list.add(tp);
                 }
             }
@@ -207,7 +212,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
         }
         return list;
     }
-
 
     @Override
     public boolean addToppingToGioHang(long maCtgh, int maTp, int soLuongTp) {
@@ -246,7 +250,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
     }
 
     private ChiTietGioHang mapResultSetToChiTietGioHang(ResultSet rs) throws SQLException {
-        return new ChiTietGioHang(
+        ChiTietGioHang ct = new ChiTietGioHang(
                 rs.getLong("ma_ctgh"),
                 rs.getInt("ma_gh"),
                 rs.getString("ma_sp"),
@@ -258,5 +262,8 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 rs.getBoolean("is_chon_mua"),
                 rs.getTimestamp("thoi_gian_them")
         );
+        // SỬA LỖI: Gán trực tiếp giá trị bán từ kết quả JOIN
+        ct.setGiaBan(rs.getInt("gia_ban"));
+        return ct;
     }
 }

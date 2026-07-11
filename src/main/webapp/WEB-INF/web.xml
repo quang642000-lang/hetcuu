@@ -3,12 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
-
   <display-name>TEA POS Management System</display-name>
 
-  <!-- Đảm bảo khi khởi chạy server, index.jsp sẽ được gọi làm trang Welcome -->
-  <welcome-file-list>
-    <welcome-file>index.jsp</welcome-file>
-  </welcome-file-list>
+  <!-- CẤU HÌNH SỬA LỖI: Tăng thời gian sống của Session tránh SESSION_EXPIRED đột ngột -->
+  <session-config>
+    <session-timeout>60</session-timeout> <!-- Đơn vị: Phút -->
+  </session-config>
 
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file> <!-- [6] -->
+  </welcome-file-list>
 </web-app>
