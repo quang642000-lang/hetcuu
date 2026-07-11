@@ -6,7 +6,6 @@ import repository.impl.KhachHangRepoImpl;
 import service.IKhachHangService;
 import util.SecurityUtil;
 import util.EmailSenderUtil;
-
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +23,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
             this.expireTime = expireTime;
         }
     }
+
     private final ConcurrentHashMap<String, OtpInfo> activationOtpCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, OtpInfo> forgotPasswordOtpCache = new ConcurrentHashMap<>();
 
@@ -55,11 +55,10 @@ public class KhachHangServiceImpl implements IKhachHangService {
 
     @Override
     public KhachHang registerCustomer(String tenKh, String sdt, String email, String password) {
-        // 1. Kiểm tra trung lặp SĐT hoặc Email
+        // 1. Kiểm tra trùng lặp SĐT hoặc Email
         if (khachHangRepository.checkTrungSdtOrEmail(sdt, email, null)) {
             return null;
         }
-
         // 2. Khởi tạo đối tượng
         KhachHang kh = new KhachHang();
         kh.setTenKh(tenKh);
@@ -67,7 +66,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setEmail(email);
         kh.setMatKhau(SecurityUtil.hashSHA256(password)); // Băm SHA-256 bảo mật
         kh.setDiemTichLuy(0);
-        kh.setMaHang(1); // Mặc định hạng mới tham gia
+        kh.setMaHang(1); // Mặc định hạng mới tham gia (ĐỒNG)
         kh.setTrangThai(false); // Chưa kích hoạt, đợi nhập OTP
 
         // 3. Lưu vào Database (Procedure sp_ThemKhachHang sẽ tự động tạo mã dạng KHxxxxx)
@@ -85,7 +84,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (kh == null) {
             kh = khachHangRepository.getByEmail(usernameOrSdtOrEmail);
         }
-
         if (kh != null && kh.isTrangThai()) {
             String hashedInput = SecurityUtil.hashSHA256(password);
             if (kh.getMatKhau().equals(hashedInput)) {
@@ -102,8 +100,21 @@ public class KhachHangServiceImpl implements IKhachHangService {
         long expireTime = System.currentTimeMillis() + (2 * 60 * 1000);
         activationOtpCache.put(email, new OtpInfo(otpCode, expireTime));
 
-        // Gọi hàm gửi email với 2 tham số từ tiện ích mới của bạn
-        return EmailSenderUtil.sendOTPEmail(email, otpCode);
+        // CẢI TIẾN TRỰC TIẾP CHO LIVE DEMO: In thẳng mã OTP kích hoạt ra Console
+        System.out.println("======================================================================");
+        System.out.println("[TEA POS - OTP KÍCH HOẠT TÀI KHOẢN KHÁCH HÀNG MỚI]");
+        System.out.println("Email khách nhận: " + email);
+        System.out.println("Mã OTP để nhập:  " + otpCode);
+        System.out.println("Hãy sao chép mã này gõ vào ô OTP để kích hoạt ngay trong lúc Demo!");
+        System.out.println("======================================================================");
+
+        // Gọi hàm gửi email thực tế
+        try {
+            EmailSenderUtil.sendOTPEmail(email, otpCode);
+        } catch (Exception e) {
+            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi (không sao cả, dùng mã in trên Console để nhập): " + e.getMessage());
+        }
+        return true; // Luôn trả về true để không chặn luồng frontend khi mạng lỗi
     }
 
     @Override
@@ -113,7 +124,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
             activationOtpCache.remove(email);
             return false; // OTP không tồn tại hoặc hết hạn
         }
-
         if (info.code.equals(otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
@@ -132,14 +142,26 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (kh == null || !kh.isTrangThai()) {
             return false;
         }
-
         String otpCode = String.format("%06d", new Random().nextInt(999999));
         // Cập nhật hiệu lực thành 2 phút (120,000 milliseconds)
         long expireTime = System.currentTimeMillis() + (2 * 60 * 1000);
         forgotPasswordOtpCache.put(email, new OtpInfo(otpCode, expireTime));
 
-        // Gọi hàm gửi email với 2 tham số
-        return EmailSenderUtil.sendOTPEmail(email, otpCode);
+        // CẢI TIẾN TRỰC TIẾP CHO LIVE DEMO: In thẳng mã OTP khôi phục ra Console
+        System.out.println("======================================================================");
+        System.out.println("[TEA POS - OTP KHÔI PHỤC MẬT KHẨU (FORGOT PASSWORD)]");
+        System.out.println("Email tài khoản: " + email);
+        System.out.println("Mã OTP để nhập:  " + otpCode);
+        System.out.println("Hãy sao chép mã này gõ vào ô OTP để đổi mật khẩu ngay trong lúc Demo!");
+        System.out.println("======================================================================");
+
+        // Gọi hàm gửi email thực tế
+        try {
+            EmailSenderUtil.sendOTPEmail(email, otpCode);
+        } catch (Exception e) {
+            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi (không sao cả, dùng mã in trên Console để nhập): " + e.getMessage());
+        }
+        return true; // Luôn trả về true để không chặn luồng frontend khi mạng lỗi
     }
 
     @Override
@@ -149,7 +171,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
             forgotPasswordOtpCache.remove(email);
             return false;
         }
-
         if (info.code.equals(otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {

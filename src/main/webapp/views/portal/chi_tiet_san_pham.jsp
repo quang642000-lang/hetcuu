@@ -15,7 +15,6 @@
 </head>
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-5">
     <div class="row g-5">
         <!-- ẢNH ĐỒ UỐNG BÊN TRÁI -->
@@ -24,7 +23,6 @@
                 <img src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded-4 shadow-sm border" style="object-fit: cover; max-height: 480px;" alt="Tea">
             </div>
         </div>
-
         <!-- BẢNG TÙY BIẾN PHA CHẾ BÊN PHẢI -->
         <div class="col-12 col-md-7">
             <div class="card p-4 border-0 shadow-sm bg-white" style="border-radius: 16px;">
@@ -43,7 +41,7 @@
                                 <div class="col-4">
                                     <input type="radio" class="btn-check" name="maSize" id="size_${size.maSize}" value="${size.maSize}" data-price="${size.giaBan}" ${loop.first ? 'checked' : ''} onchange="calculateRealtimeTotal()">
                                     <label class="btn btn-outline-success py-2.5 w-100 text-center fw-bold" for="size_${size.maSize}">
-                                            ${size.maSize == 1 ? 'Size S' : (size.maSize == 2 ? 'Size M' : 'Size L')} <br>
+                                        Size ${size.tenSize} <br>
                                         <small class="text-muted fw-normal" style="font-size: 11px;">+<fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</small>
                                     </label>
                                 </div>
@@ -77,20 +75,26 @@
                         </c:if>
                     </div>
 
-                    <!-- 3. TOPPING -->
+                    <!-- 3. TOPPING (NÂNG CẤP ĐỘNG CÓ SỐ LƯỢNG SPINNER) -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark d-block">4. Thêm Topping dai giòn sần sật</label>
+                        <label class="form-label fw-bold text-dark d-block">4. Thêm Topping dai giòn sần sật (Có thể chọn nhiều phần)</label>
                         <div class="row g-2">
                             <c:forEach var="tp" items="${toppings}">
                                 <div class="col-12 col-md-6">
-                                    <div class="border rounded p-2.5 d-flex justify-content-between align-items-center">
-                                        <div class="form-check mb-0">
-                                            <input class="form-check-input topping-check" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="calculateRealtimeTotal()">
+                                    <div class="border rounded p-2.5 d-flex justify-content-between align-items-center bg-white shadow-sm">
+                                        <div class="form-check mb-0 d-flex align-items-center flex-grow-1">
+                                            <input class="form-check-input topping-check border-secondary me-2" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="toggleWebToppingQty(${tp.maTp})">
                                             <label class="form-check-label fw-semibold text-dark small" for="tp_${tp.maTp}">
-                                                <c:out value="${tp.tenTp}"/>
+                                                <c:out value="${tp.tenTp}"/> <br>
+                                                <span class="text-success fw-bold font-monospace small">+<fmt:formatNumber value="${tp.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</span>
                                             </label>
                                         </div>
-                                        <span class="text-success fw-bold small">+<fmt:formatNumber value="${tp.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</span>
+                                        <!-- Spinner tăng giảm số lượng topping -->
+                                        <div class="input-group input-group-sm" id="web_tp_qty_container_${tp.maTp}" style="width: 80px; display: none !important;">
+                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustWebToppingQty(${tp.maTp}, -1)">-</button>
+                                            <input type="text" id="web_tp_qty_${tp.maTp}" name="topping_qty_${tp.maTp}" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="1" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">
+                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustWebToppingQty(${tp.maTp}, 1)">+</button>
+                                        </div>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -111,7 +115,7 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <button type="button" class="btn btn-outline-secondary px-3 py-2" onclick="adjustQty(-1)"><i class="bi bi-dash-lg"></i></button>
-                            <input type="number" id="qtyInput" name="soLuong" class="form-control text-center fw-bold fs-5 px-0" value="1" min="1" readonly style="width: 55px; border: 0;">
+                            <input type="number" id="qtyInput" name="soLuong" class="form-control text-center fw-bold fs-5 px-0" value="1" min="1" readonly style="width: 55px; border: 0; background: transparent;">
                             <button type="button" class="btn btn-outline-secondary px-3 py-2" onclick="adjustQty(1)"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
@@ -134,21 +138,54 @@
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
 
 <script>
-    // Tính toán tổng tiền realtime phía Client
+    // Bật/tắt ô số lượng topping ngoài Web
+    function toggleWebToppingQty(maTp) {
+        const chk = document.getElementById('tp_' + maTp);
+        const container = document.getElementById('web_tp_qty_container_' + maTp);
+        const qtyInput = document.getElementById('web_tp_qty_' + maTp);
+        if (chk && container && qtyInput) {
+            if (chk.checked) {
+                container.style.setProperty('display', 'flex', 'important');
+                qtyInput.value = 1;
+            } else {
+                container.style.setProperty('display', 'none', 'important');
+                qtyInput.value = 1;
+            }
+        }
+        calculateRealtimeTotal();
+    }
+
+    // Điều chỉnh số lượng topping ngoài Web
+    function adjustWebToppingQty(maTp, delta) {
+        const qtyInput = document.getElementById('web_tp_qty_' + maTp);
+        if (qtyInput) {
+            let val = parseInt(qtyInput.value) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            qtyInput.value = val;
+        }
+        calculateRealtimeTotal();
+    }
+
+    // Tính toán tổng tiền realtime phía Client có nhân số lượng topping
     function calculateRealtimeTotal() {
         let total = 0;
         const checkedSize = document.querySelector('input[name="maSize"]:checked');
         if (checkedSize) {
             total += parseInt(checkedSize.dataset.price);
         }
+
         const activeToppings = document.querySelectorAll('.topping-check:checked');
         activeToppings.forEach(tp => {
-            total += parseInt(tp.dataset.price);
+            const tpId = tp.value;
+            const qtyInput = document.getElementById('web_tp_qty_' + tpId);
+            const qty = qtyInput ? parseInt(qtyInput.value) : 1;
+            total += parseInt(tp.dataset.price) * qty;
         });
+
         const qty = parseInt(document.getElementById('qtyInput').value);
         const finalPrice = total * qty;
         document.getElementById('displayTotal').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
@@ -185,12 +222,11 @@
             .then(res => res.text())
             .then(data => {
                 Swal.close();
-                // CẢI TIẾN QUAN TRỌNG: Chưa đăng nhập, chuyển trực tiếp qua trang login thành viên
+                // Nếu chưa đăng nhập, chuyển trực tiếp qua trang login thành viên
                 if (data === 'NOT_LOGGED_IN') {
                     window.location.href = '${pageContext.request.contextPath}/customer/login';
                     return;
                 }
-
                 if (data.startsWith('SUCCESS')) {
                     const parts = data.split('|');
                     const cartCount = parts.length > 1 ? parts[1] : '0';

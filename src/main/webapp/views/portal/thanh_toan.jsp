@@ -44,24 +44,24 @@
         <input type="hidden" name="diemSuDung" id="param_diemSuDung" value="0">
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
-
         <div class="row g-4">
+
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
                 <!-- 1. HẸN GIỜ LẤY NƯỚC -->
                 <div class="card checkout-card p-4 shadow-sm mb-4">
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC</h5>
-                    <p class="small text-muted mb-3">Vui lòng thiết lập mốc thời gian nhận nước tại quầy (Đảm bảo tối thiểu cách 15 phút so với hiện tại để Barista kịp chuẩn bị pha chế tốt nhất).</p>
+                    <p class="small text-muted mb-3">Vui lòng thiết lập giờ nhận nước tại quầy (Đảm bảo tối thiểu cách 15 phút so với hiện tại để Barista kịp chuẩn bị pha chế tốt nhất. Chỉ hỗ trợ lấy ngay trong ngày hôm nay).</p>
                     <div class="mb-3">
-                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Chọn ngày giờ đến lấy <span class="text-danger">*</span></label>
-                        <input type="datetime-local" class="form-control form-control-teapos" id="thoiGianHenLay" name="thoiGianHenLay" required>
+                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Chọn giờ đến lấy hôm nay <span class="text-danger">*</span></label>
+                        <!-- SỬA ĐỔI: Chuyển đổi từ datetime-local sang type="time" để chỉ nhập giờ trong ngày -->
+                        <input type="time" class="form-control form-control-teapos" id="thoiGianHenLay" name="thoiGianHenLay" required>
                     </div>
                     <div class="mb-3">
                         <label for="ghiChuDon" class="form-label fw-bold small text-dark">Lời nhắn dặn dò riêng cho thợ pha chế</label>
                         <textarea class="form-control" id="ghiChuDon" name="ghiChuDon" rows="2" placeholder="Ví dụ: Lấy túi giấy mang đi xa, không đá mang về tự cho đá sau..."></textarea>
                     </div>
                 </div>
-
                 <!-- 2. PHƯƠNG THỨC THANH TOÁN -->
                 <div class="card checkout-card p-4 shadow-sm">
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-wallet2 text-primary me-2"></i>PHƯƠNG THỨC THANH TOÁN ĐỒ UỐNG</h5>
@@ -86,7 +86,6 @@
             <div class="col-12 col-lg-5">
                 <div class="card checkout-card p-4 shadow-sm sticky-top" style="top: 80px;">
                     <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">TÓM TẮT ĐƠN ĐẶT NƯỚC</h5>
-
                     <!-- DANH SÁCH MÓN VÀ TOPPING CHI TIẾT -->
                     <div class="mb-4" style="max-height: 250px; overflow-y: auto;">
                         <c:forEach var="item" items="${checkoutItems}">
@@ -96,7 +95,6 @@
                                 <c:set var="itemToppingSum" value="${itemToppingSum + (tp.giaTp * tp.soLuongTp)}"/>
                             </c:forEach>
                             <c:set var="rowPriceWithToppings" value="${(item.giaBan + itemToppingSum) * item.soLuong}"/>
-
                             <div class="row align-items-center mb-3 g-2">
                                 <div class="col-2">
                                     <c:choose>
@@ -113,7 +111,6 @@
                                 <div class="col-7">
                                     <strong class="text-dark small d-block"><c:out value="${item.tenSp}"/> (Size ${item.tenSize})</strong>
                                     <small class="text-muted d-block" style="font-size: 10px;">Đá: ${item.mucDa} | Đường: ${item.mucDuong} | SL: x${item.soLuong}</small>
-
                                     <!-- HIỂN THỊ ĐỦ TOPPINGS ĐÃ CHỌN -->
                                     <c:if test="${not empty item.toppingGioHangList}">
                                         <div class="text-success" style="font-size: 10px; font-weight: 500;">
@@ -143,7 +140,6 @@
                             <button class="btn btn-success fw-bold" type="button" onclick="useMaxPoints()">DÙNG TỐI ĐA</button>
                         </div>
                     </div>
-
                     <!-- CHỌN MÃ KHUYẾN MÃI VOUCHER -->
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-dark">Mã Voucher Khuyến Mãi</label>
@@ -156,7 +152,6 @@
                             </c:forEach>
                         </select>
                     </div>
-
                     <!-- ĐỐI SOÁT TÍNH TIỀN HÓA ĐƠN -->
                     <div class="bg-light rounded p-3 mb-4 small" style="border: 1px dashed var(--border-color);">
                         <div class="d-flex justify-content-between mb-2">
@@ -183,7 +178,6 @@
                             <span id="display_finalPrice" class="text-danger">0 đ</span>
                         </div>
                     </div>
-
                     <!-- BUTTON XÁC NHẬN -->
                     <button type="submit" class="btn btn-primary-teapos w-100 py-3 fw-bold fs-5 shadow-sm rounded-3">
                         XÁC NHẬN CHỐT ĐƠN <i class="bi bi-check-all ms-1"></i>
@@ -202,16 +196,14 @@
     document.addEventListener("DOMContentLoaded", function() {
         const now = new Date();
         now.setMinutes(now.getMinutes() + 15);
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        const minDateTimeString = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+        const minTimeString = hours + ':' + minutes;
 
-        const inputDateTime = document.getElementById("thoiGianHenLay");
-        inputDateTime.min = minDateTimeString;
-        inputDateTime.value = minDateTimeString;
+        const inputTime = document.getElementById("thoiGianHenLay");
+        // Gán giờ tối thiểu nhận nước và giá trị mặc định của ô input
+        inputTime.min = minTimeString;
+        inputTime.value = minTimeString;
 
         calculateRealtimeBill();
     });
@@ -275,7 +267,6 @@
             pointsToUse = 0;
             inputPoints.value = "";
         }
-
         if (pointsToUse > userMaxPointsAvailable) {
             pointsToUse = userMaxPointsAvailable;
             inputPoints.value = pointsToUse;

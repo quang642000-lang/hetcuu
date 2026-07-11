@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -24,7 +25,6 @@ import java.util.logging.Logger;
 @WebServlet(name = "PortalCheckoutController", urlPatterns = {"/checkout", "/checkout/place"})
 public class PortalCheckoutController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(PortalCheckoutController.class.getName());
-
     private final IGioHangService gioHangService = GioHangServiceImpl.getInstance();
     private final IKhuyenMaiService khuyenMaiService = KhuyenMaiServiceImpl.getInstance();
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
@@ -44,7 +44,6 @@ public class PortalCheckoutController extends HttpServlet {
         session.setAttribute("customer", freshCustomer);
 
         GioHang gh = gioHangService.getGioHangComplete(freshCustomer.getMaKh());
-
         List<ChiTietGioHang> checkoutItems = new ArrayList<>();
         int tongTienHang = 0;
 
@@ -80,7 +79,6 @@ public class PortalCheckoutController extends HttpServlet {
         }
 
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
-
         try {
             int tongTienHang = Integer.parseInt(request.getParameter("tongTienHang"));
             String maKm = request.getParameter("maKm");
@@ -90,7 +88,7 @@ public class PortalCheckoutController extends HttpServlet {
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             int maPt = Integer.parseInt(request.getParameter("maPt"));
             String ghiChuDon = request.getParameter("ghiChuDon");
-            String henLayRaw = request.getParameter("thoiGianHenLay");
+            String henLayRaw = request.getParameter("thoiGianHenLay"); // Chỉ nhận "15:30" (Gi giờ lấy trong ngày)
 
             if (henLayRaw == null || henLayRaw.trim().isEmpty()) {
                 request.setAttribute("error", "Bắt buộc phải hẹn giờ đến cửa hàng nhận nước!");
@@ -111,9 +109,12 @@ public class PortalCheckoutController extends HttpServlet {
                 return;
             }
 
-            Timestamp thoiGianHenLay = Timestamp.valueOf(henLayRaw.replace("T", " ") + ":00");
+            // CẢI TIẾN: Gộp Giờ gõ từ Client ("15:30") với Ngày hôm nay (Today) thành mốc Timestamp đầy đủ
+            LocalDate today = LocalDate.now();
+            String fullDateTimeStr = today.toString() + " " + henLayRaw.trim() + ":00";
+            Timestamp thoiGianHenLay = Timestamp.valueOf(fullDateTimeStr);
 
-            // CẢI TIẾN CHỐNG LỖI ĐẶT ĐƠN (PK NULL): Sinh mã hóa đơn online tự động từ sequence của SQL Server
+            // Sinh mã hóa đơn online tự động từ sequence của SQL Server
             String maDh = "TEA" + System.currentTimeMillis(); // Fallback
             try (Connection conn = DBConnect.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT NEXT VALUE FOR seq_DonHang")) {
@@ -128,7 +129,7 @@ public class PortalCheckoutController extends HttpServlet {
 
             // Khởi tạo thực thể DonHang chuẩn bị ghi nhận CSDL
             DonHang dh = new DonHang();
-            dh.setMaDh(maDh); // ĐẶT MÃ ĐƠN HÀNG VỪA SINH TỪ DB SEQUENCE
+            dh.setMaDh(maDh);
             dh.setMaKh(currentCustomer.getMaKh());
             dh.setMaPt(maPt);
             dh.setMaKm(maKm != null && !maKm.trim().isEmpty() ? maKm : null);
@@ -146,7 +147,6 @@ public class PortalCheckoutController extends HttpServlet {
             // Ánh xạ chi tiết giỏ hàng sang chi tiết đơn hàng
             GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
             List<ChiTietDonHang> orderItems = new ArrayList<>();
-
             if (gh != null && gh.getChiTietGioHangList() != null) {
                 for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
                     if (item.isChonMua()) {
@@ -157,7 +157,6 @@ public class PortalCheckoutController extends HttpServlet {
 
             // Đặt đơn hàng online an toàn trong một Transaction duy nhất
             boolean placed = donHangService.placeOrderOnline(dh, orderItems);
-
             if (placed) {
                 // Xóa sạch các món đã thanh toán thành công khỏi giỏ hàng trực tuyến
                 if (gh != null && gh.getChiTietGioHangList() != null) {
@@ -186,7 +185,7 @@ public class PortalCheckoutController extends HttpServlet {
             }
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.SEVERE, "Lỗi phân tích cú pháp mốc thời gian hẹn lấy Click & Collect", e);
-            request.setAttribute("error", "Định dạng ngày giờ hẹn nhận nước không hợp lệ!");
+            request.setAttribute("error", "Định dạng giờ hẹn nhận nước không hợp lệ!");
             doGet(request, response);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi nghiệp vụ phát sinh trong quá trình thanh toán checkout online", e);

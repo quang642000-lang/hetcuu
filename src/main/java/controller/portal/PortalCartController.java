@@ -23,11 +23,11 @@ public class PortalCartController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("customer") == null) {
-            // SỬA LỖI: Đưa về trang đăng nhập thành viên thay vì ném lỗi thô cứng
             request.getSession(true).setAttribute("errorMessage", "Vui lòng đăng nhập tài khoản thành viên để xem giỏ hàng!");
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
 
@@ -50,7 +50,6 @@ public class PortalCartController extends HttpServlet {
 
         if (session == null || session.getAttribute("customer") == null) {
             if (isAjax) {
-                // Trả về chuỗi ngắn gọn để JS bóc tách và gọi SweetAlert2 đăng nhập
                 response.getWriter().write("NOT_LOGGED_IN");
             } else {
                 session = request.getSession(true);
@@ -87,12 +86,23 @@ public class PortalCartController extends HttpServlet {
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
                     int maTp = Integer.parseInt(tpIdStr);
-                    toppingList.add(new ChiTietToppingGioHang(0L, maTp, 1));
+
+                    // NÂNG CẤP: Lấy số lượng Topping động được gửi lên từ form (topping_qty_maTp) thay vì gán cứng bằng 1!
+                    int qty = 1;
+                    String qtyStr = request.getParameter("topping_qty_" + maTp);
+                    if (qtyStr != null && !qtyStr.trim().isEmpty()) {
+                        try {
+                            qty = Integer.parseInt(qtyStr.trim());
+                        } catch (NumberFormatException e) {
+                            qty = 1;
+                        }
+                    }
+
+                    toppingList.add(new ChiTietToppingGioHang(0L, maTp, qty));
                 }
             }
 
             boolean success = gioHangService.addSanPhamToGioHang(maKh, maSp, maSize, soLuong, mucDa, mucDuong, ghiChuMon, toppingList);
-
             if (isAjax) {
                 if (success) {
                     // Lấy số lượng giỏ hàng mới cập nhật trong session
