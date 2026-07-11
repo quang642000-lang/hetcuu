@@ -21,13 +21,14 @@
         <!-- ẢNH ĐỒ UỐNG BÊN TRÁI -->
         <div class="col-12 col-md-5">
             <div class="sticky-top" style="top: 80px;">
-                <img src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded-4 shadow" style="object-fit: cover; max-height: 480px;" alt="Tea">
+                <img src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded-4 shadow-sm border" style="object-fit: cover; max-height: 480px;" alt="Tea">
             </div>
         </div>
+
         <!-- BẢNG TÙY BIẾN PHA CHẾ BÊN PHẢI -->
         <div class="col-12 col-md-7">
             <div class="card p-4 border-0 shadow-sm bg-white" style="border-radius: 16px;">
-                <span class="badge bg-success bg-opacity-10 text-success border border-success mb-2 px-3 py-1.5 fw-bold text-uppercase d-inline-block" style="max-width: fit-content;">Danh mục: SP${product.maSp}</span>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success mb-2 px-3 py-1.5 fw-bold text-uppercase d-inline-block" style="max-width: fit-content;">Mã đồ uống: ${product.maSp}</span>
                 <h2 class="fw-bold mb-2 text-dark"><c:out value="${product.tenSp}"/></h2>
                 <p class="text-muted mb-4"><c:out value="${product.moTa}"/></p>
 
@@ -55,7 +56,7 @@
                         <c:if test="${product.choPhepDoiDa}">
                             <div class="col-6">
                                 <label for="mucDa" class="form-label fw-bold text-dark small">2. Mức độ đá</label>
-                                <select class="form-select form-control-teapos" id="mucDa" name="mucDa">
+                                <select class="form-select form-control-teapos" id="mucDa" name="mucDa" onchange="calculateRealtimeTotal()">
                                     <option value="100%">100% Đá (Mặc định)</option>
                                     <option value="70%">70% Đá (Ít đá)</option>
                                     <option value="50%">50% Đá</option>
@@ -66,7 +67,7 @@
                         <c:if test="${product.choPhepDoiDuong}">
                             <div class="col-6">
                                 <label for="mucDuong" class="form-label fw-bold text-dark small">3. Mức độ đường</label>
-                                <select class="form-select form-control-teapos" id="mucDuong" name="mucDuong">
+                                <select class="form-select form-control-teapos" id="mucDuong" name="mucDuong" onchange="calculateRealtimeTotal()">
                                     <option value="100%">100% Đường (Mặc định)</option>
                                     <option value="70%">70% Đường (Ít ngọt)</option>
                                     <option value="50%">50% Đường</option>
@@ -118,13 +119,13 @@
                     <!-- PHẦN CẢI TIẾN THÊM BỘ ĐÔI NÚT SONG HÀNH -->
                     <div class="row g-3">
                         <div class="col-6">
-                            <button type="button" class="btn btn-outline-success w-100 py-3 fw-bold fs-5 rounded-3" onclick="handleCartAction('add')">
-                                <i class="bi bi-bag-plus-fill me-1"></i> THÊM VÀO GIỎ
+                            <button type="button" class="btn btn-outline-success w-100 py-3 fw-bold fs-5 rounded-3 d-flex align-items-center justify-content-center gap-2" onclick="handleCartAction('add')">
+                                <i class="bi bi-bag-plus-fill"></i> THÊM VÀO GIỎ
                             </button>
                         </div>
                         <div class="col-6">
-                            <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3" onclick="handleCartAction('buy')">
-                                <i class="bi bi-cart-check-fill me-1"></i> MUA NGAY
+                            <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3 d-flex align-items-center justify-content-center gap-2" onclick="handleCartAction('buy')">
+                                <i class="bi bi-cart-check-fill"></i> MUA NGAY ⚡
                             </button>
                         </div>
                     </div>
@@ -136,6 +137,7 @@
 
 <jsp:include page="/views/layout/footer_portal.jsp" />
 <script>
+    // Tính toán tổng tiền realtime phía Client
     function calculateRealtimeTotal() {
         let total = 0;
         const checkedSize = document.querySelector('input[name="maSize"]:checked');
@@ -151,6 +153,7 @@
         document.getElementById('displayTotal').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
     }
 
+    // Tăng giảm số lượng ly nước uống
     function adjustQty(amount) {
         const input = document.getElementById('qtyInput');
         let currentVal = parseInt(input.value);
@@ -160,13 +163,13 @@
         calculateRealtimeTotal();
     }
 
-    // Logic điều phối AJAX cho bộ đôi nút bấm đặc thù
+    // Luồng xử lý điều phối AJAX tích hợp cho cả hai nút: Thêm Giỏ và Mua Ngay
     function handleCartAction(action) {
         const form = document.getElementById("addToCartForm");
         const formData = new FormData(form);
 
         Swal.fire({
-            title: 'Đang xử lý...',
+            title: 'Đang kết nối hệ thống...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
@@ -185,7 +188,7 @@
                     Swal.fire({
                         icon: 'warning',
                         title: 'Yêu cầu đăng nhập',
-                        text: 'Quý khách vui lòng đăng nhập tài khoản thành viên để thực hiện mua trà sữa!',
+                        text: 'Quý khách vui lòng đăng nhập tài khoản hội viên CRM để thực hiện mua trà sữa!',
                         showCancelButton: true,
                         confirmButtonColor: '#2e7d32',
                         cancelButtonColor: '#64748b',
@@ -198,9 +201,9 @@
                     });
                 } else if (data.startsWith('SUCCESS')) {
                     const parts = data.split('|');
-                    const cartCount = parts.length > 1 ? parts[12] : '0';
+                    const cartCount = parts.length > 1 ? parts[22] : '0';
 
-                    // Cập nhật badge giỏ hàng trên Header
+                    // Đồng bộ Header Badge hiển thị số lượng giỏ hàng tức thời
                     const badge = document.querySelector('.navbar .badge');
                     if (badge) {
                         badge.innerText = cartCount;
@@ -208,19 +211,19 @@
                     }
 
                     if (action === 'buy') {
-                        // MUA NGAY: Chuyển thẳng sang trang kiểm toán đặt hàng checkout
+                        // MUA NGAY: Chuyển tiếp trực tiếp khách sang trang kiểm toán hóa đơn checkout
                         window.location.href = '${pageContext.request.contextPath}/checkout';
                     } else {
-                        // THÊM GIỎ: Ở lại trang, bắn thông báo thành công ngọt ngào
+                        // THÊM GIỎ: Ở lại trang, bắn thông báo SweetAlert2 xác nhận tuyệt đẹp
                         Swal.fire({
                             icon: 'success',
-                            title: 'Đã thêm thành công!',
-                            text: 'Món nước đã được xếp vào giỏ hàng trực tuyến.',
+                            title: 'Đã xếp vào giỏ hàng!',
+                            text: 'Món trà sữa của quý khách đã được chuẩn bị cấu hình pha chế trong giỏ hàng.',
                             showCancelButton: true,
                             confirmButtonColor: '#10b981',
                             cancelButtonColor: '#64748b',
-                            confirmButtonText: 'Đến giỏ hàng',
-                            cancelButtonText: 'Tiếp tục xem Menu'
+                            confirmButtonText: 'Đến giỏ hàng xem ngay',
+                            cancelButtonText: 'Tiếp tục xem đồ uống khác'
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 window.location.href = '${pageContext.request.contextPath}/cart';
@@ -228,12 +231,12 @@
                         });
                     }
                 } else {
-                    showToast('error', 'Thao tác giỏ hàng thất bại!');
+                    showToast('error', 'Thêm vào giỏ hàng thất bại! Vui lòng thử lại sau.');
                 }
             })
             .catch(err => {
                 Swal.close();
-                console.error('Lỗi kết nối:', err);
+                console.error('Lỗi hệ thống kết nối AJAX:', err);
                 showToast('error', 'Lỗi kết nối máy chủ!');
             });
     }

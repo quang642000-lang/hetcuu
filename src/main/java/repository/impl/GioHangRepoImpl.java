@@ -81,6 +81,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public ChiTietGioHang getChiTietBySpAndSize(int maGh, String maSp, int maSize) {
+        // SỬA LỖI: Thực hiện JOIN 3 bảng để bóc tách thông tin khi kiểm tra trùng lặp
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
                 "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
                 "s.ten_sp, s.hinh_anh " +
@@ -190,7 +191,8 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh) {
         List<ChiTietToppingGioHang> list = new ArrayList<>();
-        String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban " +
+        // SỬA LỖI: Thực hiện JOIN thêm bảng TOPPING để lấy tiếng Việt có dấu của topping (ten_tp) [2]
+        String sql = "SELECT ct.ma_ctgh, ct.ma_tp, ct.so_luong_tp, t.gia_ban, t.ten_tp " +
                 "FROM CHI_TIET_TOPPING_GIO_HANG ct " +
                 "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
                 "WHERE ct.ma_ctgh = ?";
@@ -205,6 +207,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                             rs.getInt("so_luong_tp")
                     );
                     tp.setGiaTp(rs.getInt("gia_ban"));
+                    tp.setTenTp(rs.getString("ten_tp")); // Nạp chính xác tên topping có dấu [2]
                     list.add(tp);
                 }
             }

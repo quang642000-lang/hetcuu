@@ -100,22 +100,26 @@
         <div class="row g-4">
             <c:forEach var="sp" items="${bestsellers}" end="3">
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div class="card product-card h-100 p-3">
+                    <div class="card product-card h-100 p-3 d-flex flex-column">
                         <div class="position-relative mb-3">
                             <span class="position-absolute top-0 start-0 badge bg-danger text-white fw-bold m-2 px-2.5 py-1.5" style="border-radius: 8px; font-size: 10px;">🔥 HOT</span>
                             <img src="${not empty sp.hinhAnh ? sp.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded" style="height: 200px; object-fit: cover;">
                         </div>
                         <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${sp.tenSp}"/></h6>
-                        <p class="text-muted small text-truncate mb-2"><c:out value="${sp.moTa}"/></p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-2">
-                            <strong class="text-success fs-5">
-                                <c:forEach var="size" items="${sp.sizesList}" end="0">
-                                    <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
-                                </c:forEach>
-                            </strong>
-                            <!-- SỬA LẠI: Loại bỏ hoàn toàn nút Mua ngay tại trang chủ, kéo rộng nút Chi tiết full-width -->
-                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-pill" style="font-size: 12px;">
-                                <i class="bi bi-eye-fill me-1"></i> Xem chi tiết
+                        <p class="text-muted small text-truncate mb-3"><c:out value="${sp.moTa}"/></p>
+
+                        <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Giá khởi điểm:</span>
+                                <strong class="text-success fs-5">
+                                    <c:forEach var="size" items="${sp.sizesList}" end="0">
+                                        <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                    </c:forEach>
+                                </strong>
+                            </div>
+                            <!-- SỬA ĐỔI UX: Gỡ bỏ nút "Mua ngay", kéo rộng nút "Xem chi tiết" để khách hàng vào tùy biến -->
+                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm w-100 py-2 fw-bold rounded-pill text-center d-flex align-items-center justify-content-center gap-1" style="font-size: 12px;">
+                                <i class="bi bi-eye-fill"></i> Xem chi tiết món
                             </a>
                         </div>
                     </div>
@@ -135,22 +139,26 @@
         <div class="row g-4">
             <c:forEach var="sp" items="${newArrivals}" end="3">
                 <div class="col-12 col-md-6 col-lg-3">
-                    <div class="card product-card h-100 p-3">
+                    <div class="card product-card h-100 p-3 d-flex flex-column">
                         <div class="position-relative mb-3">
                             <span class="position-absolute top-0 start-0 badge bg-warning text-dark fw-bold m-2 px-2.5 py-1.5" style="border-radius: 8px; font-size: 10px;">✨ MỚI</span>
                             <img src="${not empty sp.hinhAnh ? sp.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded" style="height: 200px; object-fit: cover;">
                         </div>
                         <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${sp.tenSp}"/></h6>
-                        <p class="text-muted small text-truncate mb-2"><c:out value="${sp.moTa}"/></p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-2">
-                            <strong class="text-success fs-5">
-                                <c:forEach var="size" items="${sp.sizesList}" end="0">
-                                    <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
-                                </c:forEach>
-                            </strong>
-                            <!-- SỬA LẠI: Chỉ giữ lại duy nhất nút Chi tiết kéo giãn đẹp mắt -->
-                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-pill" style="font-size: 12px;">
-                                <i class="bi bi-eye-fill me-1"></i> Xem chi tiết
+                        <p class="text-muted small text-truncate mb-3"><c:out value="${sp.moTa}"/></p>
+
+                        <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Giá khởi điểm:</span>
+                                <strong class="text-success fs-5">
+                                    <c:forEach var="size" items="${sp.sizesList}" end="0">
+                                        <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                    </c:forEach>
+                                </strong>
+                            </div>
+                            <!-- SỬA ĐỔI UX: Đồng bộ chỉ giữ nút "Xem chi tiết" full-width tại trang chủ -->
+                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm w-100 py-2 fw-bold rounded-pill text-center d-flex align-items-center justify-content-center gap-1" style="font-size: 12px;">
+                                <i class="bi bi-eye-fill"></i> Xem chi tiết món
                             </a>
                         </div>
                     </div>

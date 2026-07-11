@@ -24,7 +24,6 @@
             background-color: var(--primary-color) !important;
             color: white !important;
         }
-        /* CSS cho thẻ Card Sản Phẩm Độc Quyền */
         .product-card {
             border-radius: 16px;
             overflow: hidden;
@@ -58,8 +57,8 @@
                 <h5 class="fw-bold mb-3 text-dark">Danh Mục Đồ Uống</h5>
                 <div class="list-group list-group-flush">
                     <a href="${pageContext.request.contextPath}/products" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-medium border-0 py-2.5 px-0 text-dark">
-                        <span>Tất cả menu</span>
-                        <span class="badge bg-secondary rounded-pill bg-opacity-25 text-dark">${products.size()}</span>
+                        <span>Tất cả thực đơn</span>
+                        <span class="badge bg-success rounded-pill bg-opacity-10 text-success border border-success" style="font-size: 11px;">${products.size()}</span>
                     </a>
                     <c:forEach var="cat" items="${categories}">
                         <a href="${pageContext.request.contextPath}/products?category=${cat.maDm}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-0 py-2.5 px-0 ${selectedCategory eq cat.maDm.toString() ? 'text-success fw-bold' : 'text-dark'}">
@@ -75,7 +74,7 @@
             <div class="card border-0 p-3 mb-4 shadow-sm d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px;">
                 <span class="text-muted fw-medium">Tìm thấy <strong class="text-success">${products.size()}</strong> cốc nước thơm ngon</span>
                 <div class="btn-group">
-                    <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">Sắp xếp theo</button>
+                    <button class="btn btn-sm btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">Sắp xếp theo</button>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item small" href="#">Giá bán: Thấp đến Cao</a></li>
                         <li><a class="dropdown-item small" href="#">Giá bán: Cao đến Thấp</a></li>
@@ -89,7 +88,7 @@
                     <c:when test="${not empty products}">
                         <c:forEach var="item" items="${products}">
                             <div class="col-12 col-md-6 col-lg-4">
-                                <div class="card product-card h-100 p-3">
+                                <div class="card product-card h-100 p-3 d-flex flex-column">
                                     <div class="position-relative mb-3">
                                         <c:if test="${item.isNew}">
                                             <span class="position-absolute top-0 start-0 badge bg-warning text-dark fw-bold m-2 px-2.5 py-1.5" style="border-radius: 8px; font-size: 10px;">✨ MỚI</span>
@@ -102,23 +101,20 @@
                                     <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${item.tenSp}"/></h6>
                                     <p class="text-muted small text-truncate mb-3" style="max-height: 38px;"><c:out value="${item.moTa}"/></p>
 
-                                    <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-2.5">
-                                        <strong class="text-success fs-5">
-                                            <c:forEach var="size" items="${item.sizesList}" end="0">
-                                                <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
-                                            </c:forEach>
-                                        </strong>
-
-                                        <!-- PHẦN CẢI TIẾN: Thiết lập bộ đôi nút bấm đặc biệt -->
-                                        <div class="d-flex gap-1.5">
-                                            <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-outline-success btn-sm px-2.5 fw-bold rounded-pill" style="font-size: 11px;">
-                                                Chi tiết
-                                            </a>
-                                            <button type="button" class="btn btn-success btn-sm px-3 fw-bold rounded-pill d-flex align-items-center gap-1" style="font-size: 11px;"
-                                                    onclick="quickAddToCart('${item.maSp}', '<c:out value="${item.tenSp}"/>')">
-                                                <i class="bi bi-cart-plus"></i> Mua ngay
-                                            </button>
+                                    <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted small">Giá từ:</span>
+                                            <strong class="text-success fs-5">
+                                                <c:forEach var="size" items="${item.sizesList}" end="0">
+                                                    <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                                </c:forEach>
+                                            </strong>
                                         </div>
+
+                                        <!-- PHẦN CẢI TIẾN: Thay thế bộ đôi nút cũ bằng 1 nút "Xem chi tiết" duy nhất trải rộng 100% card -->
+                                        <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-outline-success btn-sm w-100 py-2 fw-bold rounded-pill text-center d-flex align-items-center justify-content-center gap-1" style="font-size: 12px;">
+                                            <i class="bi bi-eye-fill"></i> Xem chi tiết & Tùy biến
+                                        </a>
                                     </div>
                                 </div>
                             </div>

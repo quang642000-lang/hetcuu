@@ -17,7 +17,7 @@ public class ChiTietGioHang {
     private Timestamp thoiGianThem;
     private int giaBan;
 
-    // CẢI TIẾN: Khai báo thêm để hiển thị chi tiết tên món và ảnh trên giao diện giỏ hàng
+    // Thuộc tính bổ trợ lấy từ SAN_PHAM để render trực quan trên giao diện giỏ hàng
     private String tenSp;
     private String hinhAnh;
 
@@ -56,14 +56,26 @@ public class ChiTietGioHang {
     public void setMucDuong(String mucDuong) { this.mucDuong = mucDuong; }
     public String getGhiChuMon() { return ghiChuMon; }
     public void setGhiChuMon(String ghiChuMon) { this.ghiChuMon = ghiChuMon; }
-    public boolean isChonMua() { return isChonMua; }
+
+    // SỬA LỖI JAVABEANS: Khai báo đầy đủ 3 kiểu Getter để tương thích tuyệt đối với mọi cấu hình Tomcat/JSTL EL
+    public boolean isChonMua() {
+        return isChonMua;
+    }
+
+    public boolean getChonMua() {
+        return isChonMua;
+    } // Ánh xạ chuẩn cho EL ${item.chonMua}
+
+    public boolean getIsChonMua() {
+        return isChonMua;
+    } // Ánh xạ dự phòng tương thích ngược cho EL ${item.isChonMua}
+
     public void setChonMua(boolean isChonMua) { this.isChonMua = isChonMua; }
     public Timestamp getThoiGianThem() { return thoiGianThem; }
     public void setThoiGianThem(Timestamp thoiGianThem) { this.thoiGianThem = thoiGianThem; }
     public int getGiaBan() { return giaBan; }
     public void setGiaBan(int giaBan) { this.giaBan = giaBan; }
 
-    // GETTERS & SETTERS BỔ SUNG CHO TÊN VÀ ẢNH SẢN PHẨM
     public String getTenSp() { return tenSp; }
     public void setTenSp(String tenSp) { this.tenSp = tenSp; }
     public String getHinhAnh() { return hinhAnh; }
