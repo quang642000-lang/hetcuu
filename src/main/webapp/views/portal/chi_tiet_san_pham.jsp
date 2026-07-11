@@ -116,7 +116,7 @@
                         </div>
                     </div>
 
-                    <!-- PHẦN CẢI TIẾN THÊM BỘ ĐÔI NÚT SONG HÀNH -->
+                    <!-- BỘ ĐÔI NÚT SONG HÀNH -->
                     <div class="row g-3">
                         <div class="col-6">
                             <button type="button" class="btn btn-outline-success w-100 py-3 fw-bold fs-5 rounded-3 d-flex align-items-center justify-content-center gap-2" onclick="handleCartAction('add')">
@@ -136,6 +136,7 @@
 </div>
 
 <jsp:include page="/views/layout/footer_portal.jsp" />
+
 <script>
     // Tính toán tổng tiền realtime phía Client
     function calculateRealtimeTotal() {
@@ -163,7 +164,7 @@
         calculateRealtimeTotal();
     }
 
-    // Luồng xử lý điều phối AJAX tích hợp cho cả hai nút: Thêm Giỏ và Mua Ngay
+    // Luồng xử lý điều phối AJAX tích hợp
     function handleCartAction(action) {
         const form = document.getElementById("addToCartForm");
         const formData = new FormData(form);
@@ -184,24 +185,15 @@
             .then(res => res.text())
             .then(data => {
                 Swal.close();
+                // CẢI TIẾN QUAN TRỌNG: Chưa đăng nhập, chuyển trực tiếp qua trang login thành viên
                 if (data === 'NOT_LOGGED_IN') {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Yêu cầu đăng nhập',
-                        text: 'Quý khách vui lòng đăng nhập tài khoản hội viên CRM để thực hiện mua trà sữa!',
-                        showCancelButton: true,
-                        confirmButtonColor: '#2e7d32',
-                        cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Đăng nhập ngay',
-                        cancelButtonText: 'Bỏ qua'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = '${pageContext.request.contextPath}/customer/login';
-                        }
-                    });
-                } else if (data.startsWith('SUCCESS')) {
+                    window.location.href = '${pageContext.request.contextPath}/customer/login';
+                    return;
+                }
+
+                if (data.startsWith('SUCCESS')) {
                     const parts = data.split('|');
-                    const cartCount = parts.length > 1 ? parts[22] : '0';
+                    const cartCount = parts.length > 1 ? parts[1] : '0';
 
                     // Đồng bộ Header Badge hiển thị số lượng giỏ hàng tức thời
                     const badge = document.querySelector('.navbar .badge');
@@ -211,10 +203,10 @@
                     }
 
                     if (action === 'buy') {
-                        // MUA NGAY: Chuyển tiếp trực tiếp khách sang trang kiểm toán hóa đơn checkout
+                        // MUA NGAY: Điều hướng thẳng sang checkout
                         window.location.href = '${pageContext.request.contextPath}/checkout';
                     } else {
-                        // THÊM GIỎ: Ở lại trang, bắn thông báo SweetAlert2 xác nhận tuyệt đẹp
+                        // THÊM GIỎ: Ở lại trang, bắn thông báo Swal xác nhận
                         Swal.fire({
                             icon: 'success',
                             title: 'Đã xếp vào giỏ hàng!',
