@@ -27,7 +27,7 @@ function updatePortalCartQuantity(maCtgh, soLuong) {
         .then(data => {
             if (data === 'SUCCESS') {
                 showToast('success', 'Đã cập nhật số lượng giỏ hàng.');
-                setTimeout(() => { location.reload(); }, 1000);
+                setTimeout(() => { location.reload(); }, 600);
             } else {
                 showToast('error', 'Cập nhật số lượng thất bại!');
             }
@@ -50,18 +50,13 @@ function toggleSelectCartItem(maCtgh, checkboxElement) {
         .then(data => {
             if (data === 'SUCCESS') {
                 showToast('info', 'Đã thay đổi danh sách thanh toán.');
-                setTimeout(() => { location.reload(); }, 800);
+                setTimeout(() => { location.reload(); }, 600);
             } else {
                 showToast('error', 'Xử lý lỗi hệ thống!');
             }
         });
 }
 
-/**
- * TÍNH NĂNG MỚI: THÊM GIỎ HÀNG NHANH QUA AJAX (MUA NGAY KHÔNG LOAD LẠI TRANG)
- * @param {string} maSp - Mã sản phẩm cần thêm
- * @param {string} tenSp - Tên sản phẩm để hiển thị thông báo
- */
 function quickAddToCart(maSp, tenSp) {
     const formData = new FormData();
     formData.append('maSp', maSp);
@@ -71,7 +66,6 @@ function quickAddToCart(maSp, tenSp) {
     formData.append('mucDuong', '100%'); // Mặc định 100% đường
     formData.append('ghiChuMon', 'Quick Add');
 
-    // Hiển thị hiệu ứng loading nhỏ
     Swal.fire({
         title: 'Đang thêm vào giỏ hàng...',
         allowOutsideClick: false,
@@ -102,24 +96,19 @@ function quickAddToCart(maSp, tenSp) {
                     }
                 });
             } else if (data.startsWith('SUCCESS')) {
-                // Tách lấy số lượng giỏ hàng mới nạp về từ chuỗi "SUCCESS|{cartCount}"
                 const parts = data.split('|');
-                const cartCount = parts.length > 1 ? parts[5] : '1';
+                const cartCount = parts.length > 1 ? parts[12] : '1';
 
-                // Tìm thẻ Badge trên header và cập nhật động số lượng
                 const badge = document.querySelector('.navbar .badge');
                 if (badge) {
                     badge.innerText = cartCount;
                     badge.style.display = 'flex';
                 } else {
-                    // Nếu chưa có badge, tự động tạo mới kế bên icon giỏ hàng
                     const cartBtn = document.querySelector('.navbar a[href*="/cart"]');
                     if (cartBtn) {
                         cartBtn.innerHTML += `<span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger text-white border border-light" style="font-size: 10px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0;">${cartCount}</span>`;
                     }
                 }
-
-                // Bắn Toast thông báo thành công rực rỡ
                 showToast('success', `Đã thêm thành công ly ${tenSp} vào giỏ hàng!`);
             } else {
                 showToast('error', 'Thêm vào giỏ hàng thất bại!');

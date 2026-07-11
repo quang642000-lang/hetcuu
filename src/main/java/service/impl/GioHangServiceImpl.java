@@ -3,20 +3,19 @@ package service.impl;
 import model.entity.GioHang;
 import model.entity.ChiTietGioHang;
 import model.entity.ChiTietToppingGioHang;
+import model.entity.SanPhamKichCo;
 import repository.IGioHangRepository;
 import repository.impl.GioHangRepoImpl;
 import service.IGioHangService;
-
+import service.ISanPhamService;
 import java.util.List;
 
 public class GioHangServiceImpl implements IGioHangService {
     private static GioHangServiceImpl instance;
     private final IGioHangRepository gioHangRepository;
-
     private GioHangServiceImpl() {
         this.gioHangRepository = GioHangRepoImpl.getInstance();
     }
-
     public static synchronized GioHangServiceImpl getInstance() {
         if (instance == null) {
             instance = new GioHangServiceImpl();
@@ -31,11 +30,9 @@ public class GioHangServiceImpl implements IGioHangService {
             gioHangRepository.createGioHang(maKh);
             gh = gioHangRepository.getByKhachHang(maKh);
         }
-
         if (gh != null) {
             List<ChiTietGioHang> items = gioHangRepository.getChiTietGioHang(gh.getMaGh());
             for (ChiTietGioHang item : items) {
-                // Nạp chi tiết Topping đi kèm của từng ly trong giỏ
                 item.setToppingGioHangList(gioHangRepository.getToppingByChiTiet(item.getMaCtgh()));
             }
             gh.setChiTietGioHangList(items);
@@ -47,20 +44,32 @@ public class GioHangServiceImpl implements IGioHangService {
     public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int soLuong,
                                        String mucDa, String mucDuong, String ghiChuMon,
                                        List<ChiTietToppingGioHang> toppings) {
+
+        // CƠ CHẾ PHÒNG VỆ: Chống sập khóa ngoại FK_CTGH_SPKC khi "Mua nhanh" sản phẩm không hỗ trợ Size mặc định
+        ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
+        List<SanPhamKichCo> availableSizes = sanPhamService.getSizesBySanPham(maSp);
+        boolean sizeExists = false;
+        for (SanPhamKichCo spkc : availableSizes) {
+            if (spkc.getMaSize() == maSize) {
+                sizeExists = true;
+                break;
+            }
+        }
+        // Nếu kích cỡ yêu cầu không khả dụng, lấy kích cỡ có sẵn đầu tiên của sản phẩm làm fallback
+        if (!sizeExists && !availableSizes.isEmpty()) {
+            maSize = availableSizes.get(0).getMaSize();
+        }
+
         GioHang gh = getGioHangComplete(maKh);
         if (gh == null) return false;
 
-        // Quét kiểm tra trùng lặp sản phẩm cấu hình giống nhau 100%
         ChiTietGioHang targetItem = null;
         List<ChiTietGioHang> currentItems = gh.getChiTietGioHangList();
-
         for (ChiTietGioHang item : currentItems) {
             if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize
                     && equalsString(item.getMucDa(), mucDa)
                     && equalsString(item.getMucDuong(), mucDuong)
                     && equalsString(item.getGhiChuMon(), ghiChuMon)) {
-
-                // Kiểm tra xem toppings đi kèm có trùng khớp hoàn toàn không
                 if (isSameToppings(item.getToppingGioHangList(), toppings)) {
                     targetItem = item;
                     break;
@@ -69,11 +78,9 @@ public class GioHangServiceImpl implements IGioHangService {
         }
 
         if (targetItem != null) {
-            // Trùng khớp hoàn toàn -> Cộng dồn số lượng
             targetItem.setSoLuong(targetItem.getSoLuong() + soLuong);
             return gioHangRepository.addOrUpdateChiTiet(targetItem);
         } else {
-            // Không trùng -> Thêm dòng chi tiết giỏ hàng mới
             ChiTietGioHang newItem = new ChiTietGioHang();
             newItem.setMaGh(gh.getMaGh());
             newItem.setMaSp(maSp);
@@ -83,10 +90,8 @@ public class GioHangServiceImpl implements IGioHangService {
             newItem.setMucDuong(mucDuong);
             newItem.setGhiChuMon(ghiChuMon);
             newItem.setChonMua(true);
-
             boolean isAdded = gioHangRepository.addOrUpdateChiTiet(newItem);
             if (isAdded && toppings != null && !toppings.isEmpty()) {
-                // Thêm danh sách topping đi kèm liên kết với dòng chi tiết vừa sinh
                 for (ChiTietToppingGioHang tp : toppings) {
                     gioHangRepository.addToppingToGioHang(newItem.getMaCtgh(), tp.getMaTp(), tp.getSoLuongTp());
                 }
@@ -106,7 +111,6 @@ public class GioHangServiceImpl implements IGioHangService {
         int size2 = (list2 == null) ? 0 : list2.size();
         if (size1 != size2) return false;
         if (size1 == 0) return true;
-
         for (ChiTietToppingGioHang tp1 : list1) {
             boolean found = false;
             for (ChiTietToppingGioHang tp2 : list2) {
@@ -125,8 +129,6 @@ public class GioHangServiceImpl implements IGioHangService {
         if (soLuongMoi <= 0) {
             return deleteChiTietGioHang(maCtgh);
         }
-
-        // Đọc thông tin chi tiết cũ để tiến hành cập nhật
         ChiTietGioHang chiTiet = new ChiTietGioHang();
         chiTiet.setMaCtgh(maCtgh);
         chiTiet.setSoLuong(soLuongMoi);
@@ -136,7 +138,6 @@ public class GioHangServiceImpl implements IGioHangService {
 
     @Override
     public boolean deleteChiTietGioHang(long maCtgh) {
-        // CSDL được cấu hình ON DELETE CASCADE tại bảng CHI_TIET_TOPPING_GIO_HANG
         return gioHangRepository.deleteChiTiet(maCtgh);
     }
 

@@ -57,11 +57,13 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietGioHang> getChiTietGioHang(int maGh) {
         List<ChiTietGioHang> list = new ArrayList<>();
-        // SỬA LỖI: Thực hiện JOIN để nạp giá trị gia_ban từ bảng SAN_PHAM_KICH_CO tránh giá trị bằng 0
+        // SỬA LỖI: Thực hiện JOIN 3 bảng để bóc tách lấy chính xác Tên sản phẩm (ten_sp) và hình ảnh (hinh_anh)
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
-                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban " +
+                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
+                "s.ten_sp, s.hinh_anh " +
                 "FROM CHI_TIET_GIO_HANG ct " +
                 "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
+                "JOIN SAN_PHAM s ON ct.ma_sp = s.ma_sp " +
                 "WHERE ct.ma_gh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -79,11 +81,12 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public ChiTietGioHang getChiTietBySpAndSize(int maGh, String maSp, int maSize) {
-        // SỬA LỖI: Thực hiện JOIN để lấy thông số giá bán gia_ban của biến thể
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
-                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban " +
+                "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
+                "s.ten_sp, s.hinh_anh " +
                 "FROM CHI_TIET_GIO_HANG ct " +
                 "JOIN SAN_PHAM_KICH_CO pk ON ct.ma_sp = pk.ma_sp AND ct.ma_size = pk.ma_size " +
+                "JOIN SAN_PHAM s ON ct.ma_sp = s.ma_sp " +
                 "WHERE ct.ma_gh = ? AND ct.ma_sp = ? AND ct.ma_size = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -104,15 +107,13 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public boolean addOrUpdateChiTiet(ChiTietGioHang chiTiet) {
         if (chiTiet.getMaCtgh() > 0) {
-            String sql = "UPDATE CHI_TIET_GIO_HANG SET so_luong = ?, muc_da = ?, muc_duong = ?, ghi_chu_mon = ?, is_chon_mua = ? WHERE ma_ctgh = ?";
+            // SỬA LỖI CHÍ MẠNG: Chỉ cập nhật số lượng và trạng thái chọn mua để tránh ghi đè các trường đá, đường, ghi chú thành NULL khi gọi từ updateSoLuongChiTiet
+            String sql = "UPDATE CHI_TIET_GIO_HANG SET so_luong = ?, is_chon_mua = ? WHERE ma_ctgh = ?";
             try (Connection conn = DBConnect.getConnection();
                  PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, chiTiet.getSoLuong());
-                ps.setString(2, chiTiet.getMucDa());
-                ps.setString(3, chiTiet.getMucDuong());
-                ps.setString(4, chiTiet.getGhiChuMon());
-                ps.setBoolean(5, chiTiet.isChonMua());
-                ps.setLong(6, chiTiet.getMaCtgh());
+                ps.setBoolean(2, chiTiet.isChonMua());
+                ps.setLong(3, chiTiet.getMaCtgh());
                 return ps.executeUpdate() > 0;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -262,8 +263,9 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 rs.getBoolean("is_chon_mua"),
                 rs.getTimestamp("thoi_gian_them")
         );
-        // SỬA LỖI: Gán trực tiếp giá trị bán từ kết quả JOIN
         ct.setGiaBan(rs.getInt("gia_ban"));
+        ct.setTenSp(rs.getString("ten_sp"));
+        ct.setHinhAnh(rs.getString("hinh_anh"));
         return ct;
     }
 }

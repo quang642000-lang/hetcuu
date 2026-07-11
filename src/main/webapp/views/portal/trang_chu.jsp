@@ -113,15 +113,10 @@
                                     <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                 </c:forEach>
                             </strong>
-                            <div class="d-flex gap-1">
-                                <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-2 fw-bold rounded-pill" style="font-size: 11px;">
-                                    Chi tiết
-                                </a>
-                                <button type="button" class="btn btn-success btn-sm px-2.5 fw-bold rounded-pill" style="font-size: 11px;"
-                                        onclick="quickAddToCart('${sp.maSp}', '<c:out value="${sp.tenSp}"/>')">
-                                    <i class="bi bi-cart-plus"></i> Mua ngay
-                                </button>
-                            </div>
+                            <!-- SỬA LẠI: Loại bỏ hoàn toàn nút Mua ngay tại trang chủ, kéo rộng nút Chi tiết full-width -->
+                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-pill" style="font-size: 12px;">
+                                <i class="bi bi-eye-fill me-1"></i> Xem chi tiết
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -153,15 +148,10 @@
                                     <fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                 </c:forEach>
                             </strong>
-                            <div class="d-flex gap-1">
-                                <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-2 fw-bold rounded-pill" style="font-size: 11px;">
-                                    Chi tiết
-                                </a>
-                                <button type="button" class="btn btn-success btn-sm px-2.5 fw-bold rounded-pill" style="font-size: 11px;"
-                                        onclick="quickAddToCart('${sp.maSp}', '<c:out value="${sp.tenSp}"/>')">
-                                    <i class="bi bi-cart-plus"></i> Mua ngay
-                                </button>
-                            </div>
+                            <!-- SỬA LẠI: Chỉ giữ lại duy nhất nút Chi tiết kéo giãn đẹp mắt -->
+                            <a href="${pageContext.request.contextPath}/product/detail?id=${sp.maSp}" class="btn btn-outline-success btn-sm px-3 fw-bold rounded-pill" style="font-size: 12px;">
+                                <i class="bi bi-eye-fill me-1"></i> Xem chi tiết
+                            </a>
                         </div>
                     </div>
                 </div>
