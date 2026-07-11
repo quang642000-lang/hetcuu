@@ -13,10 +13,13 @@ import service.impl.SanPhamServiceImpl;
 import config.DBConnect;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,6 +31,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @WebServlet(name = "SanPhamController", urlPatterns = {"/admin/sanpham"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10,      // 10MB
+        maxRequestSize = 1024 * 1024 * 50   // 50MB
+)
 public class SanPhamController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SanPhamController.class.getName());
 
@@ -56,6 +64,9 @@ public class SanPhamController extends HttpServlet {
                 break;
             case "checkSizeOrder":
                 performCheckSizeOrder(request, response);
+                break;
+            case "deleteSizeMasterAjax":
+                performDeleteSizeMasterAjax(request, response);
                 break;
             default:
                 showList(request, response);
@@ -91,8 +102,6 @@ public class SanPhamController extends HttpServlet {
         if (sp != null) {
             List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
             List<KichCo> sizes = kichCoRepository.getAll();
-
-            // ĐỒNG BỘ ĐỘNG: Load toàn bộ size cũ đã cấu hình (Kể cả size đang Tắt/Ngừng hoạt động)
             List<SanPhamKichCo> currentPrices = new ArrayList<>();
             String sql = "SELECT pk.ma_sp, pk.ma_size, pk.gia_ban, pk.dinh_luong, pk.trang_thai, kc.ten_size " +
                     "FROM SAN_PHAM_KICH_CO pk " +
@@ -117,7 +126,6 @@ public class SanPhamController extends HttpServlet {
             } catch (SQLException e) {
                 LOGGER.log(Level.SEVERE, "Lỗi nạp mảng size cấu hình trong showEditForm", e);
             }
-
             request.setAttribute("product", sp);
             request.setAttribute("categories", categories);
             request.setAttribute("sizes", sizes);
@@ -139,9 +147,6 @@ public class SanPhamController extends HttpServlet {
         }
     }
 
-    /**
-     * Endpoint API AJAX: Kiểm tra xem một size của đồ uống đã phát sinh hóa đơn bán lẻ nào chưa
-     */
     private void performCheckSizeOrder(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String maSp = request.getParameter("maSp");
@@ -172,6 +177,28 @@ public class SanPhamController extends HttpServlet {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi kiểm tra lịch sử hóa đơn của biến thể size", e);
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi kiểm tra đơn!\"}");
+        }
+    }
+
+    private void performDeleteSizeMasterAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        String maSizeStr = request.getParameter("maSize");
+        if (maSizeStr == null) {
+            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mã kích cỡ bị trống!\"}");
+            return;
+        }
+        try {
+            int maSize = Integer.parseInt(maSizeStr);
+            // Xóa cứng trong KICH_CO (DBConnect cascade sẽ cấm nếu đã dính FK trong đơn hàng, nhưng ở đây AJAX NO_ORDERS đã lọc trước)
+            boolean deleted = kichCoRepository.delete(maSize);
+            if (deleted) {
+                response.getWriter().write("{\"status\":\"SUCCESS\"}");
+            } else {
+                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Không thể xóa kích cỡ này khỏi hệ thống!\"}");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi xóa cứng kích cỡ master", e);
+            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi xóa kích cỡ!\"}");
         }
     }
 
@@ -232,7 +259,16 @@ public class SanPhamController extends HttpServlet {
             }
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
-            String hinhAnh = request.getParameter("hinhAnh");
+
+            // Xử lý upload file từ máy tính hoặc link dán
+            String hinhAnh = "";
+            String uploadType = request.getParameter("uploadType");
+            if ("file".equals(uploadType)) {
+                hinhAnh = uploadFile(request, "hinhAnhFile");
+            } else {
+                hinhAnh = request.getParameter("hinhAnhUrl");
+            }
+
             boolean choPhepDoiDa = request.getParameter("choPhepDoiDa") != null;
             boolean choPhepDoiDuong = request.getParameter("choPhepDoiDuong") != null;
             boolean isNew = request.getParameter("isNew") != null;
@@ -260,7 +296,6 @@ public class SanPhamController extends HttpServlet {
                         if (priceParam != null && !priceParam.trim().isEmpty()) {
                             int giaBan = Integer.parseInt(priceParam.trim());
                             String dinhLuong = request.getParameter("size_volume_" + kc.getMaSize());
-                            // Đọc trạng thái mở bán từ form switch
                             boolean sizeStatus = request.getParameter("size_status_" + kc.getMaSize()) != null;
                             SanPhamKichCo spkc = new SanPhamKichCo(null, kc.getMaSize(), giaBan, dinhLuong, sizeStatus);
                             selectedSizes.add(spkc);
@@ -334,7 +369,22 @@ public class SanPhamController extends HttpServlet {
             }
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
-            String hinhAnh = request.getParameter("hinhAnh");
+
+            // Xử lý upload file từ máy tính hoặc link dán
+            String hinhAnh = request.getParameter("currentHinhAnh");
+            String uploadType = request.getParameter("uploadType");
+            if ("file".equals(uploadType)) {
+                String uploaded = uploadFile(request, "hinhAnhFile");
+                if (uploaded != null && !uploaded.isEmpty()) {
+                    hinhAnh = uploaded;
+                }
+            } else {
+                String url = request.getParameter("hinhAnhUrl");
+                if (url != null && !url.trim().isEmpty()) {
+                    hinhAnh = url;
+                }
+            }
+
             boolean choPhepDoiDa = request.getParameter("choPhepDoiDa") != null;
             boolean choPhepDoiDuong = request.getParameter("choPhepDoiDuong") != null;
             boolean isNew = request.getParameter("isNew") != null;
@@ -364,7 +414,6 @@ public class SanPhamController extends HttpServlet {
                             if (priceParam != null && !priceParam.trim().isEmpty()) {
                                 int giaBan = Integer.parseInt(priceParam.trim());
                                 String dinhLuong = request.getParameter("size_volume_" + maSize);
-                                // Đọc trạng thái bán của size từ switch gửi lên
                                 boolean sizeStatus = request.getParameter("size_status_" + maSize) != null;
                                 SanPhamKichCo spkc = new SanPhamKichCo(maSp, maSize, giaBan, dinhLuong, sizeStatus);
                                 selectedSizes.add(spkc);
@@ -396,5 +445,30 @@ public class SanPhamController extends HttpServlet {
             request.setAttribute("error", "Lỗi xử lý nghiệp vụ cập nhật!");
             showEditForm(request, response);
         }
+    }
+
+    private String uploadFile(HttpServletRequest request, String inputFieldName) {
+        try {
+            Part filePart = request.getPart(inputFieldName);
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileName = filePart.getSubmittedFileName();
+                String fileExt = "";
+                int dotIdx = fileName.lastIndexOf('.');
+                if (dotIdx > 0) {
+                    fileExt = fileName.substring(dotIdx);
+                }
+                String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
+                String uploadPath = request.getServletContext().getRealPath("/assets/images");
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+                filePart.write(uploadPath + File.separator + newFileName);
+                return request.getContextPath() + "/assets/images/" + newFileName;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

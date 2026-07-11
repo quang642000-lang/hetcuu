@@ -1,19 +1,59 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<!-- Lấy URI hiện tại của trình duyệt để xử lý tô sáng menu tự động (Active State) -->
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="uri" value="${pageContext.request.requestURI}" />
 
-<div class="admin-sidebar">
+<style>
+    /* CSS Slide Sidebar responsive chuyên nghiệp */
+    @media (max-width: 991.98px) {
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1050;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 260px !important;
+        }
+        .admin-sidebar.show {
+            transform: translateX(0);
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1040;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+    }
+</style>
+
+<!-- Overlay dùng để chạm tắt đóng Sidebar trên Mobile/Tablet -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="admin-sidebar" id="adminSidebar">
     <!-- Phần tiêu đề Sidebar -->
-    <div class="sidebar-header d-flex flex-column align-items-center">
+    <div class="sidebar-header d-flex flex-column align-items-center position-relative">
+        <!-- Nút đóng nhanh chỉ hiển thị trên mobile/tablet -->
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 d-lg-none" onclick="toggleSidebar()"></button>
+
         <div class="fs-2 text-success mb-2" style="color: #10b981 !important;">
-            <i class="bi bi-cup-hot-fill"></i>
+            <i class="bi bi-cup-hot-fill animate-pulse"></i>
         </div>
         <h5 class="fw-bold mb-0 text-white" style="letter-spacing: 1px;">TEA POS</h5>
         <small class="text-muted" style="font-size: 11px;">HỆ THỐNG QUẢN TRỊ VIÊN</small>
     </div>
-
     <!-- Danh sách Menu liên kết -->
     <ul class="sidebar-menu flex-grow-1 mb-0 ps-0">
         <!-- 1. Dashboard -->
@@ -23,7 +63,6 @@
                 <span>Trang tổng quan</span>
             </a>
         </li>
-
         <!-- 2. Quản lý Danh mục -->
         <li class="sidebar-item ${uri.contains('/admin/danhmuc') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/danhmuc">
@@ -31,7 +70,6 @@
                 <span>Quản lý danh mục</span>
             </a>
         </li>
-
         <!-- 3. Quản lý Sản phẩm -->
         <li class="sidebar-item ${uri.contains('/admin/sanpham') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/sanpham">
@@ -39,7 +77,6 @@
                 <span>Quản lý sản phẩm</span>
             </a>
         </li>
-
         <!-- 4. Quản lý Topping -->
         <li class="sidebar-item ${uri.contains('/admin/topping') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/topping">
@@ -47,7 +84,6 @@
                 <span>Quản lý topping</span>
             </a>
         </li>
-
         <!-- 5. Quản lý Voucher -->
         <li class="sidebar-item ${uri.contains('/admin/voucher') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/voucher">
@@ -55,7 +91,6 @@
                 <span>Khuyến mãi - Voucher</span>
             </a>
         </li>
-
         <!-- 6. Quản lý Hóa đơn -->
         <li class="sidebar-item ${uri.contains('/admin/hoadon') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/hoadon">
@@ -63,7 +98,6 @@
                 <span>Lịch sử hóa đơn</span>
             </a>
         </li>
-
         <!-- 7. Quản lý Khách hàng -->
         <li class="sidebar-item ${uri.contains('/admin/khachhang') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/khachhang">
@@ -71,7 +105,6 @@
                 <span>Khách hàng (CRM)</span>
             </a>
         </li>
-
         <!-- 8. Quản lý Nhân viên -->
         <li class="sidebar-item ${uri.contains('/admin/nhanvien') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/nhanvien">
@@ -79,7 +112,6 @@
                 <span>Hồ sơ nhân viên</span>
             </a>
         </li>
-
         <!-- 9. Nhật ký hoạt động -->
         <li class="sidebar-item ${uri.contains('/admin/auditlog') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/auditlog">
@@ -87,7 +119,6 @@
                 <span>Nhật ký hoạt động</span>
             </a>
         </li>
-
         <!-- 10. Cài đặt hệ thống -->
         <li class="sidebar-item ${uri.contains('/admin/settings') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/settings">
@@ -96,8 +127,7 @@
             </a>
         </li>
     </ul>
-
-    <!-- Khu vực chuyển nhanh qua ca làm POS (Phục vụ phân quyền Admin chuyển tiếp) -->
+    <!-- Khu vực chuyển nhanh qua ca làm POS -->
     <div class="p-3 border-top border-secondary" style="background-color: #0f172a;">
         <a href="${pageContext.request.contextPath}/pos" class="btn btn-outline-success btn-sm w-100 py-2 d-flex align-items-center justify-content-center gap-2 border-2" style="border-radius: 6px;">
             <i class="bi bi-cart3"></i>
@@ -105,3 +135,14 @@
         </a>
     </div>
 </div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar && overlay) {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+    }
+</script>

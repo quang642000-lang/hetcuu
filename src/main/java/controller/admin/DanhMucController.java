@@ -3,16 +3,23 @@ package controller.admin;
 import model.entity.DanhMuc;
 import service.IDanhMucService;
 import service.impl.DanhMucServiceImpl;
-
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 @WebServlet(name = "DanhMucController", urlPatterns = {"/admin/danhmuc"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10,      // 10MB
+        maxRequestSize = 1024 * 1024 * 50   // 50MB
+)
 public class DanhMucController extends HttpServlet {
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
 
@@ -22,7 +29,6 @@ public class DanhMucController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         switch (action) {
             case "list":
                 showList(request, response);
@@ -94,30 +100,40 @@ public class DanhMucController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String tenDm = request.getParameter("tenDm");
-        String hinhAnh = request.getParameter("hinhAnh");
-        String thuTuHienThiStr = request.getParameter("thuTuHienThi");
-        String trangThaiStr = request.getParameter("trangThai");
-
-        int thuTu = 0;
         try {
-            thuTu = Integer.parseInt(thuTuHienThiStr);
-        } catch (NumberFormatException e) {
+            String tenDm = request.getParameter("tenDm");
+            String thuTuHienThiStr = request.getParameter("thuTuHienThi");
+            String trangThaiStr = request.getParameter("trangThai");
+            int thuTu = 0;
+            try {
+                thuTu = Integer.parseInt(thuTuHienThiStr);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+            boolean trangThai = "1".equals(trangThaiStr);
+
+            // Xử lý upload file từ ổ đĩa máy tính hoặc lấy link dán thủ công
+            String hinhAnh = "";
+            String uploadType = request.getParameter("uploadType");
+            if ("file".equals(uploadType)) {
+                hinhAnh = uploadFile(request, "hinhAnhFile");
+            } else {
+                hinhAnh = request.getParameter("hinhAnhUrl");
+            }
+
+            DanhMuc dm = new DanhMuc(0, tenDm, hinhAnh, thuTu, trangThai);
+            boolean success = danhMucService.createDanhMuc(dm);
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=createsuccess");
+            } else {
+                request.setAttribute("category", dm);
+                request.setAttribute("error", "Tên danh mục đã tồn tại trong hệ thống!");
+                request.setAttribute("formTitle", "THÊM DANH MỤC MỚI");
+                request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        boolean trangThai = "1".equals(trangThaiStr);
-
-        DanhMuc dm = new DanhMuc(0, tenDm, hinhAnh, thuTu, trangThai);
-        boolean success = danhMucService.createDanhMuc(dm);
-
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=createsuccess");
-        } else {
-            request.setAttribute("category", dm);
-            request.setAttribute("error", "Tên danh mục đã tồn tại trong hệ thống!");
-            request.setAttribute("formTitle", "THÊM DANH MỤC MỚI");
-            request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
         }
     }
 
@@ -125,22 +141,33 @@ public class DanhMucController extends HttpServlet {
         try {
             int maDm = Integer.parseInt(request.getParameter("maDm"));
             String tenDm = request.getParameter("tenDm");
-            String hinhAnh = request.getParameter("hinhAnh");
             String thuTuHienThiStr = request.getParameter("thuTuHienThi");
             String trangThaiStr = request.getParameter("trangThai");
-
             int thuTu = 0;
             try {
                 thuTu = Integer.parseInt(thuTuHienThiStr);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
-
             boolean trangThai = "1".equals(trangThaiStr);
+
+            // Xử lý upload file từ ổ đĩa hoặc link dán
+            String hinhAnh = request.getParameter("currentHinhAnh");
+            String uploadType = request.getParameter("uploadType");
+            if ("file".equals(uploadType)) {
+                String uploaded = uploadFile(request, "hinhAnhFile");
+                if (uploaded != null && !uploaded.isEmpty()) {
+                    hinhAnh = uploaded;
+                }
+            } else {
+                String url = request.getParameter("hinhAnhUrl");
+                if (url != null && !url.trim().isEmpty()) {
+                    hinhAnh = url;
+                }
+            }
 
             DanhMuc dm = new DanhMuc(maDm, tenDm, hinhAnh, thuTu, trangThai);
             boolean success = danhMucService.updateDanhMuc(dm);
-
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=updatesuccess");
             } else {
@@ -149,8 +176,34 @@ public class DanhMucController extends HttpServlet {
                 request.setAttribute("formTitle", "CẬP NHẬT DANH MỤC");
                 request.getRequestDispatcher("/views/admin/danh_muc.jsp").forward(request, response);
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
         }
+    }
+
+    private String uploadFile(HttpServletRequest request, String inputFieldName) {
+        try {
+            Part filePart = request.getPart(inputFieldName);
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileName = filePart.getSubmittedFileName();
+                String fileExt = "";
+                int dotIdx = fileName.lastIndexOf('.');
+                if (dotIdx > 0) {
+                    fileExt = fileName.substring(dotIdx);
+                }
+                String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
+                String uploadPath = request.getServletContext().getRealPath("/assets/images");
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+                filePart.write(uploadPath + File.separator + newFileName);
+                return request.getContextPath() + "/assets/images/" + newFileName;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -15,10 +15,8 @@
 <body class="bg-light">
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,7 +28,6 @@
                         <i class="bi bi-person-plus-fill"></i> Thêm Nhân Viên Mới
                     </button>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -56,21 +53,29 @@
                                         <td>${item.email}</td>
                                         <td><code><c:out value="${item.tenDangNhap}"/></code></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.maVt == 1 ? 'bg-danger text-danger border-danger' : 'bg-info text-info border-info'} bg-opacity-10 border px-2.5 py-1">
-                                                        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
-                                                </span>
+<span class="badge ${item.maVt == 1 ? 'bg-danger text-danger border-danger' : 'bg-info text-info border-info'} bg-opacity-10 border px-2.5 py-1">
+        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
+</span>
                                         </td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success text-success border-success' : 'bg-danger text-danger border-danger'} bg-opacity-10 border px-2.5 py-1">
-                                                        ${item.trangThai ? 'Đang làm việc' : 'Khóa ca'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success text-success border-success' : 'bg-danger text-danger border-danger'} bg-opacity-10 border px-2.5 py-1">
+        ${item.trangThai ? 'Đang làm việc' : 'Khóa ca'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <button class="btn btn-sm btn-outline-warning fw-semibold px-2 me-1" onclick="openResetPasswordModal('${item.maNv}', '<c:out value="${item.hoTen}"/>')">
                                                 <i class="bi bi-key-fill"></i> Reset
                                             </button>
+                                            <!-- SỬA ĐỒNG BỘ: Sử dụng dataset chống gãy rụng dấu quote lồng nhau -->
                                             <button class="btn btn-sm btn-outline-primary fw-semibold px-2 me-1"
-                                                    onclick="openEditEmployeeModal('${item.maNv}', '<c:out value="${item.hoTen}"/>', '${item.soDienThoai}', '${item.email}', '<c:out value="${item.tenDangNhap}"/>', ${item.maVt}, ${item.trangThai ? 1 : 0})">
+                                                    data-id="${item.maNv}"
+                                                    data-name="${item.hoTen}"
+                                                    data-phone="${item.soDienThoai}"
+                                                    data-email="${item.email}"
+                                                    data-user="${item.tenDangNhap}"
+                                                    data-role="${item.maVt}"
+                                                    data-status="${item.trangThai ? 1 : 0}"
+                                                    onclick="handleEditEmployeeClick(this)">
                                                 <i class="bi bi-pencil-square"></i> Sửa
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger px-2 fw-bold" onclick="confirmDeleteEmployee('${item.maNv}')">
@@ -91,7 +96,6 @@
         </div>
     </div>
 </div>
-
 <!-- MODAL TOÀN NĂNG -->
 <div class="modal fade" id="employeeFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -149,7 +153,6 @@
         </div>
     </div>
 </div>
-
 <!-- POPUP RESET MẬT KHẨU -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -176,13 +179,11 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const empModal = new bootstrap.Modal(document.getElementById('employeeFormModal'));
     const passModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-
     function openCreateEmployeeModal() {
         document.getElementById("employeeForm").reset();
         document.getElementById("empModalTitle").innerText = "THÊM MỚI NHÂN VIÊN";
@@ -192,7 +193,16 @@
         document.getElementById("matKhau").required = true;
         empModal.show();
     }
-
+    function handleEditEmployeeClick(button) {
+        const maNv = button.getAttribute("data-id");
+        const hoTen = button.getAttribute("data-name");
+        const soDienThoai = button.getAttribute("data-phone");
+        const email = button.getAttribute("data-email");
+        const username = button.getAttribute("data-user");
+        const maVt = button.getAttribute("data-role");
+        const trangThai = parseInt(button.getAttribute("data-status"));
+        openEditEmployeeModal(maNv, hoTen, soDienThoai, email, username, maVt, trangThai);
+    }
     function openEditEmployeeModal(maNv, hoTen, sdt, email, username, maVt, trangThai) {
         document.getElementById("empModalTitle").innerText = "CẬP NHẬT NHÂN VIÊN: " + maNv;
         document.getElementById("formAction").value = "edit";
@@ -207,13 +217,11 @@
         document.getElementById("matKhau").required = false;
         empModal.show();
     }
-
     function openResetPasswordModal(maNv, hoTen) {
         document.getElementById("resetMaNv").value = maNv;
         document.getElementById("resetTenNv").innerText = hoTen;
         passModal.show();
     }
-
     function confirmDeleteEmployee(maNv) {
         Swal.fire({
             title: 'Khóa tài khoản nhân viên?',
@@ -230,7 +238,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

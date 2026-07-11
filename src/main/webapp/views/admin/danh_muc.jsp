@@ -14,10 +14,8 @@
 <body class="bg-light">
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -29,7 +27,6 @@
                         <i class="bi bi-plus-circle-fill"></i> Thêm Danh Mục Mới
                     </button>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -63,13 +60,19 @@
                                         <td><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
-                                                        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
+        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+</span>
                                         </td>
                                         <td class="text-end">
+                                            <!-- THỜI THƯỢNG: Tránh hoàn toàn lỗi quote, dùng dataset -->
                                             <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5 me-1"
-                                                    onclick="openEditModal(${item.maDm}, '<c:out value="${item.tenDm}"/>', '<c:out value="${item.hinhAnh}"/>', ${item.thuTuHienThi}, ${item.trangThai ? 1 : 0})">
+                                                    data-id="${item.maDm}"
+                                                    data-name="${item.tenDm}"
+                                                    data-img="${item.hinhAnh}"
+                                                    data-sort="${item.thuTuHienThi}"
+                                                    data-status="${item.trangThai ? 1 : 0}"
+                                                    onclick="handleEditDanhMucClick(this)">
                                                 <i class="bi bi-pencil-square"></i> Sửa
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5"
@@ -91,7 +94,6 @@
         </div>
     </div>
 </div>
-
 <!-- MODAL FORM ĐỘNG -->
 <div class="modal fade" id="danhMucFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -100,7 +102,7 @@
                 <h5 class="modal-title fw-bold" id="modalTitle">THÊM DANH MỤC</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="danhMucForm" action="${pageContext.request.contextPath}/admin/danhmuc" method="POST">
+            <form id="danhMucForm" action="${pageContext.request.contextPath}/admin/danhmuc" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="maDm" id="formMaDm" value="0">
                 <div class="modal-body p-4">
@@ -108,9 +110,25 @@
                         <label for="tenDm" class="form-label fw-bold small">Tên nhóm danh mục <span class="text-danger">*</span></label>
                         <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off">
                     </div>
+                    <!-- THỜI THƯỢNG: Hỗ trợ uploader từ máy tính -->
                     <div class="mb-3">
-                        <label for="hinhAnh" class="form-label fw-bold small">Đường dẫn hình ảnh (URL)</label>
-                        <input type="text" class="form-control form-control-teapos" id="hinhAnh" name="hinhAnh">
+                        <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
+                        <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="catImgTab" role="tablist">
+                            <li class="nav-item flex-fill text-center">
+                                <button class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel" type="button" role="tab">TẢI TỪ MÁY TÍNH</button>
+                            </li>
+                            <li class="nav-item flex-fill text-center">
+                                <button class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel" type="button" role="tab">DÁN ĐƯỜNG DẪN URL</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="catImgTabContent">
+                            <div class="tab-pane fade show active p-2 border rounded bg-white" id="catFilePanel" role="tabpanel">
+                                <input type="file" class="form-control form-control-sm" name="hinhAnhFile" id="hinhAnhFile" accept="image/*">
+                            </div>
+                            <div class="tab-pane fade p-2 border rounded bg-white" id="catUrlPanel" role="tabpanel">
+                                <input type="text" class="form-control form-control-sm" name="hinhAnhUrl" id="hinhAnhUrl" placeholder="Dán link ảnh https://image-path...">
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="thuTuHienThi" class="form-label fw-bold small">Thứ tự ưu tiên hiển thị</label>
@@ -136,28 +154,36 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const modalElement = document.getElementById('danhMucFormModal');
     const bsModal = new bootstrap.Modal(modalElement);
-
     function openCreateModal() {
         document.getElementById("danhMucForm").reset();
         document.getElementById("modalTitle").innerText = "THÊM DANH MỤC MỚI";
         document.getElementById("formAction").value = "create";
         document.getElementById("formMaDm").value = "0";
         document.getElementById("statusActive").checked = true;
+        document.getElementById("hinhAnhFile").value = "";
+        document.getElementById("hinhAnhUrl").value = "";
         bsModal.show();
     }
-
+    function handleEditDanhMucClick(button) {
+        const id = button.getAttribute("data-id");
+        const name = button.getAttribute("data-name");
+        const img = button.getAttribute("data-img");
+        const sort = button.getAttribute("data-sort");
+        const status = parseInt(button.getAttribute("data-status"));
+        openEditModal(id, name, img, sort, status);
+    }
     function openEditModal(maDm, tenDm, hinhAnh, thuTu, trangThai) {
         document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC";
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaDm").value = maDm;
         document.getElementById("tenDm").value = tenDm;
-        document.getElementById("hinhAnh").value = hinhAnh;
+        document.getElementById("hinhAnhUrl").value = hinhAnh ? hinhAnh : "";
+        document.getElementById("hinhAnhFile").value = "";
         document.getElementById("thuTuHienThi").value = thuTu;
         if (trangThai === 1) {
             document.getElementById("statusActive").checked = true;
@@ -166,7 +192,6 @@
         }
         bsModal.show();
     }
-
     function confirmDeleteDanhMuc(maDm) {
         Swal.fire({
             title: 'Xác nhận xóa?',
@@ -183,7 +208,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

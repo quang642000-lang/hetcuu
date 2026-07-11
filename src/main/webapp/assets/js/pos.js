@@ -49,24 +49,29 @@ function adjustPopupToppingQty(maTp, delta) {
     recalculatePopupPrice();
 }
 
-// Hàm mở Popup cấu hình trà sữa và toppings ăn kèm có số lượng
-function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
-    const rawOptions = JSON.parse(decodeURIComponent(optionsJsonStr));
+// Hàm mở Popup cấu hình trà sữa và toppings ăn kèm có số lượng và có hình ảnh
+function openCustomizePopup(cardElement) {
+    const maSp = cardElement.dataset.masp;
+    const tenSp = cardElement.querySelector('.pos-card-name').innerText.trim();
+    const rawOptions = JSON.parse(cardElement.dataset.options);
+
     let html = '';
     html += '<div class="text-start" id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '">';
     html += '<h5 class="fw-bold text-success mb-3">' + tenSp + '</h5>';
+
+    // Chọn Size
     html += '<div class="mb-3">';
     html += '<label class="fw-semibold small mb-2 d-block">CHỌN KÍCH CỠ (SIZE)</label>';
     html += '<div class="selection-btn-group">';
-
     rawOptions.sizes.forEach((s, idx) => {
         let checkedAttr = (idx === 0) ? 'checked' : '';
         html += '<input type="radio" class="selection-radio-input size-radio" name="popup_size" ' +
             'id="sz_' + s.maSize + '" value="' + s.maSize + '" data-price="' + s.giaBan + '" data-name="' + s.tenSize + '" ' + checkedAttr + '>';
         html += '<label class="selection-label" for="sz_' + s.maSize + '">Size ' + s.tenSize + ' (+' + formatVND(s.giaBan) + ')</label>';
     });
-
     html += '</div></div>';
+
+    // Chọn Đường
     if (rawOptions.choPhepDoiDuong) {
         html += '<div class="mb-3">';
         html += '<label class="fw-semibold small mb-2 d-block">MỨC ĐƯỜNG</label>';
@@ -81,6 +86,8 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
         html += '<label class="selection-label" for="s0">0%</label>';
         html += '</div></div>';
     }
+
+    // Chọn Đá
     if (rawOptions.choPhepDoiDa) {
         html += '<div class="mb-3">';
         html += '<label class="fw-semibold small mb-2 d-block">MỨC ĐÁ</label>';
@@ -96,15 +103,21 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
         html += '</div></div>';
     }
 
-    // NÂNG CẤP TOPPING CÓ SỐ LƯỢNG: Thêm ô tăng giảm kế bên Topping khi tick chọn
+    // Chọn Topping có Hình ảnh và Số lượng
     html += '<div class="mb-3"><label class="fw-semibold small mb-2 d-block">THÊM TOPPING ĐI KÈM (CÓ THỂ CHỌN NHIỀU PHẦN)</label>';
     rawOptions.allToppings.forEach(tp => {
-        html += '<div class="form-check d-flex justify-content-between align-items-center mb-2.5 bg-light p-2 rounded border">';
+        let imgHtml = tp.hinhAnh && tp.hinhAnh !== 'null' ? '<img src="' + tp.hinhAnh + '" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid #ddd;">' : '<div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border: 1px solid #ddd;"><i class="bi bi-egg-fried text-muted"></i></div>';
+
+        html += '<div class="form-check d-flex justify-content-between align-items-center mb-2.5 bg-light p-2 rounded border shadow-sm">';
         html += '  <div class="d-flex align-items-center flex-grow-1">';
-        html += '    <input class="form-check-input topping-chk border-secondary" type="checkbox" value="' + tp.maTp + '" ';
+        html += '    <input class="form-check-input topping-chk border-secondary me-2.5" type="checkbox" value="' + tp.maTp + '" ';
         html += '       data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" id="tp_' + tp.maTp + '" onchange="toggleToppingQty(' + tp.maTp + ')">';
-        html += '    <label class="form-check-label ms-2.5 text-dark fw-medium" for="tp_' + tp.maTp + '">';
-        html += '       ' + tp.tenTp + ' (+' + formatVND(tp.giaBan) + ')';
+        html += '    <label class="form-check-label d-flex align-items-center mb-0 cursor-pointer" for="tp_' + tp.maTp + '">';
+        html += imgHtml;
+        html += '      <div>';
+        html += '        <div class="fw-bold text-dark small" style="font-size: 13px;">' + tp.tenTp + '</div>';
+        html += '        <div class="text-success font-monospace" style="font-size: 11px;">+' + formatVND(tp.giaBan) + '</div>';
+        html += '      </div>';
         html += '    </label>';
         html += '  </div>';
         html += '  <div class="input-group input-group-sm" id="tp_qty_container_' + tp.maTp + '" style="width: 80px; display: none !important;">';
@@ -116,10 +129,13 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
     });
     html += '</div>';
 
+    // Ghi chú pha chế
     html += '<div class="mb-3">';
     html += '<label class="fw-semibold small mb-2">Ghi chú pha chế</label>';
     html += '<textarea class="form-control-teapos" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
     html += '</div>';
+
+    // Thành tiền và nút Thêm
     html += '<div class="d-flex justify-content-between align-items-center mt-4">';
     html += '<span class="fw-bold fs-5 text-success" id="popup_total">0 đ</span>';
     html += '<button class="btn-teapos btn-primary-teapos" onclick="addCustomizedToCart()">';
@@ -127,7 +143,7 @@ function openCustomizePopup(maSp, tenSp, optionsJsonStr) {
     html += '</button></div>';
 
     Swal.fire({
-        title: 'TÙY BIẾN PHA CHẾ',
+        title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
         html: html,
         showConfirmButton: false,
         showCloseButton: true,
@@ -144,7 +160,6 @@ function recalculatePopupPrice() {
     const checkedSize = document.querySelector('.size-radio:checked');
     let sizePrice = checkedSize ? parseInt(checkedSize.dataset.price) : 0;
     let toppingPrice = 0;
-
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
         const tpId = tp.value;
         const qtyInput = document.getElementById('tp_qty_' + tpId);
@@ -160,8 +175,6 @@ function addCustomizedToCart() {
     const tenSp = el.dataset.tensp;
     const checkedSize = document.querySelector('.size-radio:checked');
     const maSize = parseInt(checkedSize.value);
-
-    // Tách nhãn tên size động từ dataset cực chuẩn
     const tenSize = checkedSize.dataset.name;
     const giaBan = parseInt(checkedSize.dataset.price);
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
@@ -179,7 +192,7 @@ function addCustomizedToCart() {
             maTp: tpId,
             tenTp: tp.dataset.name,
             giaTp: parseInt(tp.dataset.price),
-            soLuongTp: qty // Gán số lượng động từ Popup
+            soLuongTp: qty
         });
     });
 
@@ -202,7 +215,7 @@ function addCustomizedToCart() {
     renderPosCart();
 }
 
-// Kết xuất giao diện giỏ hàng POS - Đồng bộ hiển thị mốc Toppings kèm số lượng của nó
+// Kết xuất giỏ hàng POS với toppings có số lượng hiển thị chi tiết
 function renderPosCart() {
     const container = document.getElementById('posCartItems');
     if (posCart.length === 0) {
@@ -222,7 +235,6 @@ function renderPosCart() {
         let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
         tongTienHang += rowPrice;
 
-        // Khởi dựng chuỗi toppings kèm số lượng của chúng
         let toppingsText = '';
         if (item.toppings && item.toppings.length > 0) {
             item.toppings.forEach(t => {
@@ -270,7 +282,6 @@ function removeCartItem(idx) {
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     if (!sdt || sdt.length < 10) return;
-
     fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
@@ -294,7 +305,6 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.display = "none";
                 document.getElementById("posAddCustomerArea").style.display = "block";
-
                 Swal.fire({
                     icon: 'question',
                     title: 'Số điện thoại mới!',
@@ -330,7 +340,7 @@ function openQuickAddCustomerModal() {
     html += '<div class="mb-3">';
     html += '<label class="fw-bold small mb-1">Địa chỉ Email <span class="text-danger">*</span></label>';
     html += '<input type="email" class="form-control" id="reg_email" placeholder="khachhang@gmail.com..." required>';
-    html += '<small class="text-muted" style="font-size: 10px;">Hệ thống sẽ tự kích hoạt tài khoản CRM và đồng bộ mượt mà!</small>';
+    html += '<small class="text-muted" style="font-size: 10px;">Hệ thống sẽ tự kích hoạt tài khoản CRM và gửi hướng dẫn sử dụng!</small>';
     html += '</div></div>';
 
     Swal.fire({
@@ -361,7 +371,6 @@ function openQuickAddCustomerModal() {
             params.append('tenKh', result.value.tenKh);
             params.append('email', result.value.email);
             params.append('soDienThoai', result.value.sdt);
-
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -413,13 +422,11 @@ function applyManualVoucherCode() {
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
-
     const url = getContextPath() + '/pos/apply-voucher';
     const params = new URLSearchParams();
     params.append('code', code);
     params.append('maKh', maKh);
     params.append('tongTienHang', totalRaw);
-
     fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -467,7 +474,6 @@ function showVoucherSelectionModal() {
         selectHtml += '<option value="' + v.maCode + '">' + v.maCode + ' (Giảm ' + txtType + ' | Đơn từ ' + formatVND(v.donToiThieu) + ')</option>';
     });
     selectHtml += '</select>';
-
     Swal.fire({
         title: 'KHO VOUCHER KHẢ DỤNG',
         html: selectHtml,
@@ -569,6 +575,7 @@ function recalculatePOSBill(tongTienHang) {
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
+
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.display = "flex";
         document.getElementById("txtUsedPoints").innerText = appliedPoints;

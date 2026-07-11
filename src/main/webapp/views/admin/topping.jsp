@@ -15,10 +15,8 @@
 <body class="bg-light">
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,12 +28,12 @@
                         <i class="bi bi-plus-circle-fill"></i> Thêm Topping Mới
                     </button>
                 </div>
-
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
                         <tr class="table-light">
                             <th style="width: 100px;">Mã TP</th>
+                            <th style="width: 100px;" class="text-center">Hình Ảnh</th>
                             <th>Tên Topping Ăn Kèm</th>
                             <th>Định Lượng</th>
                             <th class="text-center">Đơn Giá</th>
@@ -50,22 +48,42 @@
                                 <c:forEach var="item" items="${toppings}">
                                     <tr>
                                         <td><strong>TP${item.maTp}</strong></td>
+                                        <td class="text-center">
+                                            <c:choose>
+                                                <c:when test="${not empty item.hinhAnh}">
+                                                    <img src="${item.hinhAnh}" class="rounded border" style="width: 45px; height: 44px; object-fit: cover;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded border mx-auto" style="width: 44px; height: 44px;">
+                                                        <i class="bi bi-image fs-5"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td><span class="fw-bold text-dark"><c:out value="${item.tenTp}"/></span></td>
                                         <td><c:out value="${not empty item.dinhLuong ? item.dinhLuong : 'Mặc định'}"/></td>
                                         <td class="text-center fw-bold text-success"><fmt:formatNumber value="${item.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center"><span class="badge bg-secondary px-2 py-1">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success text-success' : 'bg-danger text-danger'} bg-opacity-10 border px-3 py-1.5">
-                                                        ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success text-success' : 'bg-danger text-danger'} bg-opacity-10 border px-3 py-1.5">
+        ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <a href="${pageContext.request.contextPath}/admin/topping?action=toggle&id=${item.maTp}&status=${item.trangThai ? 0 : 1}"
                                                class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-semibold me-1">
                                                     ${item.trangThai ? 'Tạm Ẩn' : 'Bật Bán'}
                                             </a>
+                                            <!-- AN TOÀN TUYỆT ĐỐI CHỐNG LỖI QUOTE: Dùng data-attributes và truyền this vào onclick -->
                                             <button class="btn btn-sm btn-outline-primary fw-semibold me-1"
-                                                    onclick="openEditToppingModal(${item.maTp}, '<c:out value="${item.tenTp}"/>', '<c:out value="${item.dinhLuong}"/>', ${item.giaBan}, ${item.thuTuHienThi}, ${item.trangThai ? 1 : 0})">
+                                                    data-id="${item.maTp}"
+                                                    data-name="${item.tenTp}"
+                                                    data-volume="${item.dinhLuong}"
+                                                    data-price="${item.giaBan}"
+                                                    data-sort="${item.thuTuHienThi}"
+                                                    data-status="${item.trangThai ? 1 : 0}"
+                                                    data-img="${item.hinhAnh}"
+                                                    onclick="handleEditToppingClick(this)">
                                                 Sửa
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteTopping(${item.maTp})">
@@ -76,7 +94,7 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr><td colspan="7" class="text-center py-5 text-muted">Chưa ghi nhận Topping nào!</td></tr>
+                                <tr><td colspan="8" class="text-center py-5 text-muted">Chưa ghi nhận Topping nào!</td></tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
@@ -86,7 +104,6 @@
         </div>
     </div>
 </div>
-
 <!-- MODAL FORM TOÀN NĂNG -->
 <div class="modal fade" id="toppingFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -95,7 +112,8 @@
                 <h5 class="modal-title fw-bold" id="toppingModalTitle">THÊM TOPPING MỚI</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="toppingForm" action="${pageContext.request.contextPath}/admin/topping" method="POST">
+            <!-- SỬA ĐỐI: Thêm enctype="multipart/form-data" để hỗ trợ upload tệp trực tiếp từ máy tính -->
+            <form id="toppingForm" action="${pageContext.request.contextPath}/admin/topping" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="maTp" id="formMaTp" value="0">
                 <div class="modal-body p-4">
@@ -110,6 +128,26 @@
                     <div class="mb-3">
                         <label for="giaBan" class="form-label fw-bold small">Đơn giá bán (VNĐ) <span class="text-danger">*</span></label>
                         <input type="number" class="form-control form-control-teapos" id="giaBan" name="giaBan" value="0" min="0" required>
+                    </div>
+                    <!-- THỜI THƯỢNG: Cho phép chọn hình ảnh từ ổ cứng máy tính -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark d-block">Hình ảnh minh họa Topping</label>
+                        <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="imgTab" role="tablist">
+                            <li class="nav-item flex-fill text-center">
+                                <button class="nav-link active rounded-pill py-1 fs-12 w-100" id="file-tab" data-bs-toggle="tab" data-bs-target="#filePanel" type="button" role="tab">TẢI TỪ MÁY TÍNH</button>
+                            </li>
+                            <li class="nav-item flex-fill text-center">
+                                <button class="nav-link rounded-pill py-1 fs-12 w-100" id="url-tab" data-bs-toggle="tab" data-bs-target="#urlPanel" type="button" role="tab">DÁN ĐƯỜNG DẪN URL</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="imgTabContent">
+                            <div class="tab-pane fade show active p-2 border rounded bg-white" id="filePanel" role="tabpanel">
+                                <input type="file" class="form-control form-control-sm" name="hinhAnhFile" id="hinhAnhFile" accept="image/*">
+                            </div>
+                            <div class="tab-pane fade p-2 border rounded bg-white" id="urlPanel" role="tabpanel">
+                                <input type="text" class="form-control form-control-sm" name="hinhAnhUrl" id="hinhAnhUrl" placeholder="Dán link ảnh https://image-path...">
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="thuTuHienThi" class="form-label fw-bold small">Thứ tự hiển thị</label>
@@ -135,29 +173,42 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const tpFormModal = new bootstrap.Modal(document.getElementById('toppingFormModal'));
-
     function openCreateToppingModal() {
         document.getElementById("toppingForm").reset();
         document.getElementById("toppingModalTitle").innerText = "THÊM TOPPING MỚI";
         document.getElementById("formAction").value = "create";
         document.getElementById("formMaTp").value = "0";
         document.getElementById("statusActive").checked = true;
+// Reset file và url inputs
+        document.getElementById("hinhAnhFile").value = "";
+        document.getElementById("hinhAnhUrl").value = "";
         tpFormModal.show();
     }
-
-    function openEditToppingModal(maTp, tenTp, dinhLuong, giaBan, thuTu, trangThai) {
+    function handleEditToppingClick(button) {
+        const id = button.getAttribute("data-id");
+        const name = button.getAttribute("data-name");
+        const volume = button.getAttribute("data-volume");
+        const price = button.getAttribute("data-price");
+        const sort = button.getAttribute("data-sort");
+        const status = parseInt(button.getAttribute("data-status"));
+        const img = button.getAttribute("data-img");
+        openEditToppingModal(id, name, volume, price, sort, status, img);
+    }
+    function openEditToppingModal(maTp, tenTp, dinhLuong, giaBan, thuTu, trangThai, hinhAnh) {
         document.getElementById("toppingModalTitle").innerText = "CẬP NHẬT TOPPING";
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaTp").value = maTp;
         document.getElementById("tenTp").value = tenTp;
-        document.getElementById("dinhLuong").value = dinhLuong;
+        document.getElementById("dinhLuong").value = dinhLuong === "Mặc định" ? "" : dinhLuong;
         document.getElementById("giaBan").value = giaBan;
         document.getElementById("thuTuHienThi").value = thuTu;
+// Gán url hinhAnh
+        document.getElementById("hinhAnhUrl").value = hinhAnh ? hinhAnh : "";
+        document.getElementById("hinhAnhFile").value = ""; // Clear file uploader
         if (trangThai === 1) {
             document.getElementById("statusActive").checked = true;
         } else {
@@ -165,7 +216,6 @@
         }
         tpFormModal.show();
     }
-
     function confirmDeleteTopping(maTp) {
         Swal.fire({
             title: 'Xóa Topping?',
@@ -181,7 +231,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

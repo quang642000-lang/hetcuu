@@ -13,46 +13,89 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
+    <style>
+        :root {
+            --pos-bg: #f8fafc;
+            --pos-panel-bg: #ffffff;
+            --pos-primary: #10b981;
+            --pos-primary-dark: #059669;
+            --pos-secondary: #0f172a;
+            --pos-border: #e2e8f0;
+            --pos-active-light: #ecfdf5;
+            --pos-text-main: #1e293b;
+            --pos-text-muted: #64748b;
+        }
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--pos-bg);
+            color: var(--pos-text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .nhandon-layout {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            padding: 24px;
+        }
+    </style>
 </head>
 <body class="bg-light">
-
-<!-- HEADER CHỈ HUY NHẬN ĐƠN -->
-<nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px;">
+<!-- HEADER CHỈ HUY NHẬN ĐƠN ĐỒNG BỘ HOÀN TOÀN VỚI QUẦY POS -->
+<nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 100;">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="${pageContext.request.contextPath}/pos/nhandon" style="color: #10b981 !important;">
-            <i class="bi bi-bell-fill me-2 fs-4 text-warning"></i> TRẠM QUẢN LÝ ĐƠN HÀNG TRỰC TUYẾN
-        </a>
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
+                <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
+                <span>TEA POS PRO</span>
+            </a>
+            <!-- BỘ ĐÔI TAB CHUYỂN PHÂN HỆ NGAY TRONG GIAO DIỆN POS -->
+            <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
+                <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="bi bi-cart-fill me-1"></i> BÁN TẠI QUẦY
+                </a>
+                <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-3">
+                    <i class="bi bi-bell-fill me-1 text-warning"></i> ĐƠN ONLINE
+                </a>
+            </div>
+        </div>
+
         <div class="d-flex align-items-center gap-3">
             <span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
-                🔴 AJAX LIVE POLING: HOẠT ĐỘNG (5S/LẦN)
+                🔴 LIVE POLLING (5S/LẦN)
             </span>
-            <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-success border-2 fw-bold">
-                <i class="bi bi-cart3"></i> Vào quầy bán POS
+            <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline text-white">
+                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+            </span>
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
+                <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
+            </a>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-outline-danger border-2">
+                <i class="bi bi-box-arrow-right"></i>
             </a>
         </div>
     </div>
 </nav>
 
-<div class="container-fluid p-4">
+<div class="nhandon-layout">
     <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN -->
-    <div class="card card-teapos p-3 mb-4">
+    <div class="card card-teapos p-3 mb-4 border-0 shadow-sm" style="border-radius: 12px;">
         <div class="d-flex flex-wrap gap-2">
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn ${currentStatus == 0 ? 'btn-warning text-dark' : 'btn-light border'} fw-bold btn-sm">
-                <i class="bi bi-clock-history"></i> Chờ Xác Nhận (${onlineOrders.stream().filter(o -> o.trangThaiDon == 0).count()})
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn ${currentStatus == 0 ? 'btn-warning text-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                <i class="bi bi-clock-history"></i> Chờ Xác Nhận
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn ${currentStatus == 1 ? 'btn-info text-white' : 'btn-light border'} fw-bold btn-sm">
-                <i class="bi bi-check2-all"></i> Đã Xác Nhận (${onlineOrders.stream().filter(o -> o.trangThaiDon == 1).count()})
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn ${currentStatus == 1 ? 'btn-info text-white' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                <i class="bi bi-check2-all"></i> Đã Xác Nhận
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn ${currentStatus == 2 ? 'btn-primary' : 'btn-light border'} fw-bold btn-sm">
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn ${currentStatus == 2 ? 'btn-primary' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
                 <i class="bi bi-cup-straw"></i> Đang Pha Chế
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn ${currentStatus == 3 ? 'btn-success' : 'btn-light border'} fw-bold btn-sm">
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn ${currentStatus == 3 ? 'btn-success' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
                 <i class="bi bi-box2-heart"></i> Sẵn Sàng Chờ Lấy
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn ${currentStatus == 4 ? 'btn-dark' : 'btn-light border'} fw-bold btn-sm">
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn ${currentStatus == 4 ? 'btn-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
                 <i class="bi bi-check-circle-fill"></i> Đã Hoàn Thành
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn ${currentStatus == 5 ? 'btn-danger' : 'btn-light border'} fw-bold btn-sm">
+            <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn ${currentStatus == 5 ? 'btn-danger' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
                 <i class="bi bi-x-circle-fill"></i> Đơn Hủy Bỏ
             </a>
         </div>
@@ -71,7 +114,7 @@
                                     <small class="text-muted">Đặt lúc: <fmt:formatDate value="${order.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></small>
                                 </div>
                                 <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white">
-                                        ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán (Chuyển khoản)' : 'Chờ trả tiền mặt'}
+                                        ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
                                 </span>
                             </div>
 
@@ -83,7 +126,7 @@
 
                             <div class="mb-3">
                                 <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
-                                <strong class="text-dark small"><i class="bi bi-person-fill"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách vãng lai'}"/></strong>
+                                <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách vãng lai'}"/></strong>
                             </div>
 
                             <!-- Khối tính dồn tiền -->
@@ -103,30 +146,29 @@
                                 <input type="hidden" name="maDh" value="${order.maDh}">
                                 <input type="hidden" name="trangThaiMoi" id="statusField_${order.maDh}">
                                 <input type="hidden" name="lyDoHuy" id="cancelReason_${order.maDh}">
-
                                 <div class="row g-2">
                                     <c:choose>
                                         <c:when test="${order.trangThaiDon == 0}">
                                             <div class="col-6">
-                                                <button type="button" class="btn btn-sm btn-outline-danger w-100 fw-bold" onclick="cancelOnlineOrder('${order.maDh}')">HỦY ĐƠN</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" onclick="cancelOnlineOrder('${order.maDh}')">HỦY ĐƠN</button>
                                             </div>
                                             <div class="col-6">
-                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="submitStatus('${order.maDh}', 1)">XÁC NHẬN</button>
+                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 1)">XÁC NHẬN</button>
                                             </div>
                                         </c:when>
                                         <c:when test="${order.trangThaiDon == 1}">
                                             <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-primary w-100 fw-bold" onclick="submitStatus('${order.maDh}', 2)">BẮT ĐẦU PHA CHẾ</button>
+                                                <button type="button" class="btn btn-sm btn-primary w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 2)">BẮT ĐẦU PHA CHẾ</button>
                                             </div>
                                         </c:when>
                                         <c:when test="${order.trangThaiDon == 2}">
                                             <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="submitStatus('${order.maDh}', 3)">BÁO LÊN KỆ CHỜ LẤY</button>
+                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 3)">BÁO LÊN KỆ CHỜ LẤY</button>
                                             </div>
                                         </c:when>
                                         <c:when test="${order.trangThaiDon == 3}">
                                             <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-dark w-100 fw-bold" onclick="submitStatus('${order.maDh}', 4)">GIAO NƯỚC (HOÀN THÀNH)</button>
+                                                <button type="button" class="btn btn-sm btn-dark w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 4)">GIAO NƯỚC (HOÀN THÀNH)</button>
                                             </div>
                                         </c:when>
                                         <c:otherwise>
@@ -152,21 +194,18 @@
 </div>
 
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
-
 <script>
-    // 1. Submit chuyển đổi trạng thái đơn
     function submitStatus(maDh, targetStatus) {
         document.getElementById("statusField_" + maDh).value = targetStatus;
         document.getElementById("formUpdate_" + maDh).submit();
     }
 
-    // 2. Popup hủy đơn kèm ràng buộc bắt nhập lý do
     function cancelOnlineOrder(maDh) {
         Swal.fire({
             title: 'Từ chối đơn hàng?',
             text: 'Vui lòng điền rõ lý do hủy đơn hàng online đặt trước này:',
             input: 'text',
-            inputPlaceholder: 'Ví dụ: Hết nguyên liệu, hết đá sạch, ngoài giờ giao nước...',
+            inputPlaceholder: 'Ví dụ: Hết nguyên liệu, hết đá sạch...',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
@@ -180,27 +219,26 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById("statusField_" + maDh).value = 5; // Trạng thái hủy đơn
+                document.getElementById("statusField_" + maDh).value = 5; // Hủy đơn
                 document.getElementById("cancelReason_" + maDh).value = result.value;
                 document.getElementById("formUpdate_" + maDh).submit();
             }
         });
     }
 
-    // 3. KỊCH BẢN AJAX POLLING (Tự động tải lại danh sách sau 5 giây để đón đơn mới)
+    // Ajax live polling every 5s
     setInterval(function() {
-        // Thực hiện fetch không tải lại trang để kiểm tra biến động của hàng chờ đơn mới
         fetch('${pageContext.request.contextPath}/pos/nhandon?action=checkPollingCount&status=' + ${currentStatus})
             .then(res => res.text())
             .then(data => {
                 const currentCount = ${onlineOrders.size()};
                 if (parseInt(data) !== currentCount && parseInt(data) > 0) {
-                    showToast('info', 'Phát hiện có đơn đặt online hoặc thanh toán tự động qua SePay vừa nạp vào hàng chờ!');
+                    showToast('info', 'Phát hiện có đơn đặt online mới hoặc thanh toán qua SePay!');
                     setTimeout(() => { location.reload(); }, 1500);
                 }
             })
             .catch(err => console.error("Lỗi Polling:", err));
-    }, 5000); // 5000 milliseconds = 5 giây
+    }, 5000);
 </script>
 </body>
 </html>

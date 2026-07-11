@@ -21,7 +21,6 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
-
                 <!-- TIÊU ĐỀ MODULE -->
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <div>
@@ -32,7 +31,6 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-
                 <!-- THANH CÔNG CỤ: TÌM KIẾM VÀ BỘ LỌC CHUẨN MIEUTAHETHONG -->
                 <div class="row g-3 mb-4 bg-light p-3 rounded" style="border: 1px solid var(--border-color);">
                     <!-- 1. Search Box -->
@@ -82,7 +80,6 @@
                         <button class="btn btn-secondary-teapos w-100 py-2.5 fw-semibold" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
                     </div>
                 </div>
-
                 <!-- BẢNG SẢN PHẨM KHỚP 100% CÁC CỘT TRONG FILE MIEUTAHETHONG -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="productTable">
@@ -105,15 +102,12 @@
                         <c:choose>
                             <c:when test="${not empty products}">
                                 <c:forEach var="item" items="${products}" varStatus="loop">
-                                    <!-- Thuật toán JSTL bóc tách quy đổi giá trị min, max, size_list -->
                                     <c:set var="minPrice" value="99999999"/>
                                     <c:set var="maxPrice" value="0"/>
                                     <c:set var="activeSizes" value=""/>
                                     <c:forEach var="szPrice" items="${item.sizesList}">
                                         <c:if test="${szPrice.trangThai}">
-                                            <!-- Đọc tên size động gửi lên -->
-                                            <c:set var="sizeChar" value="${szPrice.maSize == 1 ? 'S' : (szPrice.maSize == 2 ? 'M' : (szPrice.maSize == 3 ? 'L' : 'KHÁC'))}"/>
-                                            <c:set var="activeSizes" value="${empty activeSizes ? sizeChar : activeSizes.concat(', ').concat(sizeChar)}"/>
+                                            <c:set var="activeSizes" value="${empty activeSizes ? szPrice.tenSize : activeSizes.concat(', ').concat(szPrice.tenSize)}"/>
                                             <c:if test="${szPrice.giaBan < minPrice}">
                                                 <c:set var="minPrice" value="${szPrice.giaBan}"/>
                                             </c:if>
@@ -126,14 +120,14 @@
                                         <c:set var="minPrice" value="0"/>
                                     </c:if>
 
+                                    <!-- SỬA LỖI QUOTE SYMBOL EXPECTED: Sử dụng ${item.tenSp} thay cho <c:out> lồng HTML attribute -->
                                     <tr class="product-row text-center"
                                         data-masp="${item.maSp}"
-                                        data-tensp="<c:out value="${item.tenSp}"/>"
+                                        data-tensp="${item.tenSp}"
                                         data-madm="${item.maDm}"
                                         data-isnew="${item.isNew}"
                                         data-ishot="${item.isBestseller}"
                                         data-trangthai="${item.trangThai ? 1 : 0}">
-
                                         <td><strong>${loop.index + 1}</strong></td>
                                         <td><code class="fw-bold text-dark">${item.maSp}</code></td>
                                         <td>
@@ -176,15 +170,14 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+</span>
                                         </td>
                                         <td class="small text-muted">
                                             <fmt:formatDate value="${item.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/>
                                         </td>
                                         <td>
-                                            <!-- ĐÃ BỎ NÚT XEM, ĐỔI NÚT XÓA THÀNH "NGỪNG HOẠT ĐỘNG / NGỪNG BÁN" AN TOÀN -->
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5 py-1.5">
                                                     <i class="bi bi-pencil-square"></i> Sửa cấu hình
@@ -196,7 +189,6 @@
                                                         </button>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <!-- Nếu sản phẩm đang dừng hoạt động, hiển thị nút mở bán lại -->
                                                         <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-success fw-semibold px-2.5 py-1.5">
                                                             <i class="bi bi-toggle2-on"></i> Mở bán lại
                                                         </a>
@@ -219,12 +211,10 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
