@@ -1,5 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<style>
+    /* Khóa cứng Header Admin bám chặt trên đỉnh khi cuộn trang */
+    .admin-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 999 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+</style>
 <header class="admin-header shadow-sm bg-white">
     <!-- Phần 1: Tiêu đề mô tả phân hệ hiển thị động & Nút Hamburger cho Mobile -->
     <div class="d-flex align-items-center gap-3">

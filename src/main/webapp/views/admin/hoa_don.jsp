@@ -11,6 +11,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <style>
+        /* CSS cho bộ Phân trang Client-side mượt mà */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -21,10 +32,10 @@
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                     <div>
-                        <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-receipt me-2"></i>LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
-                        <p class="text-muted small mb-0">Quản lý vòng đời hóa đơn, tra soát mốc doanh thu, kiểm tra phương thức thanh toán và chốt sổ cuối ngày</p>
+                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
+                        <p class="text-muted small mb-0">Quản lý vòng đời hóa đơn, tra soát mốc doanh thu, lọc nhân viên xử lý và in hóa đơn tại quầy</p>
                     </div>
-                    <form action="${pageContext.request.contextPath}/admin/hoadon" method="GET" class="d-flex gap-2">
+                    <form action="${pageContext.request.contextPath}/admin/hoadon" method="GET" class="d-flex flex-wrap gap-2">
                         <select name="status" class="form-select form-select-sm" style="max-width: 200px;">
                             <option value="">Tất cả trạng thái</option>
                             <option value="0" ${statusFilter eq '0' ? 'selected' : ''}>Chờ xác nhận</option>
@@ -34,11 +45,21 @@
                             <option value="4" ${statusFilter eq '4' ? 'selected' : ''}>Hoàn thành</option>
                             <option value="5" ${statusFilter eq '5' ? 'selected' : ''}>Đã hủy</option>
                         </select>
+
+                        <!-- NÂNG CẤP: Thêm bộ lọc nhân sự đảm nhận xử lý đơn hàng (Realtime AJAX / Client Filter) -->
+                        <select id="filterNhanVien" class="form-select form-select-sm" style="max-width: 200px;" onchange="filterOrdersRealtime()">
+                            <option value="">Tất cả nhân viên đảm nhiệm</option>
+                            <option value="SYSTEM">Hệ thống tự động / Chưa nhận đơn</option>
+                            <c:forEach var="nv" items="${employees}">
+                                <option value="${nv.maNv}"><c:out value="${nv.hoTen}"/> (${nv.maNv})</option>
+                            </c:forEach>
+                        </select>
+
                         <button type="submit" class="btn btn-sm btn-primary-teapos px-3"><i class="bi bi-funnel"></i> Lọc đơn</button>
                     </form>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="invoiceTable">
+                    <table class="table table-hover align-middle" id="ordersTable">
                         <thead>
                         <tr class="table-light text-center">
                             <th>Mã hoá đơn</th>
@@ -49,6 +70,8 @@
                             <th class="text-end">Thành tiền</th>
                             <th class="text-center">Thanh Toán</th>
                             <th class="text-center">Trạng Thái Đơn</th>
+                            <!-- Thêm cột người xử lý hiển thị minh bạch -->
+                            <th class="text-center">Nhân viên đảm nhiệm</th>
                             <th class="text-end">Thao tác</th>
                         </tr>
                         </thead>
@@ -56,7 +79,7 @@
                         <c:choose>
                             <c:when test="${not empty orders}">
                                 <c:forEach var="item" items="${orders}">
-                                    <tr class="invoice-row text-center">
+                                    <tr class="order-row text-center" data-manv="${not empty item.maNv ? item.maNv : 'SYSTEM'}">
                                         <td><strong>${item.maDh}</strong></td>
                                         <td>
                                             <c:choose>
@@ -71,9 +94,9 @@
                                         <td class="text-end text-danger">-<fmt:formatNumber value="${item.tienGiamGia + item.tienTruDiem}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-end text-success fw-bold"><fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center">
-                                            <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
-                                                    ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
-                                            </span>
+<span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
+        ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
+</span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -85,8 +108,18 @@
                                                 <c:when test="${item.trangThaiDon == 5}"><span class="badge bg-danger">Đã hủy</span></c:when>
                                             </c:choose>
                                         </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty item.maNv}">
+                                                    <span class="badge bg-light text-dark border"><i class="bi bi-person-badge text-success me-1"></i>${item.maNv}</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="text-muted small">Chờ nhận đơn / Online</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td class="text-end">
-                                            <button class="btn btn-sm btn-outline-success fw-bold px-3" onclick="showReceiptDetail('${item.maDh}')">
+                                            <button class="btn btn-sm btn-outline-success fw-bold" onclick="showReceiptDetail('${item.maDh}')">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
                                         </td>
@@ -94,24 +127,25 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr><td colspan="9" class="text-center py-5 text-muted">Chưa ghi nhận hóa đơn nào!</td></tr>
+                                <tr><td colspan="10" class="text-center py-5 text-muted">Chưa ghi nhận hóa đơn nào!</td></tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
                     </table>
                 </div>
-                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
-                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
-                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
-                    <nav aria-label="Table pagination">
-                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
-                            <!-- Nạp động nút phân trang bằng JS -->
-                        </ul>
+
+                <!-- Bộ phân trang Client-side điều khiển mượt mà -->
+                <div class="pagination-container" id="paginationBlock" style="display: none;">
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 đơn hàng</span>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- POPUP CHI TIẾT HÓA ĐƠN & IN BILL POS -->
@@ -119,12 +153,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
             <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1"></i> HOÁ ĐƠN THANH TOÁN</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1 text-success"></i> HOÁ ĐƠN THANH TOÁN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 bg-white text-dark" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 11px;">
+            <div class="modal-body p-4 bg-light" id="billPrintArea">
                 <div class="text-center mb-3">
-                    <h5 class="fw-bold mb-0">TEA POS PRO - COFFEE & TEA</h5>
+                    <h5 class="fw-bold mb-0">TEA POS SYSTEM</h5>
                     <small class="text-muted">123 Đường Trà Sữa, Phường 10, Gò Vấp</small> <br>
                     <small class="text-muted">Hotline: (+84) 123 456 789</small>
                     <hr class="border-secondary border-dashed my-2">
@@ -133,10 +167,11 @@
                 </div>
                 <div class="small mb-3">
                     <div>Mã hóa đơn: <strong id="billMaDh" class="text-dark"></strong></div>
-                    <div>Khách hàng: <strong id="billTenKh"></strong></div>
+                    <div>Khách CRM: <strong id="billTenKh"></strong></div>
                     <div>Thu ngân: <strong id="billTenNv"></strong></div>
                 </div>
                 <hr class="border-secondary border-dashed my-2">
+                <!-- Container hiển thị sản phẩm, chống hiển thị cache bằng hiệu ứng loading -->
                 <div id="billItemsContainer" class="small"></div>
                 <hr class="border-secondary border-dashed my-2">
                 <div class="small">
@@ -163,7 +198,7 @@
             </div>
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-success fw-bold" onclick="printReceipt()"><i class="bi bi-printer"></i> In hóa đơn</button>
+                <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="bi bi-printer"></i> In hóa đơn</button>
             </div>
         </div>
     </div>
@@ -172,23 +207,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    function showReceiptDetail(maDh) {
-        // XOÁ SẠCH DỮ LIỆU CŨ TRONG DOM ĐỂ TRÁNH LỖI HIỂN THỊ HOÁ ĐƠN TRƯỚC ĐÓ KHI CHƯA LOAD XONG!
-        document.getElementById("billMaDh").innerText = "Đang tải...";
-        document.getElementById("billThoiGian").innerText = "";
-        document.getElementById("billTenKh").innerText = "";
-        document.getElementById("billTenNv").innerText = "";
-        document.getElementById("billRawPrice").innerText = "0 đ";
-        document.getElementById("billDiscount").innerText = "-0 đ";
-        document.getElementById("billPointsRow").style.display = 'none';
-        document.getElementById("billFinalPayable").innerText = "0 đ";
-        document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết hoá đơn...</p></div>';
+    const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
 
-        // ĐỒNG BỘ ĐỘC BẢN: Tránh sinh nhiều modal instance Bootstrap 5 gây lỗi vỡ màn hình và cache dữ liệu!
-        let receiptModal = bootstrap.Modal.getInstance(document.getElementById('receiptDetailModal'));
-        if (!receiptModal) {
-            receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-        }
+    function showReceiptDetail(maDh) {
+        // Chống lỗi lưu cache hóa đơn cũ của trình duyệt
+        document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
 
         fetch('${pageContext.request.contextPath}/admin/hoadon?action=detailJson&id=' + maDh)
             .then(res => res.json())
@@ -200,7 +223,6 @@
                     document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                     if (data.diemSuDung > 0) {
                         document.getElementById("billPointsRow").style.display = 'flex';
                         document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
@@ -248,73 +270,92 @@
         location.reload();
     }
 
-    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN HOÁ ĐƠN
+    // BỘ PHÂN TRANG & BỘ LỌC CLIENT-SIDE REALTIME MƯỢT MÀ
     let currentPage = 1;
-    const pageSize = 10; // 10 bản ghi trên một trang
+    const rowsPerPage = 10;
+    let filteredRows = [];
 
-    function paginateAdminTable() {
-        const rows = Array.from(document.querySelectorAll("#invoiceTable tbody .invoice-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
+    function initPagination() {
+        const allRows = document.querySelectorAll("#ordersTable tbody .order-row");
+        filteredRows = Array.from(allRows);
+        showPage(1);
+    }
 
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+    function filterOrdersRealtime() {
+        const selectedNv = document.getElementById("filterNhanVien").value;
+        const allRows = document.querySelectorAll("#ordersTable tbody .order-row");
 
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-
-        rows.forEach((row, idx) => {
-            if (idx >= startIndex && idx < endIndex) {
+        filteredRows = [];
+        allRows.forEach(row => {
+            const rowNv = row.getAttribute("data-manv");
+            if (selectedNv === "" || rowNv === selectedNv) {
+                filteredRows.push(row);
                 row.style.display = "table-row";
             } else {
                 row.style.display = "none";
             }
         });
 
-        // Render bộ nút phân trang
-        document.getElementById("paginatedInfo").innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-        renderPaginationButtons(totalPages);
+        showPage(1);
     }
 
-    function renderPaginationButtons(totalPages) {
-        const controls = document.getElementById("paginatedControls");
-        controls.innerHTML = "";
+    function showPage(page) {
+        currentPage = page;
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
 
-        if (totalPages <= 1) {
-            document.getElementById("adminPaginationArea").style.display = "none";
+        // Ẩn tất cả dòng trước
+        document.querySelectorAll("#ordersTable tbody .order-row").forEach(row => {
+            row.style.display = "none";
+        });
+
+        if (totalRows === 0) {
+            document.getElementById("paginationBlock").style.display = "none";
             return;
         }
 
-        document.getElementById("adminPaginationArea").style.display = "flex";
+        document.getElementById("paginationBlock").style.display = "flex";
 
-        // Nút Trang trước
-        const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
-        controls.appendChild(prevLi);
+        const start = (page - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, totalRows);
 
-        // Các mốc số trang
-        for (let i = 1; i <= totalPages; i++) {
-            const pageLi = document.createElement("li");
-            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
-            controls.appendChild(pageLi);
+        for (let i = start; i < end; i++) {
+            filteredRows[i].style.display = "table-row";
         }
 
-        // Nút Trang sau
-        const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
-        controls.appendChild(nextLi);
-    }
+        document.getElementById("paginationInfo").innerText = "Hiển thị từ " + (start + 1) + " đến " + end + " của " + totalRows + " đơn hàng";
 
-    function changeAdminPage(newPage) {
-        currentPage = newPage;
-        paginateAdminTable();
+        // Vẽ lại các nút phân trang
+        const buttonsContainer = document.getElementById("paginationButtons");
+        buttonsContainer.innerHTML = "";
+
+        // Nút Trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (page === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page - 1) + ')">&laquo;</a>';
+        buttonsContainer.appendChild(prevLi);
+
+        // Các trang số
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (i === page ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
+            buttonsContainer.appendChild(li);
+        }
+
+        // Nút Sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (page === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page + 1) + ')">&raquo;</a>';
+        buttonsContainer.appendChild(nextLi);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        paginateAdminTable();
+        initPagination();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const msg = urlParams.get('msg');
+        if (msg === 'updatesuccess') showToast('success', 'Cập nhật trạng thái đơn hàng thành công!');
     });
 </script>
 </body>

@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS PRO - Quầy Bán Hàng Tại Chỗ & Điều Phối Đơn Hàng</title>
+    <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,13 +15,11 @@
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
         :root {
-            --pos-bg: #f8fafc;
-            --pos-panel-bg: #ffffff;
+            --pos-bg: #f1f5f9;
             --pos-primary: #10b981;
             --pos-primary-dark: #059669;
             --pos-secondary: #0f172a;
             --pos-border: #e2e8f0;
-            --pos-active-light: #ecfdf5;
             --pos-text-main: #1e293b;
             --pos-text-muted: #64748b;
         }
@@ -49,7 +47,7 @@
         }
         .pos-category-btn {
             width: 100%;
-            padding: 16px 8px;
+            padding: 18px 8px;
             border: none;
             background: transparent;
             color: #94a3b8;
@@ -84,7 +82,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background-color: var(--pos-bg);
+            background-color: #f8fafc;
             overflow: hidden;
             border-right: 1px solid var(--pos-border);
         }
@@ -109,7 +107,7 @@
             font-weight: 500;
             border: 1.5px solid var(--pos-border);
             border-radius: 20px;
-            background-color: var(--pos-bg);
+            background-color: #f1f5f9;
             transition: all 0.25s ease;
         }
         .pos-search-input:focus {
@@ -149,20 +147,21 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 190px;
+            height: 195px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .pos-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.05);
             border-color: var(--pos-primary);
         }
         .pos-card-img-wrapper {
             position: relative;
             width: 100%;
-            height: 95px;
+            height: 100px;
             border-radius: 8px;
             overflow: hidden;
-            background-color: var(--pos-bg);
+            background-color: #f1f5f9;
             margin-bottom: 8px;
         }
         .pos-card-img {
@@ -218,7 +217,7 @@
             transition: background-color 0.2s ease;
         }
         .pos-bill-item:hover {
-            background-color: var(--pos-bg);
+            background-color: #f8fafc;
         }
         .pos-bill-item-details {
             flex-grow: 1;
@@ -242,7 +241,7 @@
         }
         .pos-crm-panel {
             padding: 14px 20px;
-            background-color: var(--pos-bg);
+            background-color: #f8fafc;
             border-top: 1.5px solid var(--pos-border);
             border-bottom: 1.5px solid var(--pos-border);
         }
@@ -278,7 +277,7 @@
             color: #dc2626;
         }
         .pos-cash-calculator {
-            background-color: var(--pos-bg);
+            background-color: #f8fafc;
             border-radius: 8px;
             padding: 8px 12px;
             margin-bottom: 12px;
@@ -336,9 +335,15 @@
             </a>
         </div>
         <div class="d-flex align-items-center gap-3 text-white ms-auto">
-            <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline">
-                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-            </span>
+            <!-- Thu ngân profile & settings trigger dropdown -->
+            <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
+                <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                    <li><a class="dropdown-item py-2" href="#" onclick="openPOSSettingsModal()"><i class="bi bi-gear-fill me-2 text-success"></i>Cài đặt cá nhân</a></li>
+                </ul>
+            </div>
             <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
                 <i class="bi bi-clock-fill me-1 text-warning"></i> <span id="posCurrentClock">00:00:00</span>
             </span>
@@ -380,7 +385,6 @@
                 <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
             </div>
         </div>
-
         <div class="pos-product-container">
             <div class="pos-grid" id="posProductGrid">
                 <c:forEach var="sp" items="${products}">
@@ -401,7 +405,6 @@
                         };
                     </script>
                     <div class="pos-card-wrapper">
-                        <!-- HOÀN TOÀN QUOTE-SAFE: Đọc dữ liệu qua data attribute để tránh lỗi gãy nháy compile JSP -->
                         <div class="pos-card"
                              data-masp="${sp.maSp}"
                              data-madm="${sp.maDm}"
@@ -451,7 +454,6 @@
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
         </div>
-
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
                 <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
@@ -570,6 +572,74 @@
     </div>
 </div>
 
+<!-- MODAL CÀI ĐẶT THÔNG TIN TÀI KHOẢN NHÂN VIÊN THU NGÂN (POS PROFILE SETTINGS) -->
+<div class="modal fade" id="posSettingsModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill text-success me-2"></i>CÀI ĐẶT TÀI KHOẢN CÁ NHÂN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <!-- Nav Tabs đổi phần thiết lập -->
+                <ul class="nav nav-pills mb-3 bg-white p-1.5 rounded-pill border shadow-sm" id="posSettingsTab" role="tablist">
+                    <li class="nav-item flex-fill text-center" role="presentation">
+                        <button class="nav-link active rounded-pill py-2 w-100 fw-bold" id="pos-info-tab" data-bs-toggle="tab" data-bs-target="#posInfoPanel" type="button" role="tab">HỒ SƠ CỦA TÔI</button>
+                    </li>
+                    <li class="nav-item flex-fill text-center" role="presentation">
+                        <button class="nav-link rounded-pill py-2 w-100 fw-bold" id="pos-pass-tab" data-bs-toggle="tab" data-bs-target="#posPassPanel" type="button" role="tab">ĐỔI MẬT KHẨU</button>
+                    </li>
+                </ul>
+                <div class="tab-content bg-white p-4 rounded-3 border" id="posSettingsTabContent">
+                    <!-- Tab Panel 1: Sửa thông tin cá nhân -->
+                    <div class="tab-pane fade show active" id="posInfoPanel" role="tabpanel">
+                        <form id="posInfoForm" onsubmit="submitPOSInfoForm(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Họ và tên đầy đủ</label>
+                                <input type="text" name="hoTen" id="pos_hoTen" class="form-control" value="<c:out value='${sessionScope.user.hoTen}'/>" required autocomplete="off">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Số điện thoại liên hệ</label>
+                                <input type="text" name="soDienThoai" id="pos_soDienThoai" class="form-control" value="${sessionScope.user.soDienThoai}" required autocomplete="off">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted small">Địa chỉ Email</label>
+                                <input type="email" name="email" id="pos_email" class="form-control" value="${sessionScope.user.email}" required autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2.5 rounded-pill shadow-sm">
+                                <i class="bi bi-save me-1"></i> LƯU THAY ĐỔI HỒ SƠ
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Tab Panel 2: Đổi mật khẩu đăng nhập -->
+                    <div class="tab-pane fade" id="posPassPanel" role="tabpanel">
+                        <form id="posPassForm" onsubmit="submitPOSPassForm(event)">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Mật khẩu hiện tại</label>
+                                <input type="password" name="oldPassword" id="pos_oldPassword" class="form-control" required placeholder="Nhập mật khẩu đang dùng...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Mật khẩu mới</label>
+                                <input type="password" name="newPassword" id="pos_newPassword" class="form-control" required placeholder="Mật khẩu tối thiểu 8 ký tự..." minlength="8">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-muted small">Xác nhận mật khẩu mới</label>
+                                <input type="password" name="confirmPassword" id="pos_confirmPassword" class="form-control" required placeholder="Xác nhận lại mật khẩu mới...">
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100 fw-bold py-2.5 rounded-pill shadow-sm">
+                                <i class="bi bi-key-fill me-1"></i> XÁC NHẬN ĐỔI MẬT KHẨU
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer p-2 bg-light border-top-0 text-center d-block">
+                <small class="text-muted">Mọi thay đổi dữ liệu sẽ được ghi nhận vào Audit Trail hệ thống</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL IN HÓA ĐƠN NHIỆT -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -624,6 +694,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 <script>
     // 1. Đồng hồ thời gian thực tại quầy thu ngân
     function updatePOSClock() {
@@ -707,6 +778,7 @@
     }
 
     // 6. Tra cứu nhanh realtime không độ trễ
+    // (Bao gồm đồng thời cả lọc chuỗi gõ)
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
@@ -763,7 +835,6 @@
             container.innerHTML += '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">';
             container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
             container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
-
             // Map mảng topping định dạng chuẩn: maTp_soLuong_giaTp
             let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
             container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
@@ -771,9 +842,9 @@
 
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, ''));
         const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, ''));
-
         document.getElementById('submit_tongTienHang').value = totalRaw;
         document.getElementById('submit_tongPhaiTra').value = totalPayable;
+
         if (customerInfo) {
             document.getElementById('submit_maKh').value = customerInfo.maKh;
         }
@@ -800,9 +871,122 @@
         const optionsObj = window['sp_opt_' + maSp];
         openCustomizePopup(maSp, tenSp, encodeURIComponent(JSON.stringify(optionsObj)));
     }
-</script>
-<script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
-<script>
+
+    // 11. XỬ LÝ ĐỒNG BỘ CÀI ĐẶT CÁ NHÂN NHÂN VIÊN THU NGÂN (POS SETTINGS MODAL)
+    const posSettingsModal = new bootstrap.Modal(document.getElementById('posSettingsModal'));
+
+    function openPOSSettingsModal() {
+        posSettingsModal.show();
+    }
+
+    function submitPOSInfoForm(event) {
+        event.preventDefault();
+        const hoTen = document.getElementById("pos_hoTen").value.trim();
+        const soDienThoai = document.getElementById("pos_soDienThoai").value.trim();
+        const email = document.getElementById("pos_email").value.trim();
+
+        Swal.fire({
+            title: 'Đang lưu cài đặt hồ sơ...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        const params = new URLSearchParams();
+        params.append("hoTen", hoTen);
+        params.append("soDienThoai", soDienThoai);
+        params.append("email", email);
+
+        fetch('${pageContext.request.contextPath}/pos/update-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.status === 'SUCCESS') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã lưu thay đổi!',
+                        text: 'Hồ sơ cá nhân của bạn đã được cập nhật thành công trên hệ thống máy chủ.',
+                        confirmButtonColor: '#10b981'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lưu thất bại',
+                        text: data.message,
+                        confirmButtonColor: '#2e7d32'
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                showToast('error', 'Lỗi kết nối máy chủ!');
+            });
+    }
+
+    function submitPOSPassForm(event) {
+        event.preventDefault();
+        const oldPass = document.getElementById("pos_oldPassword").value;
+        const newPass = document.getElementById("pos_newPassword").value;
+        const confirmPass = document.getElementById("pos_confirmPassword").value;
+
+        if (newPass !== confirmPass) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Mật khẩu không trùng khớp',
+                text: 'Mật khẩu mới và mật khẩu xác nhận không giống nhau!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Đang kiểm tra bảo mật...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        const params = new URLSearchParams();
+        params.append("oldPassword", oldPass);
+        params.append("newPassword", newPass);
+
+        fetch('${pageContext.request.contextPath}/pos/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.status === 'SUCCESS') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đổi mật khẩu thành công!',
+                        text: 'Mật khẩu bảo mật đăng nhập mới của bạn đã được áp dụng.',
+                        confirmButtonColor: '#10b981'
+                    }).then(() => {
+                        posSettingsModal.hide();
+                        document.getElementById("posPassForm").reset();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Thất bại',
+                        text: data.message,
+                        confirmButtonColor: '#2e7d32'
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                showToast('error', 'Lỗi kết nối máy chủ!');
+            });
+    }
+
     // Lắng nghe xem có hóa đơn in từ backend trả về không
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);

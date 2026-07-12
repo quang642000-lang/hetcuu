@@ -15,7 +15,8 @@
     <c:set var="hinhAnhUrl" value="" />
     <c:set var="diemTichLuy" value="0" />
     <c:set var="maHang" value="1" />
-    <c:set var="trangThai" value="true" />
+    <c:set var="trangThaiVal" value="true" />
+
     <c:if test="${not empty customer}">
         <c:set var="maKh" value="${customer.maKh}" />
         <c:set var="tenKh" value="${customer.tenKh}" />
@@ -27,16 +28,14 @@
         <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
         <c:set var="diemTichLuy" value="${customer.diemTichLuy}" />
         <c:set var="maHang" value="${customer.maHang}" />
-        <!-- BIỆN PHÁP AN TOÀN TOMCAT 11 (EL 6.0): Dùng Map-like syntax ['trangThai'] để bóc tách boolean property từ isTrangThai() -->
-        <c:set var="trangThai" value="${customer['trangThai']}" />
+        <c:set var="trangThaiVal" value="${customer['trangThai']}" />
     </c:if>
+
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
 </head>
@@ -54,23 +53,23 @@
                             <i class="bi bi-arrow-left"></i> Quay lại danh sách CRM
                         </a>
                     </div>
-                    <div class="row g-4">
+                    <div class="row g-4 text-start">
                         <!-- Khung thông tin nhanh bên trái -->
                         <div class="col-12 col-lg-4">
-                            <div class="card card-teapos p-4 text-center">
+                            <div class="card card-teapos p-4 text-center bg-white shadow-sm" style="border-radius: 12px;">
                                 <img src="${not empty hinhAnhUrl ? hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success-subtle text-success border border-success px-3 py-1.5 fs-6 mb-3">
-👑 Hạng:
-<c:choose>
-    <c:when test="${maHang == 1}">ĐỒNG</c:when>
-    <c:when test="${maHang == 2}">BẠC</c:when>
-    <c:when test="${maHang == 3}">VÀNG 👑</c:when>
-    <c:when test="${maHang == 4}">VIP 💎</c:when>
-    <c:otherwise>MỚI</c:otherwise>
-</c:choose>
-</span>
+                                    👑 Hạng:
+                                    <c:choose>
+                                        <c:when test="${maHang == 1}">ĐỒNG</c:when>
+                                        <c:when test="${maHang == 2}">BẠC</c:when>
+                                        <c:when test="${maHang == 3}">VÀNG 👑</c:when>
+                                        <c:when test="${maHang == 4}">VIP 💎</c:when>
+                                        <c:otherwise>MỚI</c:otherwise>
+                                    </c:choose>
+                                </span>
                                 <div class="bg-light rounded p-3 text-start">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Mã thành viên:</span>
@@ -82,30 +81,31 @@
                                     </div>
                                     <div class="d-flex justify-content-between">
                                         <span class="text-muted small">Trạng thái:</span>
-                                        <span class="fw-bold ${trangThai ? 'text-success' : 'text-danger'}">
-                                                ${trangThai ? 'Đang hoạt động' : 'Tạm khóa'}
+                                        <span class="fw-bold ${trangThaiVal ? 'text-success' : 'text-danger'}">
+                                                ${trangThaiVal ? 'Đang hoạt động' : 'Tạm khóa'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                         <!-- Khối thông tin chi tiết Tabs bên phải -->
                         <div class="col-12 col-lg-8">
-                            <div class="card card-teapos p-4">
+                            <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px;">
                                 <!-- Danh mục Tabs liên kết -->
                                 <ul class="nav nav-tabs nav-tabs-teapos mb-4" id="crmDetailTab" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Hồ sơ cá nhân</button>
+                                        <button class="nav-link active fw-bold" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Hồ sơ cá nhân</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">Lịch sử hóa đơn</button>
+                                        <button class="nav-link fw-bold" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">Lịch sử hóa đơn</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers" type="button" role="tab">Kho Voucher khả dụng</button>
+                                        <button class="nav-link fw-bold" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers" type="button" role="tab">Kho Voucher khả dụng</button>
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="crmDetailTabContent">
-                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỒNG BỘ -->
+                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỔI HỒ SƠ -->
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
@@ -151,11 +151,11 @@
                                                 <div class="col-12">
                                                     <label class="form-label fw-semibold text-muted small d-block">Trạng thái tài khoản</label>
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhTrue" value="1" ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
+                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhTrue" value="1" ${trangThaiVal == 'true' || trangThaiVal == true ? 'checked' : ''}>
                                                         <label class="form-check-label text-success fw-medium" for="statusKhTrue">Đang hoạt động</label>
                                                     </div>
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhFalse" value="0" ${trangThai == 'false' || trangThai == false ? 'checked' : ''}>
+                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhFalse" value="0" ${trangThaiVal == 'false' || trangThaiVal == false ? 'checked' : ''}>
                                                         <label class="form-check-label text-danger" for="statusKhFalse">Đang tạm khóa</label>
                                                     </div>
                                                 </div>
@@ -165,10 +165,11 @@
                                             </button>
                                         </form>
                                     </div>
+
                                     <!-- TAB 2: LỊCH SỬ GIAO DỊCH -->
                                     <div class="tab-pane fade" id="orders" role="tabpanel">
                                         <div class="table-responsive">
-                                            <table class="table table-hover table-teapos align-middle text-center">
+                                            <table class="table table-hover align-middle text-center">
                                                 <thead>
                                                 <tr class="table-light">
                                                     <th>Mã đơn</th>
@@ -189,9 +190,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-<span class="badge bg-light text-dark border">
-        ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-</span>
+                                                                        <span class="badge bg-light text-dark border">
+                                                                                ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+                                                                        </span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -219,6 +220,7 @@
                                             </table>
                                         </div>
                                     </div>
+
                                     <!-- TAB 3: VOUCHER VIP KHẢ DỤNG -->
                                     <div class="tab-pane fade" id="vouchers" role="tabpanel">
                                         <div class="row g-3">
@@ -252,31 +254,33 @@
                         </div>
                     </div>
                 </c:when>
+
                 <%-- ==================== TRƯỜNG HỢP 2: HIỂN THỊ DANH SÁCH KHÁCH HÀNG (LIST) ==================== --%>
                 <c:otherwise>
-                    <div class="card card-teapos p-4 border-0 shadow-sm">
+                    <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
-                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);"><i class="bi bi-people-fill"></i> HỆ THỐNG KHÁCH HÀNG CRM</h3>
-                                <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng và phân hạng Loyalty</p>
+                                <h3 class="fw-bold mb-1 text-success"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
+                                <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng Loyalty và phân hạng khách hàng</p>
                             </div>
                         </div>
+
                         <!-- Bảng dữ liệu CRM -->
                         <div class="table-responsive">
-                            <table class="table table-hover table-teapos align-middle text-center" id="customerTable">
+                            <table class="table table-hover align-middle text-center" id="customerTable">
                                 <thead>
-                                <tr class="table-light">
-                                    <th>Mã KH</th>
+                                <tr class="table-success">
+                                    <th style="width: 100px;">Mã KH</th>
                                     <th class="text-start">Họ và tên thành viên</th>
                                     <th>Số điện thoại</th>
                                     <th>Địa chỉ Email</th>
                                     <th>Hạng thẻ</th>
-                                    <th>Ví Điểm Tích Lũy</th>
-                                    <th>Trạng Thái</th>
+                                    <th>Ví Điểm CRM</th>
+                                    <th>Trạng Trạng</th>
                                     <th class="text-end" style="width: 150px;">Hành động</th>
                                 </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="customerTableBody">
                                 <c:choose>
                                     <c:when test="${not empty customers}">
                                         <c:forEach var="item" items="${customers}">
@@ -285,7 +289,7 @@
                                                 <td class="text-start">
                                                     <div class="d-flex align-items-center gap-2">
                                                         <img src="${not empty item.hinhAnhUrl ? item.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
-                                                             class="rounded-circle border" style="width: 32px; height: 32px; object-fit: cover;">
+                                                             class="rounded-circle border border-2 border-success" style="width: 34px; height: 34px; object-fit: cover;">
                                                         <strong><c:out value="${item.tenKh}"/></strong>
                                                     </div>
                                                 </td>
@@ -293,26 +297,21 @@
                                                 <td>${item.email}</td>
                                                 <td>
                                                     <c:choose>
-                                                        <c:when test="${item.maHang == 1}"><span class="badge bg-secondary">ĐỒNG</span></c:when>
-                                                        <c:when test="${item.maHang == 2}"><span class="badge bg-light text-dark border">BẠC</span></c:when>
-                                                        <c:when test="${item.maHang == 3}"><span class="badge bg-warning text-dark fw-bold">VÀNG 👑</span></c:when>
-                                                        <c:when test="${item.maHang == 4}"><span class="badge bg-info text-white fw-bold">VIP 💎</span></c:when>
-                                                        <c:otherwise><span class="badge bg-light text-dark">MỚI</span></c:otherwise>
+                                                        <c:when test="${item.maHang == 1}"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">ĐỒNG</span></c:when>
+                                                        <c:when test="${item.maHang == 2}"><span class="badge bg-light text-dark border px-2.5 py-1.5" style="border-radius: 6px;">BẠC</span></c:when>
+                                                        <c:when test="${item.maHang == 3}"><span class="badge bg-warning text-dark fw-bold px-2.5 py-1.5" style="border-radius: 6px;">VÀNG 👑</span></c:when>
+                                                        <c:when test="${item.maHang == 4}"><span class="badge bg-info text-white fw-bold px-2.5 py-1.5" style="border-radius: 6px;">VIP 💎</span></c:when>
+                                                        <c:otherwise><span class="badge bg-light text-dark px-2.5 py-1.5">MỚI</span></c:otherwise>
                                                     </c:choose>
                                                 </td>
                                                 <td class="fw-bold text-success">${item.diemTichLuy} điểm</td>
                                                 <td>
-                                                    <c:choose>
-                                                        <c:when test="${item['trangThai']}">
-                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 small" style="border-radius: 50px;">Hoạt động</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-1.5 small" style="border-radius: 50px;">Đã Khóa</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
+                                                        <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                                ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
+                                                        </span>
                                                 </td>
                                                 <td class="text-end">
-                                                    <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-outline-success fw-bold px-2.5">
+                                                    <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-outline-success fw-bold px-3 py-1.5" style="border-radius: 6px;">
                                                         <i class="bi bi-eye-fill"></i> Chi tiết CRM
                                                     </a>
                                                 </td>
@@ -328,12 +327,12 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="customerPaginationArea">
-                            <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
-                            <nav aria-label="Table pagination">
-                                <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
-                                </ul>
+
+                        <!-- PHÂN TRANG CLIENT SIDE CHO KHÁCH HÀNG CRM -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="crmPaginationWrapper">
+                            <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0 justify-content-end" id="crmPaginationButtons"></ul>
                             </nav>
                         </div>
                     </div>
@@ -342,10 +341,76 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
+    const ROWS_PER_PAGE_CRM = 10;
+    let currentCrmPage = 1;
+    let crmRows = [];
+
+    function paginateCrmCustomers() {
+        const tableBody = document.getElementById("customerTableBody");
+        if (!tableBody) return; // Nếu ở trang Detail, bỏ qua
+
+        crmRows = Array.from(document.querySelectorAll("#customerTableBody .customer-row"));
+        renderCrmRows();
+    }
+
+    function renderCrmRows() {
+        crmRows.forEach(row => row.style.display = "none");
+
+        const startIdx = (currentCrmPage - 1) * ROWS_PER_PAGE_CRM;
+        const endIdx = startIdx + ROWS_PER_PAGE_CRM;
+        const pageRows = crmRows.slice(startIdx, endIdx);
+
+        pageRows.forEach(row => row.style.display = "table-row");
+
+        updateCrmPaginationControls();
+    }
+
+    function updateCrmPaginationControls() {
+        const totalRows = crmRows.length;
+        const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
+        const infoEl = document.getElementById("crmPaginationInfo");
+        const btnContainer = document.getElementById("crmPaginationButtons");
+
+        if (!infoEl || !btnContainer) return;
+
+        const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
+        const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng khách hàng';
+
+        btnContainer.innerHTML = "";
+
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentCrmPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
+        btnContainer.appendChild(prevLi);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (currentCrmPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
+            btnContainer.appendChild(li);
+        }
+
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentCrmPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
+        btnContainer.appendChild(nextLi);
+    }
+
+    function changeCrmPage(page) {
+        const totalPages = Math.ceil(crmRows.length / ROWS_PER_PAGE_CRM) || 1;
+        if (page < 1 || page > totalPages) return;
+        currentCrmPage = page;
+        renderCrmRows();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        paginateCrmCustomers();
+
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật hồ sơ khách hàng thành công!');
@@ -357,62 +422,6 @@
             confirmButtonColor: '#2e7d32'
         });
         </c:if>
-
-// PHÂN TRANG CLIENT-SIDE
-        const pageSize = 10;
-        let currentPage = 1;
-        const rows = Array.from(document.querySelectorAll("#customerTable tbody .customer-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
-        function paginateCustomerTable() {
-            if (totalRecords === 0) {
-                document.getElementById("customerPaginationArea").style.display = "none";
-                return;
-            }
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            rows.forEach((row, idx) => {
-                if (idx >= startIndex && idx < endIndex) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-            renderPaginationButtons();
-        }
-        function renderPaginationButtons() {
-            const controls = document.getElementById("paginatedControls");
-            controls.innerHTML = "";
-            if (totalPages <= 1) {
-                document.getElementById("customerPaginationArea").style.display = "none";
-                return;
-            }
-            document.getElementById("customerPaginationArea").style.display = "flex";
-            const prevLi = document.createElement("li");
-            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
-            controls.appendChild(prevLi);
-            for (let i = 1; i <= totalPages; i++) {
-                const pageLi = document.createElement("li");
-                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
-                controls.appendChild(pageLi);
-            }
-            const nextLi = document.createElement("li");
-            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
-            controls.appendChild(nextLi);
-        }
-        window.changePage = function(newPage) {
-            currentPage = newPage;
-            paginateCustomerTable();
-        }
-        if (rows.length > 0) {
-            paginateCustomerTable();
-        }
     });
 </script>
 </body>

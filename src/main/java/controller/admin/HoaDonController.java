@@ -1,8 +1,16 @@
 package controller.admin;
 
-import model.entity.*;
-import service.*;
-import service.impl.*;
+import model.entity.DonHang;
+import model.entity.ChiTietDonHang;
+import model.entity.ChiTietTopping;
+import model.entity.NhanVien;
+import model.entity.KhachHang;
+import service.IDonHangService;
+import service.IKhachHangService;
+import service.INhanVienService;
+import service.impl.DonHangServiceImpl;
+import service.impl.KhachHangServiceImpl;
+import service.impl.NhanVienServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,8 +25,6 @@ public class HoaDonController extends HttpServlet {
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
     private final INhanVienService nhanVienService = NhanVienServiceImpl.getInstance();
-    private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
-    private final IToppingService toppingService = ToppingServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -56,14 +62,8 @@ public class HoaDonController extends HttpServlet {
                 json.append("\"items\":[");
                 for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
                     ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
-                    // LẤY TÊN THẬT CỦA SẢN PHẨM KHÔNG DÙNG MÃ KHÓA CỨNG
-                    String tenSp = "Sản phẩm " + item.getMaSp();
-                    SanPham sp = sanPhamService.getSanPhamById(item.getMaSp());
-                    if (sp != null) {
-                        tenSp = sp.getTenSp();
-                    }
                     json.append("{");
-                    json.append("\"tenMon\":\"").append(tenSp).append("\",");
+                    json.append("\"tenMon\":\"").append(item.getMaSp()).append("\",");
                     json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\",");
                     json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
                     json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
@@ -72,14 +72,8 @@ public class HoaDonController extends HttpServlet {
                     json.append("\"toppings\":[");
                     for (int j = 0; j < item.getToppingsList().size(); j++) {
                         ChiTietTopping tp = item.getToppingsList().get(j);
-                        // LẤY TÊN THẬT CỦA TOPPING KHÔNG DÙNG MÃ MOCK "TP1"
-                        String tenTp = "Topping " + tp.getMaTp();
-                        Topping topping = toppingService.getToppingById(tp.getMaTp());
-                        if (topping != null) {
-                            tenTp = topping.getTenTp();
-                        }
                         json.append("{");
-                        json.append("\"tenTopping\":\"").append(tenTp).append("\",");
+                        json.append("\"tenTopping\":\"TP").append(tp.getMaTp()).append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
                         json.append("\"giaChotTp\":").append(tp.getGiaChotTp());
                         json.append("}");
@@ -119,7 +113,12 @@ public class HoaDonController extends HttpServlet {
         } else {
             orders = donHangService.getAllDonHang();
         }
+
+        // NÂNG CẤP: Truy xuất toàn bộ danh sách nhân viên phục vụ bộ lọc nhân viên tại quầy Admin
+        List<NhanVien> employees = nhanVienService.getAllNhanVien();
+
         request.setAttribute("orders", orders);
+        request.setAttribute("employees", employees);
         request.setAttribute("statusFilter", statusStr);
         request.getRequestDispatcher("/views/admin/hoa_don.jsp").forward(request, response);
     }

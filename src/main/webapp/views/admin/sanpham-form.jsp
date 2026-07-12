@@ -80,7 +80,7 @@
                     <input type="hidden" name="action" id="formAction" value="${not empty product ? 'edit' : 'create'}">
                     <input type="hidden" name="maSp" id="formMaSp" value="${not empty product ? maSp : ''}">
 
-                    <div class="row g-4">
+                    <div class="row g-4 text-start">
                         <!-- PHẦN THÔNG TIN CHUNG BÊN TRÁI -->
                         <div class="col-12 col-md-8">
                             <div class="bg-light p-3.5 rounded mb-4" style="border: 1px solid var(--border-color);">
@@ -111,7 +111,7 @@
                                             </c:forEach>
                                         </select>
                                     </div>
-                                    <!-- NÂNG CẤP: CHO PHÉP PICK FILE CHỌN ẢNH TỪ MÁY TÍNH -->
+                                    <!-- Hỗ trợ uploader từ máy tính -->
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-bold small text-dark">Hình ảnh Đồ uống</label>
                                         <ul class="nav nav-pills border-0 bg-light p-1 rounded mb-2" id="sanphamImgTab" style="font-size: 11px; max-width: fit-content;">
@@ -124,7 +124,6 @@
                                         </ul>
                                         <input type="hidden" name="uploadType" id="uploadType" value="file">
                                         <input type="hidden" name="currentHinhAnh" id="currentHinhAnh" value="${hinhAnh}">
-
                                         <div id="fileUploadGroup">
                                             <input type="file" class="form-control form-control-teapos" name="hinhAnhFile" accept="image/*" onchange="previewSelectedImage(this)">
                                         </div>
@@ -290,9 +289,10 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu -->
+                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu [Quote-Safe] -->
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
-                                                            onclick="deleteSizeRow(${sz.maSize}, '${sz.tenSize}')">
+                                                            data-id="${sz.maSize}" data-name="${sz.tenSize}"
+                                                            onclick="handleDeleteSizeRowClick(this)">
                                                         <i class="bi bi-trash-fill"></i> Xóa
                                                     </button>
                                                 </td>
@@ -407,6 +407,7 @@
                 }
             });
         });
+
         const curImg = document.getElementById('currentHinhAnh').value;
         switchUploadType((curImg && curImg.startsWith('http')) ? 'url' : 'file');
     });
@@ -458,35 +459,35 @@
 
                     let rowHtml = '';
                     rowHtml += '<td>';
-                    rowHtml += '<input type="checkbox" name="size_active_' + maSize + '" id="size_active_' + maSize + '" ';
-                    rowHtml += 'class="form-check-input size-check border-success" value="1" checked onchange="toggleSizeFields(' + maSize + ')">';
+                    rowHtml += '  <input type="checkbox" name="size_active_' + maSize + '" id="size_active_' + maSize + '" ';
+                    rowHtml += '         class="form-check-input size-check border-success" value="1" checked onchange="toggleSizeFields(' + maSize + ')">';
                     rowHtml += '</td>';
                     rowHtml += '<td>';
-                    rowHtml += '<label class="form-check-label fw-bold text-dark" for="size_active_' + maSize + '">';
-                    rowHtml += 'Size <span class="lbl-ten-size">' + normalizedTenSize + '</span>';
-                    rowHtml += '</label>';
+                    rowHtml += '  <label class="form-check-label fw-bold text-dark" for="size_active_' + maSize + '">';
+                    rowHtml += '    Size <span class="lbl-ten-size">' + normalizedTenSize + '</span>';
+                    rowHtml += '  </label>';
                     rowHtml += '</td>';
                     rowHtml += '<td>';
-                    rowHtml += '<div class="input-group input-group-sm mx-auto" style="max-width: 200px;">';
-                    rowHtml += '<input type="number" name="size_price_' + maSize + '" id="size_price_' + maSize + '" ';
-                    rowHtml += 'class="form-control text-end fw-bold text-success size-price-input" required min="1000" step="1000" placeholder="Nhập giá VNĐ...">';
-                    rowHtml += '<span class="input-group-text bg-light text-muted">đ</span>';
-                    rowHtml += '</div>';
+                    rowHtml += '  <div class="input-group input-group-sm mx-auto" style="max-width: 200px;">';
+                    rowHtml += '    <input type="number" name="size_price_' + maSize + '" id="size_price_' + maSize + '" ';
+                    rowHtml += '           class="form-control text-end fw-bold text-success size-price-input" required min="1000" step="1000" placeholder="Nhập giá VNĐ...">';
+                    rowHtml += '    <span class="input-group-text bg-light text-muted">đ</span>';
+                    rowHtml += '  </div>';
                     rowHtml += '</td>';
                     rowHtml += '<td>';
-                    rowHtml += '<input type="text" name="size_volume_' + maSize + '" id="size_volume_' + maSize + '" ';
-                    rowHtml += 'class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 150px;" placeholder="Ví dụ: 350ml, 500ml...">';
+                    rowHtml += '  <input type="text" name="size_volume_' + maSize + '" id="size_volume_' + maSize + '" ';
+                    rowHtml += '         class="form-control form-control-sm mx-auto size-volume-input" style="max-width: 150px;" placeholder="Ví dụ: 350ml, 500ml...">';
                     rowHtml += '</td>';
                     rowHtml += '<td>';
-                    rowHtml += '<div class="form-check form-switch d-inline-block ps-5">';
-                    rowHtml += '<input class="form-check-input size-status-switch" type="checkbox" name="size_status_' + maSize + '" id="size_status_' + maSize + '" value="1" checked>';
-                    rowHtml += '<label class="form-check-label fw-semibold text-muted small" id="lbl_status_' + maSize + '" for="size_status_' + maSize + '">Mở bán</label>';
-                    rowHtml += '</div>';
+                    rowHtml += '  <div class="form-check form-switch d-inline-block ps-5">';
+                    rowHtml += '    <input class="form-check-input size-status-switch" type="checkbox" name="size_status_' + maSize + '" id="size_status_' + maSize + '" value="1" checked>';
+                    rowHtml += '    <label class="form-check-label fw-semibold text-muted small" id="lbl_status_' + maSize + '" for="size_status_' + maSize + '">Mở bán</label>';
+                    rowHtml += '  </div>';
                     rowHtml += '</td>';
                     rowHtml += '<td>';
-                    rowHtml += '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteSizeRow(' + maSize + ', \'' + normalizedTenSize + '\')">';
-                    rowHtml += '<i class="bi bi-trash-fill"></i> Xóa';
-                    rowHtml += '</button>';
+                    rowHtml += '  <button type="button" class="btn btn-sm btn-outline-danger" data-id="' + maSize + '" data-name="' + normalizedTenSize + '" onclick="handleDeleteSizeRowClick(this)">';
+                    rowHtml += '    <i class="bi bi-trash-fill"></i> Xóa';
+                    rowHtml += '  </button>';
                     rowHtml += '</td>';
 
                     newRow.innerHTML = rowHtml;
@@ -509,6 +510,12 @@
                 console.error('Lỗi kết nối AJAX:', err);
                 showToast('error', 'Lỗi kết nối máy chủ!');
             });
+    }
+
+    function handleDeleteSizeRowClick(button) {
+        const maSize = parseInt(button.getAttribute("data-id"));
+        const tenSize = button.getAttribute("data-name");
+        deleteSizeRow(maSize, tenSize);
     }
 
     // Nghiệp vụ sâu: Xóa mốc Size (Kiểm toán AJAX xem đã bán chưa)

@@ -9,8 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
@@ -19,10 +17,18 @@
             background: #ffffff;
             border: none;
         }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body class="bg-light">
-<!-- Khởi tạo các biến an toàn để phòng tránh NullPointerException và lỗi PropertyNotFound trên Tomcat 11 / EL 6.0 -->
+<!-- Khởi tạo biến phòng thủ toàn cục tránh lỗi NullPointerException trên Tomcat 11 -->
 <c:set var="maKm" value="" />
 <c:set var="maCode" value="" />
 <c:set var="tenKm" value="" />
@@ -31,8 +37,8 @@
 <c:set var="giamToiDa" value="0" />
 <c:set var="donToiThieu" value="0" />
 <c:set var="soLuong" value="100" />
-<c:set var="isPublicVal" value="true" />
-<c:set var="trangThaiVal" value="true" />
+<c:set var="isPublic" value="true" />
+<c:set var="trangThai" value="true" />
 <c:set var="hinhAnhUrl" value="" />
 <c:set var="moTaDieuKien" value="" />
 <c:set var="formattedStart" value=""/>
@@ -46,18 +52,15 @@
     <c:set var="giamToiDa" value="${voucher.giamToiDa}" />
     <c:set var="donToiThieu" value="${voucher.donToiThieu}" />
     <c:set var="soLuong" value="${voucher.soLuong}" />
-    <!-- BIỆN PHÁP AN TOÀN TOMCAT 11 (EL 6.0):
-    Dùng Map-like syntax ['public'] và ['trangThai'] để tránh lỗi sập biên dịch khi JSTL EL
-    phân tích từ khóa bị chặn 'public' (mặc định JavaBeans getters isPublic() / isTrangThai() ) -->
-    <c:set var="isPublicVal" value="${voucher['public']}" />
-    <c:set var="trangThaiVal" value="${voucher['trangThai']}" />
+    <c:set var="isPublic" value="${voucher.isPublic()}" />
+    <c:set var="trangThai" value="${voucher.isTrangThai()}" />
     <c:set var="hinhAnhUrl" value="${voucher.hinhAnhUrl}" />
     <c:set var="moTaDieuKien" value="${voucher.moTaDieuKien}" />
     <c:if test="${not empty voucher.ngayBatDau}">
-        <fmt:formatDate value="${voucher.ngayBatDau}" pattern="yyyy-MM-dd'T'HH:mm" var="formattedStart"/>
+        <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
     </c:if>
     <c:if test="${not empty voucher.ngayKetThuc}">
-        <fmt:formatDate value="${voucher.ngayKetThuc}" pattern="yyyy-MM-dd'T'HH:mm" var="formattedEnd"/>
+        <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
     </c:if>
 </c:if>
 <div class="admin-wrapper">
@@ -136,15 +139,15 @@
                                 <div class="col-12 col-md-3">
                                     <label for="isPublic" class="form-label fw-bold small">Phạm vi áp dụng</label>
                                     <select name="isPublic" id="isPublic" class="form-select form-control-teapos">
-                                        <option value="1" ${isPublicVal == 'true' || isPublicVal == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
-                                        <option value="0" ${isPublicVal == 'false' || isPublicVal == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
+                                        <option value="1" ${isPublic == 'true' || isPublic == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
+                                        <option value="0" ${isPublic == 'false' || isPublic == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
                                     <select name="trangThai" id="trangThai" class="form-select form-control-teapos">
-                                        <option value="1" ${trangThaiVal == 'true' || trangThaiVal == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
-                                        <option value="0" ${trangThaiVal == 'false' || trangThaiVal == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
+                                        <option value="1" ${trangThai == 'true' || trangThai == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
+                                        <option value="0" ${trangThai == 'false' || trangThai == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
@@ -169,8 +172,8 @@
                     <c:otherwise>
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
-                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);"><i class="bi bi-ticket-perforated-fill"></i> QUẢN LÝ KHUYẾN MÃI - VOUCHER</h3>
-                                <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá và ràng buộc mốc giá trị hóa đơn</p>
+                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);">QUẢN LÝ KHUYẾN MÃI - VOUCHER</h3>
+                                <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá, kiểm soát bật/tắt (Tạm ngưng) và ràng buộc hóa đơn</p>
                             </div>
                             <a href="${pageContext.request.contextPath}/admin/voucher?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold">
                                 <i class="bi bi-plus-circle-fill"></i> Tạo Mới Voucher KM
@@ -187,8 +190,8 @@
                                     <th>Hạn Sử Dụng</th>
                                     <th>Số Lượng</th>
                                     <th>Phạm Vi</th>
-                                    <th>Trạng Thái</th>
-                                    <th class="text-end" style="width: 150px;">Hành Động</th>
+                                    <th>Trạng Thế</th>
+                                    <th class="text-end" style="width: 250px;">Hành Động</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -219,31 +222,36 @@
                                                 </td>
                                                 <td class="fw-bold text-dark">${item.soLuong} mã</td>
                                                 <td>
-                                                    <c:choose>
-                                                        <c:when test="${item['public']}">
-                                                            <span class="badge bg-success bg-opacity-10 text-success border px-2.5 py-1.5">CÔNG KHAI</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span class="badge bg-primary bg-opacity-10 text-primary border px-2.5 py-1.5">HẠNG VIP 👑</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
+<span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
+        ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
+</span>
                                                 </td>
                                                 <td>
-                                                    <c:choose>
-                                                        <c:when test="${item['trangThai']}">
-                                                            <span class="badge bg-success bg-opacity-10 text-success border px-3 py-1.5" style="border-radius: 50px;">Đang chạy</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span class="badge bg-danger bg-opacity-10 text-danger border px-3 py-1.5" style="border-radius: 50px;">Ngừng chạy</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
+<span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
+</span>
                                                 </td>
                                                 <td class="text-end">
-                                                    <div class="d-flex justify-content-end gap-1.5">
-                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5">
+                                                    <div class="d-flex justify-content-end gap-1.5 align-items-center">
+                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-outline-primary fw-semibold px-2">
                                                             Sửa
                                                         </a>
-                                                        <button class="btn btn-sm btn-outline-danger px-2.5" onclick="confirmDeleteVoucher('${item.maKm}')">
+
+                                                        <!-- NÂNG CẤP: Nút Tạm ngưng / Bật chạy lại linh hoạt không mất lịch sử hóa đơn -->
+                                                        <c:choose>
+                                                            <c:when test="${item['trangThai']}">
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-outline-warning fw-semibold px-2">
+                                                                    Tạm ngưng
+                                                                </a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-outline-success fw-semibold px-2">
+                                                                    Kích hoạt
+                                                                </a>
+                                                            </c:otherwise>
+                                                        </c:choose>
+
+                                                        <button class="btn btn-sm btn-outline-danger px-2" onclick="confirmDeleteVoucher('${item.maKm}')">
                                                             Xóa
                                                         </button>
                                                     </div>
@@ -258,12 +266,12 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="voucherPaginationArea">
-                            <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
-                            <nav aria-label="Table pagination">
-                                <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
-                                </ul>
+
+                        <!-- Bộ phân trang Client-side mượt mà -->
+                        <div class="pagination-container" id="paginationBlock" style="display: none;">
+                            <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0" id="paginationButtons"></ul>
                             </nav>
                         </div>
                     </c:otherwise>
@@ -277,91 +285,93 @@
 <script>
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
-            title: 'Xóa hoặc Ngừng chạy Voucher?',
-            text: "Hệ thống sẽ kiểm soát: Nếu Voucher đã có khách áp dụng đặt đơn, hệ thống tự động tắt trạng thái của nó để bảo lưu báo cáo hóa đơn cũ!",
+            title: 'Hủy/Xóa bỏ Voucher này?',
+            text: "Dữ liệu Voucher sẽ được đưa về ngừng hoạt động vĩnh viễn (hoặc xóa sạch khỏi CSDL nếu chưa phát sinh đơn hàng nào) để bảo lưu báo cáo hóa đơn cũ!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý',
-            cancelButtonText: 'Hủy'
+            confirmButtonText: 'Xác nhận xóa'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = '${pageContext.request.contextPath}/admin/voucher?action=delete&id=' + maKm;
             }
         });
     }
+
+    // BỘ PHÂN TRANG CLIENT-SIDE ĐỘNG
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let filteredRows = [];
+
+    function initPagination() {
+        const allRows = document.querySelectorAll("#voucherTable tbody .voucher-row");
+        filteredRows = Array.from(allRows);
+        showPage(1);
+    }
+
+    function showPage(page) {
+        currentPage = page;
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        // Ẩn tất cả dòng trước
+        document.querySelectorAll("#voucherTable tbody .voucher-row").forEach(row => {
+            row.style.display = "none";
+        });
+
+        if (totalRows === 0) {
+            document.getElementById("paginationBlock").style.display = "none";
+            return;
+        }
+
+        document.getElementById("paginationBlock").style.display = "flex";
+
+        const start = (page - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, totalRows);
+
+        for (let i = start; i < end; i++) {
+            filteredRows[i].style.display = "table-row";
+        }
+
+        document.getElementById("paginationInfo").innerText = "Hiển thị từ " + (start + 1) + " đến " + end + " của " + totalRows + " Voucher";
+
+        // Vẽ lại các nút phân trang
+        const buttonsContainer = document.getElementById("paginationButtons");
+        buttonsContainer.innerHTML = "";
+
+        // Nút Trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (page === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page - 1) + ')">&laquo;</a>';
+        buttonsContainer.appendChild(prevLi);
+
+        // Các trang số
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (i === page ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
+            buttonsContainer.appendChild(li);
+        }
+
+        // Nút Sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (page === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page + 1) + ')">&raquo;</a>';
+        buttonsContainer.appendChild(nextLi);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thiết lập Voucher mới thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã cập nhật chương trình Voucher!');
-        if (msg === 'softdeletesuccess') {
-            Swal.fire({
-                icon: 'info',
-                title: 'Xóa mềm Voucher',
-                text: 'Voucher này đã có lịch sử đặt đơn hàng trong quá khứ! Hệ thống tự động gạt tắt trạng thái hoạt động về 0 để bảo toàn lịch sử hóa đơn bán nước!',
-                confirmButtonColor: '#2e7d32'
-            });
-        }
-        if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa vĩnh viễn Voucher thành công khỏi CSDL!');
-        if (msg === 'deletefailed') showToast('error', 'Hành động thất bại hoặc lỗi máy chủ!');
+        if (msg === 'deletesuccess') showToast('success', 'Đã xóa Voucher thành công!');
+        if (msg === 'softdeletesuccess') showToast('success', 'Voucher đã có giao dịch lịch sử, tự động đưa về tạm tắt!');
+        if (msg === 'togglesuccess') showToast('success', 'Đã thay đổi trạng thái Voucher thành công!');
+        if (msg === 'togglefailed') showToast('error', 'Cập nhật trạng thái Voucher thất bại!');
 
-// PHÂN TRANG CLIENT-SIDE
-        const pageSize = 10;
-        let currentPage = 1;
-        const rows = Array.from(document.querySelectorAll("#voucherTable tbody .voucher-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
-        function paginateVoucherTable() {
-            if (totalRecords === 0) {
-                document.getElementById("voucherPaginationArea").style.display = "none";
-                return;
-            }
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            rows.forEach((row, idx) => {
-                if (idx >= startIndex && idx < endIndex) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-            renderPaginationButtons();
-        }
-        function renderPaginationButtons() {
-            const controls = document.getElementById("paginatedControls");
-            controls.innerHTML = "";
-            if (totalPages <= 1) {
-                document.getElementById("voucherPaginationArea").style.display = "none";
-                return;
-            }
-            document.getElementById("voucherPaginationArea").style.display = "flex";
-            const prevLi = document.createElement("li");
-            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
-            controls.appendChild(prevLi);
-            for (let i = 1; i <= totalPages; i++) {
-                const pageLi = document.createElement("li");
-                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
-                controls.appendChild(pageLi);
-            }
-            const nextLi = document.createElement("li");
-            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
-            controls.appendChild(nextLi);
-        }
-        window.changePage = function(newPage) {
-            currentPage = newPage;
-            paginateVoucherTable();
-        }
-        if (rows.length > 0) {
-            paginateVoucherTable();
-        }
+        initPagination();
     });
 </script>
 </body>

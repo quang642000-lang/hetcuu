@@ -4,10 +4,8 @@ let appliedVoucher = null;
 let appliedPoints = 0; // Số điểm CRM khách muốn quy đổi
 
 // Hàm lấy Context Path tự động tránh lỗi 404
-if (typeof getContextPath !== "function") {
-    window.getContextPath = function() {
-        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-    }
+function getContextPath() {
+    return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
 }
 
 function resetVoucherAndPoints() {
@@ -66,7 +64,6 @@ function openCustomizePopup(arg1, arg2, arg3) {
         tenSp = arg2;
         rawOptions = JSON.parse(decodeURIComponent(arg3));
     }
-
     let html = '';
     html += '<div class="text-start" id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '">';
     html += '<h5 class="fw-bold text-success mb-3">' + tenSp + '</h5>';
@@ -191,7 +188,6 @@ function addCustomizedToCart() {
     const maSize = parseInt(checkedSize.value);
     const tenSize = checkedSize.dataset.name;
     const giaBan = parseInt(checkedSize.dataset.price);
-
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
     const mucDuong = sugarEl ? sugarEl.value : "100%";
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
@@ -242,7 +238,6 @@ function renderPosCart() {
         recalculatePOSBill(0);
         return;
     }
-
     container.innerHTML = '';
     let tongTienHang = 0;
 
@@ -279,7 +274,6 @@ function renderPosCart() {
             '  </div>' +
             '</div>';
     });
-
     recalculatePOSBill(tongTienHang);
 }
 
@@ -299,6 +293,7 @@ function removeCartItem(idx) {
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     if (!sdt || sdt.length < 10) return;
+
     fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
@@ -306,6 +301,7 @@ function searchCustomerCRM() {
                 customerInfo = data;
                 document.getElementById('submit_maKh').value = data.maKh;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
+
                 let rankName = 'MỚI';
                 if (data.maHang === 1) rankName = 'ĐỒNG';
                 else if (data.maHang === 2) rankName = 'BẠC';
@@ -348,18 +344,19 @@ function openQuickAddCustomerModal() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     let html = '';
     html += '<div class="text-start">';
-    html += '<div class="mb-3">';
-    html += '<label class="fw-bold small mb-1">Số điện thoại di động</label>';
-    html += '<input type="text" class="form-control" id="reg_sdt" value="' + sdt + '" readonly style="background-color: #f1f5f9; font-weight: 700;">';
+    html += '  <div class="mb-3">';
+    html += '    <label class="fw-bold small mb-1">Số điện thoại di động</label>';
+    html += '    <input type="text" class="form-control" id="reg_sdt" value="' + sdt + '" readonly style="background-color: #f1f5f9; font-weight: 700;">';
+    html += '  </div>';
+    html += '  <div class="mb-3">';
+    html += '    <label class="fw-bold small mb-1">Họ tên thành viên <span class="text-danger">*</span></label>';
+    html += '    <input type="text" class="form-control" id="reg_tenKh" placeholder="Nhập họ tên đầy đủ..." required>';
+    html += '  </div>';
+    html += '  <div class="mb-3">';
+    html += '    <label class="fw-bold small mb-1">Địa chỉ Email <span class="text-danger">*</span></label>';
+    html += '    <input type="email" class="form-control" id="reg_email" placeholder="khachhang@gmail.com..." required>';
+    html += '  </div>';
     html += '</div>';
-    html += '<div class="mb-3">';
-    html += '<label class="fw-bold small mb-1">Họ tên thành viên <span class="text-danger">*</span></label>';
-    html += '<input type="text" class="form-control" id="reg_tenKh" placeholder="Nhập họ tên đầy đủ..." required>';
-    html += '</div>';
-    html += '<div class="mb-3">';
-    html += '<label class="fw-bold small mb-1">Địa chỉ Email <span class="text-danger">*</span></label>';
-    html += '<input type="email" class="form-control" id="reg_email" placeholder="khachhang@gmail.com..." required>';
-    html += '</div></div>';
 
     Swal.fire({
         title: 'ĐĂNG KÝ HỘI VIÊN VIP',
@@ -490,7 +487,6 @@ function showVoucherSelectionModal() {
         });
         return;
     }
-
     let selectHtml = '<select id="posVoucherSelector" class="form-select mb-2"><option value="">-- Bỏ áp dụng Voucher --</option>';
     customerInfo.vouchers.forEach(v => {
         let txtType = v.loaiGiam === 1 ? formatVND(v.giaTriGiam) : v.giaTriGiam + "%";
@@ -616,6 +612,7 @@ function recalculatePOSBill(tongTienHang) {
 
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
+
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
 
@@ -625,6 +622,7 @@ function recalculatePOSBill(tongTienHang) {
 
     document.getElementById('submit_tongTienHang').value = rawSum;
     document.getElementById('submit_tongPhaiTra').value = finalPayable;
+
     calculateChangeRefund();
 }
 
@@ -633,16 +631,12 @@ function formatVND(amount) {
 }
 
 function loadAndShowPrintReceipt(orderId) {
-    // XOÁ SẠCH DỮ LIỆU CŨ TRONG DOM MODAL ĐỂ TRÁNH TRÙNG LẶP HOẶC HIỂN THỊ HOÁ ĐƠN TRƯỚC ĐÓ KHI CHƯA LOAD XONG!
-    document.getElementById("billMaDh").innerText = "Đang tải...";
-    document.getElementById("billThoiGian").innerText = "";
-    document.getElementById("billTenKh").innerText = "";
-    document.getElementById("billTenNv").innerText = "";
-    document.getElementById("billRawPrice").innerText = "0 đ";
-    document.getElementById("billDiscount").innerText = "-0 đ";
-    document.getElementById("billPointsRow").style.display = 'none';
-    document.getElementById("billFinalPayable").innerText = "0 đ";
-    document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết bill...</p></div>';
+    // Render loading indicator inside Modal Container to prevent caching issues
+    document.getElementById("billItemsContainer").innerHTML =
+        '<div class="text-center py-4">' +
+        '  <div class="spinner-border text-success" role="status"></div>' +
+        '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
+        '</div>';
 
     fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
         .then(res => res.json())
@@ -651,7 +645,7 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billMaDh").innerText = data.maDh;
                 document.getElementById("billThoiGian").innerText = data.thoiGianTao;
                 document.getElementById("billTenKh").innerText = data.tenKhachHang ? data.tenKhachHang : 'Khách lẻ vãng lai';
-                document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Hệ thống';
+                document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
 
@@ -661,13 +655,14 @@ function loadAndShowPrintReceipt(orderId) {
                 } else {
                     document.getElementById("billPointsRow").style.display = 'none';
                 }
+
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
 
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
 
                 data.items.forEach(item => {
-                    let html = '<div style="margin-bottom: 6px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">';
+                    let html = '<div style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">';
                     html += '  <div class="d-flex justify-content-between">';
                     html += '    <span><strong>' + item.tenMon + '</strong> (Size: ' + item.tenSize + ')</span>';
                     html += '    <strong>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</strong>';
@@ -677,7 +672,7 @@ function loadAndShowPrintReceipt(orderId) {
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div style="padding-left: 8px; font-size: 9px; color: #555;">';
                         item.toppings.forEach(tp => {
-                            html += '    <div>+ ' + tp.tenTopping + ' (x' + tp.soLuong + ') : +' + parseInt(tp.giaChotTp * tp.soLuong).toLocaleString('vi-VN') + ' đ</div>';
+                            html += '    <div>+ ' + tp.tenTopping + ' (SL: ' + tp.soLuong + ' x ' + parseInt(tp.giaChotTp).toLocaleString('vi-VN') + ' đ)</div>';
                         });
                         html += '  </div>';
                     }
@@ -685,11 +680,7 @@ function loadAndShowPrintReceipt(orderId) {
                     container.innerHTML += html;
                 });
 
-                // ĐỒNG BỘ ĐỘC BẢN: Tránh sinh nhiều modal instance Bootstrap 5 gây lỗi vỡ màn hình và cache dữ liệu!
-                let printModal = bootstrap.Modal.getInstance(document.getElementById('receiptDetailModal'));
-                if (!printModal) {
-                    printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-                }
+                const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                 printModal.show();
             } else {
                 showToast('error', 'Không thể lấy dữ liệu in hóa đơn!');
