@@ -13,17 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
-        .filter-badge {
-            cursor: pointer;
-            border-radius: 20px;
-            padding: 8px 18px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-        .filter-badge.active {
-            background-color: var(--primary-color) !important;
-            color: white !important;
-        }
         .product-card {
             border-radius: 16px;
             overflow: hidden;
@@ -65,7 +54,6 @@
                 </div>
             </div>
         </div>
-
         <!-- DANH SÁCH MENU SẢN PHẨM BÊN PHẢI -->
         <div class="col-12 col-lg-9">
             <div class="card border-0 p-3 mb-4 shadow-sm d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px;">
@@ -78,7 +66,6 @@
                     </ul>
                 </div>
             </div>
-
             <!-- LƯỚI SẢN PHẨM -->
             <div class="row g-4">
                 <c:choose>
@@ -107,12 +94,9 @@
                                             </strong>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <!-- MUA NHANH: Tự động chuyển qua trang Login nếu chưa đăng nhập -->
-                                            <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2 px-1" onclick="quickAddToCart('${item.maSp}', '<c:out value="${item.tenSp}"/>')" style="font-size: 11.5px; border-radius: 8px;">
-                                                <i class="bi bi-cart-plus-fill"></i> MUA NHANH
-                                            </button>
-                                            <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-outline-success btn-sm flex-fill fw-bold py-2 px-1 text-center" style="font-size: 11.5px; border-radius: 8px;">
-                                                <i class="bi bi-eye-fill"></i> TÙY BIẾN
+                                            <!-- SỬA ĐỔI UX: Bỏ nút "Mua nhanh" tại danh sách, kéo rộng nút "Tùy biến" 100% để đảm bảo đúng quy trình đặt món Click & Collect -->
+                                            <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-success btn-sm w-100 py-2.5 fw-bold text-center d-flex align-items-center justify-content-center gap-1" style="font-size: 12px; border-radius: 8px;">
+                                                <i class="bi bi-eye-fill"></i> TÙY BIẾN PHA CHẾ
                                             </a>
                                         </div>
                                     </div>
@@ -128,24 +112,20 @@
                     </c:otherwise>
                 </c:choose>
             </div>
-
             <!-- BỘ ĐIỀU PHỐI PHÂN TRANG (PAGINATION) CHUẨN BOOTSTRAP -->
             <c:if test="${totalPages > 1}">
                 <nav aria-label="Page navigation" class="mt-5">
                     <ul class="pagination justify-content-center">
-                        <!-- Nút Trang trước -->
                         <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                             <a class="page-link" href="${pageContext.request.contextPath}/products?page=${currentPage - 1}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}" aria-label="Previous">
                                 <span aria-hidden="true">&laquo; Trang trước</span>
                             </a>
                         </li>
-                        <!-- Các mốc số trang -->
                         <c:forEach var="i" begin="1" end="${totalPages}">
                             <li class="page-item ${currentPage == i ? 'active' : ''}">
                                 <a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="${pageContext.request.contextPath}/products?page=${i}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}">${i}</a>
                             </li>
                         </c:forEach>
-                        <!-- Nút Trang sau -->
                         <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                             <a class="page-link" href="${pageContext.request.contextPath}/products?page=${currentPage + 1}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}" aria-label="Next">
                                 <span aria-hidden="true">Trang sau &raquo;</span>

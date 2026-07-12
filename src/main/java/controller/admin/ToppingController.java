@@ -1,18 +1,27 @@
 package controller.admin;
 
 import model.entity.Topping;
+import model.entity.NhatKyHoatDong;
+import repository.impl.NhatKyRepoImpl;
 import service.IToppingService;
 import service.impl.ToppingServiceImpl;
+import config.DBConnect;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import util.JsonParserUtil;
 
 @WebServlet(name = "ToppingController", urlPatterns = {"/admin/topping"})
 @MultipartConfig(
@@ -81,8 +90,63 @@ public class ToppingController extends HttpServlet {
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             int id = Integer.parseInt(request.getParameter("id"));
-            toppingService.deleteTopping(id); // Xóa mềm
-            response.sendRedirect(request.getContextPath() + "/admin/topping?msg=deletesuccess");
+            HttpSession session = request.getSession(false);
+            String actorNv = "SYSTEM";
+            if (session != null && session.getAttribute("user") != null) {
+                actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+            }
+            String ip = request.getRemoteAddr();
+
+            // 1. Kiểm tra xem Topping đã phát sinh hóa đơn trong CHI_TIET_TOPPING chưa
+            boolean hasOrders = false;
+            String checkSql = "SELECT COUNT(*) FROM CHI_TIET_TOPPING WHERE ma_tp = ?";
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        hasOrders = true;
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (hasOrders) {
+                // Có đơn -> Chỉ cho phép xóa mềm (Tạm ẩn)
+                boolean softSuccess = toppingService.deleteTopping(id);
+                if (softSuccess) {
+                    NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                            actorNv, "SOFT_DELETE_TOPPING", "TOPPING", "Mã TP: " + id, "Chuyển trạng thái hoạt động về 0 do có lịch sử chốt đơn.", ip, null
+                    ));
+                    response.sendRedirect(request.getContextPath() + "/admin/topping?msg=softdeletesuccess");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");
+                }
+            } else {
+                // Chưa có đơn -> Cho phép xóa cứng vĩnh viễn
+                boolean hardSuccess = false;
+                String deleteSql = "DELETE FROM TOPPING WHERE ma_tp = ?";
+                try (Connection conn = DBConnect.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                    ps.setInt(1, id);
+                    int deleted = ps.executeUpdate();
+                    if (deleted > 0) {
+                        hardSuccess = true;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                if (hardSuccess) {
+                    NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                            actorNv, "HARD_DELETE_TOPPING", "TOPPING", "Mã TP: " + id, "Xóa hoàn toàn topping khỏi hệ thống (chưa từng giao dịch).", ip, null
+                    ));
+                    response.sendRedirect(request.getContextPath() + "/admin/topping?msg=harddeletesuccess");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");
+                }
+            }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");
         }
@@ -110,14 +174,19 @@ public class ToppingController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         try {
             String tenTp = request.getParameter("tenTp");
             String dinhLuong = request.getParameter("dinhLuong");
             int giaBan = Integer.parseInt(request.getParameter("giaBan"));
             int thuTu = Integer.parseInt(request.getParameter("thuTuHienThi"));
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
-            // Xử lý upload file từ ổ đĩa máy tính hoặc lấy link dán thủ công
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
@@ -125,10 +194,12 @@ public class ToppingController extends HttpServlet {
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
-
             Topping tp = new Topping(0, tenTp, dinhLuong, giaBan, thuTu, trangThai, hinhAnh);
             boolean success = toppingService.createTopping(tp);
             if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "THÊM_TOPPING", "TOPPING", null, JsonParserUtil.toJson(tp), ip, null
+                ));
                 response.sendRedirect(request.getContextPath() + "/admin/topping?msg=createsuccess");
             } else {
                 request.setAttribute("topping", tp);
@@ -143,6 +214,13 @@ public class ToppingController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         try {
             int maTp = Integer.parseInt(request.getParameter("maTp"));
             String tenTp = request.getParameter("tenTp");
@@ -150,8 +228,6 @@ public class ToppingController extends HttpServlet {
             int giaBan = Integer.parseInt(request.getParameter("giaBan"));
             int thuTu = Integer.parseInt(request.getParameter("thuTuHienThi"));
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
-            // Xử lý upload file từ ổ đĩa máy tính hoặc dán link
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
@@ -166,9 +242,15 @@ public class ToppingController extends HttpServlet {
                 }
             }
 
+            Topping oldTp = toppingService.getToppingById(maTp);
+            String oldJson = JsonParserUtil.toJson(oldTp);
+
             Topping tp = new Topping(maTp, tenTp, dinhLuong, giaBan, thuTu, trangThai, hinhAnh);
             boolean success = toppingService.updateTopping(tp);
             if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "SỬA_TOPPING", "TOPPING", oldJson, JsonParserUtil.toJson(tp), ip, null
+                ));
                 response.sendRedirect(request.getContextPath() + "/admin/topping?msg=updatesuccess");
             } else {
                 request.setAttribute("topping", tp);

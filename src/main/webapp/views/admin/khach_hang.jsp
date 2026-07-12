@@ -28,7 +28,7 @@
         <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
         <c:set var="diemTichLuy" value="${customer.diemTichLuy}" />
         <c:set var="maHang" value="${customer.maHang}" />
-        <c:set var="trangThai" value="${customer.isTrangThai()}" />
+        <c:set var="trangThai" value="${customer.trangThai}" />
     </c:if>
 
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
@@ -41,10 +41,8 @@
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
-    <!-- Sidebar -->
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
-        <!-- Nhập Header chuẩn ở đây, tuyệt đối không lồng trong <head> -->
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <c:choose>
@@ -63,15 +61,15 @@
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success-subtle text-success border border-success px-3 py-1.5 fs-6 mb-3">
-                                    👑 Hạng:
-                                    <c:choose>
-                                        <c:when test="${maHang == 1}">ĐỒNG</c:when>
-                                        <c:when test="${maHang == 2}">BẠC</c:when>
-                                        <c:when test="${maHang == 3}">VÀNG 👑</c:when>
-                                        <c:when test="${maHang == 4}">VIP 💎</c:when>
-                                        <c:otherwise>MỚI</c:otherwise>
-                                    </c:choose>
-                                </span>
+👑 Hạng:
+<c:choose>
+    <c:when test="${maHang == 1}">ĐỒNG</c:when>
+    <c:when test="${maHang == 2}">BẠC</c:when>
+    <c:when test="${maHang == 3}">VÀNG 👑</c:when>
+    <c:when test="${maHang == 4}">VIP 💎</c:when>
+    <c:otherwise>MỚI</c:otherwise>
+</c:choose>
+</span>
                                 <div class="bg-light rounded p-3 text-start">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Mã thành viên:</span>
@@ -150,7 +148,7 @@
                                                     <textarea name="diaChiLienHe" class="form-control form-control-teapos" rows="2">${diaChiLienHe}</textarea>
                                                 </div>
                                                 <div class="col-12">
-                                                    <label class="form-label fw-semibold text-muted small d-block">Trạng thái khóa tài khoản</label>
+                                                    <label class="form-label fw-semibold text-muted small d-block">Trạng thái tài khoản</label>
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio" name="trangThai" id="statusKhTrue" value="1" ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
                                                         <label class="form-check-label text-success fw-medium" for="statusKhTrue">Đang hoạt động</label>
@@ -190,9 +188,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-                                                                        <span class="badge bg-light text-dark border">
-                                                                                ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-                                                                        </span>
+<span class="badge bg-light text-dark border">
+        ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+</span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -264,7 +262,7 @@
                         </div>
                         <!-- Bảng dữ liệu CRM -->
                         <div class="table-responsive">
-                            <table class="table table-hover table-teapos align-middle text-center">
+                            <table class="table table-hover table-teapos align-middle text-center" id="customerTable">
                                 <thead>
                                 <tr class="table-light">
                                     <th>Mã KH</th>
@@ -281,7 +279,7 @@
                                 <c:choose>
                                     <c:when test="${not empty customers}">
                                         <c:forEach var="item" items="${customers}">
-                                            <tr>
+                                            <tr class="customer-row">
                                                 <td><strong>${item.maKh}</strong></td>
                                                 <td class="text-start">
                                                     <div class="d-flex align-items-center gap-2">
@@ -329,6 +327,16 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="customerPaginationArea">
+                            <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
+                            <nav aria-label="Table pagination">
+                                <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                                </ul>
+                            </nav>
+                        </div>
+
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -350,6 +358,71 @@
             confirmButtonColor: '#2e7d32'
         });
         </c:if>
+
+// PHÂN TRANG CLIENT-SIDE
+        const pageSize = 10;
+        let currentPage = 1;
+        const rows = Array.from(document.querySelectorAll("#customerTable tbody .customer-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        function paginateCustomerTable() {
+            if (totalRecords === 0) {
+                document.getElementById("customerPaginationArea").style.display = "none";
+                return;
+            }
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+
+            rows.forEach((row, idx) => {
+                if (idx >= startIndex && idx < endIndex) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+            renderPaginationButtons();
+        }
+
+        function renderPaginationButtons() {
+            const controls = document.getElementById("paginatedControls");
+            controls.innerHTML = "";
+            if (totalPages <= 1) {
+                document.getElementById("customerPaginationArea").style.display = "none";
+                return;
+            }
+            document.getElementById("customerPaginationArea").style.display = "flex";
+
+            const prevLi = document.createElement("li");
+            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
+            controls.appendChild(prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement("li");
+                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
+                controls.appendChild(pageLi);
+            }
+
+            const nextLi = document.createElement("li");
+            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
+            controls.appendChild(nextLi);
+        }
+
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            paginateCustomerTable();
+        }
+
+        if (rows.length > 0) {
+            paginateCustomerTable();
+        }
     });
 </script>
 </body>

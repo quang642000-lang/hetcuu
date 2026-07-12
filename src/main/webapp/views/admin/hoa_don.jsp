@@ -15,15 +15,13 @@
 <body class="bg-light">
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                     <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
+                        <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-receipt me-2"></i>LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
                         <p class="text-muted small mb-0">Quản lý vòng đời hóa đơn, tra soát mốc doanh thu, kiểm tra phương thức thanh toán và chốt sổ cuối ngày</p>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/hoadon" method="GET" class="d-flex gap-2">
@@ -39,11 +37,10 @@
                         <button type="submit" class="btn btn-sm btn-primary-teapos px-3"><i class="bi bi-funnel"></i> Lọc đơn</button>
                     </form>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="invoiceTable">
                         <thead>
-                        <tr class="table-light">
+                        <tr class="table-light text-center">
                             <th>Mã hoá đơn</th>
                             <th>Mã Khách</th>
                             <th>Thời gian</th>
@@ -59,7 +56,7 @@
                         <c:choose>
                             <c:when test="${not empty orders}">
                                 <c:forEach var="item" items="${orders}">
-                                    <tr>
+                                    <tr class="invoice-row text-center">
                                         <td><strong>${item.maDh}</strong></td>
                                         <td>
                                             <c:choose>
@@ -74,9 +71,9 @@
                                         <td class="text-end text-danger">-<fmt:formatNumber value="${item.tienGiamGia + item.tienTruDiem}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-end text-success fw-bold"><fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
-                                                        ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
-                                                </span>
+                                            <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
+                                                    ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
+                                            </span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -89,7 +86,7 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-end">
-                                            <button class="btn btn-sm btn-outline-success fw-bold" onclick="showReceiptDetail('${item.maDh}')">
+                                            <button class="btn btn-sm btn-outline-success fw-bold px-3" onclick="showReceiptDetail('${item.maDh}')">
                                                 <i class="bi bi-eye"></i> Chi tiết
                                             </button>
                                         </td>
@@ -102,6 +99,15 @@
                         </c:choose>
                         </tbody>
                     </table>
+                </div>
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                            <!-- Nạp động nút phân trang bằng JS -->
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -116,9 +122,9 @@
                 <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1"></i> HOÁ ĐƠN THANH TOÁN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 bg-light" id="billPrintArea">
+            <div class="modal-body p-4 bg-white text-dark" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 11px;">
                 <div class="text-center mb-3">
-                    <h5 class="fw-bold mb-0">TEA POS MANAGEMENT</h5>
+                    <h5 class="fw-bold mb-0">TEA POS PRO - COFFEE & TEA</h5>
                     <small class="text-muted">123 Đường Trà Sữa, Phường 10, Gò Vấp</small> <br>
                     <small class="text-muted">Hotline: (+84) 123 456 789</small>
                     <hr class="border-secondary border-dashed my-2">
@@ -127,7 +133,7 @@
                 </div>
                 <div class="small mb-3">
                     <div>Mã hóa đơn: <strong id="billMaDh" class="text-dark"></strong></div>
-                    <div>Khách CRM: <strong id="billTenKh"></strong></div>
+                    <div>Khách hàng: <strong id="billTenKh"></strong></div>
                     <div>Thu ngân: <strong id="billTenNv"></strong></div>
                 </div>
                 <hr class="border-secondary border-dashed my-2">
@@ -157,7 +163,7 @@
             </div>
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="bi bi-printer"></i> In hóa đơn</button>
+                <button type="button" class="btn btn-success fw-bold" onclick="printReceipt()"><i class="bi bi-printer"></i> In hóa đơn</button>
             </div>
         </div>
     </div>
@@ -166,10 +172,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-
     function showReceiptDetail(maDh) {
-        // SỬA LỖI: AJAX fetch đúng Endpoint JSON API `/admin/hoadon` với action=detailJson vừa cấu hình!
+        // XOÁ SẠCH DỮ LIỆU CŨ TRONG DOM ĐỂ TRÁNH LỖI HIỂN THỊ HOÁ ĐƠN TRƯỚC ĐÓ KHI CHƯA LOAD XONG!
+        document.getElementById("billMaDh").innerText = "Đang tải...";
+        document.getElementById("billThoiGian").innerText = "";
+        document.getElementById("billTenKh").innerText = "";
+        document.getElementById("billTenNv").innerText = "";
+        document.getElementById("billRawPrice").innerText = "0 đ";
+        document.getElementById("billDiscount").innerText = "-0 đ";
+        document.getElementById("billPointsRow").style.display = 'none';
+        document.getElementById("billFinalPayable").innerText = "0 đ";
+        document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết hoá đơn...</p></div>';
+
+        // ĐỒNG BỘ ĐỘC BẢN: Tránh sinh nhiều modal instance Bootstrap 5 gây lỗi vỡ màn hình và cache dữ liệu!
+        let receiptModal = bootstrap.Modal.getInstance(document.getElementById('receiptDetailModal'));
+        if (!receiptModal) {
+            receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
+        }
+
         fetch('${pageContext.request.contextPath}/admin/hoadon?action=detailJson&id=' + maDh)
             .then(res => res.json())
             .then(data => {
@@ -180,6 +200,7 @@
                     document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+
                     if (data.diemSuDung > 0) {
                         document.getElementById("billPointsRow").style.display = 'flex';
                         document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
@@ -200,7 +221,7 @@
                         if (item.toppings && item.toppings.length > 0) {
                             html += '<div class="ps-2 small text-muted">';
                             item.toppings.forEach(tp => {
-                                html += '<div>+ Topping ' + tp.tenTopping + ' (SL: ' + tp.soLuong + ' x ' + parseInt(tp.giaChotTp).toLocaleString('vi-VN') + ' đ)</div>';
+                                html += '<div>+ ' + tp.tenTopping + ' (SL: ' + tp.soLuong + ' x ' + parseInt(tp.giaChotTp).toLocaleString('vi-VN') + ' đ)</div>';
                             });
                             html += '</div>';
                         }
@@ -226,6 +247,75 @@
         document.body.innerHTML = originalContent;
         location.reload();
     }
+
+    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN HOÁ ĐƠN
+    let currentPage = 1;
+    const pageSize = 10; // 10 bản ghi trên một trang
+
+    function paginateAdminTable() {
+        const rows = Array.from(document.querySelectorAll("#invoiceTable tbody .invoice-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        rows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.style.display = "table-row";
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Render bộ nút phân trang
+        document.getElementById("paginatedInfo").innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+        renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const controls = document.getElementById("paginatedControls");
+        controls.innerHTML = "";
+
+        if (totalPages <= 1) {
+            document.getElementById("adminPaginationArea").style.display = "none";
+            return;
+        }
+
+        document.getElementById("adminPaginationArea").style.display = "flex";
+
+        // Nút Trang trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
+        controls.appendChild(prevLi);
+
+        // Các mốc số trang
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLi = document.createElement("li");
+            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
+            controls.appendChild(pageLi);
+        }
+
+        // Nút Trang sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
+        controls.appendChild(nextLi);
+    }
+
+    function changeAdminPage(newPage) {
+        currentPage = newPage;
+        paginateAdminTable();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        paginateAdminTable();
+    });
 </script>
 </body>
 </html>

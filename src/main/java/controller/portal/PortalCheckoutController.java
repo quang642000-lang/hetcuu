@@ -4,6 +4,7 @@ import model.entity.*;
 import service.*;
 import service.impl.*;
 import config.DBConnect;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,10 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,6 +34,7 @@ public class PortalCheckoutController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         // Lấy thông tin tươi mới nhất từ Database để cập nhật ví điểm Loyalty CRM
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
@@ -62,6 +60,7 @@ public class PortalCheckoutController extends HttpServlet {
 
         // Tải danh sách Voucher cá nhân khả dụng cho khách hàng dựa trên tổng tiền gốc
         List<KhuyenMai> activeVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(tongTienHang, freshCustomer.getMaKh());
+
         request.setAttribute("checkoutItems", checkoutItems);
         request.setAttribute("tongTienHang", tongTienHang);
         request.setAttribute("activeVouchers", activeVouchers);
@@ -75,6 +74,7 @@ public class PortalCheckoutController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         try {
             int tongTienHang = Integer.parseInt(request.getParameter("tongTienHang"));
@@ -154,6 +154,11 @@ public class PortalCheckoutController extends HttpServlet {
                         }
                     }
                 }
+
+                // CẬP NHẬT LẠI VÍ ĐIỂM CỦA KHÁCH TRONG SESSION NGAY LẬP TỨC SAU KHI TRỪ ĐIỂM THÀNH CÔNG!
+                KhachHang customerFreshAfterCheckout = khachHangService.getKhachHangById(currentCustomer.getMaKh());
+                session.setAttribute("customer", customerFreshAfterCheckout);
+
                 // Đồng bộ cập nhật lại Badge giỏ hàng tức thì
                 GioHang freshGh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
                 int remainCount = (freshGh != null && freshGh.getChiTietGioHangList() != null) ? freshGh.getChiTietGioHangList().size() : 0;

@@ -3,6 +3,8 @@ package controller.admin;
 import model.entity.DonHang;
 import model.entity.KhachHang;
 import model.entity.KhuyenMai;
+import model.entity.NhatKyHoatDong;
+import repository.impl.NhatKyRepoImpl;
 import service.IKhachHangService;
 import service.IDonHangService;
 import service.IKhuyenMaiService;
@@ -14,9 +16,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
+import util.JsonParserUtil;
 
 @WebServlet(name = "KhachHangController", urlPatterns = {"/admin/khachhang"})
 public class KhachHangController extends HttpServlet {
@@ -87,6 +91,13 @@ public class KhachHangController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         String maKh = request.getParameter("maKh");
         String tenKh = request.getParameter("tenKh");
         String sdt = request.getParameter("soDienThoai");
@@ -98,6 +109,7 @@ public class KhachHangController extends HttpServlet {
 
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
+            String oldJson = JsonParserUtil.toJson(kh);
             kh.setTenKh(tenKh);
             kh.setSoDienThoai(sdt);
             kh.setEmail(email);
@@ -107,13 +119,16 @@ public class KhachHangController extends HttpServlet {
             if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
                 kh.setNgaySinh(Date.valueOf(ngaySinhStr));
             }
+
             boolean success = khachHangService.updateCustomerProfile(kh);
             if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "CẬP_NHẬT_HỒ_SƠ_KHÁCH_HÀNG_CRM", "KHACH_HANG", oldJson, JsonParserUtil.toJson(kh), ip, null
+                ));
                 response.sendRedirect(request.getContextPath() + "/admin/khachhang?msg=updatesuccess");
             } else {
                 request.setAttribute("customer", kh);
                 request.setAttribute("error", "Lỗi: Số điện thoại hoặc Email đã tồn tại ở tài khoản khác!");
-                // SỬA LỖI: Sửa từ khachhang-form.jsp thành khach_hang.jsp khớp chuẩn
                 request.getRequestDispatcher("/views/admin/khach_hang.jsp").forward(request, response);
             }
         }

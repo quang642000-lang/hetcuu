@@ -20,7 +20,7 @@
     </style>
 </head>
 <body class="bg-light">
-<!-- Khởi tạo biến phòng thủ toàn cục tránh lỗi NullPointerException trên Tomcat 11 -->
+<!-- Khởi tạo các biến an toàn để phòng tránh NullPointerException và lỗi PropertyNotFound trên Tomcat 11 / EL 6.0 -->
 <c:set var="maKm" value="" />
 <c:set var="maCode" value="" />
 <c:set var="tenKm" value="" />
@@ -29,8 +29,8 @@
 <c:set var="giamToiDa" value="0" />
 <c:set var="donToiThieu" value="0" />
 <c:set var="soLuong" value="100" />
-<c:set var="isPublic" value="true" />
-<c:set var="trangThai" value="true" />
+<c:set var="isPublicVal" value="true" />
+<c:set var="trangThaiVal" value="true" />
 <c:set var="hinhAnhUrl" value="" />
 <c:set var="moTaDieuKien" value="" />
 <c:set var="formattedStart" value=""/>
@@ -45,15 +45,15 @@
     <c:set var="giamToiDa" value="${voucher.giamToiDa}" />
     <c:set var="donToiThieu" value="${voucher.donToiThieu}" />
     <c:set var="soLuong" value="${voucher.soLuong}" />
-    <c:set var="isPublic" value="${voucher.isPublic()}" />
-    <c:set var="trangThai" value="${voucher.isTrangThai()}" />
+    <c:set var="isPublicVal" value="${voucher.isPublic()}" />
+    <c:set var="trangThaiVal" value="${voucher.isTrangThai()}" />
     <c:set var="hinhAnhUrl" value="${voucher.hinhAnhUrl}" />
     <c:set var="moTaDieuKien" value="${voucher.moTaDieuKien}" />
     <c:if test="${not empty voucher.ngayBatDau}">
-        <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
+        <fmt:formatDate value="${voucher.ngayBatDau}" pattern="yyyy-MM-dd'T'HH:mm" var="formattedStart"/>
     </c:if>
     <c:if test="${not empty voucher.ngayKetThuc}">
-        <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
+        <fmt:formatDate value="${voucher.ngayKetThuc}" pattern="yyyy-MM-dd'T'HH:mm" var="formattedEnd"/>
     </c:if>
 </c:if>
 
@@ -133,15 +133,15 @@
                                 <div class="col-12 col-md-3">
                                     <label for="isPublic" class="form-label fw-bold small">Phạm vi áp dụng</label>
                                     <select name="isPublic" id="isPublic" class="form-select form-control-teapos">
-                                        <option value="1" ${isPublic == 'true' || isPublic == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
-                                        <option value="0" ${isPublic == 'false' || isPublic == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
+                                        <option value="1" ${isPublicVal == 'true' || isPublicVal == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
+                                        <option value="0" ${isPublicVal == 'false' || isPublicVal == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
                                     <select name="trangThai" id="trangThai" class="form-select form-control-teapos">
-                                        <option value="1" ${trangThai == 'true' || trangThai == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
-                                        <option value="0" ${trangThai == 'false' || trangThai == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
+                                        <option value="1" ${trangThaiVal == 'true' || trangThaiVal == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
+                                        <option value="0" ${trangThaiVal == 'false' || trangThaiVal == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
@@ -174,7 +174,7 @@
                             </a>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-hover align-middle" id="voucherTable">
                                 <thead>
                                 <tr class="table-light text-center">
                                     <th>Mã KM</th>
@@ -192,7 +192,7 @@
                                 <c:choose>
                                     <c:when test="${not empty vouchers}">
                                         <c:forEach var="item" items="${vouchers}">
-                                            <tr class="text-center">
+                                            <tr class="text-center voucher-row">
                                                 <td><strong>${item.maKm}</strong></td>
                                                 <td><span class="badge bg-dark text-white fw-bold px-3 py-1.5 fs-6" style="letter-spacing: 1px;"><c:out value="${item.maCode}"/></span></td>
                                                 <td class="text-start">
@@ -216,14 +216,24 @@
                                                 </td>
                                                 <td class="fw-bold text-dark">${item.soLuong} mã</td>
                                                 <td>
-                                                        <span class="badge ${item.isPublic() ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
-                                                                ${item.isPublic() ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
-                                                        </span>
+                                                    <c:choose>
+                                                        <c:when test="${item.isPublic()}">
+                                                            <span class="badge bg-success bg-opacity-10 text-success border px-2.5 py-1.5">CÔNG KHAI</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-primary bg-opacity-10 text-primary border px-2.5 py-1.5">HẠNG VIP 👑</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </td>
                                                 <td>
-                                                        <span class="badge ${item.isTrangThai() ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                                ${item.isTrangThai() ? 'Đang chạy' : 'Ngừng chạy'}
-                                                        </span>
+                                                    <c:choose>
+                                                        <c:when test="${item.isTrangThai()}">
+                                                            <span class="badge bg-success bg-opacity-10 text-success border px-3 py-1.5" style="border-radius: 50px;">Đang chạy</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-danger bg-opacity-10 text-danger border px-3 py-1.5" style="border-radius: 50px;">Ngừng chạy</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5">
@@ -245,6 +255,16 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="voucherPaginationArea">
+                            <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
+                            <nav aria-label="Table pagination">
+                                <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                                </ul>
+                            </nav>
+                        </div>
+
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -256,13 +276,13 @@
 <script>
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
-            title: 'Ngừng chạy Voucher?',
-            text: "Dữ liệu Voucher sẽ được đưa về ngừng hoạt động nhằm bảo lưu báo cáo hóa đơn cũ!",
+            title: 'Xóa hoặc Ngừng chạy Voucher?',
+            text: "Hệ thống sẽ kiểm soát: Nếu Voucher đã có khách áp dụng đặt đơn, hệ thống tự động tắt trạng thái của nó để bảo lưu báo cáo hóa đơn cũ!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý ngừng',
+            confirmButtonText: 'Đồng ý',
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -275,7 +295,73 @@
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thiết lập Voucher mới thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã cập nhật chương trình Voucher!');
-        if (msg === 'deletesuccess') showToast('success', 'Đã tắt Voucher thành công!');
+        if (msg === 'deletesuccess') showToast('success', 'Đã xóa hoặc gạt tắt Voucher thành công!');
+        if (msg === 'deletefailed') showToast('error', 'Hành động thất bại hoặc lỗi máy chủ!');
+
+// PHÂN TRANG CLIENT-SIDE
+        const pageSize = 10;
+        let currentPage = 1;
+        const rows = Array.from(document.querySelectorAll("#voucherTable tbody .voucher-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        function paginateVoucherTable() {
+            if (totalRecords === 0) {
+                document.getElementById("voucherPaginationArea").style.display = "none";
+                return;
+            }
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+
+            rows.forEach((row, idx) => {
+                if (idx >= startIndex && idx < endIndex) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+            renderPaginationButtons();
+        }
+
+        function renderPaginationButtons() {
+            const controls = document.getElementById("paginatedControls");
+            controls.innerHTML = "";
+            if (totalPages <= 1) {
+                document.getElementById("voucherPaginationArea").style.display = "none";
+                return;
+            }
+            document.getElementById("voucherPaginationArea").style.display = "flex";
+
+            const prevLi = document.createElement("li");
+            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
+            controls.appendChild(prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement("li");
+                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
+                controls.appendChild(pageLi);
+            }
+
+            const nextLi = document.createElement("li");
+            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
+            controls.appendChild(nextLi);
+        }
+
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            paginateVoucherTable();
+        }
+
+        if (rows.length > 0) {
+            paginateVoucherTable();
+        }
     });
 </script>
 </body>

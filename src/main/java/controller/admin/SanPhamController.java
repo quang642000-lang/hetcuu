@@ -4,20 +4,22 @@ import model.entity.DanhMuc;
 import model.entity.KichCo;
 import model.entity.SanPham;
 import model.entity.SanPhamKichCo;
+import model.entity.NhatKyHoatDong;
 import repository.IKichCoRepository;
 import repository.impl.KichCoRepoImpl;
+import repository.impl.NhatKyRepoImpl;
 import service.IDanhMucService;
 import service.ISanPhamService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import config.DBConnect;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.JsonParserUtil;
 
 @WebServlet(name = "SanPhamController", urlPatterns = {"/admin/sanpham"})
 @MultipartConfig(
@@ -38,7 +41,6 @@ import java.util.logging.Logger;
 )
 public class SanPhamController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SanPhamController.class.getName());
-
     private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
     private final IKichCoRepository kichCoRepository = KichCoRepoImpl.getInstance();
@@ -139,11 +141,76 @@ public class SanPhamController extends HttpServlet {
 
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        boolean success = sanPhamService.deleteSanPham(id);
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=deletesuccess");
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
+        // 1. Kiểm tra xem sản phẩm đã có hóa đơn trong CHI_TIET_DON_HANG chưa
+        boolean hasOrders = false;
+        String checkSql = "SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(checkSql)) {
+            ps.setString(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    hasOrders = true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (hasOrders) {
+            // Có đơn hàng -> Chỉ xóa mềm (Đặt trang_thai = 0)
+            boolean softSuccess = sanPhamService.deleteSanPham(id);
+            if (softSuccess) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "SOFT_DELETE_SẢN_PHẨM", "SAN_PHAM", "Mã SP: " + id, "Chuyển trạng thái hoạt động về 0 do có lịch sử bán lẻ.", ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=softdeletesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=deletefailed");
+            }
         } else {
-            response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=deletefailed");
+            // Chưa từng bán -> Xóa cứng hoàn toàn
+            boolean hardSuccess = false;
+            String deletePricesSql = "DELETE FROM SAN_PHAM_KICH_CO WHERE ma_sp = ?";
+            String deleteSpSql = "DELETE FROM SAN_PHAM WHERE ma_sp = ?";
+            try (Connection conn = DBConnect.getConnection()) {
+                conn.setAutoCommit(false);
+                try (PreparedStatement ps1 = conn.prepareStatement(deletePricesSql);
+                     PreparedStatement ps2 = conn.prepareStatement(deleteSpSql)) {
+                    ps1.setString(1, id);
+                    ps1.executeUpdate();
+                    ps2.setString(1, id);
+                    int deleted = ps2.executeUpdate();
+                    if (deleted > 0) {
+                        hardSuccess = true;
+                        conn.commit();
+                    } else {
+                        conn.rollback();
+                    }
+                } catch (SQLException e) {
+                    conn.rollback();
+                    e.printStackTrace();
+                } finally {
+                    conn.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (hardSuccess) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "HARD_DELETE_SẢN_PHẨM", "SAN_PHAM", "Mã SP: " + id, "Xóa hoàn toàn sản phẩm khỏi hệ thống (chưa từng giao dịch).", ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=harddeletesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=deletefailed");
+            }
         }
     }
 
@@ -189,12 +256,11 @@ public class SanPhamController extends HttpServlet {
         }
         try {
             int maSize = Integer.parseInt(maSizeStr);
-            // Xóa cứng trong KICH_CO (DBConnect cascade sẽ cấm nếu đã dính FK trong đơn hàng, nhưng ở đây AJAX NO_ORDERS đã lọc trước)
             boolean deleted = kichCoRepository.delete(maSize);
             if (deleted) {
                 response.getWriter().write("{\"status\":\"SUCCESS\"}");
             } else {
-                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Không thể xóa kích cỡ này khỏi hệ thống!\"}");
+                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Không thể xóa kích cỡ này khỏi hệ thống do có sản phẩm liên kết!\"}");
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi xóa cứng kích cỡ master", e);
@@ -249,6 +315,13 @@ public class SanPhamController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         try {
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
@@ -259,8 +332,6 @@ public class SanPhamController extends HttpServlet {
             }
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
-
-            // Xử lý upload file từ máy tính hoặc link dán
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
@@ -268,7 +339,6 @@ public class SanPhamController extends HttpServlet {
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
-
             boolean choPhepDoiDa = request.getParameter("choPhepDoiDa") != null;
             boolean choPhepDoiDuong = request.getParameter("choPhepDoiDuong") != null;
             boolean isNew = request.getParameter("isNew") != null;
@@ -344,6 +414,9 @@ public class SanPhamController extends HttpServlet {
 
             boolean success = sanPhamService.createSanPham(sp, selectedSizes);
             if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "THÊM_SẢN_PHẨM", "SAN_PHAM", null, JsonParserUtil.toJson(sp), ip, null
+                ));
                 response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=createsuccess");
             } else {
                 request.setAttribute("error", "Ghi nhận sản phẩm vào cơ sở dữ liệu thất bại!");
@@ -358,6 +431,13 @@ public class SanPhamController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         try {
             String maSp = request.getParameter("maSp");
             String tenSp = request.getParameter("tenSp");
@@ -369,8 +449,6 @@ public class SanPhamController extends HttpServlet {
             }
             int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
-
-            // Xử lý upload file từ máy tính hoặc link dán
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
@@ -384,7 +462,6 @@ public class SanPhamController extends HttpServlet {
                     hinhAnh = url;
                 }
             }
-
             boolean choPhepDoiDa = request.getParameter("choPhepDoiDa") != null;
             boolean choPhepDoiDuong = request.getParameter("choPhepDoiDuong") != null;
             boolean isNew = request.getParameter("isNew") != null;
@@ -393,6 +470,7 @@ public class SanPhamController extends HttpServlet {
 
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
+                String oldJson = JsonParserUtil.toJson(sp);
                 sp.setTenSp(tenSp);
                 sp.setMaDm(maDm);
                 sp.setMoTa(moTa);
@@ -432,6 +510,9 @@ public class SanPhamController extends HttpServlet {
 
                 boolean success = sanPhamService.updateSanPham(sp, selectedSizes);
                 if (success) {
+                    NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                            actorNv, "SỬA_SẢN_PHẨM", "SAN_PHAM", oldJson, JsonParserUtil.toJson(sp), ip, null
+                    ));
                     response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=updatesuccess");
                 } else {
                     request.setAttribute("error", "Cập nhật sản phẩm thất bại trong CSDL!");

@@ -1,16 +1,24 @@
 package controller.admin;
 
 import model.entity.NhanVien;
+import model.entity.NhatKyHoatDong;
+import repository.impl.NhatKyRepoImpl;
 import service.INhanVienService;
 import service.impl.NhanVienServiceImpl;
-
+import config.DBConnect;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import util.JsonParserUtil;
 
 @WebServlet(name = "NhanVienController", urlPatterns = {"/admin/nhanvien"})
 public class NhanVienController extends HttpServlet {
@@ -22,7 +30,6 @@ public class NhanVienController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         switch (action) {
             case "list":
                 showList(request, response);
@@ -35,6 +42,9 @@ public class NhanVienController extends HttpServlet {
                 break;
             case "delete":
                 performDelete(request, response);
+                break;
+            case "toggle":
+                performToggle(request, response);
                 break;
             default:
                 showList(request, response);
@@ -67,8 +77,92 @@ public class NhanVienController extends HttpServlet {
 
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        nhanVienService.deleteNhanVien(id); // Xóa mềm
-        response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=deletesuccess");
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
+        // 1. Kiểm tra xem nhân viên đã dính bất kỳ hóa đơn nào trong DON_HANG chưa
+        boolean hasOrders = false;
+        String checkSql = "SELECT COUNT(*) FROM DON_HANG WHERE ma_nv = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(checkSql)) {
+            ps.setString(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    hasOrders = true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (hasOrders) {
+            // Có hóa đơn -> Chỉ cho phép khóa tài khoản (Soft Delete)
+            boolean softSuccess = nhanVienService.deleteNhanVien(id);
+            if (softSuccess) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "SOFT_DELETE_NHÂN_VIÊN", "NHAN_VIEN", "Mã NV: " + id, "Khóa tài khoản hoạt động do nhân sự có lịch sử lập hóa đơn.", ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=softdeletesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=deletefailed");
+            }
+        } else {
+            // Chưa từng lập hóa đơn -> Cho phép xóa cứng vĩnh viễn
+            boolean hardSuccess = false;
+            String deleteSql = "DELETE FROM NHAN_VIEN WHERE ma_nv = ?";
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                ps.setString(1, id);
+                int deleted = ps.executeUpdate();
+                if (deleted > 0) {
+                    hardSuccess = true;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (hardSuccess) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "HARD_DELETE_NHÂN_VIÊN", "NHAN_VIEN", "Mã NV: " + id, "Xóa hoàn toàn nhân sự khỏi hệ thống (chưa từng chốt hóa đơn).", ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=harddeletesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=deletefailed");
+            }
+        }
+    }
+
+    private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String id = request.getParameter("id");
+        boolean status = "1".equals(request.getParameter("status"));
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
+        NhanVien nv = nhanVienService.getNhanVienById(id);
+        if (nv != null) {
+            String oldJson = JsonParserUtil.toJson(nv);
+            nv.setTrangThai(status);
+            boolean success = nhanVienService.updateNhanVien(nv);
+            if (success) {
+                String actionTxt = status ? "MỞ_KHÓA_CA_NHÂN_VIÊN" : "KHÓA_CA_NHÂN_VIÊN";
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, actionTxt, "NHAN_VIEN", oldJson, JsonParserUtil.toJson(nv), ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=updatesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=error");
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=notfound");
+        }
     }
 
     @Override
@@ -84,6 +178,13 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         String hoTen = request.getParameter("hoTen");
         int maVt = Integer.parseInt(request.getParameter("maVt"));
         String sdt = request.getParameter("soDienThoai");
@@ -94,8 +195,10 @@ public class NhanVienController extends HttpServlet {
 
         NhanVien nv = new NhanVien(null, maVt, hoTen, sdt, email, username, matKhau, trangThai, null, null);
         boolean success = nhanVienService.createNhanVien(nv);
-
         if (success) {
+            NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                    actorNv, "THÊM_NHÂN_VIÊN", "NHAN_VIEN", null, JsonParserUtil.toJson(nv), ip, null
+            ));
             response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=createsuccess");
         } else {
             request.setAttribute("employee", nv);
@@ -106,6 +209,13 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         String maNv = request.getParameter("maNv");
         String hoTen = request.getParameter("hoTen");
         int maVt = Integer.parseInt(request.getParameter("maVt"));
@@ -116,6 +226,7 @@ public class NhanVienController extends HttpServlet {
 
         NhanVien nv = nhanVienService.getNhanVienById(maNv);
         if (nv != null) {
+            String oldJson = JsonParserUtil.toJson(nv);
             nv.setHoTen(hoTen);
             nv.setMaVt(maVt);
             nv.setSoDienThoai(sdt);
@@ -125,6 +236,9 @@ public class NhanVienController extends HttpServlet {
 
             boolean success = nhanVienService.updateNhanVien(nv);
             if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "SỬA_NHÂN_VIÊN", "NHAN_VIEN", oldJson, JsonParserUtil.toJson(nv), ip, null
+                ));
                 response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=updatesuccess");
             } else {
                 request.setAttribute("employee", nv);
@@ -136,14 +250,30 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performResetPassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        String actorNv = "SYSTEM";
+        if (session != null && session.getAttribute("user") != null) {
+            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
+        }
+        String ip = request.getRemoteAddr();
+
         String maNv = request.getParameter("maNv");
         String matKhauMoi = request.getParameter("matKhauMoi");
 
-        boolean success = nhanVienService.resetPasswordByAdmin(maNv, matKhauMoi);
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=resetsuccess");
+        NhanVien nv = nhanVienService.getNhanVienById(maNv);
+        if (nv != null) {
+            String oldJson = JsonParserUtil.toJson(nv);
+            boolean success = nhanVienService.resetPasswordByAdmin(maNv, matKhauMoi);
+            if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "RESET_MẬT_KHẨU_NHÂN_VIÊN", "NHAN_VIEN", oldJson, "Đã đặt lại mật khẩu của nhân viên: " + maNv, ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=resetsuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=resetfailed");
+            }
         } else {
-            response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=resetfailed");
+            response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=notfound");
         }
     }
 }

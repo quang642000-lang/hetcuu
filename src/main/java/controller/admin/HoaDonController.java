@@ -1,17 +1,8 @@
 package controller.admin;
 
-import model.entity.DonHang;
-import model.entity.ChiTietDonHang;
-import model.entity.ChiTietTopping;
-import model.entity.NhanVien;
-import model.entity.KhachHang;
-import service.IDonHangService;
-import service.IKhachHangService;
-import service.INhanVienService;
-import service.impl.DonHangServiceImpl;
-import service.impl.KhachHangServiceImpl;
-import service.impl.NhanVienServiceImpl;
-
+import model.entity.*;
+import service.*;
+import service.impl.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,6 +17,8 @@ public class HoaDonController extends HttpServlet {
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
     private final INhanVienService nhanVienService = NhanVienServiceImpl.getInstance();
+    private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
+    private final IToppingService toppingService = ToppingServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -58,7 +51,6 @@ public class HoaDonController extends HttpServlet {
                     if (nv != null) tenNv = nv.getHoTen();
                 }
                 json.append("\"tenNhanVien\":\"").append(tenNv).append("\",");
-
                 json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
                 json.append("\"tienGiamGia\":").append(dh.getTienGiamGia()).append(",");
                 json.append("\"diemSuDung\":").append(dh.getDiemSuDung()).append(",");
@@ -68,9 +60,17 @@ public class HoaDonController extends HttpServlet {
 
                 for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
                     ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
+
+                    // LẤY TÊN THẬT CỦA SẢN PHẨM KHÔNG DÙNG MÃ KHÓA CỨNG
+                    String tenSp = "Sản phẩm " + item.getMaSp();
+                    SanPham sp = sanPhamService.getSanPhamById(item.getMaSp());
+                    if (sp != null) {
+                        tenSp = sp.getTenSp();
+                    }
+
                     json.append("{");
-                    json.append("\"tenMon\":\"").append(item.getMaSp()).append("\",");
-                    json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\","); // ĐỒNG BỘ: Sử dụng tenSize động
+                    json.append("\"tenMon\":\"").append(tenSp).append("\",");
+                    json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\",");
                     json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
                     json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
                     json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
@@ -79,8 +79,16 @@ public class HoaDonController extends HttpServlet {
 
                     for (int j = 0; j < item.getToppingsList().size(); j++) {
                         ChiTietTopping tp = item.getToppingsList().get(j);
+
+                        // LẤY TÊN THẬT CỦA TOPPING KHÔNG DÙNG MÃ MOCK "TP1"
+                        String tenTp = "Topping " + tp.getMaTp();
+                        Topping topping = toppingService.getToppingById(tp.getMaTp());
+                        if (topping != null) {
+                            tenTp = topping.getTenTp();
+                        }
+
                         json.append("{");
-                        json.append("\"tenTopping\":\"TP").append(tp.getMaTp()).append("\",");
+                        json.append("\"tenTopping\":\"").append(tenTp).append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
                         json.append("\"giaChotTp\":").append(tp.getGiaChotTp());
                         json.append("}");
@@ -150,10 +158,12 @@ public class HoaDonController extends HttpServlet {
         int status = Integer.parseInt(request.getParameter("trangThaiDon"));
         String lyDoHuy = request.getParameter("lyDoHuy");
         HttpSession session = request.getSession(false);
+
         String maNv = "SYSTEM";
         if (session != null && session.getAttribute("user") != null) {
             maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
+
         boolean success = donHangService.updateTrangThaiDon(maDh, status, maNv, lyDoHuy);
         if (success) {
             response.sendRedirect(request.getContextPath() + "/admin/hoadon?action=view&id=" + maDh + "&msg=updatesuccess");

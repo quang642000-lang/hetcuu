@@ -4,8 +4,10 @@ let appliedVoucher = null;
 let appliedPoints = 0; // Số điểm CRM khách muốn quy đổi
 
 // Hàm lấy Context Path tự động tránh lỗi 404
-function getContextPath() {
-    return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+if (typeof getContextPath !== "function") {
+    window.getContextPath = function() {
+        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    }
 }
 
 function resetVoucherAndPoints() {
@@ -240,18 +242,22 @@ function renderPosCart() {
         recalculatePOSBill(0);
         return;
     }
+
     container.innerHTML = '';
     let tongTienHang = 0;
+
     posCart.forEach((item, idx) => {
         let toppingTotal = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
         tongTienHang += rowPrice;
+
         let toppingsText = '';
         if (item.toppings && item.toppings.length > 0) {
             item.toppings.forEach(t => {
                 toppingsText += '<br>+ Topping: ' + t.tenTp + ' (x' + t.soLuongTp + ')';
             });
         }
+
         container.innerHTML +=
             '<div class="pos-bill-item">' +
             '  <div class="pos-bill-item-details">' +
@@ -273,6 +279,7 @@ function renderPosCart() {
             '  </div>' +
             '</div>';
     });
+
     recalculatePOSBill(tongTienHang);
 }
 
@@ -304,6 +311,7 @@ function searchCustomerCRM() {
                 else if (data.maHang === 2) rankName = 'BẠC';
                 else if (data.maHang === 3) rankName = 'VÀNG 👑';
                 else if (data.maHang === 4) rankName = 'VIP 💎';
+
                 document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
                 showToast('success', 'Tìm thấy thành viên: ' + data.tenKh);
                 document.getElementById("crmLoyaltyArea").style.display = "block";
@@ -315,6 +323,7 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.display = "none";
                 document.getElementById("posAddCustomerArea").style.display = "block";
+
                 Swal.fire({
                     icon: 'question',
                     title: 'Số điện thoại mới!',
@@ -380,6 +389,7 @@ function openQuickAddCustomerModal() {
             params.append('tenKh', result.value.tenKh);
             params.append('email', result.value.email);
             params.append('soDienThoai', result.value.sdt);
+
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -426,16 +436,19 @@ function applyManualVoucherCode() {
         return;
     }
     const maKh = document.getElementById("submit_maKh").value;
+
     Swal.fire({
         title: 'Đang áp mã Voucher...',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
+
     const url = getContextPath() + '/pos/apply-voucher';
     const params = new URLSearchParams();
     params.append('code', code);
     params.append('maKh', maKh);
     params.append('tongTienHang', totalRaw);
+
     fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -477,6 +490,7 @@ function showVoucherSelectionModal() {
         });
         return;
     }
+
     let selectHtml = '<select id="posVoucherSelector" class="form-select mb-2"><option value="">-- Bỏ áp dụng Voucher --</option>';
     customerInfo.vouchers.forEach(v => {
         let txtType = v.loaiGiam === 1 ? formatVND(v.giaTriGiam) : v.giaTriGiam + "%";
@@ -524,6 +538,7 @@ function applyPointsDiscount() {
         });
         return;
     }
+
     Swal.fire({
         title: 'QUY ĐỔI ĐIỂM CRM',
         text: 'Hội viên hiện đang sở hữu ' + customerInfo.diemTichLuy + ' điểm tích lũy. Nhập số điểm muốn tiêu dùng quy đổi (1 Điểm = 1.000 VNĐ):',
@@ -557,6 +572,7 @@ function applyPointsDiscount() {
 function recalculatePOSBill(tongTienHang) {
     let rawSum = tongTienHang;
     let discount = 0;
+
     if (appliedVoucher) {
         if (rawSum >= appliedVoucher.donToiThieu) {
             if (appliedVoucher.loaiGiam === 1) {
@@ -585,6 +601,7 @@ function recalculatePOSBill(tongTienHang) {
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
+
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.display = "flex";
         document.getElementById("txtUsedPoints").innerText = appliedPoints;
@@ -605,6 +622,7 @@ function recalculatePOSBill(tongTienHang) {
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum;
     document.getElementById('submit_tongPhaiTra').value = finalPayable;
     calculateChangeRefund();
@@ -615,6 +633,17 @@ function formatVND(amount) {
 }
 
 function loadAndShowPrintReceipt(orderId) {
+    // XOÁ SẠCH DỮ LIỆU CŨ TRONG DOM MODAL ĐỂ TRÁNH TRÙNG LẶP HOẶC HIỂN THỊ HOÁ ĐƠN TRƯỚC ĐÓ KHI CHƯA LOAD XONG!
+    document.getElementById("billMaDh").innerText = "Đang tải...";
+    document.getElementById("billThoiGian").innerText = "";
+    document.getElementById("billTenKh").innerText = "";
+    document.getElementById("billTenNv").innerText = "";
+    document.getElementById("billRawPrice").innerText = "0 đ";
+    document.getElementById("billDiscount").innerText = "-0 đ";
+    document.getElementById("billPointsRow").style.display = 'none';
+    document.getElementById("billFinalPayable").innerText = "0 đ";
+    document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết bill...</p></div>';
+
     fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -636,24 +665,31 @@ function loadAndShowPrintReceipt(orderId) {
 
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
+
                 data.items.forEach(item => {
-                    let html = '<div style="margin-bottom: 6px;">';
+                    let html = '<div style="margin-bottom: 6px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">';
                     html += '  <div class="d-flex justify-content-between">';
                     html += '    <span><strong>' + item.tenMon + '</strong> (Size: ' + item.tenSize + ')</span>';
                     html += '    <strong>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</strong>';
                     html += '  </div>';
                     html += '  <small style="font-size: 9px; color: #555;">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + '</small>';
+
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div style="padding-left: 8px; font-size: 9px; color: #555;">';
                         item.toppings.forEach(tp => {
-                            html += '    <div>+ ' + tp.tenTopping + ' (SL: ' + tp.soLuong + ' x ' + parseInt(tp.giaChotTp).toLocaleString('vi-VN') + ' đ)</div>';
+                            html += '    <div>+ ' + tp.tenTopping + ' (x' + tp.soLuong + ') : +' + parseInt(tp.giaChotTp * tp.soLuong).toLocaleString('vi-VN') + ' đ</div>';
                         });
                         html += '  </div>';
                     }
                     html += '</div>';
                     container.innerHTML += html;
                 });
-                const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
+
+                // ĐỒNG BỘ ĐỘC BẢN: Tránh sinh nhiều modal instance Bootstrap 5 gây lỗi vỡ màn hình và cache dữ liệu!
+                let printModal = bootstrap.Modal.getInstance(document.getElementById('receiptDetailModal'));
+                if (!printModal) {
+                    printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
+                }
                 printModal.show();
             } else {
                 showToast('error', 'Không thể lấy dữ liệu in hóa đơn!');

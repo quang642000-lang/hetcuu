@@ -4,17 +4,24 @@ import model.entity.DanhMuc;
 import model.entity.SanPham;
 import model.entity.SanPhamKichCo;
 import model.entity.Topping;
+import model.entity.ChiTietGioHang;
+import model.entity.GioHang;
+import model.entity.KhachHang;
 import service.IDanhMucService;
 import service.ISanPhamService;
 import service.IToppingService;
+import service.IGioHangService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import service.impl.ToppingServiceImpl;
+import service.impl.GioHangServiceImpl;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +34,7 @@ public class PortalProductController extends HttpServlet {
     private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
     private final IToppingService toppingService = ToppingServiceImpl.getInstance();
+    private final IGioHangService gioHangService = GioHangServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -78,7 +86,6 @@ public class PortalProductController extends HttpServlet {
 
             int fromIndex = (page - 1) * pageSize;
             int toIndex = Math.min(fromIndex + pageSize, totalProducts);
-
             List<SanPham> paginatedProducts = new ArrayList<>();
             if (products != null && fromIndex < totalProducts && fromIndex >= 0) {
                 paginatedProducts = products.subList(fromIndex, toIndex);
@@ -115,6 +122,32 @@ public class PortalProductController extends HttpServlet {
                 request.setAttribute("product", sp);
                 request.setAttribute("sizes", sizes);
                 request.setAttribute("toppings", toppings);
+
+                // KIỂM TRA TÙY BIẾN SỬA ĐỒNG BỘ CHO GIỎ HÀNG
+                String editCtghStr = request.getParameter("maCtgh");
+                if (editCtghStr != null && !editCtghStr.trim().isEmpty()) {
+                    try {
+                        long editCtgh = Long.parseLong(editCtghStr.trim());
+                        ChiTietGioHang editItem = null;
+                        HttpSession session = request.getSession(false);
+                        if (session != null && session.getAttribute("customer") != null) {
+                            KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
+                            GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
+                            if (gh != null && gh.getChiTietGioHangList() != null) {
+                                for (ChiTietGioHang ct : gh.getChiTietGioHangList()) {
+                                    if (ct.getMaCtgh() == editCtgh) {
+                                        editItem = ct;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        request.setAttribute("editItem", editItem);
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, "Lỗi bóc tách mã chi tiết giỏ hàng chỉnh sửa", ex);
+                    }
+                }
+
                 request.getRequestDispatcher("/views/portal/chi_tiet_san_pham.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/products?msg=notfound");

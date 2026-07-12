@@ -28,9 +28,8 @@
                         <i class="bi bi-person-plus-fill"></i> Thêm Nhân Viên Mới
                     </button>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="employeeTable">
                         <thead>
                         <tr class="table-light">
                             <th>Mã NV</th>
@@ -39,39 +38,42 @@
                             <th>Email</th>
                             <th>Tên đăng nhập</th>
                             <th class="text-center">Vai trò</th>
-                            <th class="text-center">Trạng Thái</th>
-                            <th class="text-end">Thao Tác</th>
+                            <th class="text-center">Trạng Thế</th>
+                            <th class="text-end" style="width: 250px;">Thao Tác</th>
                         </tr>
                         </thead>
                         <tbody>
                         <c:choose>
                             <c:when test="${not empty employees}">
                                 <c:forEach var="item" items="${employees}">
-                                    <tr>
+                                    <tr class="employee-row">
                                         <td><strong>${item.maNv}</strong></td>
                                         <td><strong><c:out value="${item.hoTen}"/></strong></td>
                                         <td>${item.soDienThoai}</td>
                                         <td>${item.email}</td>
                                         <td><code><c:out value="${item.tenDangNhap}"/></code></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.maVt == 1 ? 'bg-danger text-danger border-danger' : 'bg-info text-info border-info'} bg-opacity-10 border px-2.5 py-1">
-                                                        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
-                                                </span>
+<span class="badge ${item.maVt == 1 ? 'bg-danger text-danger border-danger' : 'bg-info text-info border-info'} bg-opacity-10 border px-2.5 py-1">
+        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
+</span>
                                         </td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success text-success border-success' : 'bg-danger text-danger border-danger'} bg-opacity-10 border px-2.5 py-1">
-                                                        ${item.trangThai ? 'Đang làm việc' : 'Khóa ca'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success text-success border-success' : 'bg-danger text-danger border-danger'} bg-opacity-10 border px-2.5 py-1">
+        ${item.trangThai ? 'Đang làm việc' : 'Khóa ca'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <!-- ĐỒNG BỘ QUOTE-SAFE: Đọc qua data attributes cho nút Reset, tránh lỗi quote compiler JSP -->
+                                            <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
+                                               class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-semibold me-1">
+                                                    ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
+                                            </a>
                                             <button type="button" class="btn btn-sm btn-outline-warning fw-semibold px-2 me-1"
                                                     data-id="${item.maNv}"
                                                     data-name="${item.hoTen}"
                                                     onclick="handleResetPasswordClick(this)">
                                                 <i class="bi bi-key-fill"></i> Reset
                                             </button>
-
                                             <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-2 me-1"
                                                     data-id="${item.maNv}"
                                                     data-name="${item.hoTen}"
@@ -84,7 +86,7 @@
                                                 <i class="bi bi-pencil-square"></i> Sửa
                                             </button>
                                             <button type="button" class="btn btn-sm btn-outline-danger px-2 fw-bold" onclick="confirmDeleteEmployee('${item.maNv}')">
-                                                Khóa
+                                                Xóa
                                             </button>
                                         </td>
                                     </tr>
@@ -97,9 +99,20 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="employeePaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                        </ul>
+                    </nav>
+                </div>
+
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- MODAL TOÀN NĂNG -->
@@ -239,13 +252,13 @@
 
     function confirmDeleteEmployee(maNv) {
         Swal.fire({
-            title: 'Khóa tài khoản nhân viên?',
-            text: "Nhân viên bị khóa sẽ không thể đăng nhập vào quầy POS bán hàng!",
+            title: 'Xóa vĩnh viễn tài khoản?',
+            text: "Hệ thống tự động kiểm tra: Nếu nhân viên này đã có lịch sử chốt đơn, hệ thống sẽ tự động chuyển sang Khóa Ca. Nếu chưa phát sinh đơn, tài khoản được xóa vĩnh viễn khỏi CSDL!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý khóa',
+            confirmButtonText: 'Đồng ý',
             cancelButtonText: 'Hủy bỏ'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -259,8 +272,75 @@
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm nhân viên thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi hồ sơ!');
-        if (msg === 'deletesuccess') showToast('success', 'Đã khóa tài khoản nhân viên!');
+        if (msg === 'softdeletesuccess') showToast('success', 'Nhân viên đã chốt đơn, hệ thống đã tự động Khóa Ca!');
+        if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa vĩnh viễn tài khoản nhân viên khỏi CSDL!');
         if (msg === 'resetsuccess') showToast('success', 'Reset mật khẩu thành công!');
+        if (msg === 'deletefailed') showToast('error', 'Hành động thất bại hoặc lỗi hệ thống!');
+
+// PHÂN TRANG CLIENT-SIDE
+        const pageSize = 10;
+        let currentPage = 1;
+        const rows = Array.from(document.querySelectorAll("#employeeTable tbody .employee-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        function paginateEmployeeTable() {
+            if (totalRecords === 0) {
+                document.getElementById("employeePaginationArea").style.display = "none";
+                return;
+            }
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+
+            rows.forEach((row, idx) => {
+                if (idx >= startIndex && idx < endIndex) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+            renderPaginationButtons();
+        }
+
+        function renderPaginationButtons() {
+            const controls = document.getElementById("paginatedControls");
+            controls.innerHTML = "";
+            if (totalPages <= 1) {
+                document.getElementById("employeePaginationArea").style.display = "none";
+                return;
+            }
+            document.getElementById("employeePaginationArea").style.display = "flex";
+
+            const prevLi = document.createElement("li");
+            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
+            controls.appendChild(prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement("li");
+                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
+                controls.appendChild(pageLi);
+            }
+
+            const nextLi = document.createElement("li");
+            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
+            controls.appendChild(nextLi);
+        }
+
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            paginateEmployeeTable();
+        }
+
+        if (rows.length > 0) {
+            paginateEmployeeTable();
+        }
     });
 </script>
 </body>

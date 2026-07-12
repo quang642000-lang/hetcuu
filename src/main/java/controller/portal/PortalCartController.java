@@ -3,8 +3,12 @@ package controller.portal;
 import model.entity.ChiTietToppingGioHang;
 import model.entity.GioHang;
 import model.entity.KhachHang;
+import model.entity.ChiTietGioHang;
 import service.IGioHangService;
 import service.impl.GioHangServiceImpl;
+import repository.impl.GioHangRepoImpl;
+import config.DBConnect;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +31,12 @@ public class PortalCartController extends HttpServlet {
         if (session == null || session.getAttribute("customer") == null) {
             request.getSession(true).setAttribute("errorMessage", "Vui lòng đăng nhập tài khoản thành viên để xem giỏ hàng!");
             response.sendRedirect(request.getContextPath() + "/customer/login");
+            return;
+        }
+
+        String uri = request.getRequestURI();
+        if (uri.endsWith("/cart/delete")) {
+            performDeleteCartItem(request, response);
             return;
         }
 
@@ -86,8 +98,6 @@ public class PortalCartController extends HttpServlet {
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
                     int maTp = Integer.parseInt(tpIdStr);
-
-                    // NÂNG CẤP: Lấy số lượng Topping động được gửi lên từ form (topping_qty_maTp) thay vì gán cứng bằng 1!
                     int qty = 1;
                     String qtyStr = request.getParameter("topping_qty_" + maTp);
                     if (qtyStr != null && !qtyStr.trim().isEmpty()) {
@@ -97,15 +107,43 @@ public class PortalCartController extends HttpServlet {
                             qty = 1;
                         }
                     }
-
                     toppingList.add(new ChiTietToppingGioHang(0L, maTp, qty));
                 }
             }
 
+            // CHẾ ĐỘ CHỈNH SỬA / CẬP NHẬT TÙY BIẾN TRONG GIỎ HÀNG
+            String maCtghStr = request.getParameter("maCtgh");
+            if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
+                long maCtgh = Long.parseLong(maCtghStr.trim());
+                boolean updated = updateCartItemDetails(maCtgh, maSize, soLuong, mucDa, mucDuong, ghiChuMon);
+                if (updated) {
+                    // Xóa toppings cũ và nạp lại toppings mới
+                    GioHangRepoImpl.getInstance().removeToppingsFromChiTiet(maCtgh);
+                    if (!toppingList.isEmpty()) {
+                        for (ChiTietToppingGioHang tp : toppingList) {
+                            GioHangRepoImpl.getInstance().addToppingToGioHang(maCtgh, tp.getMaTp(), tp.getSoLuongTp());
+                        }
+                    }
+
+                    if (isAjax) {
+                        response.getWriter().write("SUCCESS|" + request.getSession().getAttribute("customerCartCount"));
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/cart?msg=updatesuccess");
+                    }
+                } else {
+                    if (isAjax) {
+                        response.getWriter().write("FAILED");
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/cart?msg=updatefailed");
+                    }
+                }
+                return;
+            }
+
+            // CHẾ ĐỘ THÊM MỚI BÌNH THƯỜNG
             boolean success = gioHangService.addSanPhamToGioHang(maKh, maSp, maSize, soLuong, mucDa, mucDuong, ghiChuMon, toppingList);
             if (isAjax) {
                 if (success) {
-                    // Lấy số lượng giỏ hàng mới cập nhật trong session
                     GioHang gh = gioHangService.getGioHangComplete(maKh);
                     int cartCount = (gh != null && gh.getChiTietGioHangList() != null) ? gh.getChiTietGioHangList().size() : 0;
                     request.getSession().setAttribute("customerCartCount", cartCount);
@@ -127,6 +165,23 @@ public class PortalCartController extends HttpServlet {
             } else {
                 response.sendRedirect(request.getContextPath() + "/products?msg=error");
             }
+        }
+    }
+
+    private boolean updateCartItemDetails(long maCtgh, int maSize, int soLuong, String mucDa, String mucDuong, String ghiChuMon) {
+        String sql = "UPDATE CHI_TIET_GIO_HANG SET ma_size = ?, so_luong = ?, muc_da = ?, muc_duong = ?, ghi_chu_mon = ? WHERE ma_ctgh = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maSize);
+            ps.setInt(2, soLuong);
+            ps.setString(3, mucDa);
+            ps.setString(4, mucDuong);
+            ps.setString(5, ghiChuMon);
+            ps.setLong(6, maCtgh);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

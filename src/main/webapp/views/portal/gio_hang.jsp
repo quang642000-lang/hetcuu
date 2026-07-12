@@ -33,16 +33,14 @@
                             </c:forEach>
                             <c:set var="itemUnitTotal" value="${item.giaBan + toppingSum}"/>
                             <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
-
-                            <c:if test="${item.chonMua}">
+                            <c:if test="${item.isChonMua()}">
                                 <c:set var="subtotalPrice" value="${subtotalPrice + itemRowTotal}"/>
                             </c:if>
-
                             <div class="row align-items-center mb-3 pb-3 border-bottom g-3">
                                 <!-- Checkbox chọn mua món ăn -->
                                 <div class="col-1 text-center">
                                     <input type="checkbox" class="form-check-input select-item-checkbox border-secondary"
-                                           data-id="${item.maCtgh}" ${item.chonMua ? 'checked' : ''} onchange="toggleCartSelection(this)">
+                                           data-id="${item.maCtgh}" ${item.isChonMua() ? 'checked' : ''} onchange="toggleCartSelection(this)">
                                 </div>
                                 <!-- Hình ảnh đồ uống -->
                                 <div class="col-2">
@@ -63,7 +61,6 @@
                                         <c:out value="${item.tenSp}"/> (Size ${item.tenSize})
                                     </strong>
                                     <small class="text-muted d-block" style="font-size: 11px;">Đá: ${item.mucDa} | Đường: ${item.mucDuong}</small>
-
                                     <!-- Danh sách toppings -->
                                     <c:if test="${not empty item.toppingGioHangList}">
                                         <div class="ps-1 mt-1" style="font-size: 11px; color: var(--primary-color);">
@@ -99,9 +96,10 @@
                                 <div class="col-2 text-end fw-bold text-success">
                                     <fmt:formatNumber value="${itemRowTotal}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                 </div>
-                                <!-- Nút xóa món khỏi giỏ -->
-                                <div class="col-1 text-end">
-                                    <a href="${pageContext.request.contextPath}/cart/delete?maCtgh=${item.maCtgh}" class="text-danger fs-5"><i class="bi bi-trash3-fill"></i></a>
+                                <!-- Bộ đôi nút Sửa và Xóa -->
+                                <div class="col-1 text-end d-flex gap-2 justify-content-end">
+                                    <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}&maCtgh=${item.maCtgh}" class="text-primary fs-5" title="Sửa cấu hình"><i class="bi bi-pencil-square"></i></a>
+                                    <a href="${pageContext.request.contextPath}/cart/delete?maCtgh=${item.maCtgh}" class="text-danger fs-5" title="Xóa món"><i class="bi bi-trash3-fill"></i></a>
                                 </div>
                             </div>
                         </c:forEach>
@@ -116,7 +114,6 @@
                 </c:choose>
             </div>
         </div>
-
         <!-- KHỐI TỔNG DOANH THU & THANH TOÁN (CỘT PHẢI) -->
         <div class="col-12 col-lg-4">
             <div class="card border-0 p-4 shadow-sm sticky-top" style="top: 80px; border-radius: 16px;">
@@ -125,7 +122,6 @@
                     <c:when test="${not empty cart.chiTietGioHangList && subtotalPrice > 0}">
                         <c:set var="vatPrice" value="${subtotalPrice * 0.08}"/>
                         <c:set var="finalPayablePrice" value="${subtotalPrice + vatPrice}"/>
-
                         <div class="d-flex justify-content-between mb-3 small">
                             <span class="text-muted">Tổng tiền cốc & Toppings:</span>
                             <strong class="text-dark" id="subtotalCart">
@@ -170,7 +166,6 @@
         let currentQty = parseInt(qtyEl.innerText);
         let newQty = currentQty + delta;
         if (newQty < 1) return;
-
         fetch('${pageContext.request.contextPath}/cart/update?maCtgh=' + maCtgh + '&soLuong=' + newQty, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -186,12 +181,10 @@
                 }
             });
     }
-
     // AJAX thay đổi trạng thái tick chọn mua
     function toggleCartSelection(checkbox) {
         const maCtgh = checkbox.dataset.id;
         const isChecked = checkbox.checked ? '1' : '0';
-
         fetch('${pageContext.request.contextPath}/cart/toggle-select?maCtgh=' + maCtgh + '&chon=' + isChecked, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -199,7 +192,7 @@
             .then(function(res) { return res.text(); })
             .then(function(data) {
                 if (data === 'SUCCESS') {
-                    showToast('success', 'Đã lưu lựa chọn đặt hàng!');
+                    showToast('success', 'Đã thay đổi lựa chọn đặt hàng!');
                     setTimeout(function() { location.reload(); }, 600);
                 }
             });

@@ -20,17 +20,17 @@
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">QUẢN LÝ DANH MỤC</h3>
-                        <p class="text-muted small mb-0">Thiết lập nhóm phân loại đồ uống cho Menu bán hàng POS tại quầy và Website Portal đặt online [19]</p>
+                        <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-grid-1x2-fill me-2"></i>QUẢN LÝ DANH MỤC</h3>
+                        <p class="text-muted small mb-0">Thiết lập nhóm phân loại đồ uống cho Menu bán hàng POS tại quầy và Website Portal đặt online</p>
                     </div>
                     <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateModal()">
                         <i class="bi bi-plus-circle-fill"></i> Thêm Danh Mục Mới
                     </button>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="categoryTable">
                         <thead>
-                        <tr class="table-light">
+                        <tr class="table-light text-center">
                             <th style="width: 100px;">Mã DM</th>
                             <th style="width: 120px;" class="text-center">Hình Ảnh</th>
                             <th>Tên Nhóm Danh Mục</th>
@@ -43,7 +43,7 @@
                         <c:choose>
                             <c:when test="${not empty categories}">
                                 <c:forEach var="item" items="${categories}">
-                                    <tr>
+                                    <tr class="category-row text-center">
                                         <td><strong>DM${item.maDm}</strong></td>
                                         <td class="text-center">
                                             <c:choose>
@@ -60,12 +60,11 @@
                                         <td><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-<span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
-        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-</span>
+                                            <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
+                                                    ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+                                            </span>
                                         </td>
                                         <td class="text-end">
-                                            <!-- THỜI THƯỢNG: Tránh hoàn toàn lỗi quote, dùng dataset -->
                                             <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5 me-1"
                                                     data-id="${item.maDm}"
                                                     data-name="${item.tenDm}"
@@ -90,10 +89,20 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                            <!-- Nạp động nút phân trang bằng JS -->
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 <!-- MODAL FORM ĐỘNG -->
 <div class="modal fade" id="danhMucFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -110,15 +119,15 @@
                         <label for="tenDm" class="form-label fw-bold small">Tên nhóm danh mục <span class="text-danger">*</span></label>
                         <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off">
                     </div>
-                    <!-- THỜI THƯỢNG: Hỗ trợ uploader từ máy tính -->
+                    <!-- Hỗ trợ uploader từ máy tính -->
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="catImgTab" role="tablist">
                             <li class="nav-item flex-fill text-center">
-                                <button class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel" type="button" role="tab">TẢI TỪ MÁY TÍNH</button>
+                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel">TẢI TỪ MÁY TÍNH</button>
                             </li>
                             <li class="nav-item flex-fill text-center">
-                                <button class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel" type="button" role="tab">DÁN ĐƯỜNG DẪN URL</button>
+                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel">DÁN ĐƯỜNG DẪN URL</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="catImgTabContent">
@@ -154,11 +163,13 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const modalElement = document.getElementById('danhMucFormModal');
     const bsModal = new bootstrap.Modal(modalElement);
+
     function openCreateModal() {
         document.getElementById("danhMucForm").reset();
         document.getElementById("modalTitle").innerText = "THÊM DANH MỤC MỚI";
@@ -169,6 +180,7 @@
         document.getElementById("hinhAnhUrl").value = "";
         bsModal.show();
     }
+
     function handleEditDanhMucClick(button) {
         const id = button.getAttribute("data-id");
         const name = button.getAttribute("data-name");
@@ -177,6 +189,7 @@
         const status = parseInt(button.getAttribute("data-status"));
         openEditModal(id, name, img, sort, status);
     }
+
     function openEditModal(maDm, tenDm, hinhAnh, thuTu, trangThai) {
         document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC";
         document.getElementById("formAction").value = "edit";
@@ -185,6 +198,7 @@
         document.getElementById("hinhAnhUrl").value = hinhAnh ? hinhAnh : "";
         document.getElementById("hinhAnhFile").value = "";
         document.getElementById("thuTuHienThi").value = thuTu;
+
         if (trangThai === 1) {
             document.getElementById("statusActive").checked = true;
         } else {
@@ -192,6 +206,7 @@
         }
         bsModal.show();
     }
+
     function confirmDeleteDanhMuc(maDm) {
         Swal.fire({
             title: 'Xác nhận xóa?',
@@ -208,20 +223,95 @@
             }
         });
     }
+
+    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN DANH MỤC
+    let currentPage = 1;
+    const pageSize = 10; // 10 bản ghi trên một trang
+
+    function paginateAdminTable() {
+        const rows = Array.from(document.querySelectorAll("#categoryTable tbody .category-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        rows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.style.display = "table-row";
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Render bộ nút phân trang
+        const infoEl = document.getElementById("paginatedInfo");
+        if (infoEl) {
+            infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+        }
+        renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const controls = document.getElementById("paginatedControls");
+        if (!controls) return;
+        controls.innerHTML = "";
+
+        if (totalPages <= 1) {
+            const area = document.getElementById("adminPaginationArea");
+            if (area) area.style.display = "none";
+            return;
+        }
+
+        const area = document.getElementById("adminPaginationArea");
+        if (area) area.style.display = "flex";
+
+        // Nút Trang trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
+        controls.appendChild(prevLi);
+
+        // Các mốc số trang
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLi = document.createElement("li");
+            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
+            controls.appendChild(pageLi);
+        }
+
+        // Nút Trang sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
+        controls.appendChild(nextLi);
+    }
+
+    function changeAdminPage(newPage) {
+        currentPage = newPage;
+        paginateAdminTable();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm danh mục mới thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi thông tin danh mục!');
         if (msg === 'deletesuccess') showToast('success', 'Xóa thành công danh mục!');
+
         if (msg === 'deletefailed') {
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể xóa!',
-                text: 'Hệ thống phát hiện danh mục này hiện đã liên kết với sản phẩm. Vui lòng xóa các sản phẩm bên trong trước [19].',
+                text: 'Hệ thống phát hiện danh mục này hiện đã liên kết với sản phẩm. Vui lòng xóa các sản phẩm bên trong trước.',
                 confirmButtonColor: '#2e7d32'
             });
         }
+
+        paginateAdminTable();
     });
 </script>
 </body>

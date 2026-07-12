@@ -21,18 +21,17 @@
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">QUẢN LÝ TOPPING</h3>
+                        <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-egg-fried me-2"></i>QUẢN LÝ TOPPING</h3>
                         <p class="text-muted small mb-0">Thiết lập đơn giá, định lượng và quản lý trạng thái cung cấp topping ăn kèm đồ uống tại quầy</p>
                     </div>
                     <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateToppingModal()">
                         <i class="bi bi-plus-circle-fill"></i> Thêm Topping Mới
                     </button>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="toppingTable">
                         <thead>
-                        <tr class="table-light">
+                        <tr class="table-light text-center">
                             <th style="width: 100px;">Mã TP</th>
                             <th style="width: 100px;" class="text-center">Hình Ảnh</th>
                             <th>Tên Topping Ăn Kèm</th>
@@ -47,7 +46,7 @@
                         <c:choose>
                             <c:when test="${not empty toppings}">
                                 <c:forEach var="item" items="${toppings}">
-                                    <tr>
+                                    <tr class="topping-row text-center">
                                         <td><strong>TP${item.maTp}</strong></td>
                                         <td class="text-center">
                                             <c:choose>
@@ -68,9 +67,9 @@
                                         </td>
                                         <td class="text-center"><span class="badge bg-secondary px-2 py-1">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success text-success' : 'bg-danger text-danger'} bg-opacity-10 border px-3 py-1.5">
-                                                        ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
-                                                </span>
+                                            <span class="badge ${item.trangThai ? 'bg-success text-success' : 'bg-danger text-danger'} bg-opacity-10 border px-3 py-1.5">
+                                                    ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
+                                            </span>
                                         </td>
                                         <td class="text-end">
                                             <a href="${pageContext.request.contextPath}/admin/topping?action=toggle&id=${item.maTp}&status=${item.trangThai ? 0 : 1}"
@@ -103,6 +102,15 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                            <!-- Nạp động nút phân trang bằng JS -->
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
@@ -132,16 +140,15 @@
                         <label for="giaBan" class="form-label fw-bold small">Đơn giá bán (VNĐ) <span class="text-danger">*</span></label>
                         <input type="number" class="form-control form-control-teapos" id="giaBan" name="giaBan" value="0" min="0" required>
                     </div>
-
                     <!-- HÌNH ẢNH TOPPING (TẢI TỪ MÁY TÍNH / URL) -->
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh minh họa Topping</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="imgTab" role="tablist">
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="file-tab" data-bs-toggle="tab" data-bs-target="#filePanel" role="tab">TẢI TỪ MÁY TÍNH</button>
+                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="file-tab" data-bs-toggle="tab" data-bs-target="#filePanel">TẢI TỪ MÁY TÍNH</button>
                             </li>
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="url-tab" data-bs-toggle="tab" data-bs-target="#urlPanel" role="tab">DÁN ĐƯỜNG DẪN URL</button>
+                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="url-tab" data-bs-toggle="tab" data-bs-target="#urlPanel">DÁN ĐƯỜNG DẪN URL</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="imgTabContent">
@@ -153,7 +160,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label for="thuTuHienThi" class="form-label fw-bold small">Thứ tự hiển thị</label>
                         <input type="number" class="form-control form-control-teapos" id="thuTuHienThi" name="thuTuHienThi" value="0" min="0" required>
@@ -216,6 +222,7 @@
         document.getElementById("thuTuHienThi").value = thuTu;
         document.getElementById("hinhAnhUrl").value = hinhAnh ? hinhAnh : "";
         document.getElementById("hinhAnhFile").value = "";
+
         if (trangThai === 1) {
             document.getElementById("statusActive").checked = true;
         } else {
@@ -240,12 +247,85 @@
         });
     }
 
+    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN TOPPING
+    let currentPage = 1;
+    const pageSize = 10; // 10 bản ghi trên một trang
+
+    function paginateAdminTable() {
+        const rows = Array.from(document.querySelectorAll("#toppingTable tbody .topping-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        rows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.style.display = "table-row";
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        // Render bộ nút phân trang
+        const infoEl = document.getElementById("paginatedInfo");
+        if (infoEl) {
+            infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+        }
+        renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const controls = document.getElementById("paginatedControls");
+        if (!controls) return;
+        controls.innerHTML = "";
+
+        if (totalPages <= 1) {
+            const area = document.getElementById("adminPaginationArea");
+            if (area) area.style.display = "none";
+            return;
+        }
+
+        const area = document.getElementById("adminPaginationArea");
+        if (area) area.style.display = "flex";
+
+        // Nút Trang trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
+        controls.appendChild(prevLi);
+
+        // Các mốc số trang
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLi = document.createElement("li");
+            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
+            controls.appendChild(pageLi);
+        }
+
+        // Nút Trang sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
+        controls.appendChild(nextLi);
+    }
+
+    function changeAdminPage(newPage) {
+        currentPage = newPage;
+        paginateAdminTable();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm Topping thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật Topping thành công!');
         if (msg === 'deletesuccess') showToast('success', 'Xóa thành công Topping!');
+
+        paginateAdminTable();
     });
 </script>
 </body>

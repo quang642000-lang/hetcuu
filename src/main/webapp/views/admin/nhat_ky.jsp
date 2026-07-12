@@ -35,30 +35,29 @@
                         </c:if>
                     </form>
                 </div>
-
                 <!-- BẢNG DANH SÁCH NHẬT KÝ -->
                 <div class="table-responsive">
-                    <table class="table table-hover table-teapos">
+                    <table class="table table-hover table-teapos align-middle text-center" id="logTable">
                         <thead>
-                        <tr>
+                        <tr class="table-light">
                             <th style="width: 80px;">Mã log</th>
                             <th style="width: 180px;">Thời gian ghi nhận</th>
                             <th style="width: 120px;">Nhân sự</th>
-                            <th style="width: 220px;">Hành động thực hiện</th>
+                            <th style="width: 220px;" class="text-start">Hành động thực hiện</th>
                             <th style="width: 150px;">Bảng tác động</th>
                             <th style="width: 130px;">Địa chỉ IP</th>
-                            <th class="text-end">Đối soát dữ liệu</th>
+                            <th class="text-end" style="width: 180px;">Đối soát dữ liệu</th>
                         </tr>
                         </thead>
                         <tbody>
                         <c:choose>
                             <c:when test="${not empty logs}">
                                 <c:forEach var="item" items="${logs}">
-                                    <tr>
+                                    <tr class="log-row">
                                         <td><code>#${item.maLog}</code></td>
                                         <td class="small"><fmt:formatDate value="${item.thoiGian}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
                                         <td><span class="badge bg-light text-dark border"><strong>${item.maNv}</strong></span></td>
-                                        <td><span class="fw-bold text-dark"><c:out value="${item.hanhDong}"/></span></td>
+                                        <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.hanhDong}"/></span></td>
                                         <td><code>${item.bangTacDong}</code></td>
                                         <td><small class="text-muted">${not empty item.ipAddress ? item.ipAddress : '127.0.0.1'}</small></td>
                                         <td>
@@ -87,9 +86,20 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="logPaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                        </ul>
+                    </nav>
+                </div>
+
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- MODAL BÓC TÁCH JSON ĐỐI SOÁT DỮ LIỆU CŨ VÀ MỚI (DIFF VIEWER) -->
@@ -132,11 +142,10 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const diffModal = new bootstrap.Modal(document.getElementById('auditDiffModal'));
-
     function handleAuditDiffClick(button) {
         const maLog = button.getAttribute("data-log");
         const maNv = button.getAttribute("data-nv");
@@ -145,15 +154,12 @@
         const newVal = button.getAttribute("data-new");
         viewAuditDiff(maLog, maNv, hanhDong, encodeURIComponent(oldVal || ''), encodeURIComponent(newVal || ''));
     }
-
     function viewAuditDiff(maLog, maNv, hanhDong, encodedOld, encodedNew) {
         document.getElementById("diffMaLog").innerText = maLog;
         document.getElementById("diffMaNv").innerText = maNv;
         document.getElementById("diffHanhDong").innerText = hanhDong;
-
         let oldStr = decodeURIComponent(encodedOld).trim();
         let newStr = decodeURIComponent(encodedNew).trim();
-
         try {
             if (oldStr && oldStr !== 'null') {
                 let parsedOld = JSON.parse(oldStr);
@@ -164,7 +170,6 @@
         } catch (e) {
             document.getElementById("jsonOld").innerText = oldStr ? oldStr : "Không có dữ liệu cũ";
         }
-
         try {
             if (newStr && newStr !== 'null') {
                 let parsedNew = JSON.parse(newStr);
@@ -177,6 +182,73 @@
         }
         diffModal.show();
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // PHÂN TRANG CLIENT-SIDE
+        const pageSize = 10;
+        let currentPage = 1;
+        const rows = Array.from(document.querySelectorAll("#logTable tbody .log-row"));
+        const totalRecords = rows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        function paginateLogTable() {
+            if (totalRecords === 0) {
+                document.getElementById("logPaginationArea").style.display = "none";
+                return;
+            }
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+
+            rows.forEach((row, idx) => {
+                if (idx >= startIndex && idx < endIndex) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+            renderPaginationButtons();
+        }
+
+        function renderPaginationButtons() {
+            const controls = document.getElementById("paginatedControls");
+            controls.innerHTML = "";
+            if (totalPages <= 1) {
+                document.getElementById("logPaginationArea").style.display = "none";
+                return;
+            }
+            document.getElementById("logPaginationArea").style.display = "flex";
+
+            const prevLi = document.createElement("li");
+            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
+            controls.appendChild(prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement("li");
+                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
+                controls.appendChild(pageLi);
+            }
+
+            const nextLi = document.createElement("li");
+            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
+            controls.appendChild(nextLi);
+        }
+
+        window.changePage = function(newPage) {
+            currentPage = newPage;
+            paginateLogTable();
+        }
+
+        if (rows.length > 0) {
+            paginateLogTable();
+        }
+    });
 </script>
 </body>
 </html>
