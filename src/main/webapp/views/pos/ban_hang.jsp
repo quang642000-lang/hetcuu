@@ -12,10 +12,8 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
-        /* =========================================================================
-        THIẾT KẾ GIAO DIỆN CHUẨN MÁY POS CHUYÊN NGHIỆP (KIOTVIET, SAPO, IPOS)
-        ========================================================================= */
         :root {
             --pos-bg: #f8fafc;
             --pos-panel-bg: #ffffff;
@@ -318,9 +316,6 @@
             transform: translateY(-1px);
             box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
         }
-        .pos-btn-submit:active {
-            transform: translateY(1px);
-        }
     </style>
 </head>
 <body>
@@ -332,13 +327,21 @@
             <span>TEA POS PRO</span>
             <span class="badge bg-success-subtle text-success border border-success ms-2 font-monospace" style="font-size: 10px; padding: 3px 6px;">V2.5 STABLE</span>
         </a>
-        <div class="d-flex align-items-center gap-3 text-white">
-<span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline">
-<i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-</span>
+        <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
+            <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
+                <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
+            </a>
+            <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
+                <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
+            </a>
+        </div>
+        <div class="d-flex align-items-center gap-3 text-white ms-auto">
+            <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline">
+                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+            </span>
             <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-<i class="bi bi-clock-fill me-1 text-warning"></i> <span id="posCurrentClock">00:00:00</span>
-</span>
+                <i class="bi bi-clock-fill me-1 text-warning"></i> <span id="posCurrentClock">00:00:00</span>
+            </span>
             <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-xs btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
                 <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
             </a>
@@ -348,6 +351,7 @@
         </div>
     </div>
 </nav>
+
 <div class="pos-layout">
     <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
     <div class="pos-category-sidebar">
@@ -362,12 +366,13 @@
             </button>
         </c:forEach>
     </div>
+
     <!-- CỘT 2: LƯỚI SẢN PHẨM -->
     <div class="pos-menu-area">
         <div class="pos-menu-header">
             <div class="pos-search-wrapper">
                 <i class="bi bi-search pos-search-icon"></i>
-                <input type="text" id="posSearchProductInput" class="pos-search-input" placeholder="Tìm tên đồ uống hoặc quét mã vạch sản phẩm..." onkeyup="searchPOSProduct()">
+                <input type="text" id="posSearchProductInput" class="pos-search-input" placeholder="Tìm tên đồ uống hoặc mã sản phẩm..." onkeyup="searchPOSProduct()">
             </div>
             <div class="btn-group border bg-white shadow-sm" style="border-radius: 20px; padding: 2px;">
                 <button class="btn btn-sm px-3 border-0 rounded-pill btn-light active-filter" id="f_all" onclick="filterBadge('all')">Tất cả</button>
@@ -375,6 +380,7 @@
                 <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
             </div>
         </div>
+
         <div class="pos-product-container">
             <div class="pos-grid" id="posProductGrid">
                 <c:forEach var="sp" items="${products}">
@@ -389,14 +395,20 @@
                             ],
                             allToppings: [
                                 <c:forEach var="tp" items="${toppings}" varStatus="tLoop">
-                                { maTp: ${tp.maTp}, tenTp: '${tp.tenTp}', giaBan: ${tp.giaBan} }${not tLoop.last ? ',' : ''}
+                                { maTp: ${tp.maTp}, tenTp: '${tp.tenTp}', giaBan: ${tp.giaBan}, hinhAnh: '${tp.hinhAnh}' }${not tLoop.last ? ',' : ''}
                                 </c:forEach>
                             ]
                         };
                     </script>
                     <div class="pos-card-wrapper">
-                        <!-- AN TOÀN 100%: Dùng HTML Data Attributes thay vì truyền tham số inline JSTL trong onclick -->
-                        <div class="pos-card" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}" data-tensp="${sp.tenSp}" onclick="handlePosCardClick(this)">
+                        <!-- HOÀN TOÀN QUOTE-SAFE: Đọc dữ liệu qua data attribute để tránh lỗi gãy nháy compile JSP -->
+                        <div class="pos-card"
+                             data-masp="${sp.maSp}"
+                             data-madm="${sp.maDm}"
+                             data-isnew="${sp.isNew}"
+                             data-ishot="${sp.isBestseller}"
+                             data-tensp="${sp.tenSp}"
+                             onclick="handlePosCardClick(this)">
                             <div class="pos-card-img-wrapper">
                                 <c:choose>
                                     <c:when test="${not empty sp.hinhAnh}">
@@ -427,6 +439,7 @@
             </div>
         </div>
     </div>
+
     <!-- CỘT 3: CHI TIẾT HÓA ĐƠN & THANH TOÁN -->
     <div class="pos-billing-area">
         <div class="pos-billing-header">
@@ -434,18 +447,19 @@
                 <i class="bi bi-cart3 text-success fs-5"></i>
                 <span>DANH SÁCH ORDER</span>
             </h6>
-            <button class="btn btn-sm btn-outline-danger border-2 fw-bold" onclick="clearFullPosCart()">
+            <button type="button" class="btn btn-sm btn-outline-danger border-2 fw-bold" onclick="clearFullPosCart()">
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
         </div>
-        <!-- LIST SẢN PHẨM TRONG ĐƠN -->
+
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
                 <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
                 <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
             </div>
         </div>
-        <!-- CRM ĐỐI SOÁT HỘI VIÊN CHUYÊN SÂU -->
+
+        <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
         <div class="pos-crm-panel">
             <div class="input-group input-group-sm mb-2 shadow-sm" style="border-radius: 6px; overflow: hidden;">
                 <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-telephone-fill"></i></span>
@@ -475,6 +489,7 @@
                 </div>
             </div>
         </div>
+
         <!-- FORM GỬI THANH TOÁN -->
         <form id="posCheckoutForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST">
             <input type="hidden" name="maKh" id="submit_maKh">
@@ -488,6 +503,7 @@
             <input type="hidden" name="tongPhaiTra" id="submit_tongPhaiTra">
             <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
             <div id="submitItemsContainer"></div>
+
             <div class="pos-checkout-panel bg-white border-top">
                 <div class="mb-2">
                     <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
@@ -516,6 +532,7 @@
                     <span class="pos-total-label">TỔNG TIỀN PHẢI THU:</span>
                     <span class="pos-total-val" id="totalPayablePrice">0 đ</span>
                 </div>
+
                 <div class="pos-cash-calculator">
                     <div class="row align-items-center g-2 mb-2">
                         <div class="col-5">
@@ -536,6 +553,7 @@
                         <span class="text-primary" id="txtCashRefund">0 đ</span>
                     </div>
                 </div>
+
                 <div class="mb-3">
                     <div class="btn-group w-100" role="group">
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onclick="changePaymentMethod(1)">
@@ -551,41 +569,42 @@
         </form>
     </div>
 </div>
+
 <!-- MODAL IN HÓA ĐƠN NHIỆT -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
-            <div class="modal-body p-3 bg-white text-dark" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 11.5px;">
+            <div class="modal-body p-3 bg-white text-dark" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 11px;">
                 <div class="text-center mb-2">
-                    <h6 class="fw-bold mb-0" style="letter-spacing: 0.5px;">TEA POS PRO - COFFEE & TEA</h6>
+                    <h6 class="fw-bold mb-0" style="letter-spacing: 0.5px; font-size: 13px;">TEA POS PRO - COFFEE & TEA</h6>
                     <span style="font-size: 9px; color: #555;">Địa chỉ: 123 Đường Trà Sữa, Phường 10, Gò Vấp</span><br>
                     <span style="font-size: 9px; color: #555;">Hotline: (+84) 123 456 789</span>
                     <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                    <strong style="font-size: 11px;">HÓA ĐƠN BÁN LẺ TẠY QUẦY</strong><br>
+                    <strong style="font-size: 11px;">HÓA ĐƠN BÁN LẺ TẠI QUẦY</strong><br>
                     <span style="font-size: 9px;" id="billThoiGian"></span>
                 </div>
-                <div class="mb-2">
+                <div class="mb-2" style="font-size: 10px;">
                     <div>Mã đơn: <strong id="billMaDh"></strong></div>
                     <div>Thu ngân: <span id="billTenNv"></span></div>
                     <div>Khách hàng: <span id="billTenKh"></span></div>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div id="billItemsContainer"></div>
+                <div id="billItemsContainer" style="font-size: 10px;"></div>
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between" style="font-size: 10px;">
                     <span>Tổng tiền nước:</span>
                     <strong id="billRawPrice"></strong>
                 </div>
-                <div class="d-flex justify-content-between text-danger" id="billDiscountRow" style="display: none;">
+                <div class="d-flex justify-content-between text-danger" id="billDiscountRow" style="display: none; font-size: 10px;">
                     <span>Khấu trừ Voucher:</span>
                     <strong id="billDiscount"></strong>
                 </div>
-                <div class="d-flex justify-content-between text-primary" id="billPointsRow" style="display: none;">
+                <div class="d-flex justify-content-between text-primary" id="billPointsRow" style="display: none; font-size: 10px;">
                     <span>Tiêu điểm CRM:</span>
                     <strong id="billPointsDiscount"></strong>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 4px 0;"></div>
-                <div class="d-flex justify-content-between fw-bold text-success fs-6">
+                <div class="d-flex justify-content-between fw-bold text-success fs-6" style="font-size: 12px;">
                     <span>CẦN THANH TOÁN:</span>
                     <span id="billFinalPayable"></span>
                 </div>
@@ -602,6 +621,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -612,6 +632,7 @@
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
+
     // 2. Định dạng SĐT và gọi Ajax tìm khách hàng CRM
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
@@ -619,6 +640,7 @@
             searchCustomerCRM();
         }
     }
+
     // 3. Tính toán tiền trả lại khách hàng
     function calculateChangeRefund() {
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
@@ -632,6 +654,7 @@
             document.getElementById('txtCashRefund').className = 'text-primary fw-bold';
         }
     }
+
     // Gợi ý bấm nhanh tiền mặt
     function suggestCashAmount(amount) {
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
@@ -642,6 +665,7 @@
         }
         calculateChangeRefund();
     }
+
     // 4. Lọc sản phẩm theo danh mục sidebar trái
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
@@ -660,6 +684,7 @@
             });
         }
     }
+
     // 5. Lọc nhanh theo nhãn (NEW, HOT, ALL)
     function filterBadge(type) {
         document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('btn-light', 'active-filter'));
@@ -680,6 +705,7 @@
             }
         });
     }
+
     // 6. Tra cứu nhanh realtime không độ trễ
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
@@ -694,6 +720,7 @@
             }
         });
     }
+
     // 7. Hủy toàn bộ giỏ hàng
     function clearFullPosCart() {
         posCart = [];
@@ -702,6 +729,7 @@
         document.getElementById('inputCustomerCash').value = '';
         document.getElementById('txtCashRefund').innerText = '0 đ';
     }
+
     function resetVoucherAndPoints() {
         appliedVoucher = null;
         appliedPoints = 0;
@@ -713,11 +741,13 @@
         document.getElementById("summaryPointsRow").style.display = "none";
         document.getElementById("manualVoucherInput").value = "";
     }
+
     // 8. Đổi phương thức thanh toán
     function changePaymentMethod(maPt) {
         document.getElementById('submit_maPt').value = maPt;
     }
-    // 9. Submit đơn hàng POS - SỬA LỖI TRỰC TIẾP TRÁNH CLASH EL JAVASCRIPT
+
+    // 9. Submit đơn hàng POS - THỜI THƯỢNG, BẢO MẬT & QUOTE-SAFE
     function submitPOSOrderTransaction() {
         if (posCart.length === 0) {
             showToast('warning', 'Giỏ hàng POS trống, không thể in hóa đơn!');
@@ -733,16 +763,21 @@
             container.innerHTML += '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">';
             container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
             container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
+
+            // Map mảng topping định dạng chuẩn: maTp_soLuong_giaTp
             let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
             container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
         });
+
         const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, ''));
         const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, ''));
+
         document.getElementById('submit_tongTienHang').value = totalRaw;
         document.getElementById('submit_tongPhaiTra').value = totalPayable;
         if (customerInfo) {
             document.getElementById('submit_maKh').value = customerInfo.maKh;
         }
+
         Swal.fire({
             title: 'Chốt giao dịch quầy POS',
             text: 'Tiến hành in hóa đơn bán lẻ và đồng bộ ví điểm CRM cho khách hàng?',
@@ -757,6 +792,7 @@
             }
         });
     }
+
     // 10. Đóng gói click card gọi openCustomizePopup an toàn tuyệt đối chống lỗi dấu nháy quote symbol
     function handlePosCardClick(cardElement) {
         const maSp = cardElement.getAttribute('data-masp');
@@ -765,7 +801,6 @@
         openCustomizePopup(maSp, tenSp, encodeURIComponent(JSON.stringify(optionsObj)));
     }
 </script>
-<!-- NẠP THƯ VIỆN ĐỘC LẬP POS.JS -->
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 <script>
     // Lắng nghe xem có hóa đơn in từ backend trả về không
@@ -791,7 +826,7 @@
             });
         }
     });
-    // Hàm phụ lấy context path tự động
+
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }

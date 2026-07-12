@@ -3,7 +3,7 @@ let customerInfo = null;
 let appliedVoucher = null;
 let appliedPoints = 0; // Số điểm CRM khách muốn quy đổi
 
-// Hàm tiện ích lấy Context Path tự động từ trình duyệt tránh lỗi 404
+// Hàm lấy Context Path tự động tránh lỗi 404
 function getContextPath() {
     return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
 }
@@ -50,10 +50,20 @@ function adjustPopupToppingQty(maTp, delta) {
 }
 
 // Hàm mở Popup cấu hình trà sữa và toppings ăn kèm có số lượng và có hình ảnh
-function openCustomizePopup(cardElement) {
-    const maSp = cardElement.dataset.masp;
-    const tenSp = cardElement.querySelector('.pos-card-name').innerText.trim();
-    const rawOptions = JSON.parse(cardElement.dataset.options);
+function openCustomizePopup(arg1, arg2, arg3) {
+    let maSp, tenSp, rawOptions;
+    if (typeof arg1 === 'object' && arg1 !== null) {
+        // Gọi kiểu truyền cardElement
+        maSp = arg1.dataset.masp || arg1.getAttribute('data-masp');
+        tenSp = arg1.dataset.tensp || (arg1.querySelector('.pos-card-name') ? arg1.querySelector('.pos-card-name').innerText.trim() : '');
+        const optionsStr = arg1.dataset.options || arg1.getAttribute('data-options');
+        rawOptions = JSON.parse(decodeURIComponent(optionsStr));
+    } else {
+        // Gọi kiểu truyền maSp, tenSp, encodedOptions
+        maSp = arg1;
+        tenSp = arg2;
+        rawOptions = JSON.parse(decodeURIComponent(arg3));
+    }
 
     let html = '';
     html += '<div class="text-start" id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '">';
@@ -106,24 +116,26 @@ function openCustomizePopup(cardElement) {
     // Chọn Topping có Hình ảnh và Số lượng
     html += '<div class="mb-3"><label class="fw-semibold small mb-2 d-block">THÊM TOPPING ĐI KÈM (CÓ THỂ CHỌN NHIỀU PHẦN)</label>';
     rawOptions.allToppings.forEach(tp => {
-        let imgHtml = tp.hinhAnh && tp.hinhAnh !== 'null' ? '<img src="' + tp.hinhAnh + '" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid #ddd;">' : '<div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border: 1px solid #ddd;"><i class="bi bi-egg-fried text-muted"></i></div>';
+        let imgHtml = (tp.hinhAnh && tp.hinhAnh !== 'null' && tp.hinhAnh !== '')
+            ? '<img src="' + tp.hinhAnh + '" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid #ddd;">'
+            : '<div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border: 1px solid #ddd;"><i class="bi bi-egg-fried text-muted"></i></div>';
 
-        html += '<div class="form-check d-flex justify-content-between align-items-center mb-2.5 bg-light p-2 rounded border shadow-sm">';
+        html += '<div class="form-check d-flex justify-content-between align-items-center mb-2 bg-light p-2 rounded border shadow-sm">';
         html += '  <div class="d-flex align-items-center flex-grow-1">';
-        html += '    <input class="form-check-input topping-chk border-secondary me-2.5" type="checkbox" value="' + tp.maTp + '" ';
+        html += '    <input class="form-check-input topping-chk border-secondary me-2" type="checkbox" value="' + tp.maTp + '" ';
         html += '       data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" id="tp_' + tp.maTp + '" onchange="toggleToppingQty(' + tp.maTp + ')">';
         html += '    <label class="form-check-label d-flex align-items-center mb-0 cursor-pointer" for="tp_' + tp.maTp + '">';
         html += imgHtml;
         html += '      <div>';
-        html += '        <div class="fw-bold text-dark small" style="font-size: 13px;">' + tp.tenTp + '</div>';
+        html += '        <div class="fw-bold text-dark" style="font-size: 13px;">' + tp.tenTp + '</div>';
         html += '        <div class="text-success font-monospace" style="font-size: 11px;">+' + formatVND(tp.giaBan) + '</div>';
         html += '      </div>';
         html += '    </label>';
         html += '  </div>';
         html += '  <div class="input-group input-group-sm" id="tp_qty_container_' + tp.maTp + '" style="width: 80px; display: none !important;">';
-        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustPopupToppingQty(' + tp.maTp + ', -1)">-</button>';
+        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0" onclick="adjustPopupToppingQty(' + tp.maTp + ', -1)">-</button>';
         html += '    <input type="text" id="tp_qty_' + tp.maTp + '" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="1" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">';
-        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustPopupToppingQty(' + tp.maTp + ', 1)">+</button>';
+        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success" onclick="adjustPopupToppingQty(' + tp.maTp + ', 1)">+</button>';
         html += '  </div>';
         html += '</div>';
     });
@@ -132,13 +144,13 @@ function openCustomizePopup(cardElement) {
     // Ghi chú pha chế
     html += '<div class="mb-3">';
     html += '<label class="fw-semibold small mb-2">Ghi chú pha chế</label>';
-    html += '<textarea class="form-control-teapos" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
+    html += '<textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
     html += '</div>';
 
     // Thành tiền và nút Thêm
     html += '<div class="d-flex justify-content-between align-items-center mt-4">';
     html += '<span class="fw-bold fs-5 text-success" id="popup_total">0 đ</span>';
-    html += '<button class="btn-teapos btn-primary-teapos" onclick="addCustomizedToCart()">';
+    html += '<button class="btn btn-primary" onclick="addCustomizedToCart()">';
     html += '<i class="bi bi-cart-plus me-1"></i> Thêm vào đơn';
     html += '</button></div>';
 
@@ -177,6 +189,7 @@ function addCustomizedToCart() {
     const maSize = parseInt(checkedSize.value);
     const tenSize = checkedSize.dataset.name;
     const giaBan = parseInt(checkedSize.dataset.price);
+
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
     const mucDuong = sugarEl ? sugarEl.value : "100%";
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
@@ -227,40 +240,37 @@ function renderPosCart() {
         recalculatePOSBill(0);
         return;
     }
-
     container.innerHTML = '';
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingTotal = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
         tongTienHang += rowPrice;
-
         let toppingsText = '';
         if (item.toppings && item.toppings.length > 0) {
             item.toppings.forEach(t => {
                 toppingsText += '<br>+ Topping: ' + t.tenTp + ' (x' + t.soLuongTp + ')';
             });
         }
-
         container.innerHTML +=
-            '<div class="pos-cart-item p-3 border-bottom d-flex justify-content-between align-items-center">' +
-            '<div class="cart-item-details">' +
-            '<span class="fw-bold text-dark d-block" style="font-size: 14px;">' + item.tenSp + ' (Size ' + item.tenSize + ')</span>' +
-            '<div class="small text-muted" style="font-size: 11px; margin-top: 2px;">' +
-            'Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + toppingsText +
-            '</div>' +
-            '<div class="text-success fw-bold mt-1" style="font-size: 13px;">' + formatVND(rowPrice) + '</div>' +
-            '</div>' +
-            '<div class="d-flex flex-column align-items-end gap-2">' +
-            '<button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 12px;" onclick="removeCartItem(' + idx + ')">' +
-            '<i class="bi bi-trash"></i>' +
-            '</button>' +
-            '<div class="input-group input-group-sm" style="width: 80px;">' +
-            '<button class="btn btn-outline-secondary px-2" onclick="changeQty(' + idx + ', -1)">-</button>' +
-            '<span class="form-control text-center bg-white border-secondary border-opacity-25 px-0 fw-bold" style="font-size: 12px;">' + item.soLuong + '</span>' +
-            '<button class="btn btn-outline-secondary px-2 text-success" onclick="changeQty(' + idx + ', 1)">+</button>' +
-            '</div>' +
-            '</div>' +
+            '<div class="pos-bill-item">' +
+            '  <div class="pos-bill-item-details">' +
+            '    <div class="pos-bill-item-title">' + item.tenSp + ' (Size ' + item.tenSize + ')</div>' +
+            '    <div class="pos-bill-item-options">' +
+            '      Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + toppingsText +
+            '    </div>' +
+            '    <div class="pos-bill-item-price">' + formatVND(rowPrice) + '</div>' +
+            '  </div>' +
+            '  <div class="d-flex flex-column align-items-end gap-2">' +
+            '    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;" onclick="removeCartItem(' + idx + ')">' +
+            '      <i class="bi bi-trash"></i>' +
+            '    </button>' +
+            '    <div class="input-group input-group-sm" style="width: 80px;">' +
+            '      <button type="button" class="btn btn-outline-secondary px-2 py-0" onclick="changeQty(' + idx + ', -1)">-</button>' +
+            '      <span class="form-control text-center bg-white border-secondary border-opacity-25 px-0 fw-bold" style="font-size: 12px; height: 24px; display: flex; align-items: center; justify-content: center;">' + item.soLuong + '</span>' +
+            '      <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success" onclick="changeQty(' + idx + ', 1)">+</button>' +
+            '    </div>' +
+            '  </div>' +
             '</div>';
     });
     recalculatePOSBill(tongTienHang);
@@ -340,7 +350,6 @@ function openQuickAddCustomerModal() {
     html += '<div class="mb-3">';
     html += '<label class="fw-bold small mb-1">Địa chỉ Email <span class="text-danger">*</span></label>';
     html += '<input type="email" class="form-control" id="reg_email" placeholder="khachhang@gmail.com..." required>';
-    html += '<small class="text-muted" style="font-size: 10px;">Hệ thống sẽ tự kích hoạt tài khoản CRM và gửi hướng dẫn sử dụng!</small>';
     html += '</div></div>';
 
     Swal.fire({
@@ -349,7 +358,7 @@ function openQuickAddCustomerModal() {
         showCancelButton: true,
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Đăng Ký Hoạt Động Ngay',
+        confirmButtonText: 'Đăng Ký',
         cancelButtonText: 'Hủy Bỏ',
         preConfirm: () => {
             const tenKh = document.getElementById('reg_tenKh').value.trim();
@@ -389,7 +398,7 @@ function openQuickAddCustomerModal() {
                         Swal.fire({
                             icon: 'success',
                             title: 'Thành công',
-                            text: 'Đã khởi tạo, gửi Email và tự động kích hoạt tài khoản CRM VIP cho thành viên ' + data.tenKh + '!',
+                            text: 'Đã khởi tạo tài khoản CRM VIP cho thành viên ' + data.tenKh + '!',
                             confirmButtonColor: '#10b981'
                         });
                     } else {
@@ -456,7 +465,7 @@ function showVoucherSelectionModal() {
         return;
     }
     if (posCart.length === 0) {
-        showToast('warning', 'Vui lòng nêm cốc nước vào giỏ hàng trước khi áp mã!');
+        showToast('warning', 'Vui lòng chọn cốc nước trước khi áp mã!');
         return;
     }
     if (!customerInfo.vouchers || customerInfo.vouchers.length === 0) {
@@ -474,6 +483,7 @@ function showVoucherSelectionModal() {
         selectHtml += '<option value="' + v.maCode + '">' + v.maCode + ' (Giảm ' + txtType + ' | Đơn từ ' + formatVND(v.donToiThieu) + ')</option>';
     });
     selectHtml += '</select>';
+
     Swal.fire({
         title: 'KHO VOUCHER KHẢ DỤNG',
         html: selectHtml,
@@ -527,7 +537,7 @@ function applyPointsDiscount() {
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Xác nhận trừ điểm',
-        cancelButtonText: 'Hủy bỏ',
+        cancelButtonText: 'Hủy bộ',
         preConfirm: (val) => {
             const pts = parseInt(val);
             if (isNaN(pts) || pts <= 0 || pts > customerInfo.diemTichLuy) {
@@ -575,7 +585,6 @@ function recalculatePOSBill(tongTienHang) {
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
-
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.display = "flex";
         document.getElementById("txtUsedPoints").innerText = appliedPoints;
@@ -603,4 +612,64 @@ function recalculatePOSBill(tongTienHang) {
 
 function formatVND(amount) {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+}
+
+function loadAndShowPrintReceipt(orderId) {
+    fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'SUCCESS') {
+                document.getElementById("billMaDh").innerText = data.maDh;
+                document.getElementById("billThoiGian").innerText = data.thoiGianTao;
+                document.getElementById("billTenKh").innerText = data.tenKhachHang ? data.tenKhachHang : 'Khách lẻ vãng lai';
+                document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Hệ thống';
+                document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
+                document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+
+                if (data.diemSuDung > 0) {
+                    document.getElementById("billPointsRow").style.display = 'flex';
+                    document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
+                } else {
+                    document.getElementById("billPointsRow").style.display = 'none';
+                }
+                document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
+
+                let container = document.getElementById("billItemsContainer");
+                container.innerHTML = '';
+                data.items.forEach(item => {
+                    let html = '<div style="margin-bottom: 6px;">';
+                    html += '  <div class="d-flex justify-content-between">';
+                    html += '    <span><strong>' + item.tenMon + '</strong> (Size: ' + item.tenSize + ')</span>';
+                    html += '    <strong>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</strong>';
+                    html += '  </div>';
+                    html += '  <small style="font-size: 9px; color: #555;">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + '</small>';
+                    if (item.toppings && item.toppings.length > 0) {
+                        html += '  <div style="padding-left: 8px; font-size: 9px; color: #555;">';
+                        item.toppings.forEach(tp => {
+                            html += '    <div>+ ' + tp.tenTopping + ' (SL: ' + tp.soLuong + ' x ' + parseInt(tp.giaChotTp).toLocaleString('vi-VN') + ' đ)</div>';
+                        });
+                        html += '  </div>';
+                    }
+                    html += '</div>';
+                    container.innerHTML += html;
+                });
+                const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
+                printModal.show();
+            } else {
+                showToast('error', 'Không thể lấy dữ liệu in hóa đơn!');
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi lấy dữ liệu hóa đơn:", err);
+            showToast('error', 'Lỗi lấy dữ liệu hóa đơn!');
+        });
+}
+
+function printReceipt() {
+    const printContent = document.getElementById("billPrintArea").innerHTML;
+    const originalContent = document.body.innerHTML;
+    document.body.innerHTML = printContent;
+    window.print();
+    document.body.innerHTML = originalContent;
+    location.reload();
 }

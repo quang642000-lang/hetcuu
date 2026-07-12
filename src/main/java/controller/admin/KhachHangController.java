@@ -9,7 +9,6 @@ import service.IKhuyenMaiService;
 import service.impl.KhachHangServiceImpl;
 import service.impl.DonHangServiceImpl;
 import service.impl.KhuyenMaiServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -31,7 +30,6 @@ public class KhachHangController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         switch (action) {
             case "list":
                 showList(request, response);
@@ -58,12 +56,8 @@ public class KhachHangController extends HttpServlet {
         String id = request.getParameter("id");
         KhachHang kh = khachHangService.getKhachHangById(id);
         if (kh != null) {
-            // Tab 1: Đã chứa đối tượng KhachHang kh
-            // Tab 2: Lịch sử hóa đơn giao dịch của khách hàng
             List<DonHang> donHangs = donHangService.getDonHangByKhachHang(id);
-            // Tab 3: Kho Voucher cá nhân đủ điều kiện sử dụng (lọc theo đơn giá 100.000đ tượng trưng)
             List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(100000, id);
-
             request.setAttribute("customer", kh);
             request.setAttribute("orders", donHangs);
             request.setAttribute("vouchers", vouchers);
@@ -110,18 +104,17 @@ public class KhachHangController extends HttpServlet {
             kh.setGioiTinh(gioiTinh);
             kh.setDiaChiLienHe(diaChi);
             kh.setTrangThai(trangThai);
-
             if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
                 kh.setNgaySinh(Date.valueOf(ngaySinhStr));
             }
-
             boolean success = khachHangService.updateCustomerProfile(kh);
             if (success) {
                 response.sendRedirect(request.getContextPath() + "/admin/khachhang?msg=updatesuccess");
             } else {
                 request.setAttribute("customer", kh);
                 request.setAttribute("error", "Lỗi: Số điện thoại hoặc Email đã tồn tại ở tài khoản khác!");
-                request.getRequestDispatcher("/views/admin/khachhang-form.jsp").forward(request, response);
+                // SỬA LỖI: Sửa từ khachhang-form.jsp thành khach_hang.jsp khớp chuẩn
+                request.getRequestDispatcher("/views/admin/khach_hang.jsp").forward(request, response);
             }
         }
     }

@@ -35,6 +35,7 @@
                         </c:if>
                     </form>
                 </div>
+
                 <!-- BẢNG DANH SÁCH NHẬT KÝ -->
                 <div class="table-responsive">
                     <table class="table table-hover table-teapos">
@@ -62,8 +63,8 @@
                                         <td><small class="text-muted">${not empty item.ipAddress ? item.ipAddress : '127.0.0.1'}</small></td>
                                         <td>
                                             <div class="d-flex justify-content-end">
-                                                <!-- SỬA ĐỒNG BỘ: Sử dụng data-attributes chống gãy rụng dấu quote lồng nhau -->
-                                                <button class="btn btn-sm btn-outline-success fw-bold px-2.5 py-1 small"
+                                                <!-- ĐỒNG BỘ: Sử dụng data-attributes chống gãy rụng dấu quote lồng nhau -->
+                                                <button type="button" class="btn btn-sm btn-outline-success fw-bold px-2.5 py-1 small"
                                                         data-log="#${item.maLog}"
                                                         data-nv="${item.maNv}"
                                                         data-action="${item.hanhDong}"
@@ -90,6 +91,7 @@
         </div>
     </div>
 </div>
+
 <!-- MODAL BÓC TÁCH JSON ĐỐI SOÁT DỮ LIỆU CŨ VÀ MỚI (DIFF VIEWER) -->
 <div class="modal fade" id="auditDiffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -130,23 +132,28 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const diffModal = new bootstrap.Modal(document.getElementById('auditDiffModal'));
+
     function handleAuditDiffClick(button) {
         const maLog = button.getAttribute("data-log");
         const maNv = button.getAttribute("data-nv");
         const hanhDong = button.getAttribute("data-action");
         const oldVal = button.getAttribute("data-old");
         const newVal = button.getAttribute("data-new");
-        viewAuditDiff(maLog, maNv, hanhDong, encodeURIComponent(oldVal), encodeURIComponent(newVal));
+        viewAuditDiff(maLog, maNv, hanhDong, encodeURIComponent(oldVal || ''), encodeURIComponent(newVal || ''));
     }
+
     function viewAuditDiff(maLog, maNv, hanhDong, encodedOld, encodedNew) {
         document.getElementById("diffMaLog").innerText = maLog;
         document.getElementById("diffMaNv").innerText = maNv;
         document.getElementById("diffHanhDong").innerText = hanhDong;
+
         let oldStr = decodeURIComponent(encodedOld).trim();
         let newStr = decodeURIComponent(encodedNew).trim();
+
         try {
             if (oldStr && oldStr !== 'null') {
                 let parsedOld = JSON.parse(oldStr);
@@ -157,6 +164,7 @@
         } catch (e) {
             document.getElementById("jsonOld").innerText = oldStr ? oldStr : "Không có dữ liệu cũ";
         }
+
         try {
             if (newStr && newStr !== 'null') {
                 let parsedNew = JSON.parse(newStr);

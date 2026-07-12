@@ -4,29 +4,17 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <c:set var="maSp" value="SPxxxx (Tự động sinh)" />
-    <c:set var="tenSp" value="" />
-    <c:set var="maDm" value="" />
-    <c:set var="hinhAnh" value="" />
-    <c:set var="moTa" value="" />
-    <c:set var="choPhepDoiDa" value="true" />
-    <c:set var="choPhepDoiDuong" value="true" />
-    <c:set var="isNew" value="false" />
-    <c:set var="isBestseller" value="false" />
-    <c:set var="trangThai" value="true" />
-
-    <c:if test="${not empty product}">
-        <c:set var="maSp" value="${product.maSp}" />
-        <c:set var="tenSp" value="${product.tenSp}" />
-        <c:set var="maDm" value="${product.maDm}" />
-        <c:set var="hinhAnh" value="${product.hinhAnh}" />
-        <c:set var="moTa" value="${product.moTa}" />
-        <c:set var="choPhepDoiDa" value="${product.choPhepDoiDa}" />
-        <c:set var="choPhepDoiDuong" value="${product.choPhepDoiDuong}" />
-        <c:set var="isNew" value="${product.getIsNew()}" />
-        <c:set var="isBestseller" value="${product.getIsBestseller()}" />
-        <c:set var="trangThai" value="${product.trangThai}" />
-    </c:if>
+    <!-- Khai báo biến an toàn tránh lỗi NullPointerException / ClassNotFoundException trên Tomcat 11 -->
+    <c:set var="maSp" value="${not empty product ? product.maSp : 'SPxxxx (Tự động sinh)'}" />
+    <c:set var="tenSp" value="${not empty product ? product.tenSp : ''}" />
+    <c:set var="maDm" value="${not empty product ? product.maDm : ''}" />
+    <c:set var="hinhAnh" value="${not empty product ? product.hinhAnh : ''}" />
+    <c:set var="moTa" value="${not empty product ? product.moTa : ''}" />
+    <c:set var="choPhepDoiDa" value="${not empty product ? product.choPhepDoiDa : true}" />
+    <c:set var="choPhepDoiDuong" value="${not empty product ? product.choPhepDoiDuong : true}" />
+    <c:set var="isNew" value="${not empty product ? product.isNew : false}" />
+    <c:set var="isBestseller" value="${not empty product ? product.isBestseller : false}" />
+    <c:set var="trangThai" value="${not empty product ? product.trangThai : true}" />
 
     <title>TEA POS - ${not empty product ? "Cập Nhật" : "Thêm"} Sản Phẩm Đồ Uống</title>
     <meta charset="UTF-8">
@@ -108,7 +96,6 @@
                                     <!-- Tên sản phẩm -->
                                     <div class="col-12 col-md-8">
                                         <label for="tenSp" class="form-label fw-bold small text-dark">Tên Đồ Uống <span class="text-danger">*</span></label>
-                                        <!-- SỬA LỖI TRÁNH QUOTE SYMBOL EXPECTED: Sử dụng ${tenSp} thay cho <c:out> lồng attribute -->
                                         <input type="text" class="form-control form-control-teapos" id="tenSp" name="tenSp"
                                                value="${tenSp}" placeholder="Ví dụ: Trà Sữa Khoai Môn Trân Châu..." required autocomplete="off">
                                     </div>
@@ -124,7 +111,6 @@
                                             </c:forEach>
                                         </select>
                                     </div>
-
                                     <!-- NÂNG CẤP: CHO PHÉP PICK FILE CHỌN ẢNH TỪ MÁY TÍNH -->
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-bold small text-dark">Hình ảnh Đồ uống</label>
@@ -138,6 +124,7 @@
                                         </ul>
                                         <input type="hidden" name="uploadType" id="uploadType" value="file">
                                         <input type="hidden" name="currentHinhAnh" id="currentHinhAnh" value="${hinhAnh}">
+
                                         <div id="fileUploadGroup">
                                             <input type="file" class="form-control form-control-teapos" name="hinhAnhFile" accept="image/*" onchange="previewSelectedImage(this)">
                                         </div>
@@ -145,7 +132,6 @@
                                             <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl" value="${hinhAnh}" placeholder="https://image-url..." onchange="previewUrlImage(this.value)">
                                         </div>
                                     </div>
-
                                     <!-- Mô tả -->
                                     <div class="col-12">
                                         <label for="moTa" class="form-label fw-bold small text-dark">Mô tả chi tiết đồ uống</label>
@@ -163,28 +149,28 @@
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDa" name="choPhepDoiDa" value="1"
-                                                ${choPhepDoiDa == 'true' || choPhepDoiDa == true ? 'checked' : ''}>
+                                            ${choPhepDoiDa == 'true' || choPhepDoiDa == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDa">Đổi Đá (Ice)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDuong" name="choPhepDoiDuong" value="1"
-                                                ${choPhepDoiDuong == 'true' || choPhepDoiDuong == true ? 'checked' : ''}>
+                                            ${choPhepDoiDuong == 'true' || choPhepDoiDuong == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDuong">Đổi Đường (Sugar)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="isNew" name="isNew" value="1"
-                                                ${isNew == 'true' || isNew == true ? 'checked' : ''}>
+                                            ${isNew == 'true' || isNew == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-warning small" for="isNew">✨ Nhãn Mới (New)</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="isBestseller" name="isBestseller" value="1"
-                                                ${isBestseller == 'true' || isBestseller == true ? 'checked' : ''}>
+                                            ${isBestseller == 'true' || isBestseller == true ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-danger small" for="isBestseller">🔥 Bán Chạy (Hot)</label>
                                         </div>
                                     </div>
@@ -192,12 +178,12 @@
                                         <label class="form-label fw-bold small text-dark d-block">Trạng thái bán của sản phẩm mẹ</label>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="trangThai" id="statusActive" value="1"
-                                                ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
+                                            ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
                                             <label class="form-check-label text-success fw-bold" for="statusActive">Đang hoạt động (Mở bán)</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="trangThai" id="statusInactive" value="0"
-                                                ${trangThai == 'false' || trangThai == false ? 'checked' : ''}>
+                                            ${trangThai == 'false' || trangThai == false ? 'checked' : ''}>
                                             <label class="form-check-label text-danger" for="statusInactive">Ngừng hoạt động (Tạm dừng bán)</label>
                                         </div>
                                     </div>
@@ -253,6 +239,7 @@
                                         </thead>
                                         <tbody id="sizesConfigTableBody">
                                         <c:forEach var="sz" items="${sizes}">
+                                            <!-- Đối soát khớp xem kích cỡ này đã được cấu hình trước đó chưa (Chế độ Edit) -->
                                             <c:set var="isConfigured" value="false"/>
                                             <c:set var="savedPrice" value=""/>
                                             <c:set var="savedVolume" value=""/>
@@ -292,6 +279,7 @@
                                                            value="${savedVolume}" ${isConfigured == 'true' ? "" : "disabled"} placeholder="Ví dụ: 350ml, 500ml...">
                                                 </td>
                                                 <td>
+                                                    <!-- Switch trạng thái bán độc lập của Size -->
                                                     <div class="form-check form-switch d-inline-block ps-5">
                                                         <input class="form-check-input size-status-switch" type="checkbox"
                                                                name="size_status_${sz.maSize}" id="size_status_${sz.maSize}" value="1"
@@ -302,6 +290,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
+                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu -->
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
                                                             onclick="deleteSizeRow(${sz.maSize}, '${sz.tenSize}')">
                                                         <i class="bi bi-trash-fill"></i> Xóa
@@ -315,13 +304,14 @@
                             </div>
                         </div>
 
-                        <!-- CÁC NÚT ĐIỀU HÀNH -->
+                        <!-- CÁC NÚT ĐIỀU HÀNH CHỐT BIỂU MẪU -->
                         <div class="col-12 d-flex justify-content-end gap-2 border-top pt-4">
                             <a href="${pageContext.request.contextPath}/admin/sanpham" class="btn btn-secondary-teapos px-4 py-2.5 fw-bold">HUỶ BỎ</a>
                             <button type="submit" class="btn-teapos btn-primary-teapos px-5 py-2.5 fw-bold shadow-sm">
                                 <i class="bi bi-cloud-download-fill me-1"></i> LƯU SẢN PHẨM
                             </button>
                         </div>
+
                     </div>
                 </form>
             </div>
@@ -376,6 +366,7 @@
         }
     }
 
+    // Tự động bật tắt các ô nhập liệu Giá & Định lượng & Switch hoạt động khi check/uncheck mốc Size
     function toggleSizeFields(maSize) {
         const check = document.getElementById("size_active_" + maSize);
         const priceInput = document.getElementById("size_price_" + maSize);
@@ -405,6 +396,7 @@
         }
     }
 
+    // Lắng nghe sự kiện click switch trạng thái bán để đổi nhãn chữ realtime
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('.size-status-switch').forEach(el => {
             el.addEventListener('change', function() {
@@ -415,12 +407,11 @@
                 }
             });
         });
-
-        // Khởi tạo tab upload
         const curImg = document.getElementById('currentHinhAnh').value;
         switchUploadType((curImg && curImg.startsWith('http')) ? 'url' : 'file');
     });
 
+    // AJAX thêm nhanh kích cỡ mới và tự động chèn Row dynamic [String concatenation an toàn tuyệt đối]
     function addNewSizeAjax() {
         const tenSizeInput = document.getElementById('newSizeNameInput');
         const tenSize = tenSizeInput.value.trim();
@@ -452,12 +443,14 @@
                     const maSize = data.maSize;
                     const normalizedTenSize = data.tenSize;
 
+                    // Kiểm tra trùng lắp row trên UI
                     if (document.getElementById('row_size_' + maSize)) {
                         showToast('info', 'Mốc kích cỡ này đã tồn tại trong danh sách chọn bên dưới!');
                         tenSizeInput.value = '';
                         return;
                     }
 
+                    // CHÈN DÒNG ROW MỚI BẰNG CHUỖI GHÉP CỘNG THUẦN (String Concatenation) cực kì an toàn
                     const tbody = document.getElementById('sizesConfigTableBody');
                     const newRow = document.createElement('tr');
                     newRow.className = 'text-center';
@@ -499,6 +492,7 @@
                     newRow.innerHTML = rowHtml;
                     tbody.appendChild(newRow);
 
+                    // Lắng nghe sự kiện thay đổi của Switch vừa sinh mới
                     document.getElementById("size_status_" + maSize).addEventListener('change', function() {
                         document.getElementById("lbl_status_" + maSize).innerText = this.checked ? "Mở bán" : "Ngừng bán";
                     });
@@ -517,10 +511,12 @@
             });
     }
 
+    // Nghiệp vụ sâu: Xóa mốc Size (Kiểm toán AJAX xem đã bán chưa)
     function deleteSizeRow(maSize, tenSize) {
         const action = document.getElementById("formAction").value;
         const maSp = document.getElementById("formMaSp").value;
 
+        // Trường hợp 1: Đang thêm mới sản phẩm -> Cho phép xóa row UI ngay lập tức
         if (action === 'create' || !maSp) {
             const row = document.getElementById("row_size_" + maSize);
             if (row) {
@@ -534,6 +530,7 @@
             return;
         }
 
+        // Trường hợp 2: Đang sửa cấu hình sản phẩm -> Phải gọi AJAX kiểm toán
         Swal.fire({
             title: 'Đang kiểm tra lịch sử bán...',
             allowOutsideClick: false,
@@ -546,6 +543,7 @@
             .then(function(data) {
                 Swal.close();
                 if (data.status === 'HAS_ORDERS') {
+                    // Đã bán -> Chỉ cho phép tắt trạng thái (Soft Delete) để bảo toàn lịch sử in bill
                     Swal.fire({
                         icon: 'warning',
                         title: 'Không thể xóa cứng cấu hình!',
@@ -568,6 +566,7 @@
                         }
                     });
                 } else if (data.status === 'NO_ORDERS') {
+                    // Chưa bán -> Cho phép xóa cứng cấu hình hoặc xóa master
                     Swal.fire({
                         title: 'Xóa mốc kích cỡ?',
                         html: 'Mốc <strong>Size ' + tenSize + '</strong> chưa hề phát sinh giao dịch bán lẻ nào. Bạn có chắc muốn xóa vĩnh viễn mốc này khỏi sản phẩm (và cả bảng master kích cỡ nếu muốn)?',
@@ -582,7 +581,6 @@
                         cancelButtonText: 'Hủy bỏ'
                     }).then(function(result) {
                         if (result.isConfirmed) {
-                            // Chỉ gỡ khỏi món
                             const check = document.getElementById("size_active_" + maSize);
                             if (check) {
                                 check.checked = false;
@@ -593,13 +591,11 @@
                             }
                             showToast('success', 'Đã gỡ bỏ mốc kích cỡ Size ' + tenSize + ' khỏi sản phẩm.');
                         } else if (result.isDenied) {
-                            // Xóa vĩnh viễn khỏi hệ thống KICH_CO
                             Swal.fire({
                                 title: 'Đang xóa vĩnh viễn kích cỡ...',
                                 allowOutsideClick: false,
                                 didOpen: function() { Swal.showLoading(); }
                             });
-
                             const delUrl = getContextPath() + '/admin/sanpham?action=deleteSizeMasterAjax&maSize=' + maSize;
                             fetch(delUrl)
                                 .then(res => res.json())

@@ -4,6 +4,33 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <!-- Khởi tạo các biến an toàn để phòng tránh NullPointerException và lỗi PropertyNotFound trên Tomcat 11 / EL 6.0 -->
+    <c:set var="maKh" value="" />
+    <c:set var="tenKh" value="" />
+    <c:set var="soDienThoai" value="" />
+    <c:set var="email" value="" />
+    <c:set var="ngaySinh" value="" />
+    <c:set var="gioiTinh" value="Nam" />
+    <c:set var="diaChiLienHe" value="" />
+    <c:set var="hinhAnhUrl" value="" />
+    <c:set var="diemTichLuy" value="0" />
+    <c:set var="maHang" value="1" />
+    <c:set var="trangThai" value="true" />
+
+    <c:if test="${not empty customer}">
+        <c:set var="maKh" value="${customer.maKh}" />
+        <c:set var="tenKh" value="${customer.tenKh}" />
+        <c:set var="soDienThoai" value="${customer.soDienThoai}" />
+        <c:set var="email" value="${customer.email}" />
+        <c:set var="ngaySinh" value="${customer.ngaySinh}" />
+        <c:set var="gioiTinh" value="${customer.gioiTinh}" />
+        <c:set var="diaChiLienHe" value="${customer.diaChiLienHe}" />
+        <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
+        <c:set var="diemTichLuy" value="${customer.diemTichLuy}" />
+        <c:set var="maHang" value="${customer.maHang}" />
+        <c:set var="trangThai" value="${customer.isTrangThai()}" />
+    </c:if>
+
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,32 +59,32 @@
                         <!-- Khung thông tin nhanh bên trái -->
                         <div class="col-12 col-lg-4">
                             <div class="card card-teapos p-4 text-center">
-                                <img src="${not empty customer.hinhAnhUrl ? customer.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
+                                <img src="${not empty hinhAnhUrl ? hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                                <h4 class="fw-bold mb-1 text-dark"><c:out value="${customer.tenKh}"/></h4>
+                                <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success-subtle text-success border border-success px-3 py-1.5 fs-6 mb-3">
-👑 Hạng:
-<c:choose>
-    <c:when test="${customer.maHang == 1}">ĐỒNG</c:when>
-    <c:when test="${customer.maHang == 2}">BẠC</c:when>
-    <c:when test="${customer.maHang == 3}">VÀNG 👑</c:when>
-    <c:when test="${customer.maHang == 4}">VIP 💎</c:when>
-    <c:otherwise>MỚI</c:otherwise>
-</c:choose>
-</span>
+                                    👑 Hạng:
+                                    <c:choose>
+                                        <c:when test="${maHang == 1}">ĐỒNG</c:when>
+                                        <c:when test="${maHang == 2}">BẠC</c:when>
+                                        <c:when test="${maHang == 3}">VÀNG 👑</c:when>
+                                        <c:when test="${maHang == 4}">VIP 💎</c:when>
+                                        <c:otherwise>MỚI</c:otherwise>
+                                    </c:choose>
+                                </span>
                                 <div class="bg-light rounded p-3 text-start">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Mã thành viên:</span>
-                                        <strong class="text-dark">${customer.maKh}</strong>
+                                        <strong class="text-dark">${maKh}</strong>
                                     </div>
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Điểm tích lũy:</span>
-                                        <strong class="text-success">${customer.diemTichLuy} điểm</strong>
+                                        <strong class="text-success">${diemTichLuy} điểm</strong>
                                     </div>
                                     <div class="d-flex justify-content-between">
                                         <span class="text-muted small">Trạng thái:</span>
-                                        <span class="fw-bold ${customer.trangThai ? 'text-success' : 'text-danger'}">
-                                                ${customer.trangThai ? 'Đang hoạt động' : 'Tạm khóa'}
+                                        <span class="fw-bold ${trangThai ? 'text-success' : 'text-danger'}">
+                                                ${trangThai ? 'Đang hoạt động' : 'Tạm khóa'}
                                         </span>
                                     </div>
                                 </div>
@@ -83,54 +110,53 @@
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
-                                            <input type="hidden" name="maKh" value="${customer.maKh}">
+                                            <input type="hidden" name="maKh" value="${maKh}">
                                             <div class="row g-3">
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Họ và tên khách hàng</label>
-                                                    <!-- SỬA LỖI QUOTE SYMBOL EXPECTED: Sử dụng ${customer.tenKh} trực tiếp thay vì <c:out> lồng HTML attribute -->
-                                                    <input type="text" name="tenKh" class="form-control form-control-teapos" value="${customer.tenKh}" required>
+                                                    <input type="text" name="tenKh" class="form-control form-control-teapos" value="${tenKh}" required>
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Số điện thoại di động</label>
-                                                    <input type="text" name="soDienThoai" class="form-control form-control-teapos" value="${customer.soDienThoai}" required>
+                                                    <input type="text" name="soDienThoai" class="form-control form-control-teapos" value="${soDienThoai}" required>
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Địa chỉ Email</label>
-                                                    <input type="email" name="email" class="form-control form-control-teapos" value="${customer.email}" required>
+                                                    <input type="email" name="email" class="form-control form-control-teapos" value="${email}" required>
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Ngày sinh</label>
-                                                    <input type="date" name="ngaySinh" class="form-control form-control-teapos" value="${customer.ngaySinh}">
+                                                    <input type="date" name="ngaySinh" class="form-control form-control-teapos" value="${ngaySinh}">
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Giới tính</label>
                                                     <select name="gioiTinh" class="form-select form-control-teapos">
-                                                        <option value="Nam" ${customer.gioiTinh eq 'Nam' ? 'selected' : ''}>Nam</option>
-                                                        <option value="Nữ" ${customer.gioiTinh eq 'Nữ' ? 'selected' : ''}>Nữ</option>
-                                                        <option value="Khác" ${customer.gioiTinh eq 'Khác' ? 'selected' : ''}>Khác</option>
+                                                        <option value="Nam" ${gioiTinh eq 'Nam' ? 'selected' : ''}>Nam</option>
+                                                        <option value="Nữ" ${gioiTinh eq 'Nữ' ? 'selected' : ''}>Nữ</option>
+                                                        <option value="Khác" ${gioiTinh eq 'Khác' ? 'selected' : ''}>Khác</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-12 col-md-6">
                                                     <label class="form-label fw-semibold text-muted small">Cấp hạng thành viên</label>
                                                     <select name="maHang" class="form-select form-control-teapos" disabled>
-                                                        <option value="1" ${customer.maHang == 1 ? 'selected' : ''}>Hạng Đồng</option>
-                                                        <option value="2" ${customer.maHang == 2 ? 'selected' : ''}>Hạng Bạc</option>
-                                                        <option value="3" ${customer.maHang == 3 ? 'selected' : ''}>Hạng Vàng</option>
-                                                        <option value="4" ${customer.maHang == 4 ? 'selected' : ''}>Hạng Kim Cương</option>
+                                                        <option value="1" ${maHang == 1 ? 'selected' : ''}>Hạng Đồng</option>
+                                                        <option value="2" ${maHang == 2 ? 'selected' : ''}>Hạng Bạc</option>
+                                                        <option value="3" ${maHang == 3 ? 'selected' : ''}>Hạng Vàng</option>
+                                                        <option value="4" ${maHang == 4 ? 'selected' : ''}>Hạng Kim Cương</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label fw-semibold text-muted small">Địa chỉ liên hệ</label>
-                                                    <textarea name="diaChiLienHe" class="form-control form-control-teapos" rows="2">${customer.diaChiLienHe}</textarea>
+                                                    <textarea name="diaChiLienHe" class="form-control form-control-teapos" rows="2">${diaChiLienHe}</textarea>
                                                 </div>
                                                 <div class="col-12">
                                                     <label class="form-label fw-semibold text-muted small d-block">Trạng thái khóa tài khoản</label>
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhTrue" value="1" ${customer.trangThai ? 'checked' : ''}>
+                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhTrue" value="1" ${trangThai == 'true' || trangThai == true ? 'checked' : ''}>
                                                         <label class="form-check-label text-success fw-medium" for="statusKhTrue">Đang hoạt động</label>
                                                     </div>
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhFalse" value="0" ${not customer.trangThai ? 'checked' : ''}>
+                                                        <input class="form-check-input" type="radio" name="trangThai" id="statusKhFalse" value="0" ${trangThai == 'false' || trangThai == false ? 'checked' : ''}>
                                                         <label class="form-check-label text-danger" for="statusKhFalse">Đang tạm khóa</label>
                                                     </div>
                                                 </div>
@@ -164,9 +190,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-<span class="badge bg-light text-dark border">
-        ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-</span>
+                                                                        <span class="badge bg-light text-dark border">
+                                                                                ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+                                                                        </span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -308,7 +334,6 @@
             </c:choose>
         </div>
     </div>
-</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>

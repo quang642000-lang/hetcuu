@@ -21,7 +21,6 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
-                <!-- TIÊU ĐỀ MODULE -->
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-cup-straw me-2"></i>Quản Lý Sản Phẩm</h3>
@@ -31,14 +30,13 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-                <!-- THANH CÔNG CỤ: TÌM KIẾM VÀ BỘ LỌC CHUẨN MIEUTAHETHONG -->
+
+                <!-- BỘ LỌC CHUẨN MIEUTAHETHONG -->
                 <div class="row g-3 mb-4 bg-light p-3 rounded" style="border: 1px solid var(--border-color);">
-                    <!-- 1. Search Box -->
                     <div class="col-12 col-md-3">
                         <label class="form-label fw-semibold text-muted small"><i class="bi bi-search"></i> Tìm kiếm nhanh</label>
                         <input type="text" id="productSearchInput" class="form-control form-control-teapos" placeholder="Tìm tên hoặc mã sản phẩm..." onkeyup="filterProductsRealtime()">
                     </div>
-                    <!-- 2. Filter theo Danh mục -->
                     <div class="col-6 col-md-2">
                         <label class="form-label fw-semibold text-muted small"><i class="bi bi-tag-fill"></i> Nhóm danh mục</label>
                         <select id="filterCategory" class="form-select form-control-teapos" onchange="filterProductsRealtime()">
@@ -48,7 +46,6 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <!-- 3. Filter theo Trạng thái -->
                     <div class="col-6 col-md-2">
                         <label class="form-label fw-semibold text-muted small"><i class="bi bi-toggle-on"></i> Trạng thái</label>
                         <select id="filterStatus" class="form-select form-control-teapos" onchange="filterProductsRealtime()">
@@ -57,7 +54,6 @@
                             <option value="0">Tạm dừng bán</option>
                         </select>
                     </div>
-                    <!-- 4. Filter Sản phẩm MỚI -->
                     <div class="col-6 col-md-2">
                         <label class="form-label fw-semibold text-muted small"><i class="bi bi-star"></i> Nhãn mới</label>
                         <select id="filterNew" class="form-select form-control-teapos" onchange="filterProductsRealtime()">
@@ -66,7 +62,6 @@
                             <option value="false">Sản phẩm thường</option>
                         </select>
                     </div>
-                    <!-- 5. Filter Bestseller -->
                     <div class="col-6 col-md-2">
                         <label class="form-label fw-semibold text-muted small"><i class="bi bi-fire text-danger"></i> Sức hút</label>
                         <select id="filterHot" class="form-select form-control-teapos" onchange="filterProductsRealtime()">
@@ -75,11 +70,11 @@
                             <option value="false">Bình thường</option>
                         </select>
                     </div>
-                    <!-- 6. Nút làm mới bộ lọc -->
                     <div class="col-12 col-md-1 d-flex align-items-end">
                         <button class="btn btn-secondary-teapos w-100 py-2.5 fw-semibold" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
                     </div>
                 </div>
+
                 <!-- BẢNG SẢN PHẨM KHỚP 100% CÁC CỘT TRONG FILE MIEUTAHETHONG -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="productTable">
@@ -105,6 +100,7 @@
                                     <c:set var="minPrice" value="99999999"/>
                                     <c:set var="maxPrice" value="0"/>
                                     <c:set var="activeSizes" value=""/>
+
                                     <c:forEach var="szPrice" items="${item.sizesList}">
                                         <c:if test="${szPrice.trangThai}">
                                             <c:set var="activeSizes" value="${empty activeSizes ? szPrice.tenSize : activeSizes.concat(', ').concat(szPrice.tenSize)}"/>
@@ -116,11 +112,12 @@
                                             </c:if>
                                         </c:if>
                                     </c:forEach>
+
                                     <c:if test="${minPrice == 99999999}">
                                         <c:set var="minPrice" value="0"/>
                                     </c:if>
 
-                                    <!-- SỬA LỖI QUOTE SYMBOL EXPECTED: Sử dụng ${item.tenSp} thay cho <c:out> lồng HTML attribute -->
+                                    <!-- AN TOÀN TUYỆT ĐỐI CHỐNG LỖI QUOTE -->
                                     <tr class="product-row text-center"
                                         data-masp="${item.maSp}"
                                         data-tensp="${item.tenSp}"
@@ -170,9 +167,9 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-</span>
+                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+                                                </span>
                                         </td>
                                         <td class="small text-muted">
                                             <fmt:formatDate value="${item.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/>
@@ -180,7 +177,7 @@
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5 py-1.5">
-                                                    <i class="bi bi-pencil-square"></i> Sửa cấu hình
+                                                    <i class="bi bi-pencil-square"></i> Sửa
                                                 </a>
                                                 <c:choose>
                                                     <c:when test="${item.trangThai}">
@@ -215,6 +212,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -224,8 +222,8 @@
         const statusVal = document.getElementById("filterStatus").value;
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
-
         const rows = document.querySelectorAll("#productTable tbody .product-row");
+
         rows.forEach(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -260,7 +258,7 @@
     function confirmDeleteSanPham(maSp) {
         Swal.fire({
             title: 'Xác nhận dừng bán sản phẩm này?',
-            text: "Cơ chế NGỪNG HOẠT ĐỘNG (Soft Delete) chuyển trạng thái của sản phẩm mẹ về Ngừng mở bán để bảo toàn tuyệt đối cơ cấu hóa đơn giao dịch cũ trong quá khứ!",
+            text: "Cơ chế NGỪNG HOẠT ĐỘNG (Soft Delete) chuyển trạng thái của sản phẩm mẹ về Ngừng mở bán để bảo lưu tuyệt đối cơ cấu hóa đơn giao dịch cũ trong quá khứ!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',

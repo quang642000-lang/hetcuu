@@ -9,7 +9,6 @@ import java.util.List;
 
 public class ToppingRepoImpl implements IToppingRepository {
     private static ToppingRepoImpl instance;
-
     private ToppingRepoImpl() {}
 
     public static synchronized ToppingRepoImpl getInstance() {
@@ -22,41 +21,70 @@ public class ToppingRepoImpl implements IToppingRepository {
     @Override
     public List<Topping> getAll() {
         List<Topping> list = new ArrayList<>();
-        String sql = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING ORDER BY thu_tu_hien_thi ASC";
+        // Cơ chế phòng vệ 2 lớp: Thử SELECT hinh_anh, nếu SQL Server báo lỗi thiếu cột thì tự động lùi về SELECT không có hinh_anh
+        String sqlWithImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING ORDER BY thu_tu_hien_thi ASC";
+        String sqlNoImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai FROM TOPPING ORDER BY thu_tu_hien_thi ASC";
+
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
+             PreparedStatement ps = conn.prepareStatement(sqlWithImg);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(mapResultSetToTopping(rs));
+                list.add(mapResultSetToTopping(rs, true));
             }
+            return list;
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Có khả năng DB chưa chạy lệnh ALTER TABLE thêm cột hinh_anh -> Chạy câu lệnh dự phòng (Fallback)
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlNoImg);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToTopping(rs, false));
+                }
+                return list;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
         return list;
     }
 
     @Override
     public Topping getById(Integer id) {
-        String sql = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING WHERE ma_tp = ?";
+        String sqlWithImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING WHERE ma_tp = ?";
+        String sqlNoImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai FROM TOPPING WHERE ma_tp = ?";
+
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sqlWithImg)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToTopping(rs);
+                    return mapResultSetToTopping(rs, true);
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Chạy câu lệnh dự phòng (Fallback) khi không có cột hinh_anh
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlNoImg)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return mapResultSetToTopping(rs, false);
+                    }
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
         return null;
     }
 
     @Override
     public boolean add(Topping entity) {
-        String sql = "INSERT INTO TOPPING (ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlWithImg = "INSERT INTO TOPPING (ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlNoImg = "INSERT INTO TOPPING (ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai) VALUES (?, ?, ?, ?, ?)";
+
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sqlWithImg)) {
             ps.setString(1, entity.getTenTp());
             ps.setString(2, entity.getDinhLuong());
             ps.setInt(3, entity.getGiaBan());
@@ -65,16 +93,29 @@ public class ToppingRepoImpl implements IToppingRepository {
             ps.setString(6, entity.getHinhAnh());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            // Dự phòng (Fallback) ghi nhận không lưu hình ảnh
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlNoImg)) {
+                ps.setString(1, entity.getTenTp());
+                ps.setString(2, entity.getDinhLuong());
+                ps.setInt(3, entity.getGiaBan());
+                ps.setInt(4, entity.getThuTuHienThi());
+                ps.setBoolean(5, entity.isTrangThai());
+                return ps.executeUpdate() > 0;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                return false;
+            }
         }
     }
 
     @Override
     public boolean update(Topping entity) {
-        String sql = "UPDATE TOPPING SET ten_tp = ?, dinh_luong = ?, gia_ban = ?, thu_tu_hien_thi = ?, trang_thai = ?, hinh_anh = ? WHERE ma_tp = ?";
+        String sqlWithImg = "UPDATE TOPPING SET ten_tp = ?, dinh_luong = ?, gia_ban = ?, thu_tu_hien_thi = ?, trang_thai = ?, hinh_anh = ? WHERE ma_tp = ?";
+        String sqlNoImg = "UPDATE TOPPING SET ten_tp = ?, dinh_luong = ?, gia_ban = ?, thu_tu_hien_thi = ?, trang_thai = ? WHERE ma_tp = ?";
+
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sqlWithImg)) {
             ps.setString(1, entity.getTenTp());
             ps.setString(2, entity.getDinhLuong());
             ps.setInt(3, entity.getGiaBan());
@@ -84,8 +125,20 @@ public class ToppingRepoImpl implements IToppingRepository {
             ps.setInt(7, entity.getMaTp());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            // Dự phòng (Fallback) khi update không có cột hinh_anh
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlNoImg)) {
+                ps.setString(1, entity.getTenTp());
+                ps.setString(2, entity.getDinhLuong());
+                ps.setInt(3, entity.getGiaBan());
+                ps.setInt(4, entity.getThuTuHienThi());
+                ps.setBoolean(5, entity.isTrangThai());
+                ps.setInt(6, entity.getMaTp());
+                return ps.executeUpdate() > 0;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                return false;
+            }
         }
     }
 
@@ -97,17 +150,32 @@ public class ToppingRepoImpl implements IToppingRepository {
     @Override
     public List<Topping> getByTrangThai(boolean status) {
         List<Topping> list = new ArrayList<>();
-        String sql = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING WHERE trang_thai = ? ORDER BY thu_tu_hien_thi ASC";
+        String sqlWithImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai, hinh_anh FROM TOPPING WHERE trang_thai = ? ORDER BY thu_tu_hien_thi ASC";
+        String sqlNoImg = "SELECT ma_tp, ten_tp, dinh_luong, gia_ban, thu_tu_hien_thi, trang_thai FROM TOPPING WHERE trang_thai = ? ORDER BY thu_tu_hien_thi ASC";
+
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sqlWithImg)) {
             ps.setBoolean(1, status);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSetToTopping(rs));
+                    list.add(mapResultSetToTopping(rs, true));
                 }
             }
+            return list;
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Chạy câu lệnh dự phòng (Fallback)
+            try (Connection conn = DBConnect.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sqlNoImg)) {
+                ps.setBoolean(1, status);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(mapResultSetToTopping(rs, false));
+                    }
+                }
+                return list;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
         return list;
     }
@@ -126,7 +194,7 @@ public class ToppingRepoImpl implements IToppingRepository {
         }
     }
 
-    private Topping mapResultSetToTopping(ResultSet rs) throws SQLException {
+    private Topping mapResultSetToTopping(ResultSet rs, boolean hasImgColumn) throws SQLException {
         Topping tp = new Topping(
                 rs.getInt("ma_tp"),
                 rs.getString("ten_tp"),
@@ -135,10 +203,13 @@ public class ToppingRepoImpl implements IToppingRepository {
                 rs.getInt("thu_tu_hien_thi"),
                 rs.getBoolean("trang_thai")
         );
-        try {
-            tp.setHinhAnh(rs.getString("hinh_anh"));
-        } catch (SQLException e) {
-            // Trường hợp DB chưa cập nhật cột hinh_anh, bỏ qua an toàn
+        if (hasImgColumn) {
+            try {
+                tp.setHinhAnh(rs.getString("hinh_anh"));
+            } catch (SQLException e) {
+                tp.setHinhAnh("");
+            }
+        } else {
             tp.setHinhAnh("");
         }
         return tp;

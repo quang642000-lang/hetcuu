@@ -20,13 +20,49 @@
     </style>
 </head>
 <body class="bg-light">
+<!-- Khởi tạo biến phòng thủ toàn cục tránh lỗi NullPointerException trên Tomcat 11 -->
+<c:set var="maKm" value="" />
+<c:set var="maCode" value="" />
+<c:set var="tenKm" value="" />
+<c:set var="loaiGiam" value="1" />
+<c:set var="giaTriGiam" value="0" />
+<c:set var="giamToiDa" value="0" />
+<c:set var="donToiThieu" value="0" />
+<c:set var="soLuong" value="100" />
+<c:set var="isPublic" value="true" />
+<c:set var="trangThai" value="true" />
+<c:set var="hinhAnhUrl" value="" />
+<c:set var="moTaDieuKien" value="" />
+<c:set var="formattedStart" value=""/>
+<c:set var="formattedEnd" value=""/>
+
+<c:if test="${not empty voucher}">
+    <c:set var="maKm" value="${voucher.maKm}" />
+    <c:set var="maCode" value="${voucher.maCode}" />
+    <c:set var="tenKm" value="${voucher.tenKm}" />
+    <c:set var="loaiGiam" value="${voucher.loaiGiam}" />
+    <c:set var="giaTriGiam" value="${voucher.giaTriGiam}" />
+    <c:set var="giamToiDa" value="${voucher.giamToiDa}" />
+    <c:set var="donToiThieu" value="${voucher.donToiThieu}" />
+    <c:set var="soLuong" value="${voucher.soLuong}" />
+    <c:set var="isPublic" value="${voucher.isPublic()}" />
+    <c:set var="trangThai" value="${voucher.isTrangThai()}" />
+    <c:set var="hinhAnhUrl" value="${voucher.hinhAnhUrl}" />
+    <c:set var="moTaDieuKien" value="${voucher.moTaDieuKien}" />
+    <c:if test="${not empty voucher.ngayBatDau}">
+        <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
+    </c:if>
+    <c:if test="${not empty voucher.ngayKetThuc}">
+        <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
+    </c:if>
+</c:if>
+
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
-
                 <c:choose>
                     <%-- ==================== TRƯỜNG HỢP 1: THÊM MỚI / CHỈNH SỬA VOUCHER FORM ==================== --%>
                     <c:when test="${not empty formTitle}">
@@ -35,106 +71,88 @@
                                 <i class="bi bi-arrow-left"></i> Quay lại danh sách
                             </a>
                         </div>
-
                         <h4 class="fw-bold mb-4 text-success border-bottom pb-3">
-                            <i class="bi bi-ticket-perforated-fill text-success me-2"></i> ${formTitle}
+                            <i class="bi bi-ticket-perforated-fill text-success me-2"></i> <c:out value="${formTitle}" />
                         </h4>
-
-                        <!-- ĐỒNG BỘ: Sử dụng direct EL `${...}` thay thế hoàn toàn cho <c:out> lồng HTML attribute để tránh lỗi quote Tomcat 11 -->
                         <form action="${pageContext.request.contextPath}/admin/voucher" method="POST">
                             <input type="hidden" name="action" value="${not empty voucher ? 'edit' : 'create'}">
-
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
                                     <label for="maKm" class="form-label fw-bold small">Mã Khuyến Mãi <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-teapos" id="maKm" name="maKm"
-                                           value="${voucher.maKm}" ${not empty voucher ? 'readonly style="background-color: #e2e8f0; font-weight: bold;"' : ''}
+                                           value="${maKm}" ${not empty voucher ? 'readonly style="background-color: #e2e8f0; font-weight: bold;"' : ''}
                                            placeholder="Ví dụ: KM001..." required autocomplete="off">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="maCode" class="form-label fw-bold small">Mã CODE áp dụng <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-teapos text-uppercase" id="maCode" name="maCode"
-                                           value="${voucher.maCode}" placeholder="Ví dụ: GIAM20K..." required autocomplete="off" style="font-weight: 700; letter-spacing: 0.5px;">
+                                           value="${maCode}" placeholder="Ví dụ: GIAM20K..." required autocomplete="off" style="font-weight: 700; letter-spacing: 0.5px;">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="tenKm" class="form-label fw-bold small">Tên Chiến Dịch Khuyến Mãi <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-teapos" id="tenKm" name="tenKm"
-                                           value="${voucher.tenKm}" placeholder="Ví dụ: Tri ân khách hàng mới..." required autocomplete="off">
+                                           value="${tenKm}" placeholder="Ví dụ: Tri ân khách hàng mới..." required autocomplete="off">
                                 </div>
-
                                 <div class="col-12 col-md-3">
                                     <label for="loaiGiam" class="form-label fw-bold small">Hình thức giảm giá</label>
                                     <select name="loaiGiam" id="loaiGiam" class="form-select form-control-teapos">
-                                        <option value="1" ${voucher.loaiGiam == 1 ? 'selected' : ''}>Trừ tiền mặt (VNĐ)</option>
-                                        <option value="2" ${voucher.loaiGiam == 2 ? 'selected' : ''}>Trừ phần trăm (%)</option>
+                                        <option value="1" ${loaiGiam == 1 ? 'selected' : ''}>Trừ tiền mặt (VNĐ)</option>
+                                        <option value="2" ${loaiGiam == 2 ? 'selected' : ''}>Trừ phần trăm (%)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="giaTriGiam" class="form-label fw-bold small">Giá trị giảm <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control form-control-teapos text-end fw-bold" id="giaTriGiam" name="giaTriGiam"
-                                           value="${not empty voucher ? voucher.giaTriGiam : 0}" min="0" required>
+                                           value="${giaTriGiam}" min="0" required>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="giamToiDa" class="form-label fw-bold small">Giảm tối đa (Phần trăm)</label>
                                     <input type="number" class="form-control form-control-teapos text-end" id="giamToiDa" name="giamToiDa"
-                                           value="${not empty voucher ? voucher.giamToiDa : 0}" min="0" placeholder="0 nếu không chặn...">
+                                           value="${giamToiDa}" min="0" placeholder="0 nếu không chặn...">
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="donToiThieu" class="form-label fw-bold small">Đơn tối thiểu áp dụng</label>
                                     <input type="number" class="form-control form-control-teapos text-end" id="donToiThieu" name="donToiThieu"
-                                           value="${not empty voucher ? voucher.donToiThieu : 0}" min="0">
+                                           value="${donToiThieu}" min="0">
                                 </div>
-
                                 <div class="col-12 col-md-6">
                                     <label for="ngayBatDau" class="form-label fw-bold small">Thời gian bắt đầu <span class="text-danger">*</span></label>
-                                    <!-- Chuẩn hóa hiển thị datetime-local từ timestamp DB -->
-                                    <c:set var="formattedStart" value=""/>
-                                    <c:if test="${not empty voucher.ngayBatDau}">
-                                        <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
-                                    </c:if>
                                     <input type="datetime-local" class="form-control form-control-teapos" id="ngayBatDau" name="ngayBatDau"
                                            value="${formattedStart}" required>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label for="ngayKetThuc" class="form-label fw-bold small">Thời gian kết thúc <span class="text-danger">*</span></label>
-                                    <c:set var="formattedEnd" value=""/>
-                                    <c:if test="${not empty voucher.ngayKetThuc}">
-                                        <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
-                                    </c:if>
                                     <input type="datetime-local" class="form-control form-control-teapos" id="ngayKetThuc" name="ngayKetThuc"
                                            value="${formattedEnd}" required>
                                 </div>
-
                                 <div class="col-12 col-md-3">
                                     <label for="soLuong" class="form-label fw-bold small">Số lượng phát hành <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control form-control-teapos text-end" id="soLuong" name="soLuong"
-                                           value="${not empty voucher ? voucher.soLuong : 100}" min="0" required>
+                                           value="${soLuong}" min="0" required>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="isPublic" class="form-label fw-bold small">Phạm vi áp dụng</label>
                                     <select name="isPublic" id="isPublic" class="form-select form-control-teapos">
-                                        <option value="1" ${voucher.isPublic ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
-                                        <option value="0" ${not empty voucher && not voucher.isPublic ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
+                                        <option value="1" ${isPublic == 'true' || isPublic == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
+                                        <option value="0" ${isPublic == 'false' || isPublic == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
                                     <select name="trangThai" id="trangThai" class="form-select form-control-teapos">
-                                        <option value="1" ${voucher.trangThai || empty voucher ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
-                                        <option value="0" ${not empty voucher && not voucher.trangThai ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
+                                        <option value="1" ${trangThai == 'true' || trangThai == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
+                                        <option value="0" ${trangThai == 'false' || trangThai == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="hinhAnhUrl" class="form-label fw-bold small">Ảnh minh họa (URL)</label>
                                     <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl"
-                                           value="${voucher.hinhAnhUrl}" placeholder="https://image-url...">
+                                           value="${hinhAnhUrl}" placeholder="https://image-url...">
                                 </div>
-
                                 <div class="col-12">
                                     <label for="moTaDieuKien" class="form-label fw-bold small">Mô tả điều kiện áp dụng chi tiết</label>
-                                    <textarea name="moTaDieuKien" id="moTaDieuKien" class="form-control" rows="2" placeholder="Ví dụ: Chỉ áp dụng cho ly size L vàng, hóa đơn tối thiểu 50k...">${voucher.moTaDieuKien}</textarea>
+                                    <textarea name="moTaDieuKien" id="moTaDieuKien" class="form-control" rows="2" placeholder="Ví dụ: Chỉ áp dụng cho ly size L vàng, hóa đơn tối thiểu 50k...">${moTaDieuKien}</textarea>
                                 </div>
-
                                 <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-4">
                                     <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-secondary-teapos px-4 py-2.5 fw-bold">HUỶ BỎ</a>
                                     <button type="submit" class="btn-teapos btn-primary-teapos px-5 py-2.5 fw-bold shadow-sm">
@@ -144,7 +162,6 @@
                             </div>
                         </form>
                     </c:when>
-
                     <%-- ==================== TRƯỜNG HỢP 2: DANH SÁCH VOUCHER (LIST) ==================== --%>
                     <c:otherwise>
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -199,14 +216,14 @@
                                                 </td>
                                                 <td class="fw-bold text-dark">${item.soLuong} mã</td>
                                                 <td>
-<span class="badge ${item.isPublic ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
-        ${item.isPublic ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
-</span>
+                                                        <span class="badge ${item.isPublic() ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
+                                                                ${item.isPublic() ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
+                                                        </span>
                                                 </td>
                                                 <td>
-<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-        ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
-</span>
+                                                        <span class="badge ${item.isTrangThai() ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                                ${item.isTrangThai() ? 'Đang chạy' : 'Ngừng chạy'}
+                                                        </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5">
@@ -230,12 +247,10 @@
                         </div>
                     </c:otherwise>
                 </c:choose>
-
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -255,7 +270,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
