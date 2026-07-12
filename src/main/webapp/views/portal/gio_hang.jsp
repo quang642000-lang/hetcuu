@@ -99,7 +99,7 @@
                                 <!-- Bộ đôi nút Sửa và Xóa -->
                                 <div class="col-1 text-end d-flex gap-2 justify-content-end">
                                     <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}&maCtgh=${item.maCtgh}" class="text-primary fs-5" title="Sửa cấu hình"><i class="bi bi-pencil-square"></i></a>
-                                    <a href="${pageContext.request.contextPath}/cart/delete?maCtgh=${item.maCtgh}" class="text-danger fs-5" title="Xóa món"><i class="bi bi-trash3-fill"></i></a>
+                                    <button type="button" class="btn btn-link text-danger fs-5 p-0 border-0" title="Xóa món" onclick="confirmDeleteCartItem(${item.maCtgh})"><i class="bi bi-trash3-fill"></i></button>
                                 </div>
                             </div>
                         </c:forEach>
@@ -138,8 +138,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="fw-bold text-dark fs-6">THÀNH TIỀN THU (VNĐ):</span>
                             <span class="fw-bold text-danger fs-4">
-                                <fmt:formatNumber value="${finalPayablePrice}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
-                            </span>
+<fmt:formatNumber value="${finalPayablePrice}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
+</span>
                         </div>
                         <a href="${pageContext.request.contextPath}/checkout" class="btn btn-primary-teapos w-100 py-3 fw-bold fs-5 shadow-sm rounded-3">
                             TIẾN HÀNH ĐẶT HÀNG <i class="bi bi-arrow-right-short"></i>
@@ -196,6 +196,23 @@
                     setTimeout(function() { location.reload(); }, 600);
                 }
             });
+    }
+    // SWEETALERT2: Xóa món trong giỏ hàng cực đẹp
+    function confirmDeleteCartItem(maCtgh) {
+        Swal.fire({
+            title: 'Xóa món khỏi giỏ hàng?',
+            text: "Bạn có chắc chắn muốn xóa cốc nước này và toàn bộ topping đi kèm khỏi giỏ hàng của mình?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Đồng ý xóa',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '${pageContext.request.contextPath}/cart/delete?maCtgh=' + maCtgh;
+            }
+        });
     }
 </script>
 </body>

@@ -96,8 +96,6 @@ public class ToppingController extends HttpServlet {
                 actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
             }
             String ip = request.getRemoteAddr();
-
-            // 1. Kiểm tra xem Topping đã phát sinh hóa đơn trong CHI_TIET_TOPPING chưa
             boolean hasOrders = false;
             String checkSql = "SELECT COUNT(*) FROM CHI_TIET_TOPPING WHERE ma_tp = ?";
             try (Connection conn = DBConnect.getConnection();
@@ -111,9 +109,7 @@ public class ToppingController extends HttpServlet {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
             if (hasOrders) {
-                // Có đơn -> Chỉ cho phép xóa mềm (Tạm ẩn)
                 boolean softSuccess = toppingService.deleteTopping(id);
                 if (softSuccess) {
                     NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -124,7 +120,6 @@ public class ToppingController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");
                 }
             } else {
-                // Chưa có đơn -> Cho phép xóa cứng vĩnh viễn
                 boolean hardSuccess = false;
                 String deleteSql = "DELETE FROM TOPPING WHERE ma_tp = ?";
                 try (Connection conn = DBConnect.getConnection();
@@ -137,7 +132,6 @@ public class ToppingController extends HttpServlet {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-
                 if (hardSuccess) {
                     NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
                             actorNv, "HARD_DELETE_TOPPING", "TOPPING", "Mã TP: " + id, "Xóa hoàn toàn topping khỏi hệ thống (chưa từng giao dịch).", ip, null
@@ -180,7 +174,6 @@ public class ToppingController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             String tenTp = request.getParameter("tenTp");
             String dinhLuong = request.getParameter("dinhLuong");
@@ -220,7 +213,6 @@ public class ToppingController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             int maTp = Integer.parseInt(request.getParameter("maTp"));
             String tenTp = request.getParameter("tenTp");
@@ -241,10 +233,8 @@ public class ToppingController extends HttpServlet {
                     hinhAnh = url;
                 }
             }
-
             Topping oldTp = toppingService.getToppingById(maTp);
             String oldJson = JsonParserUtil.toJson(oldTp);
-
             Topping tp = new Topping(maTp, tenTp, dinhLuong, giaBan, thuTu, trangThai, hinhAnh);
             boolean success = toppingService.updateTopping(tp);
             if (success) {
@@ -275,12 +265,15 @@ public class ToppingController extends HttpServlet {
                     fileExt = fileName.substring(dotIdx);
                 }
                 String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-                String uploadPath = request.getServletContext().getRealPath("/assets/images");
-                File uploadDir = new File(uploadPath);
+
+                // Lập trình lưu vĩnh viễn ngoài project (DocBase Mapping chuẩn)
+                String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
+                File uploadDir = new File(baseDir);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
-                filePart.write(uploadPath + File.separator + newFileName);
+                File file = new File(uploadDir, newFileName);
+                filePart.write(file.getAbsolutePath());
                 return request.getContextPath() + "/assets/images/" + newFileName;
             }
         } catch (Exception e) {

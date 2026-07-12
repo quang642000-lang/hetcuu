@@ -93,7 +93,6 @@ public class DanhMucController extends HttpServlet {
                 actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
             }
             String ip = request.getRemoteAddr();
-
             DanhMuc oldDm = danhMucService.getDanhMucById(id);
             if (oldDm != null) {
                 String oldJson = JsonParserUtil.toJson(oldDm);
@@ -131,7 +130,6 @@ public class DanhMucController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             String tenDm = request.getParameter("tenDm");
             String thuTuHienThiStr = request.getParameter("thuTuHienThi");
@@ -176,7 +174,6 @@ public class DanhMucController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             int maDm = Integer.parseInt(request.getParameter("maDm"));
             String tenDm = request.getParameter("tenDm");
@@ -202,10 +199,8 @@ public class DanhMucController extends HttpServlet {
                     hinhAnh = url;
                 }
             }
-
             DanhMuc oldDm = danhMucService.getDanhMucById(maDm);
             String oldJson = JsonParserUtil.toJson(oldDm);
-
             DanhMuc dm = new DanhMuc(maDm, tenDm, hinhAnh, thuTu, trangThai);
             boolean success = danhMucService.updateDanhMuc(dm);
             if (success) {
@@ -236,12 +231,15 @@ public class DanhMucController extends HttpServlet {
                     fileExt = fileName.substring(dotIdx);
                 }
                 String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-                String uploadPath = request.getServletContext().getRealPath("/assets/images");
-                File uploadDir = new File(uploadPath);
+
+                // Lập trình lưu vĩnh viễn ngoài project (DocBase Mapping chuẩn)
+                String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
+                File uploadDir = new File(baseDir);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
-                filePart.write(uploadPath + File.separator + newFileName);
+                File file = new File(uploadDir, newFileName);
+                filePart.write(file.getAbsolutePath());
                 return request.getContextPath() + "/assets/images/" + newFileName;
             }
         } catch (Exception e) {

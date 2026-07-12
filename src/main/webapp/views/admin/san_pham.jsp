@@ -30,7 +30,6 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-
                 <!-- BỘ LỌC CHUẨN MIEUTAHETHONG -->
                 <div class="row g-3 mb-4 bg-light p-3 rounded" style="border: 1px solid var(--border-color);">
                     <div class="col-12 col-md-3">
@@ -74,7 +73,6 @@
                         <button class="btn btn-secondary-teapos w-100 py-2.5 fw-semibold" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
                     </div>
                 </div>
-
                 <!-- BẢNG SẢN PHẨM KHỚP 100% CÁC CỘT TRONG FILE MIEUTAHETHONG -->
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="productTable">
@@ -163,9 +161,9 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+</span>
                                         </td>
                                         <td class="small text-muted">
                                             <fmt:formatDate value="${item.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/>
@@ -175,18 +173,9 @@
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5 py-1.5">
                                                     <i class="bi bi-pencil-square"></i> Sửa
                                                 </a>
-                                                <c:choose>
-                                                    <c:when test="${item.trangThai}">
-                                                        <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5 py-1.5" onclick="confirmDeleteSanPham('${item.maSp}')">
-                                                            <i class="bi bi-toggle2-off"></i> Ngừng bán
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-success fw-semibold px-2.5 py-1.5">
-                                                            <i class="bi bi-toggle2-on"></i> Mở bán lại
-                                                        </a>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5 py-1.5" onclick="confirmDeleteSanPham('${item.maSp}')">
+                                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -204,7 +193,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
                 <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
                     <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
@@ -214,19 +202,16 @@
                         </ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN
     let currentPage = 1;
     const pageSize = 10; // 10 bản ghi trên một trang
-
     function filterProductsRealtime() {
         const searchVal = document.getElementById("productSearchInput").value.trim().toLowerCase();
         const catVal = document.getElementById("filterCategory").value;
@@ -234,7 +219,6 @@
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
         const rows = document.querySelectorAll("#productTable tbody .product-row");
-
         rows.forEach(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -242,13 +226,11 @@
             const isNew = row.dataset.isnew;
             const isHot = row.dataset.ishot;
             const status = row.dataset.trangthai;
-
             let matchSearch = maSp.includes(searchVal) || tenSp.includes(searchVal);
             let matchCat = catVal === "" || maDm === catVal;
             let matchStatus = statusVal === "" || status === statusVal;
             let matchNew = newVal === "" || isNew === newVal;
             let matchHot = hotVal === "" || isHot === hotVal;
-
             if (matchSearch && matchCat && matchStatus && matchNew && matchHot) {
                 row.setAttribute("data-filtered-show", "true");
             } else {
@@ -256,48 +238,33 @@
                 row.style.display = "none";
             }
         });
-
-        // Mỗi khi lọc lại, quay về trang 1 và phân trang mượt mà
         currentPage = 1;
         paginateAdminTable();
     }
-
     function paginateAdminTable() {
         const rows = Array.from(document.querySelectorAll("#productTable tbody .product-row"));
         const visibleRows = rows.filter(row => row.getAttribute("data-filtered-show") === "true" || !row.hasAttribute("data-filtered-show") && row.style.display !== "none");
-
-        // Nếu người dùng chưa gõ hay lọc gì, visibleRows chính là toàn bộ rows
         const activeRows = (document.getElementById("productSearchInput").value || document.getElementById("filterCategory").value || document.getElementById("filterStatus").value || document.getElementById("filterNew").value || document.getElementById("filterHot").value) ? visibleRows : rows;
-
-        // Gán trạng thái data-filtered-show mặc định cho toàn bộ nếu không lọc để phân trang chuẩn xác
         if (activeRows.length === rows.length) {
             rows.forEach(r => r.setAttribute("data-filtered-show", "true"));
         }
-
         const totalRecords = activeRows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-
         rows.forEach(row => {
             row.style.display = "none";
         });
-
         activeRows.forEach((row, idx) => {
             if (idx >= startIndex && idx < endIndex) {
                 row.style.display = "table-row";
             }
         });
-
-        // Render bộ nút phân trang
         document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
         renderPaginationButtons(totalPages);
     }
-
     function renderPaginationButtons(totalPages) {
         const controls = document.getElementById("paginatedControls");
         controls.innerHTML = "";
@@ -306,33 +273,25 @@
             return;
         }
         document.getElementById("adminPaginationArea").style.display = "flex";
-
-        // Nút Trang trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
         controls.appendChild(prevLi);
-
-        // Các mốc số trang
         for (let i = 1; i <= totalPages; i++) {
             const pageLi = document.createElement("li");
             pageLi.className = "page-item " + (currentPage === i ? "active" : "");
             pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
             controls.appendChild(pageLi);
         }
-
-        // Nút Trang sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
         controls.appendChild(nextLi);
     }
-
     function changeAdminPage(newPage) {
         currentPage = newPage;
         paginateAdminTable();
     }
-
     function resetFilters() {
         document.getElementById("productSearchInput").value = "";
         document.getElementById("filterCategory").selectedIndex = 0;
@@ -344,16 +303,15 @@
         currentPage = 1;
         paginateAdminTable();
     }
-
     function confirmDeleteSanPham(maSp) {
         Swal.fire({
-            title: 'Xác nhận dừng bán sản phẩm này?',
-            text: "Cơ chế NGỪNG HOẠT ĐỘNG (Soft Delete) chuyển trạng thái của sản phẩm mẹ về Ngừng mở bán để bảo lưu tuyệt đối cơ cấu hóa đơn giao dịch cũ trong quá khứ!",
+            title: 'Xóa vĩnh viễn đồ uống này?',
+            text: "Hệ thống tự động kiểm tra: Nếu đã phát sinh hóa đơn bán hàng, hệ thống tự động khóa gạt tắt trạng thái (Soft Delete = 0) để bảo toàn doanh thu. Nếu chưa từng bán ly nước nào, sản phẩm sẽ được xóa cứng vĩnh viễn khỏi cơ sở dữ liệu!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý dừng bán',
+            confirmButtonText: 'Xác nhận xóa',
             cancelButtonText: 'Hủy bỏ'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -361,16 +319,21 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm mới món uống thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi cấu hình sản phẩm!');
-        if (msg === 'deletesuccess') showToast('success', 'Đã cập nhật trạng thái Ngừng bán món uống!');
-        if (msg === 'deletefailed') showToast('error', 'Hệ thống gặp sự cố khi cập nhật trạng thái sản phẩm!');
-
-        // Khởi chạy phân trang lần đầu
+        if (msg === 'softdeletesuccess') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Xóa mềm sản phẩm',
+                text: 'Đồ uống này đã từng có giao dịch trong quá khứ! Hệ thống tự động chuyển trạng thái hoạt động về Ngừng mở bán để bảo lưu tuyệt đối cơ cấu hóa đơn giao dịch cũ trong quá khứ!',
+                confirmButtonColor: '#2e7d32'
+            });
+        }
+        if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa cứng vĩnh viễn sản phẩm thành công khỏi cơ sở dữ liệu!');
+        if (msg === 'deletefailed') showToast('error', 'Hành động thất bại hoặc lỗi hệ thống!');
         const rows = document.querySelectorAll("#productTable tbody .product-row");
         rows.forEach(r => r.setAttribute("data-filtered-show", "true"));
         paginateAdminTable();

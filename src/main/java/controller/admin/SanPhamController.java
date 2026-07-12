@@ -147,8 +147,6 @@ public class SanPhamController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
-        // 1. Kiểm tra xem sản phẩm đã có hóa đơn trong CHI_TIET_DON_HANG chưa
         boolean hasOrders = false;
         String checkSql = "SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ?";
         try (Connection conn = DBConnect.getConnection();
@@ -162,9 +160,7 @@ public class SanPhamController extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         if (hasOrders) {
-            // Có đơn hàng -> Chỉ xóa mềm (Đặt trang_thai = 0)
             boolean softSuccess = sanPhamService.deleteSanPham(id);
             if (softSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -175,7 +171,6 @@ public class SanPhamController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=deletefailed");
             }
         } else {
-            // Chưa từng bán -> Xóa cứng hoàn toàn
             boolean hardSuccess = false;
             String deletePricesSql = "DELETE FROM SAN_PHAM_KICH_CO WHERE ma_sp = ?";
             String deleteSpSql = "DELETE FROM SAN_PHAM WHERE ma_sp = ?";
@@ -202,7 +197,6 @@ public class SanPhamController extends HttpServlet {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
             if (hardSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
                         actorNv, "HARD_DELETE_SẢN_PHẨM", "SAN_PHAM", "Mã SP: " + id, "Xóa hoàn toàn sản phẩm khỏi hệ thống (chưa từng giao dịch).", ip, null
@@ -321,7 +315,6 @@ public class SanPhamController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
@@ -344,7 +337,6 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
             SanPham sp = new SanPham();
             sp.setTenSp(tenSp);
             sp.setMaDm(maDm);
@@ -355,7 +347,6 @@ public class SanPhamController extends HttpServlet {
             sp.setIsNew(isNew);
             sp.setIsBestseller(isBestseller);
             sp.setTrangThai(trangThai);
-
             List<KichCo> allSizes = kichCoRepository.getAll();
             List<SanPhamKichCo> selectedSizes = new ArrayList<>();
             for (KichCo kc : allSizes) {
@@ -375,7 +366,6 @@ public class SanPhamController extends HttpServlet {
                     }
                 }
             }
-
             java.util.Enumeration<String> parameterNames = request.getParameterNames();
             while (parameterNames.hasMoreElements()) {
                 String paramName = parameterNames.nextElement();
@@ -404,14 +394,12 @@ public class SanPhamController extends HttpServlet {
                     }
                 }
             }
-
             if (selectedSizes.isEmpty()) {
                 request.setAttribute("error", "Sản phẩm mới bắt buộc phải cấu hình tối thiểu một kích cỡ và giá bán đi kèm!");
                 request.setAttribute("product", sp);
                 showCreateForm(request, response);
                 return;
             }
-
             boolean success = sanPhamService.createSanPham(sp, selectedSizes);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -437,7 +425,6 @@ public class SanPhamController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         try {
             String maSp = request.getParameter("maSp");
             String tenSp = request.getParameter("tenSp");
@@ -467,7 +454,6 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
                 String oldJson = JsonParserUtil.toJson(sp);
@@ -480,7 +466,6 @@ public class SanPhamController extends HttpServlet {
                 sp.setIsNew(isNew);
                 sp.setIsBestseller(isBestseller);
                 sp.setTrangThai(trangThai);
-
                 List<SanPhamKichCo> selectedSizes = new ArrayList<>();
                 java.util.Enumeration<String> parameterNames = request.getParameterNames();
                 while (parameterNames.hasMoreElements()) {
@@ -501,13 +486,11 @@ public class SanPhamController extends HttpServlet {
                         }
                     }
                 }
-
                 if (selectedSizes.isEmpty()) {
                     request.setAttribute("error", "Không thể lưu: Sản phẩm phải có ít nhất một kích cỡ hoạt động!");
                     showEditForm(request, response);
                     return;
                 }
-
                 boolean success = sanPhamService.updateSanPham(sp, selectedSizes);
                 if (success) {
                     NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -539,12 +522,15 @@ public class SanPhamController extends HttpServlet {
                     fileExt = fileName.substring(dotIdx);
                 }
                 String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-                String uploadPath = request.getServletContext().getRealPath("/assets/images");
-                File uploadDir = new File(uploadPath);
+
+                // Lập trình lưu vĩnh viễn ngoài project (DocBase Mapping chuẩn)
+                String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
+                File uploadDir = new File(baseDir);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
-                filePart.write(uploadPath + File.separator + newFileName);
+                File file = new File(uploadDir, newFileName);
+                filePart.write(file.getAbsolutePath());
                 return request.getContextPath() + "/assets/images/" + newFileName;
             }
         } catch (Exception e) {

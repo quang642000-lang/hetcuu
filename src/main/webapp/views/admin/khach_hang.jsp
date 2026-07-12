@@ -16,7 +16,6 @@
     <c:set var="diemTichLuy" value="0" />
     <c:set var="maHang" value="1" />
     <c:set var="trangThai" value="true" />
-
     <c:if test="${not empty customer}">
         <c:set var="maKh" value="${customer.maKh}" />
         <c:set var="tenKh" value="${customer.tenKh}" />
@@ -28,14 +27,16 @@
         <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
         <c:set var="diemTichLuy" value="${customer.diemTichLuy}" />
         <c:set var="maHang" value="${customer.maHang}" />
-        <c:set var="trangThai" value="${customer.trangThai}" />
+        <!-- BIỆN PHÁP AN TOÀN TOMCAT 11 (EL 6.0): Dùng Map-like syntax ['trangThai'] để bóc tách boolean property từ isTrangThai() -->
+        <c:set var="trangThai" value="${customer['trangThai']}" />
     </c:if>
-
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
 </head>
@@ -104,7 +105,7 @@
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="crmDetailTabContent">
-                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỔI HỒ SƠ -->
+                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỒNG BỘ -->
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
@@ -256,7 +257,7 @@
                     <div class="card card-teapos p-4 border-0 shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
-                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);">HỆ THỐNG KHÁCH HÀNG CRM</h3>
+                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);"><i class="bi bi-people-fill"></i> HỆ THỐNG KHÁCH HÀNG CRM</h3>
                                 <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng và phân hạng Loyalty</p>
                             </div>
                         </div>
@@ -302,7 +303,7 @@
                                                 <td class="fw-bold text-success">${item.diemTichLuy} điểm</td>
                                                 <td>
                                                     <c:choose>
-                                                        <c:when test="${item.trangThai}">
+                                                        <c:when test="${item['trangThai']}">
                                                             <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 small" style="border-radius: 50px;">Hoạt động</span>
                                                         </c:when>
                                                         <c:otherwise>
@@ -327,7 +328,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
                         <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="customerPaginationArea">
                             <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
@@ -336,7 +336,6 @@
                                 </ul>
                             </nav>
                         </div>
-
                     </div>
                 </c:otherwise>
             </c:choose>
@@ -365,7 +364,6 @@
         const rows = Array.from(document.querySelectorAll("#customerTable tbody .customer-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
-
         function paginateCustomerTable() {
             if (totalRecords === 0) {
                 document.getElementById("customerPaginationArea").style.display = "none";
@@ -375,7 +373,6 @@
             if (currentPage > totalPages) currentPage = totalPages;
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = startIndex + pageSize;
-
             rows.forEach((row, idx) => {
                 if (idx >= startIndex && idx < endIndex) {
                     row.style.display = "table-row";
@@ -383,11 +380,9 @@
                     row.style.display = "none";
                 }
             });
-
             document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
             renderPaginationButtons();
         }
-
         function renderPaginationButtons() {
             const controls = document.getElementById("paginatedControls");
             controls.innerHTML = "";
@@ -396,30 +391,25 @@
                 return;
             }
             document.getElementById("customerPaginationArea").style.display = "flex";
-
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
             prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
             controls.appendChild(prevLi);
-
             for (let i = 1; i <= totalPages; i++) {
                 const pageLi = document.createElement("li");
                 pageLi.className = "page-item " + (currentPage === i ? "active" : "");
                 pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
                 controls.appendChild(pageLi);
             }
-
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
             nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
             controls.appendChild(nextLi);
         }
-
         window.changePage = function(newPage) {
             currentPage = newPage;
             paginateCustomerTable();
         }
-
         if (rows.length > 0) {
             paginateCustomerTable();
         }

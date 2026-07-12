@@ -9,6 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
 </head>
@@ -21,7 +23,7 @@
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">HỒ SƠ NHÂN VIÊN CHUỖI CỬA HÀNG</h3>
+                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);"><i class="bi bi-person-badge-fill"></i> HỒ SƠ NHÂN VIÊN CHUỖI CỬA HÀNG</h3>
                         <p class="text-muted small mb-0">Thiết lập tài khoản đăng nhập vào ca, phân chia vai trò và kiểm soát trạng thái nhân viên</p>
                     </div>
                     <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateEmployeeModal()">
@@ -38,7 +40,7 @@
                             <th>Email</th>
                             <th>Tên đăng nhập</th>
                             <th class="text-center">Vai trò</th>
-                            <th class="text-center">Trạng Thế</th>
+                            <th class="text-center">Trạng Thái</th>
                             <th class="text-end" style="width: 250px;">Thao Tác</th>
                         </tr>
                         </thead>
@@ -46,7 +48,7 @@
                         <c:choose>
                             <c:when test="${not empty employees}">
                                 <c:forEach var="item" items="${employees}">
-                                    <tr class="employee-row">
+                                    <tr class="employee-row text-center">
                                         <td><strong>${item.maNv}</strong></td>
                                         <td><strong><c:out value="${item.hoTen}"/></strong></td>
                                         <td>${item.soDienThoai}</td>
@@ -63,7 +65,6 @@
 </span>
                                         </td>
                                         <td class="text-end">
-                                            <!-- ĐỒNG BỘ QUOTE-SAFE: Đọc qua data attributes cho nút Reset, tránh lỗi quote compiler JSP -->
                                             <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
                                                class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-semibold me-1">
                                                     ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
@@ -99,7 +100,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
                 <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="employeePaginationArea">
                     <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
@@ -108,19 +108,17 @@
                         </ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 </div>
-
 <!-- MODAL TOÀN NĂNG -->
 <div class="modal fade" id="employeeFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 12px;">
             <div class="modal-header text-white py-3" style="background-color: var(--primary-color);">
-                <h5 class="modal-title fw-bold" id="empModalTitle">THÊM NHÂN VIÊN MỚI</h5>
+                <h5 class="modal-title fw-bold" id="empModalTitle">THÊM MỚI NHÂN VIÊN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="employeeForm" action="${pageContext.request.contextPath}/admin/nhanvien" method="POST">
@@ -172,7 +170,6 @@
         </div>
     </div>
 </div>
-
 <!-- POPUP RESET MẬT KHẨU -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -199,13 +196,11 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const empModal = new bootstrap.Modal(document.getElementById('employeeFormModal'));
     const passModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-
     function openCreateEmployeeModal() {
         document.getElementById("employeeForm").reset();
         document.getElementById("empModalTitle").innerText = "THÊM MỚI NHÂN VIÊN";
@@ -215,7 +210,6 @@
         document.getElementById("matKhau").required = true;
         empModal.show();
     }
-
     function handleResetPasswordClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -223,7 +217,6 @@
         document.getElementById("resetTenNv").innerText = hoTen;
         passModal.show();
     }
-
     function handleEditEmployeeClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -234,7 +227,6 @@
         const trangThai = parseInt(button.getAttribute("data-status"));
         openEditEmployeeModal(maNv, hoTen, soDienThoai, email, username, maVt, trangThai);
     }
-
     function openEditEmployeeModal(maNv, hoTen, sdt, email, username, maVt, trangThai) {
         document.getElementById("empModalTitle").innerText = "CẬP NHẬT NHÂN VIÊN: " + maNv;
         document.getElementById("formAction").value = "edit";
@@ -249,7 +241,6 @@
         document.getElementById("matKhau").required = false;
         empModal.show();
     }
-
     function confirmDeleteEmployee(maNv) {
         Swal.fire({
             title: 'Xóa vĩnh viễn tài khoản?',
@@ -266,7 +257,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -283,7 +273,6 @@
         const rows = Array.from(document.querySelectorAll("#employeeTable tbody .employee-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
-
         function paginateEmployeeTable() {
             if (totalRecords === 0) {
                 document.getElementById("employeePaginationArea").style.display = "none";
@@ -293,7 +282,6 @@
             if (currentPage > totalPages) currentPage = totalPages;
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = startIndex + pageSize;
-
             rows.forEach((row, idx) => {
                 if (idx >= startIndex && idx < endIndex) {
                     row.style.display = "table-row";
@@ -301,11 +289,9 @@
                     row.style.display = "none";
                 }
             });
-
             document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
             renderPaginationButtons();
         }
-
         function renderPaginationButtons() {
             const controls = document.getElementById("paginatedControls");
             controls.innerHTML = "";
@@ -314,30 +300,25 @@
                 return;
             }
             document.getElementById("employeePaginationArea").style.display = "flex";
-
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
             prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
             controls.appendChild(prevLi);
-
             for (let i = 1; i <= totalPages; i++) {
                 const pageLi = document.createElement("li");
                 pageLi.className = "page-item " + (currentPage === i ? "active" : "");
                 pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
                 controls.appendChild(pageLi);
             }
-
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
             nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
             controls.appendChild(nextLi);
         }
-
         window.changePage = function(newPage) {
             currentPage = newPage;
             paginateEmployeeTable();
         }
-
         if (rows.length > 0) {
             paginateEmployeeTable();
         }

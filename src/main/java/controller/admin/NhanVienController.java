@@ -98,7 +98,6 @@ public class NhanVienController extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         if (hasOrders) {
             // Có hóa đơn -> Chỉ cho phép khóa tài khoản (Soft Delete)
             boolean softSuccess = nhanVienService.deleteNhanVien(id);
@@ -124,7 +123,6 @@ public class NhanVienController extends HttpServlet {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
             if (hardSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
                         actorNv, "HARD_DELETE_NHÂN_VIÊN", "NHAN_VIEN", "Mã NV: " + id, "Xóa hoàn toàn nhân sự khỏi hệ thống (chưa từng chốt hóa đơn).", ip, null
@@ -145,7 +143,6 @@ public class NhanVienController extends HttpServlet {
             actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         NhanVien nv = nhanVienService.getNhanVienById(id);
         if (nv != null) {
             String oldJson = JsonParserUtil.toJson(nv);
@@ -184,7 +181,6 @@ public class NhanVienController extends HttpServlet {
             actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         String hoTen = request.getParameter("hoTen");
         int maVt = Integer.parseInt(request.getParameter("maVt"));
         String sdt = request.getParameter("soDienThoai");
@@ -192,7 +188,6 @@ public class NhanVienController extends HttpServlet {
         String username = request.getParameter("tenDangNhap");
         String matKhau = request.getParameter("matKhau");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
         NhanVien nv = new NhanVien(null, maVt, hoTen, sdt, email, username, matKhau, trangThai, null, null);
         boolean success = nhanVienService.createNhanVien(nv);
         if (success) {
@@ -215,7 +210,6 @@ public class NhanVienController extends HttpServlet {
             actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         String maNv = request.getParameter("maNv");
         String hoTen = request.getParameter("hoTen");
         int maVt = Integer.parseInt(request.getParameter("maVt"));
@@ -223,7 +217,6 @@ public class NhanVienController extends HttpServlet {
         String email = request.getParameter("email");
         String username = request.getParameter("tenDangNhap");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
         NhanVien nv = nhanVienService.getNhanVienById(maNv);
         if (nv != null) {
             String oldJson = JsonParserUtil.toJson(nv);
@@ -233,7 +226,6 @@ public class NhanVienController extends HttpServlet {
             nv.setEmail(email);
             nv.setTenDangNhap(username);
             nv.setTrangThai(trangThai);
-
             boolean success = nhanVienService.updateNhanVien(nv);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -256,10 +248,8 @@ public class NhanVienController extends HttpServlet {
             actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         String maNv = request.getParameter("maNv");
         String matKhauMoi = request.getParameter("matKhauMoi");
-
         NhanVien nv = nhanVienService.getNhanVienById(maNv);
         if (nv != null) {
             String oldJson = JsonParserUtil.toJson(nv);

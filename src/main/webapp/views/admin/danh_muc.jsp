@@ -8,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
 </head>
@@ -60,9 +62,9 @@
                                         <td><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                            <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
-                                                    ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-                                            </span>
+<span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
+        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5 me-1"
@@ -102,7 +104,7 @@
         </div>
     </div>
 </div>
-
+</div>
 <!-- MODAL FORM ĐỘNG -->
 <div class="modal fade" id="danhMucFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -114,6 +116,7 @@
             <form id="danhMucForm" action="${pageContext.request.contextPath}/admin/danhmuc" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="maDm" id="formMaDm" value="0">
+                <input type="hidden" name="currentHinhAnh" id="currentHinhAnh" value="">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label for="tenDm" class="form-label fw-bold small">Tên nhóm danh mục <span class="text-danger">*</span></label>
@@ -124,17 +127,18 @@
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="catImgTab" role="tablist">
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel">TẢI TỪ MÁY TÍNH</button>
+                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel" onclick="switchCatUploadType('file')">TẢI TỪ MÁY TÍNH</button>
                             </li>
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel">DÁN ĐƯỜNG DẪN URL</button>
+                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel" onclick="switchCatUploadType('url')">DÁN ĐƯỜNG DẪN URL</button>
                             </li>
                         </ul>
+                        <input type="hidden" name="uploadType" id="uploadType" value="file">
                         <div class="tab-content" id="catImgTabContent">
-                            <div class="tab-pane fade show active p-2 border rounded bg-white" id="catFilePanel" role="tabpanel">
+                            <div class="tab-pane show active p-2 border rounded bg-white" id="catFilePanel" role="tabpanel">
                                 <input type="file" class="form-control form-control-sm" name="hinhAnhFile" id="hinhAnhFile" accept="image/*">
                             </div>
-                            <div class="tab-pane fade p-2 border rounded bg-white" id="catUrlPanel" role="tabpanel">
+                            <div class="tab-pane p-2 border rounded bg-white" id="catUrlPanel" role="tabpanel" style="display: none;">
                                 <input type="text" class="form-control form-control-sm" name="hinhAnhUrl" id="hinhAnhUrl" placeholder="Dán link ảnh https://image-path...">
                             </div>
                         </div>
@@ -163,24 +167,33 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const modalElement = document.getElementById('danhMucFormModal');
     const bsModal = new bootstrap.Modal(modalElement);
-
+    function switchCatUploadType(type) {
+        document.getElementById('uploadType').value = type;
+        if (type === 'file') {
+            document.getElementById('catFilePanel').style.setProperty('display', 'block', 'important');
+            document.getElementById('catUrlPanel').style.setProperty('display', 'none', 'important');
+        } else {
+            document.getElementById('catFilePanel').style.setProperty('display', 'none', 'important');
+            document.getElementById('catUrlPanel').style.setProperty('display', 'block', 'important');
+        }
+    }
     function openCreateModal() {
         document.getElementById("danhMucForm").reset();
         document.getElementById("modalTitle").innerText = "THÊM DANH MỤC MỚI";
         document.getElementById("formAction").value = "create";
         document.getElementById("formMaDm").value = "0";
+        document.getElementById("currentHinhAnh").value = "";
         document.getElementById("statusActive").checked = true;
         document.getElementById("hinhAnhFile").value = "";
         document.getElementById("hinhAnhUrl").value = "";
+        switchCatUploadType('file');
         bsModal.show();
     }
-
     function handleEditDanhMucClick(button) {
         const id = button.getAttribute("data-id");
         const name = button.getAttribute("data-name");
@@ -189,24 +202,23 @@
         const status = parseInt(button.getAttribute("data-status"));
         openEditModal(id, name, img, sort, status);
     }
-
     function openEditModal(maDm, tenDm, hinhAnh, thuTu, trangThai) {
         document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC";
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaDm").value = maDm;
         document.getElementById("tenDm").value = tenDm;
+        document.getElementById("currentHinhAnh").value = hinhAnh ? hinhAnh : "";
         document.getElementById("hinhAnhUrl").value = hinhAnh ? hinhAnh : "";
         document.getElementById("hinhAnhFile").value = "";
         document.getElementById("thuTuHienThi").value = thuTu;
-
         if (trangThai === 1) {
             document.getElementById("statusActive").checked = true;
         } else {
             document.getElementById("statusInactive").checked = true;
         }
+        switchCatUploadType(hinhAnh && hinhAnh.startsWith('http') ? 'url' : 'file');
         bsModal.show();
     }
-
     function confirmDeleteDanhMuc(maDm) {
         Swal.fire({
             title: 'Xác nhận xóa?',
@@ -223,22 +235,17 @@
             }
         });
     }
-
     // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN DANH MỤC
     let currentPage = 1;
     const pageSize = 10; // 10 bản ghi trên một trang
-
     function paginateAdminTable() {
         const rows = Array.from(document.querySelectorAll("#categoryTable tbody .category-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
-
         rows.forEach((row, idx) => {
             if (idx >= startIndex && idx < endIndex) {
                 row.style.display = "table-row";
@@ -246,62 +253,52 @@
                 row.style.display = "none";
             }
         });
-
-        // Render bộ nút phân trang
+// Render bộ nút phân trang
         const infoEl = document.getElementById("paginatedInfo");
         if (infoEl) {
             infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
         }
         renderPaginationButtons(totalPages);
     }
-
     function renderPaginationButtons(totalPages) {
         const controls = document.getElementById("paginatedControls");
         if (!controls) return;
         controls.innerHTML = "";
-
         if (totalPages <= 1) {
             const area = document.getElementById("adminPaginationArea");
             if (area) area.style.display = "none";
             return;
         }
-
         const area = document.getElementById("adminPaginationArea");
         if (area) area.style.display = "flex";
-
-        // Nút Trang trước
+// Nút Trang trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
         controls.appendChild(prevLi);
-
-        // Các mốc số trang
+// Các mốc số trang
         for (let i = 1; i <= totalPages; i++) {
             const pageLi = document.createElement("li");
             pageLi.className = "page-item " + (currentPage === i ? "active" : "");
             pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
             controls.appendChild(pageLi);
         }
-
-        // Nút Trang sau
+// Nút Trang sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
         controls.appendChild(nextLi);
     }
-
     function changeAdminPage(newPage) {
         currentPage = newPage;
         paginateAdminTable();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm danh mục mới thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi thông tin danh mục!');
         if (msg === 'deletesuccess') showToast('success', 'Xóa thành công danh mục!');
-
         if (msg === 'deletefailed') {
             Swal.fire({
                 icon: 'error',
@@ -310,7 +307,6 @@
                 confirmButtonColor: '#2e7d32'
             });
         }
-
         paginateAdminTable();
     });
 </script>

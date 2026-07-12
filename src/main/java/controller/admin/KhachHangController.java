@@ -97,7 +97,6 @@ public class KhachHangController extends HttpServlet {
             actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
         }
         String ip = request.getRemoteAddr();
-
         String maKh = request.getParameter("maKh");
         String tenKh = request.getParameter("tenKh");
         String sdt = request.getParameter("soDienThoai");
@@ -106,7 +105,6 @@ public class KhachHangController extends HttpServlet {
         String gioiTinh = request.getParameter("gioiTinh");
         String diaChi = request.getParameter("diaChiLienHe");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
             String oldJson = JsonParserUtil.toJson(kh);
@@ -119,7 +117,6 @@ public class KhachHangController extends HttpServlet {
             if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
                 kh.setNgaySinh(Date.valueOf(ngaySinhStr));
             }
-
             boolean success = khachHangService.updateCustomerProfile(kh);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(

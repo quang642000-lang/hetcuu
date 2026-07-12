@@ -9,6 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
 </head>
@@ -86,7 +88,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
                 <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="logPaginationArea">
                     <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
@@ -95,13 +96,11 @@
                         </ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 </div>
-
 <!-- MODAL BÓC TÁCH JSON ĐỐI SOÁT DỮ LIỆU CŨ VÀ MỚI (DIFF VIEWER) -->
 <div class="modal fade" id="auditDiffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -182,15 +181,13 @@
         }
         diffModal.show();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
-        // PHÂN TRANG CLIENT-SIDE
+// PHÂN TRANG CLIENT-SIDE
         const pageSize = 10;
         let currentPage = 1;
         const rows = Array.from(document.querySelectorAll("#logTable tbody .log-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
-
         function paginateLogTable() {
             if (totalRecords === 0) {
                 document.getElementById("logPaginationArea").style.display = "none";
@@ -200,7 +197,6 @@
             if (currentPage > totalPages) currentPage = totalPages;
             const startIndex = (currentPage - 1) * pageSize;
             const endIndex = startIndex + pageSize;
-
             rows.forEach((row, idx) => {
                 if (idx >= startIndex && idx < endIndex) {
                     row.style.display = "table-row";
@@ -208,11 +204,9 @@
                     row.style.display = "none";
                 }
             });
-
             document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
             renderPaginationButtons();
         }
-
         function renderPaginationButtons() {
             const controls = document.getElementById("paginatedControls");
             controls.innerHTML = "";
@@ -221,30 +215,25 @@
                 return;
             }
             document.getElementById("logPaginationArea").style.display = "flex";
-
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
             prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
             controls.appendChild(prevLi);
-
             for (let i = 1; i <= totalPages; i++) {
                 const pageLi = document.createElement("li");
                 pageLi.className = "page-item " + (currentPage === i ? "active" : "");
                 pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
                 controls.appendChild(pageLi);
             }
-
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
             nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
             controls.appendChild(nextLi);
         }
-
         window.changePage = function(newPage) {
             currentPage = newPage;
             paginateLogTable();
         }
-
         if (rows.length > 0) {
             paginateLogTable();
         }

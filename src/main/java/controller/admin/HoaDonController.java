@@ -26,7 +26,6 @@ public class HoaDonController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         if ("detailJson".equals(action)) {
             response.setContentType("application/json;charset=UTF-8");
             String id = request.getParameter("id");
@@ -37,14 +36,12 @@ public class HoaDonController extends HttpServlet {
                 json.append("\"status\":\"SUCCESS\",");
                 json.append("\"maDh\":\"").append(dh.getMaDh()).append("\",");
                 json.append("\"thoiGianTao\":\"").append(dh.getThoiGianTao().toString().substring(0, 19)).append("\",");
-
                 String tenKh = "Khách lẻ vãng lai";
                 if (dh.getMaKh() != null) {
                     KhachHang kh = khachHangService.getKhachHangById(dh.getMaKh());
                     if (kh != null) tenKh = kh.getTenKh();
                 }
                 json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
-
                 String tenNv = "Hệ thống tự động";
                 if (dh.getMaNv() != null) {
                     NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
@@ -57,17 +54,14 @@ public class HoaDonController extends HttpServlet {
                 json.append("\"tienTruDiem\":").append(dh.getTienTruDiem()).append(",");
                 json.append("\"tongPhaiTra\":").append(dh.getTongPhaiTra()).append(",");
                 json.append("\"items\":[");
-
                 for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
                     ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
-
                     // LẤY TÊN THẬT CỦA SẢN PHẨM KHÔNG DÙNG MÃ KHÓA CỨNG
                     String tenSp = "Sản phẩm " + item.getMaSp();
                     SanPham sp = sanPhamService.getSanPhamById(item.getMaSp());
                     if (sp != null) {
                         tenSp = sp.getTenSp();
                     }
-
                     json.append("{");
                     json.append("\"tenMon\":\"").append(tenSp).append("\",");
                     json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\",");
@@ -76,17 +70,14 @@ public class HoaDonController extends HttpServlet {
                     json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
                     json.append("\"giaChot\":").append(item.getGiaChot()).append(",");
                     json.append("\"toppings\":[");
-
                     for (int j = 0; j < item.getToppingsList().size(); j++) {
                         ChiTietTopping tp = item.getToppingsList().get(j);
-
                         // LẤY TÊN THẬT CỦA TOPPING KHÔNG DÙNG MÃ MOCK "TP1"
                         String tenTp = "Topping " + tp.getMaTp();
                         Topping topping = toppingService.getToppingById(tp.getMaTp());
                         if (topping != null) {
                             tenTp = topping.getTenTp();
                         }
-
                         json.append("{");
                         json.append("\"tenTopping\":\"").append(tenTp).append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
@@ -106,7 +97,6 @@ public class HoaDonController extends HttpServlet {
             }
             return;
         }
-
         switch (action) {
             case "list":
                 showList(request, response);
@@ -158,12 +148,10 @@ public class HoaDonController extends HttpServlet {
         int status = Integer.parseInt(request.getParameter("trangThaiDon"));
         String lyDoHuy = request.getParameter("lyDoHuy");
         HttpSession session = request.getSession(false);
-
         String maNv = "SYSTEM";
         if (session != null && session.getAttribute("user") != null) {
             maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
         }
-
         boolean success = donHangService.updateTrangThaiDon(maDh, status, maNv, lyDoHuy);
         if (success) {
             response.sendRedirect(request.getContextPath() + "/admin/hoadon?action=view&id=" + maDh + "&msg=updatesuccess");

@@ -98,11 +98,12 @@ public class VoucherController extends HttpServlet {
         }
 
         if (hasOrders) {
-            // Có đơn -> Chỉ cho phép xóa mềm (Ẩn Voucher)
-            boolean softSuccess = khuyenMaiService.deleteKhuyenMai(id); // sets trang_thai = 0
+            // Có đơn -> Chỉ cho phép xóa mềm (Đặt trang_thai = 0)
+            boolean softSuccess = khuyenMaiService.deleteKhuyenMai(id);
             if (softSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
-                        actorNv, "SOFT_DELETE_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", "Mã KM: " + id, "Chuyển trạng thái hoạt động về 0 do có lịch sử đặt đơn.", ip, null
+                        actorNv, "SOFT_DELETE_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", "Mã KM: " + id,
+                        "Chuyển trạng thái hoạt động về 0 do có lịch sử đặt đơn.", ip, null
                 ));
                 response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=softdeletesuccess");
             } else {
@@ -125,7 +126,8 @@ public class VoucherController extends HttpServlet {
 
             if (hardSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
-                        actorNv, "HARD_DELETE_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", "Mã KM: " + id, "Xóa hoàn toàn Voucher khỏi hệ thống (chưa từng giao dịch).", ip, null
+                        actorNv, "HARD_DELETE_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", "Mã KM: " + id,
+                        "Xóa hoàn toàn Voucher khỏi hệ thống (chưa từng giao dịch).", ip, null
                 ));
                 response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=harddeletesuccess");
             } else {
@@ -152,44 +154,49 @@ public class VoucherController extends HttpServlet {
         }
         String ip = request.getRemoteAddr();
 
-        String maKm = request.getParameter("maKm");
-        String tenKm = request.getParameter("tenKm");
-        String maCode = request.getParameter("maCode");
-        String moTa = request.getParameter("moTaDieuKien");
-        String hinhAnh = request.getParameter("hinhAnhUrl");
-        int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
-        int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
-        int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
-        int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
-        int soLuong = Integer.parseInt(request.getParameter("soLuong"));
-        boolean isPublic = "1".equals(request.getParameter("isPublic"));
-        boolean trangThai = "1".equals(request.getParameter("trangThai"));
+        try {
+            String maKm = request.getParameter("maKm");
+            String tenKm = request.getParameter("tenKm");
+            String maCode = request.getParameter("maCode");
+            String moTa = request.getParameter("moTaDieuKien");
+            String hinhAnh = request.getParameter("hinhAnhUrl");
+            int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
+            int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
+            int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
+            int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
+            int soLuong = Integer.parseInt(request.getParameter("soLuong"));
+            boolean isPublic = "1".equals(request.getParameter("isPublic"));
+            boolean trangThai = "1".equals(request.getParameter("trangThai"));
+            String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
+            String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
+            Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
+            Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
 
-        String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
-        String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
-        Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
-        Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
+            KhuyenMai km = new KhuyenMai(maKm, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai);
 
-        KhuyenMai km = new KhuyenMai(maKm, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai);
-        if (ngayKetThuc.before(ngayBatDau)) {
-            request.setAttribute("voucher", km);
-            request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
-            request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
-            return;
-        }
+            if (ngayKetThuc.before(ngayBatDau)) {
+                request.setAttribute("voucher", km);
+                request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
+                request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
+                request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+                return;
+            }
 
-        boolean success = khuyenMaiService.createKhuyenMai(km);
-        if (success) {
-            NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
-                    actorNv, "THÊM_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", null, JsonParserUtil.toJson(km), ip, null
-            ));
-            response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=createsuccess");
-        } else {
-            request.setAttribute("voucher", km);
-            request.setAttribute("error", "Lỗi: Mã Code khuyến mãi bị trùng lặp trong hệ thống!");
-            request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            boolean success = khuyenMaiService.createKhuyenMai(km);
+            if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "THÊM_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", null, JsonParserUtil.toJson(km), ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=createsuccess");
+            } else {
+                request.setAttribute("voucher", km);
+                request.setAttribute("error", "Lỗi: Mã Code khuyến mãi bị trùng lặp trong hệ thống!");
+                request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
+                request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=error");
         }
     }
 
@@ -201,47 +208,52 @@ public class VoucherController extends HttpServlet {
         }
         String ip = request.getRemoteAddr();
 
-        String maKm = request.getParameter("maKm");
-        String tenKm = request.getParameter("tenKm");
-        String maCode = request.getParameter("maCode");
-        String moTa = request.getParameter("moTaDieuKien");
-        String hinhAnh = request.getParameter("hinhAnhUrl");
-        int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
-        int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
-        int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
-        int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
-        int soLuong = Integer.parseInt(request.getParameter("soLuong"));
-        boolean isPublic = "1".equals(request.getParameter("isPublic"));
-        boolean trangThai = "1".equals(request.getParameter("trangThai"));
+        try {
+            String maKm = request.getParameter("maKm");
+            String tenKm = request.getParameter("tenKm");
+            String maCode = request.getParameter("maCode");
+            String moTa = request.getParameter("moTaDieuKien");
+            String hinhAnh = request.getParameter("hinhAnhUrl");
+            int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
+            int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
+            int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
+            int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
+            int soLuong = Integer.parseInt(request.getParameter("soLuong"));
+            boolean isPublic = "1".equals(request.getParameter("isPublic"));
+            boolean trangThai = "1".equals(request.getParameter("trangThai"));
+            String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
+            String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
+            Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
+            Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
 
-        String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
-        String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
-        Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
-        Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
+            KhuyenMai oldKm = khuyenMaiService.getKhuyenMaiById(maKm);
+            String oldJson = JsonParserUtil.toJson(oldKm);
 
-        KhuyenMai oldKm = khuyenMaiService.getKhuyenMaiById(maKm);
-        String oldJson = JsonParserUtil.toJson(oldKm);
+            KhuyenMai km = new KhuyenMai(maKm, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai);
 
-        KhuyenMai km = new KhuyenMai(maKm, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai);
-        if (ngayKetThuc.before(ngayBatDau)) {
-            request.setAttribute("voucher", km);
-            request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
-            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
-            return;
-        }
+            if (ngayKetThuc.before(ngayBatDau)) {
+                request.setAttribute("voucher", km);
+                request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
+                request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
+                request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+                return;
+            }
 
-        boolean success = khuyenMaiService.updateKhuyenMai(km);
-        if (success) {
-            NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
-                    actorNv, "SỬA_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", oldJson, JsonParserUtil.toJson(km), ip, null
-            ));
-            response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=updatesuccess");
-        } else {
-            request.setAttribute("voucher", km);
-            request.setAttribute("error", "Lỗi: Không thể cập nhật Voucher!");
-            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            boolean success = khuyenMaiService.updateKhuyenMai(km);
+            if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv, "SỬA_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", oldJson, JsonParserUtil.toJson(km), ip, null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=updatesuccess");
+            } else {
+                request.setAttribute("voucher", km);
+                request.setAttribute("error", "Lỗi: Không thể cập nhật Voucher!");
+                request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
+                request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=error");
         }
     }
 }
