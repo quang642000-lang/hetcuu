@@ -23,6 +23,7 @@
                 <img src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded-4 shadow-sm border" style="object-fit: cover; max-height: 480px;" alt="Tea">
             </div>
         </div>
+
         <!-- BẢNG TÙY BIẾN PHA CHẾ BÊN PHẢI -->
         <div class="col-12 col-md-7">
             <div class="card p-4 border-0 shadow-sm bg-white" style="border-radius: 16px;">
@@ -75,7 +76,7 @@
                         </c:if>
                     </div>
 
-                    <!-- 3. TOPPING (NÂNG CẤP ĐỘNG CÓ SỐ LƯỢNG SPINNER) -->
+                    <!-- 3. TOPPING (NÂNG CẤP ĐỘNG CÓ SỐ LƯỢNG SPINNER VÀ HÌNH ẢNH) -->
                     <div class="mb-4">
                         <label class="form-label fw-bold text-dark d-block">4. Thêm Topping dai giòn sần sật (Có thể chọn nhiều phần)</label>
                         <div class="row g-2">
@@ -177,7 +178,6 @@
         if (checkedSize) {
             total += parseInt(checkedSize.dataset.price);
         }
-
         const activeToppings = document.querySelectorAll('.topping-check:checked');
         activeToppings.forEach(tp => {
             const tpId = tp.value;
@@ -185,7 +185,6 @@
             const qty = qtyInput ? parseInt(qtyInput.value) : 1;
             total += parseInt(tp.dataset.price) * qty;
         });
-
         const qty = parseInt(document.getElementById('qtyInput').value);
         const finalPrice = total * qty;
         document.getElementById('displayTotal').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
@@ -201,7 +200,7 @@
         calculateRealtimeTotal();
     }
 
-    // Luồng xử lý điều phối AJAX tích hợp
+    // Luồng xử lý điều phối AJAX tích hợp: Tự động chuyển qua đăng nhập mượt mà không lỗi
     function handleCartAction(action) {
         const form = document.getElementById("addToCartForm");
         const formData = new FormData(form);
@@ -214,21 +213,29 @@
 
         fetch(form.action, {
             method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: new URLSearchParams(formData)
         })
-            .then(res => res.text())
+            .then(res => {
+                // CẢI TIẾN TRÁNH LỖI 500: Chuyển hướng ngay sang login nếu filter chặn 401 Unauthorized
+                if (res.status === 401) {
+                    Swal.close();
+                    window.location.href = '${pageContext.request.contextPath}/customer/login';
+                    throw new Error('SESSION_EXPIRED');
+                }
+                return res.text();
+            })
             .then(data => {
                 Swal.close();
+                const cleanData = data.trim();
                 // Nếu chưa đăng nhập, chuyển trực tiếp qua trang login thành viên
-                if (data === 'NOT_LOGGED_IN') {
+                if (cleanData === 'NOT_LOGGED_IN' || cleanData === 'SESSION_EXPIRED') {
                     window.location.href = '${pageContext.request.contextPath}/customer/login';
                     return;
                 }
-                if (data.startsWith('SUCCESS')) {
-                    const parts = data.split('|');
+
+                if (cleanData.startsWith('SUCCESS')) {
+                    const parts = cleanData.split('|');
                     const cartCount = parts.length > 1 ? parts[1] : '0';
 
                     // Đồng bộ Header Badge hiển thị số lượng giỏ hàng tức thời
@@ -265,7 +272,6 @@
             .catch(err => {
                 Swal.close();
                 console.error('Lỗi hệ thống kết nối AJAX:', err);
-                showToast('error', 'Lỗi kết nối máy chủ!');
             });
     }
 

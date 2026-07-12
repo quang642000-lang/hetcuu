@@ -10,8 +10,9 @@ public interface IDonHangRepository extends IBaseRepository<DonHang, String> {
     List<DonHang> getByTrangThai(int trangThaiDon);
     boolean updateTrangThaiDon(String maDh, int trangThaiDon);
     boolean updateTrangThaiThanhToan(String maDh, int trangThaiThanhToan);
-
-    // Truy xuất chi tiết đơn hàng phục vụ in hóa đơn và đối soát
     List<ChiTietDonHang> getChiTietDonHang(String maDh);
     List<ChiTietTopping> getToppingsOfChiTiet(long maCtdh);
+
+    // ĐỒNG BỘ MÃ KHÓA CHÍNH: Phát sinh mã đơn hàng tự động chuẩn hóa
+    String generateNextMaDh();
 }

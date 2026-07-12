@@ -11,9 +11,7 @@ import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
-
     private DonHangRepoImpl() {}
-
     public static synchronized DonHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new DonHangRepoImpl();
@@ -103,6 +101,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                 psCtdh.setString(7, detail.getMucDuong());
                 psCtdh.setString(8, detail.getGhiChuMon());
                 psCtdh.executeUpdate();
+
                 long generatedCtdhId = -1;
                 try (ResultSet rsKeys = psCtdh.getGeneratedKeys()) {
                     if (rsKeys.next()) {
@@ -257,7 +256,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietDonHang> getChiTietDonHang(String maDh) {
         List<ChiTietDonHang> list = new ArrayList<>();
-        // ĐỒNG BỘ: JOIN thêm KICH_CO để lấy chính xác ten_size động của hóa đơn lịch sử
         String sql = "SELECT ct.ma_ctdh, ct.ma_dh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.gia_chot, ct.muc_da, ct.muc_duong, ct.ghi_chu_mon, kc.ten_size " +
                 "FROM CHI_TIET_DON_HANG ct " +
                 "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
@@ -278,7 +276,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                             rs.getString("muc_duong"),
                             rs.getString("ghi_chu_mon")
                     );
-                    ctdh.setTenSize(rs.getString("ten_size")); // GÁN CHẶT TÊN SIZE ĐỘNG TỪ DATABASE JOIN
+                    ctdh.setTenSize(rs.getString("ten_size"));
                     list.add(ctdh);
                 }
             }
@@ -309,6 +307,24 @@ public class DonHangRepoImpl implements IDonHangRepository {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // ĐỒNG BỘ MÃ KHÓA CHÍNH: Phát sinh mã đơn hàng chuẩn hóa không nhảy vọt, không hỗn loạn
+    @Override
+    public String generateNextMaDh() {
+        String sql = "SELECT NEXT VALUE FOR seq_DonHang";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                long seqVal = rs.getLong(1);
+                return "TEA" + String.format("%06d", seqVal); // Ví dụ: TEA000001, TEA000123
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // Fallback an toàn nếu database gặp sự cố tạm thời
+        return "TEA" + (System.currentTimeMillis() / 1000);
     }
 
     private DonHang mapResultSetToDonHang(ResultSet rs) throws SQLException {

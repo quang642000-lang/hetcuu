@@ -37,7 +37,6 @@ public class PortalCheckoutController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         // Lấy thông tin tươi mới nhất từ Database để cập nhật ví điểm Loyalty CRM
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
@@ -63,7 +62,6 @@ public class PortalCheckoutController extends HttpServlet {
 
         // Tải danh sách Voucher cá nhân khả dụng cho khách hàng dựa trên tổng tiền gốc
         List<KhuyenMai> activeVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(tongTienHang, freshCustomer.getMaKh());
-
         request.setAttribute("checkoutItems", checkoutItems);
         request.setAttribute("tongTienHang", tongTienHang);
         request.setAttribute("activeVouchers", activeVouchers);
@@ -77,7 +75,6 @@ public class PortalCheckoutController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         try {
             int tongTienHang = Integer.parseInt(request.getParameter("tongTienHang"));
@@ -88,7 +85,7 @@ public class PortalCheckoutController extends HttpServlet {
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             int maPt = Integer.parseInt(request.getParameter("maPt"));
             String ghiChuDon = request.getParameter("ghiChuDon");
-            String henLayRaw = request.getParameter("thoiGianHenLay"); // Chỉ nhận "15:30" (Gi giờ lấy trong ngày)
+            String henLayRaw = request.getParameter("thoiGianHenLay"); // Chỉ nhận "15:30" (Giờ lấy trong ngày)
 
             if (henLayRaw == null || henLayRaw.trim().isEmpty()) {
                 request.setAttribute("error", "Bắt buộc phải hẹn giờ đến cửa hàng nhận nước!");
@@ -103,6 +100,7 @@ public class PortalCheckoutController extends HttpServlet {
                 doGet(request, response);
                 return;
             }
+
             if (tienTruDiem != (diemSuDung * 1000)) {
                 request.setAttribute("error", "Thuật toán quy đổi tỷ lệ điểm CRM không hợp lệ (1 Điểm = 1.000 VNĐ)!");
                 doGet(request, response);
@@ -114,18 +112,8 @@ public class PortalCheckoutController extends HttpServlet {
             String fullDateTimeStr = today.toString() + " " + henLayRaw.trim() + ":00";
             Timestamp thoiGianHenLay = Timestamp.valueOf(fullDateTimeStr);
 
-            // Sinh mã hóa đơn online tự động từ sequence của SQL Server
-            String maDh = "TEA" + System.currentTimeMillis(); // Fallback
-            try (Connection conn = DBConnect.getConnection();
-                 PreparedStatement ps = conn.prepareStatement("SELECT NEXT VALUE FOR seq_DonHang")) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        maDh = "TEA" + rs.getLong(1);
-                    }
-                }
-            } catch (SQLException e) {
-                LOGGER.log(Level.SEVERE, "Lỗi khi nạp sequence sinh ma_dh cho đơn hàng online", e);
-            }
+            // ĐỒNG BỘ CHUẨN HÓA MÃ HÓA ĐƠN AUTO-GENERATE TỪ SEQUENCE
+            String maDh = donHangService.generateNextMaDh();
 
             // Khởi tạo thực thể DonHang chuẩn bị ghi nhận CSDL
             DonHang dh = new DonHang();
@@ -166,7 +154,6 @@ public class PortalCheckoutController extends HttpServlet {
                         }
                     }
                 }
-
                 // Đồng bộ cập nhật lại Badge giỏ hàng tức thì
                 GioHang freshGh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
                 int remainCount = (freshGh != null && freshGh.getChiTietGioHangList() != null) ? freshGh.getChiTietGioHangList().size() : 0;
@@ -213,7 +200,6 @@ public class PortalCheckoutController extends HttpServlet {
         ctdh.setMucDa(cartItem.getMucDa());
         ctdh.setMucDuong(cartItem.getMucDuong());
         ctdh.setGhiChuMon(cartItem.getGhiChuMon());
-
         List<ChiTietTopping> toppingsList = new ArrayList<>();
         if (cartItem.getToppingGioHangList() != null) {
             for (ChiTietToppingGioHang tp : cartItem.getToppingGioHangList()) {

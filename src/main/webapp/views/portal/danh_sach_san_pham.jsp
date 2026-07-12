@@ -40,7 +40,6 @@
 </head>
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-4">
     <div class="row g-4">
         <!-- BỘ LỌC BÊN TRÁI (SIDEBAR) -->
@@ -53,12 +52,10 @@
                         <button type="submit" class="btn btn-success"><i class="bi bi-search"></i></button>
                     </div>
                 </form>
-
                 <h5 class="fw-bold mb-3 text-dark">Danh Mục Đồ Uống</h5>
                 <div class="list-group list-group-flush">
-                    <a href="${pageContext.request.contextPath}/products" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-medium border-0 py-2.5 px-0 text-dark">
+                    <a href="${pageContext.request.contextPath}/products" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-medium border-0 py-2.5 px-0 ${empty selectedCategory ? 'text-success fw-bold' : 'text-dark'}">
                         <span>Tất cả thực đơn</span>
-                        <span class="badge bg-success rounded-pill bg-opacity-10 text-success border border-success" style="font-size: 11px;">${products.size()}</span>
                     </a>
                     <c:forEach var="cat" items="${categories}">
                         <a href="${pageContext.request.contextPath}/products?category=${cat.maDm}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center border-0 py-2.5 px-0 ${selectedCategory eq cat.maDm.toString() ? 'text-success fw-bold' : 'text-dark'}">
@@ -72,7 +69,7 @@
         <!-- DANH SÁCH MENU SẢN PHẨM BÊN PHẢI -->
         <div class="col-12 col-lg-9">
             <div class="card border-0 p-3 mb-4 shadow-sm d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px;">
-                <span class="text-muted fw-medium">Tìm thấy <strong class="text-success">${products.size()}</strong> cốc nước thơm ngon</span>
+                <span class="text-muted fw-medium">Tìm thấy <strong class="text-success">${totalProducts}</strong> cốc nước thơm ngon</span>
                 <div class="btn-group">
                     <button class="btn btn-sm btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">Sắp xếp theo</button>
                     <ul class="dropdown-menu">
@@ -100,9 +97,8 @@
                                     </div>
                                     <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${item.tenSp}"/></h6>
                                     <p class="text-muted small text-truncate mb-3" style="max-height: 38px;"><c:out value="${item.moTa}"/></p>
-
                                     <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
-                                        <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
                                             <span class="text-muted small">Giá từ:</span>
                                             <strong class="text-success fs-5">
                                                 <c:forEach var="size" items="${item.sizesList}" end="0">
@@ -110,11 +106,15 @@
                                                 </c:forEach>
                                             </strong>
                                         </div>
-
-                                        <!-- PHẦN CẢI TIẾN: Thay thế bộ đôi nút cũ bằng 1 nút "Xem chi tiết" duy nhất trải rộng 100% card -->
-                                        <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-outline-success btn-sm w-100 py-2 fw-bold rounded-pill text-center d-flex align-items-center justify-content-center gap-1" style="font-size: 12px;">
-                                            <i class="bi bi-eye-fill"></i> Xem chi tiết & Tùy biến
-                                        </a>
+                                        <div class="d-flex gap-2">
+                                            <!-- MUA NHANH: Tự động chuyển qua trang Login nếu chưa đăng nhập -->
+                                            <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2 px-1" onclick="quickAddToCart('${item.maSp}', '<c:out value="${item.tenSp}"/>')" style="font-size: 11.5px; border-radius: 8px;">
+                                                <i class="bi bi-cart-plus-fill"></i> MUA NHANH
+                                            </button>
+                                            <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}" class="btn btn-outline-success btn-sm flex-fill fw-bold py-2 px-1 text-center" style="font-size: 11.5px; border-radius: 8px;">
+                                                <i class="bi bi-eye-fill"></i> TÙY BIẾN
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -128,10 +128,35 @@
                     </c:otherwise>
                 </c:choose>
             </div>
+
+            <!-- BỘ ĐIỀU PHỐI PHÂN TRANG (PAGINATION) CHUẨN BOOTSTRAP -->
+            <c:if test="${totalPages > 1}">
+                <nav aria-label="Page navigation" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        <!-- Nút Trang trước -->
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="${pageContext.request.contextPath}/products?page=${currentPage - 1}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo; Trang trước</span>
+                            </a>
+                        </li>
+                        <!-- Các mốc số trang -->
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                <a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="${pageContext.request.contextPath}/products?page=${i}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}">${i}</a>
+                            </li>
+                        </c:forEach>
+                        <!-- Nút Trang sau -->
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="${pageContext.request.contextPath}/products?page=${currentPage + 1}${not empty selectedCategory ? '&category='.concat(selectedCategory) : ''}${not empty searchKeyword ? '&search='.concat(searchKeyword) : ''}" aria-label="Next">
+                                <span aria-hidden="true">Trang sau &raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </c:if>
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -10,13 +10,13 @@ import service.IToppingService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import service.impl.ToppingServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 @WebServlet(name = "PortalProductController", urlPatterns = {"/products", "/product/detail"})
 public class PortalProductController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(PortalProductController.class.getName());
-
     private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
     private final IToppingService toppingService = ToppingServiceImpl.getInstance();
@@ -32,7 +31,6 @@ public class PortalProductController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
-
         if (uri.endsWith("/product/detail")) {
             showProductDetail(request, response);
         } else {
@@ -43,7 +41,6 @@ public class PortalProductController extends HttpServlet {
     private void showProductList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String maDmStr = request.getParameter("category");
         String keyword = request.getParameter("search");
-
         List<SanPham> products;
         try {
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -55,21 +52,50 @@ public class PortalProductController extends HttpServlet {
                 products = sanPhamService.getAllSanPham();
             }
 
-            // Gọi hàm setSizesList đã được thêm thành công vào lớp thực thể SanPham
             if (products != null) {
                 for (SanPham sp : products) {
                     sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
                 }
             }
 
-            List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
+            // ==================== NGHIỆP VỤ PHÂN TRANG (PAGINATION) ====================
+            int page = 1;
+            int pageSize = 9; // 9 sản phẩm/trang, phù hợp chia lưới 3x3
+            String pageStr = request.getParameter("page");
+            if (pageStr != null && !pageStr.trim().isEmpty()) {
+                try {
+                    page = Integer.parseInt(pageStr.trim());
+                } catch (NumberFormatException e) {
+                    page = 1;
+                }
+            }
 
-            request.setAttribute("products", products);
+            int totalProducts = (products != null) ? products.size() : 0;
+            int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+            if (totalPages == 0) totalPages = 1;
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            int fromIndex = (page - 1) * pageSize;
+            int toIndex = Math.min(fromIndex + pageSize, totalProducts);
+
+            List<SanPham> paginatedProducts = new ArrayList<>();
+            if (products != null && fromIndex < totalProducts && fromIndex >= 0) {
+                paginatedProducts = products.subList(fromIndex, toIndex);
+            }
+
+            List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
+            request.setAttribute("products", paginatedProducts);
             request.setAttribute("categories", categories);
             request.setAttribute("selectedCategory", maDmStr);
             request.setAttribute("searchKeyword", keyword);
-            request.getRequestDispatcher("/views/portal/danh_sach_san_pham.jsp").forward(request, response);
 
+            // Gửi các tham số phân trang ra JSP
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalProducts", totalProducts);
+
+            request.getRequestDispatcher("/views/portal/danh_sach_san_pham.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             LOGGER.log(Level.WARNING, "Định dạng mã danh mục không hợp lệ: " + maDmStr, e);
             response.sendRedirect(request.getContextPath() + "/products?msg=error");
@@ -83,11 +109,9 @@ public class PortalProductController extends HttpServlet {
         String id = request.getParameter("id");
         try {
             SanPham sp = sanPhamService.getSanPhamById(id);
-
             if (sp != null) {
                 List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(id);
                 List<Topping> toppings = toppingService.getActiveTopping();
-
                 request.setAttribute("product", sp);
                 request.setAttribute("sizes", sizes);
                 request.setAttribute("toppings", toppings);

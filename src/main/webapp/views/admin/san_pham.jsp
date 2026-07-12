@@ -100,7 +100,6 @@
                                     <c:set var="minPrice" value="99999999"/>
                                     <c:set var="maxPrice" value="0"/>
                                     <c:set var="activeSizes" value=""/>
-
                                     <c:forEach var="szPrice" items="${item.sizesList}">
                                         <c:if test="${szPrice.trangThai}">
                                             <c:set var="activeSizes" value="${empty activeSizes ? szPrice.tenSize : activeSizes.concat(', ').concat(szPrice.tenSize)}"/>
@@ -112,12 +111,9 @@
                                             </c:if>
                                         </c:if>
                                     </c:forEach>
-
                                     <c:if test="${minPrice == 99999999}">
                                         <c:set var="minPrice" value="0"/>
                                     </c:if>
-
-                                    <!-- AN TOÀN TUYỆT ĐỐI CHỐNG LỖI QUOTE -->
                                     <tr class="product-row text-center"
                                         data-masp="${item.maSp}"
                                         data-tensp="${item.tenSp}"
@@ -208,6 +204,17 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
+                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
+                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
+                    <nav aria-label="Table pagination">
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+                            <!-- Nạp động nút phân trang bằng JS -->
+                        </ul>
+                    </nav>
+                </div>
+
             </div>
         </div>
     </div>
@@ -216,6 +223,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
+    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN
+    let currentPage = 1;
+    const pageSize = 10; // 10 bản ghi trên một trang
+
     function filterProductsRealtime() {
         const searchVal = document.getElementById("productSearchInput").value.trim().toLowerCase();
         const catVal = document.getElementById("filterCategory").value;
@@ -239,11 +250,87 @@
             let matchHot = hotVal === "" || isHot === hotVal;
 
             if (matchSearch && matchCat && matchStatus && matchNew && matchHot) {
-                row.style.display = "table-row";
+                row.setAttribute("data-filtered-show", "true");
             } else {
+                row.removeAttribute("data-filtered-show");
                 row.style.display = "none";
             }
         });
+
+        // Mỗi khi lọc lại, quay về trang 1 và phân trang mượt mà
+        currentPage = 1;
+        paginateAdminTable();
+    }
+
+    function paginateAdminTable() {
+        const rows = Array.from(document.querySelectorAll("#productTable tbody .product-row"));
+        const visibleRows = rows.filter(row => row.getAttribute("data-filtered-show") === "true" || !row.hasAttribute("data-filtered-show") && row.style.display !== "none");
+
+        // Nếu người dùng chưa gõ hay lọc gì, visibleRows chính là toàn bộ rows
+        const activeRows = (document.getElementById("productSearchInput").value || document.getElementById("filterCategory").value || document.getElementById("filterStatus").value || document.getElementById("filterNew").value || document.getElementById("filterHot").value) ? visibleRows : rows;
+
+        // Gán trạng thái data-filtered-show mặc định cho toàn bộ nếu không lọc để phân trang chuẩn xác
+        if (activeRows.length === rows.length) {
+            rows.forEach(r => r.setAttribute("data-filtered-show", "true"));
+        }
+
+        const totalRecords = activeRows.length;
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        rows.forEach(row => {
+            row.style.display = "none";
+        });
+
+        activeRows.forEach((row, idx) => {
+            if (idx >= startIndex && idx < endIndex) {
+                row.style.display = "table-row";
+            }
+        });
+
+        // Render bộ nút phân trang
+        document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
+        renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+        const controls = document.getElementById("paginatedControls");
+        controls.innerHTML = "";
+        if (totalPages <= 1) {
+            document.getElementById("adminPaginationArea").style.display = "none";
+            return;
+        }
+        document.getElementById("adminPaginationArea").style.display = "flex";
+
+        // Nút Trang trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
+        controls.appendChild(prevLi);
+
+        // Các mốc số trang
+        for (let i = 1; i <= totalPages; i++) {
+            const pageLi = document.createElement("li");
+            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
+            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
+            controls.appendChild(pageLi);
+        }
+
+        // Nút Trang sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
+        controls.appendChild(nextLi);
+    }
+
+    function changeAdminPage(newPage) {
+        currentPage = newPage;
+        paginateAdminTable();
     }
 
     function resetFilters() {
@@ -252,7 +339,10 @@
         document.getElementById("filterStatus").selectedIndex = 0;
         document.getElementById("filterNew").selectedIndex = 0;
         document.getElementById("filterHot").selectedIndex = 0;
-        filterProductsRealtime();
+        const rows = document.querySelectorAll("#productTable tbody .product-row");
+        rows.forEach(r => r.setAttribute("data-filtered-show", "true"));
+        currentPage = 1;
+        paginateAdminTable();
     }
 
     function confirmDeleteSanPham(maSp) {
@@ -279,6 +369,11 @@
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi cấu hình sản phẩm!');
         if (msg === 'deletesuccess') showToast('success', 'Đã cập nhật trạng thái Ngừng bán món uống!');
         if (msg === 'deletefailed') showToast('error', 'Hệ thống gặp sự cố khi cập nhật trạng thái sản phẩm!');
+
+        // Khởi chạy phân trang lần đầu
+        const rows = document.querySelectorAll("#productTable tbody .product-row");
+        rows.forEach(r => r.setAttribute("data-filtered-show", "true"));
+        paginateAdminTable();
     });
 </script>
 </body>

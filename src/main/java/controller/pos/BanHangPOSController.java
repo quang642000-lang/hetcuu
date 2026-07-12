@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 })
 public class BanHangPOSController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(BanHangPOSController.class.getName());
-
     private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
     private final IToppingService toppingService = ToppingServiceImpl.getInstance();
@@ -37,26 +36,21 @@ public class BanHangPOSController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
-
         if (uri.endsWith("/pos/search-customer")) {
             performSearchCustomer(request, response);
             return;
         }
-
         if (uri.endsWith("/pos/bill-detail")) {
             performGetBillDetail(request, response);
             return;
         }
-
         // Mặc định nạp giao diện POS chính
         List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
         List<SanPham> products = sanPhamService.getAllSanPham();
         List<Topping> toppings = toppingService.getActiveTopping();
-
         for (SanPham sp : products) {
             sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
         }
-
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("toppings", toppings);
@@ -66,7 +60,6 @@ public class BanHangPOSController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
-
         if (uri.endsWith("/pos/checkout")) {
             performPOSCheckout(request, response);
         } else if (uri.endsWith("/pos/create-customer")) {
@@ -83,15 +76,14 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"NOT_FOUND\"}");
             return;
         }
-
         KhachHang kh = khachHangService.getKhachHangBySdt(sdt.trim());
         if (kh != null && kh.isTrangThai()) {
             List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(10000, kh.getMaKh());
-
             StringBuilder json = new StringBuilder();
             json.append("{");
             json.append("\"status\":\"SUCCESS\",");
             json.append("\"maKh\":\"").append(kh.getMaKh()).append("\",");
+            json.append("\"textKh\":\"").append(kh.getTenKh()).append("\",");
             json.append("\"tenKh\":\"").append(kh.getTenKh()).append("\",");
             json.append("\"diemTichLuy\":").append(kh.getDiemTichLuy()).append(",");
             json.append("\"maHang\":").append(kh.getMaHang()).append(",");
@@ -121,18 +113,15 @@ public class BanHangPOSController extends HttpServlet {
         String tenKh = request.getParameter("tenKh");
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
-
         if (tenKh == null || tenKh.trim().isEmpty() || sdt == null || sdt.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Các trường thông tin không được để trống!\"}");
             return;
         }
-
         try {
             KhachHang kh = khachHangService.registerCustomer(tenKh, sdt, email, "12345678");
             if (kh != null) {
                 kh.setTrangThai(true);
                 khachHangService.updateCustomerProfile(kh);
-
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append("\"status\":\"SUCCESS\",");
@@ -157,22 +146,18 @@ public class BanHangPOSController extends HttpServlet {
         String code = request.getParameter("code");
         String maKh = request.getParameter("maKh");
         String tongTienHangStr = request.getParameter("tongTienHang");
-
         if (code == null || code.trim().isEmpty() || tongTienHangStr == null) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mã Voucher hoặc tổng tiền không hợp lệ!\"}");
             return;
         }
-
         int tongTienHang = Integer.parseInt(tongTienHangStr);
         if (maKh != null && maKh.trim().isEmpty()) {
             maKh = null;
         }
-
         boolean isValid = khuyenMaiService.validateVoucher(code.trim(), tongTienHang, maKh);
         if (isValid) {
             KhuyenMai km = khuyenMaiService.getKhuyenMaiByCode(code.trim());
             int discount = khuyenMaiService.calculateDiscount(code.trim(), tongTienHang);
-
             StringBuilder json = new StringBuilder();
             json.append("{");
             json.append("\"status\":\"SUCCESS\",");
@@ -208,7 +193,6 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mã hóa đơn không hợp lệ!\"}");
             return;
         }
-
         DonHang dh = donHangService.getDonHangById(id);
         if (dh != null) {
             StringBuilder json = new StringBuilder();
@@ -216,51 +200,42 @@ public class BanHangPOSController extends HttpServlet {
             json.append("\"status\":\"SUCCESS\",");
             json.append("\"maDh\":\"").append(dh.getMaDh()).append("\",");
             json.append("\"thoiGianTao\":\"").append(dh.getThoiGianTao().toString().substring(0, 19)).append("\",");
-
             String tenKh = "Khách lẻ vãng lai";
             if (dh.getMaKh() != null) {
                 KhachHang kh = khachHangService.getKhachHangById(dh.getMaKh());
                 if (kh != null) tenKh = kh.getTenKh();
             }
             json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
-
             String tenNv = "Hệ thống tự động";
             if (dh.getMaNv() != null) {
                 NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
                 if (nv != null) tenNv = nv.getHoTen();
             }
             json.append("\"tenNhanVien\":\"").append(tenNv).append("\",");
-
             json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
             json.append("\"tienGiamGia\":").append(dh.getTienGiamGia()).append(",");
             json.append("\"diemSuDung\":").append(dh.getDiemSuDung()).append(",");
             json.append("\"tienTruDiem\":").append(dh.getTienTruDiem()).append(",");
             json.append("\"tongPhaiTra\":").append(dh.getTongPhaiTra()).append(",");
             json.append("\"items\":[");
-
             for (int i = 0; i < dh.getChiTietDonHangList().size(); i++) {
                 ChiTietDonHang item = dh.getChiTietDonHangList().get(i);
-
                 String tenSp = "Sản phẩm " + item.getMaSp();
                 SanPham sp = sanPhamService.getSanPhamById(item.getMaSp());
                 if (sp != null) tenSp = sp.getTenSp();
-
                 json.append("{");
                 json.append("\"tenMon\":\"").append(tenSp).append("\",");
-                json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\","); // ĐỒNG BỘ ĐỘNG
+                json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\",");
                 json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
                 json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
                 json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
                 json.append("\"giaChot\":").append(item.getGiaChot()).append(",");
                 json.append("\"toppings\":[");
-
                 for (int j = 0; j < item.getToppingsList().size(); j++) {
                     ChiTietTopping tp = item.getToppingsList().get(j);
-
                     String tenTp = "Topping " + tp.getMaTp();
                     Topping topping = toppingService.getToppingById(tp.getMaTp());
                     if (topping != null) tenTp = topping.getTenTp();
-
                     json.append("{");
                     json.append("\"tenTopping\":\"").append(tenTp).append("\",");
                     json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
@@ -287,7 +262,6 @@ public class BanHangPOSController extends HttpServlet {
             return;
         }
         NhanVien currentStaff = (NhanVien) session.getAttribute("user");
-
         try {
             String maKh = request.getParameter("maKh");
             int loaiDonHang = Integer.parseInt(request.getParameter("loaiDonHang"));
@@ -300,7 +274,8 @@ public class BanHangPOSController extends HttpServlet {
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             String ghiChuDon = request.getParameter("ghiChuDon");
 
-            String maDh = "TEA" + System.currentTimeMillis();
+            // ĐỒNG BỘ CHUẨN HÓA MÃ HÓA ĐƠN AUTO-GENERATE TỪ SEQUENCE
+            String maDh = donHangService.generateNextMaDh();
 
             DonHang dh = new DonHang();
             dh.setMaDh(maDh);

@@ -97,25 +97,19 @@ public class DonHangServiceImpl implements IDonHangService {
     public boolean updateTrangThaiDon(String maDh, int trangThaiDon, String maNv, String lyDoHuy) {
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
-
-        // CẬP NHẬT NHÂN VIÊN NHẬN ĐƠN TRÁNH GHI HỆ THỐNG TỰ ĐỘNG
         dh.setMaNv(maNv);
-
-        if (trangThaiDon == 5) { // Trạng thái hủy đơn
+        if (trangThaiDon == 5) {
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
-            donHangRepository.update(dh); // Lưu thông tin
-
+            donHangRepository.update(dh);
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
             }
             nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "HỦY_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Lý do hủy đơn " + maDh + ": " + lyDoHuy, "127.0.0.1", null));
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
-
         dh.setTrangThaiDon(trangThaiDon);
-        donHangRepository.update(dh); // Lưu nhân viên xử lý đơn hàng
-
+        donHangRepository.update(dh);
         nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "CẬP_NHẬT_TRẠNG_THÁI_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Trạng thái mới: " + trangThaiDon, "127.0.0.1", null));
         return donHangRepository.updateTrangThaiDon(maDh, trangThaiDon);
     }
@@ -150,5 +144,11 @@ public class DonHangServiceImpl implements IDonHangService {
         long current = System.currentTimeMillis();
         long diffMinutes = (thoiGianHenLay.getTime() - current) / (60 * 1000);
         return diffMinutes >= 15;
+    }
+
+    // ĐỒNG BỘ MÃ KHÓA CHÍNH: Gọi sinh mã đơn hàng chuẩn hóa xuyên suốt hệ thống
+    @Override
+    public String generateNextMaDh() {
+        return donHangRepository.generateNextMaDh();
     }
 }
