@@ -52,9 +52,6 @@ public class SanPhamController extends HttpServlet {
             action = "list";
         }
         switch (action) {
-            case "list":
-                showList(request, response);
-                break;
             case "create":
                 showCreateForm(request, response);
                 break;
@@ -181,13 +178,11 @@ public class SanPhamController extends HttpServlet {
                     ps1.setString(1, id);
                     ps1.executeUpdate();
                     ps2.setString(1, id);
-                    int deleted = ps2.executeUpdate();
-                    if (deleted > 0) {
+                    int d2 = ps2.executeUpdate();
+                    if (d2 > 0) {
                         hardSuccess = true;
-                        conn.commit();
-                    } else {
-                        conn.rollback();
                     }
+                    conn.commit();
                 } catch (SQLException e) {
                     conn.rollback();
                     e.printStackTrace();
@@ -318,12 +313,11 @@ public class SanPhamController extends HttpServlet {
         try {
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
-            if (tenSp == null || tenSp.trim().isEmpty() || maDmStr == null) {
+            if (tenSp == null || tenSp.trim().isEmpty() || maDmStr == null || maDmStr.trim().isEmpty()) {
                 request.setAttribute("error", "Vui lòng nhập đầy đủ Tên sản phẩm và chọn Danh mục!");
                 showCreateForm(request, response);
                 return;
             }
-            int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
@@ -337,9 +331,10 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
             SanPham sp = new SanPham();
             sp.setTenSp(tenSp);
-            sp.setMaDm(maDm);
+            sp.setMaDm(maDmStr);
             sp.setMoTa(moTa);
             sp.setHinhAnh(hinhAnh);
             sp.setChoPhepDoiDa(choPhepDoiDa);
@@ -347,6 +342,7 @@ public class SanPhamController extends HttpServlet {
             sp.setIsNew(isNew);
             sp.setIsBestseller(isBestseller);
             sp.setTrangThai(trangThai);
+
             List<KichCo> allSizes = kichCoRepository.getAll();
             List<SanPhamKichCo> selectedSizes = new ArrayList<>();
             for (KichCo kc : allSizes) {
@@ -366,6 +362,7 @@ public class SanPhamController extends HttpServlet {
                     }
                 }
             }
+
             java.util.Enumeration<String> parameterNames = request.getParameterNames();
             while (parameterNames.hasMoreElements()) {
                 String paramName = parameterNames.nextElement();
@@ -394,12 +391,14 @@ public class SanPhamController extends HttpServlet {
                     }
                 }
             }
+
             if (selectedSizes.isEmpty()) {
                 request.setAttribute("error", "Sản phẩm mới bắt buộc phải cấu hình tối thiểu một kích cỡ và giá bán đi kèm!");
                 request.setAttribute("product", sp);
                 showCreateForm(request, response);
                 return;
             }
+
             boolean success = sanPhamService.createSanPham(sp, selectedSizes);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -429,12 +428,11 @@ public class SanPhamController extends HttpServlet {
             String maSp = request.getParameter("maSp");
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
-            if (maSp == null || tenSp == null || tenSp.trim().isEmpty() || maDmStr == null) {
+            if (maSp == null || tenSp == null || tenSp.trim().isEmpty() || maDmStr == null || maDmStr.trim().isEmpty()) {
                 request.setAttribute("error", "Thông tin sản phẩm cập nhật bị khuyết thiếu!");
                 showEditForm(request, response);
                 return;
             }
-            int maDm = Integer.parseInt(maDmStr);
             String moTa = request.getParameter("moTa");
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
@@ -454,11 +452,12 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
                 String oldJson = JsonParserUtil.toJson(sp);
                 sp.setTenSp(tenSp);
-                sp.setMaDm(maDm);
+                sp.setMaDm(maDmStr);
                 sp.setMoTa(moTa);
                 sp.setHinhAnh(hinhAnh);
                 sp.setChoPhepDoiDa(choPhepDoiDa);
@@ -466,19 +465,19 @@ public class SanPhamController extends HttpServlet {
                 sp.setIsNew(isNew);
                 sp.setIsBestseller(isBestseller);
                 sp.setTrangThai(trangThai);
+
+                List<KichCo> allSizes = kichCoRepository.getAll();
                 List<SanPhamKichCo> selectedSizes = new ArrayList<>();
-                java.util.Enumeration<String> parameterNames = request.getParameterNames();
-                while (parameterNames.hasMoreElements()) {
-                    String paramName = parameterNames.nextElement();
-                    if (paramName.startsWith("size_active_")) {
+                for (KichCo kc : allSizes) {
+                    String checkboxName = "size_active_" + kc.getMaSize();
+                    if (request.getParameter(checkboxName) != null) {
                         try {
-                            int maSize = Integer.parseInt(paramName.replace("size_active_", ""));
-                            String priceParam = request.getParameter("size_price_" + maSize);
+                            String priceParam = request.getParameter("size_price_" + kc.getMaSize());
                             if (priceParam != null && !priceParam.trim().isEmpty()) {
                                 int giaBan = Integer.parseInt(priceParam.trim());
-                                String dinhLuong = request.getParameter("size_volume_" + maSize);
-                                boolean sizeStatus = request.getParameter("size_status_" + maSize) != null;
-                                SanPhamKichCo spkc = new SanPhamKichCo(maSp, maSize, giaBan, dinhLuong, sizeStatus);
+                                String dinhLuong = request.getParameter("size_volume_" + kc.getMaSize());
+                                boolean sizeStatus = request.getParameter("size_status_" + kc.getMaSize()) != null;
+                                SanPhamKichCo spkc = new SanPhamKichCo(maSp, kc.getMaSize(), giaBan, dinhLuong, sizeStatus);
                                 selectedSizes.add(spkc);
                             }
                         } catch (NumberFormatException e) {
@@ -486,11 +485,13 @@ public class SanPhamController extends HttpServlet {
                         }
                     }
                 }
+
                 if (selectedSizes.isEmpty()) {
                     request.setAttribute("error", "Không thể lưu: Sản phẩm phải có ít nhất một kích cỡ hoạt động!");
                     showEditForm(request, response);
                     return;
                 }
+
                 boolean success = sanPhamService.updateSanPham(sp, selectedSizes);
                 if (success) {
                     NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -522,8 +523,6 @@ public class SanPhamController extends HttpServlet {
                     fileExt = fileName.substring(dotIdx);
                 }
                 String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-
-                // Lập trình lưu vĩnh viễn ngoài project (DocBase Mapping chuẩn)
                 String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
                 File uploadDir = new File(baseDir);
                 if (!uploadDir.exists()) {

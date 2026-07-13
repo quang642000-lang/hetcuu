@@ -8,7 +8,6 @@ import repository.ISanPhamRepository;
 import repository.impl.SanPhamKichCoRepoImpl;
 import repository.impl.SanPhamRepoImpl;
 import service.ISanPhamService;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,7 +43,7 @@ public class SanPhamServiceImpl implements ISanPhamService {
     }
 
     @Override
-    public List<SanPham> getSanPhamByDanhMuc(int maDm) {
+    public List<SanPham> getSanPhamByDanhMuc(String maDm) {
         return sanPhamRepository.getByDanhMuc(maDm);
     }
 
@@ -90,7 +89,11 @@ public class SanPhamServiceImpl implements ISanPhamService {
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             return false;
         } finally {
@@ -98,7 +101,9 @@ public class SanPhamServiceImpl implements ISanPhamService {
                 try {
                     conn.setAutoCommit(true);
                     conn.close();
-                } catch (SQLException e) { e.printStackTrace(); }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -159,7 +164,6 @@ public class SanPhamServiceImpl implements ISanPhamService {
                         break;
                     }
                 }
-
                 if (!stillSelected) {
                     // Size này đã bị deselect khỏi form. Kiểm tra xem đã bán đơn nào chưa!
                     psCheckOrders.setString(1, sanPham.getMaSp());
@@ -190,9 +194,6 @@ public class SanPhamServiceImpl implements ISanPhamService {
                         break;
                     }
                 }
-
-                // KHÔNG TỰ ĐỘNG ĐÈ TRẠNG THÁI THÀNH TRUE NỮA!
-                // Giữ nguyên thuộc tính trangThai được gửi lên từ controller (mở bán hay ngừng bán)
                 if (existsInDb) {
                     // Đã tồn tại -> Cập nhật giá bán, định lượng và trạng thái hoạt động mới
                     boolean updatedSize = sanPhamKichCoRepository.update(newSize);
@@ -209,13 +210,16 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 }
             }
-
             conn.commit();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             return false;
         } finally {
@@ -227,7 +231,9 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     conn.setAutoCommit(true);
                     conn.close();
                 }
-            } catch (SQLException e) { e.printStackTrace(); }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

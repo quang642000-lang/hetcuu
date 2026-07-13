@@ -20,6 +20,6 @@ public interface IGioHangRepository {
 
     // Thao tác danh sách Topping đi kèm của ly nước trong giỏ hàng
     List<ChiTietToppingGioHang> getToppingByChiTiet(long maCtgh);
-    boolean addToppingToGioHang(long maCtgh, int maTp, int soLuongTp);
+    boolean addToppingToGioHang(long maCtgh, String maTp, int soLuongTp);
     boolean removeToppingsFromChiTiet(long maCtgh);
 }

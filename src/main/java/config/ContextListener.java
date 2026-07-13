@@ -24,11 +24,12 @@ public class ContextListener implements ServletContextListener {
                 stmt.execute("ALTER SEQUENCE seq_KhachHang NO CACHE;");
                 stmt.execute("ALTER SEQUENCE seq_DonHang NO CACHE;");
                 stmt.execute("ALTER SEQUENCE seq_SanPham NO CACHE;");
+                stmt.execute("ALTER SEQUENCE seq_DanhMuc NO CACHE;");
+                stmt.execute("ALTER SEQUENCE seq_Voucher NO CACHE;");
                 System.out.println("[TEA POS INFO] Đã tối ưu cấu hình NO CACHE cho toàn bộ sequences thành công!");
             } catch (Exception ex) {
                 System.out.println("[TEA POS WARNING] Cấu hình NO CACHE sequence bỏ qua (có thể chưa chạy script khởi tạo DB): " + ex.getMessage());
             }
-
         } catch (Exception e) {
             System.err.println("[TEA POS ERROR] Khởi tạo Connection Pool thất bại: " + e.getMessage());
             e.printStackTrace();

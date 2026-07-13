@@ -1,28 +1,25 @@
 package model.dto;
 
 public class DoanhThuDanhMucDTO {
-    private int maDm;
+    private String maDm;
     private String tenDm;
     private int tongSanPhamBan;
     private long tongDoanhThu;
 
-    // 1. Constructor không tham số
     public DoanhThuDanhMucDTO() {}
 
-    // 2. Constructor đầy đủ tham số
-    public DoanhThuDanhMucDTO(int maDm, String tenDm, int tongSanPhamBan, long tongDoanhThu) {
+    public DoanhThuDanhMucDTO(String maDm, String tenDm, int tongSanPhamBan, long tongDoanhThu) {
         this.maDm = maDm;
         this.tenDm = tenDm;
         this.tongSanPhamBan = tongSanPhamBan;
         this.tongDoanhThu = tongDoanhThu;
     }
 
-    // 3. Quyết toán Getters & Setters
-    public int getMaDm() {
+    public String getMaDm() {
         return maDm;
     }
 
-    public void setMaDm(int maDm) {
+    public void setMaDm(String maDm) {
         this.maDm = maDm;
     }
 

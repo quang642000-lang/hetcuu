@@ -9,10 +9,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -22,7 +30,7 @@
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
+                    <div class="text-start">
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-egg-fried me-2"></i>QUẢN LÝ TOPPING</h3>
                         <p class="text-muted small mb-0">Thiết lập đơn giá, định lượng và quản lý trạng thái cung cấp topping ăn kèm đồ uống tại quầy</p>
                     </div>
@@ -35,9 +43,9 @@
                     <table class="table table-hover align-middle admin-table" id="toppingTable">
                         <thead>
                         <tr class="text-center">
-                            <th style="width: 100px;">Mã TP</th>
+                            <th style="width: 120px;">Mã TP</th>
                             <th style="width: 100px;" class="text-center">Hình Ảnh</th>
-                            <th>Tên Topping Ăn Kèm</th>
+                            <th class="text-start">Tên Topping Ăn Kèm</th>
                             <th>Định Lượng</th>
                             <th class="text-center">Đơn Giá</th>
                             <th class="text-center">Sắp Xếp</th>
@@ -50,7 +58,7 @@
                             <c:when test="${not empty toppings}">
                                 <c:forEach var="item" items="${toppings}">
                                     <tr class="topping-row text-center">
-                                        <td><strong>TP${item.maTp}</strong></td>
+                                        <td><strong>${item.maTp}</strong></td> <%-- REMOVED TP PREFIX BECAUSE maTp IS ALREADY TP00001 --%>
                                         <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
@@ -63,16 +71,16 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td><span class="fw-bold text-dark"><c:out value="${item.tenTp}"/></span></td>
+                                        <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.tenTp}"/></span></td>
                                         <td><c:out value="${not empty item.dinhLuong ? item.dinhLuong : 'Mặc định'}"/></td>
                                         <td class="text-center fw-bold text-success">
                                             <fmt:formatNumber value="${item.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
-                                                </span>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                            ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
+                                                    </span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-2 align-items-center">
@@ -80,7 +88,6 @@
                                                    class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}">
                                                         ${item.trangThai ? 'Tạm Ẩn' : 'Bật Bán'}
                                                 </a>
-                                                <!-- Use data attributes to prevent quote symbol clashing causing 500 error -->
                                                 <button type="button" class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maTp}"
                                                         data-name="<c:out value="${item.tenTp}"/>"
@@ -92,7 +99,7 @@
                                                         onclick="handleEditToppingClick(this)">
                                                     Sửa
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteTopping(${item.maTp})">
+                                                <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteTopping('${item.maTp}')"> <%-- BỌC maTp TRONG NHÁY ĐƠN --%>
                                                     Xóa
                                                 </button>
                                             </div>
@@ -108,7 +115,6 @@
                     </table>
                 </div>
 
-                <!-- Table Pagination controls -->
                 <div class="pagination-container" id="adminPaginationArea">
                     <span class="small text-muted" id="paginatedInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav aria-label="Table pagination">
@@ -124,13 +130,13 @@
 <div class="modal fade" id="toppingFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header text-white py-3" style="background-color: var(--primary);">
+            <div class="modal-header text-white py-3" style="background-color: var(--pos-primary);">
                 <h5 class="modal-title fw-bold" id="toppingModalTitle">THÊM TOPPING MỚI</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="toppingForm" action="${pageContext.request.contextPath}/admin/topping" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
-                <input type="hidden" name="maTp" id="formMaTp" value="0">
+                <input type="hidden" name="maTp" id="formMaTp" value="">
                 <input type="hidden" name="currentHinhAnh" id="currentHinhAnh" value="">
                 <div class="modal-body p-4 text-start">
                     <div class="mb-3">
@@ -145,7 +151,6 @@
                         <label for="giaBan" class="form-label fw-bold small text-muted">Đơn giá bán (VNĐ) <span class="text-danger">*</span></label>
                         <input type="number" class="form-control form-control-teapos text-end fw-bold text-success" id="giaBan" name="giaBan" value="0" min="0" required>
                     </div>
-                    <!-- TOPPING IMAGES (LOCAL COMPUTER UPLOADER) -->
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted d-block">Hình ảnh minh họa Topping</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="imgTab" role="tablist">
@@ -211,7 +216,7 @@
         document.getElementById("toppingForm").reset();
         document.getElementById("toppingModalTitle").innerText = "THÊM TOPPING MỚI";
         document.getElementById("formAction").value = "create";
-        document.getElementById("formMaTp").value = "0";
+        document.getElementById("formMaTp").value = "";
         document.getElementById("currentHinhAnh").value = "";
         document.getElementById("statusActive").checked = true;
         document.getElementById("hinhAnhFile").value = "";
@@ -267,10 +272,9 @@
         });
     }
 
-    // Client-side pagination logic
+    // Client-side pagination
     let currentPage = 1;
     const pageSize = 10;
-
     function paginateAdminTable() {
         const rows = Array.from(document.querySelectorAll("#toppingTable tbody .topping-row"));
         const totalRecords = rows.length;
@@ -286,41 +290,23 @@
                 row.style.display = "none";
             }
         });
-
         const infoEl = document.getElementById("paginatedInfo");
         if (infoEl) {
             infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
         }
-        renderPaginationButtons(totalPages);
-    }
-
-    function renderPaginationButtons(totalPages) {
         const controls = document.getElementById("paginatedControls");
         if (!controls) return;
         controls.innerHTML = "";
-        if (totalPages <= 1) {
-            const area = document.getElementById("adminPaginationArea");
-            if (area) area.style.display = "none";
-            return;
-        }
-        const area = document.getElementById("adminPaginationArea");
-        if (area) area.style.display = "flex";
-
-        // Previous Page Button
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
         controls.appendChild(prevLi);
-
-        // Page Numbers
         for (let i = 1; i <= totalPages; i++) {
             const pageLi = document.createElement("li");
             pageLi.className = "page-item " + (currentPage === i ? "active" : "");
             pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
             controls.appendChild(pageLi);
         }
-
-        // Next Page Button
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';

@@ -1,26 +1,27 @@
 package model.entity;
 
 public class Topping {
-    private int maTp;
+    private String maTp; // Changed from int to String
     private String tenTp;
     private String dinhLuong;
     private int giaBan;
     private int thuTuHienThi;
     private boolean trangThai;
-    private String hinhAnh; // BỔ SUNG THUỘC TÍNH HÌNH ẢNH TOPPING THEO YÊU CẦU
+    private String hinhAnh;
 
     public Topping() {}
 
-    public Topping(int maTp, String tenTp, String dinhLuong, int giaBan, int thuTuHienThi, boolean trangThai) {
+    public Topping(String maTp, String tenTp, String dinhLuong, int giaBan, int thuTuHienThi, boolean trangThai) {
         this.maTp = maTp;
         this.tenTp = tenTp;
         this.dinhLuong = dinhLuong;
         this.giaBan = giaBan;
         this.thuTuHienThi = thuTuHienThi;
         this.trangThai = trangThai;
+        this.hinhAnh = "";
     }
 
-    public Topping(int maTp, String tenTp, String dinhLuong, int giaBan, int thuTuHienThi, boolean trangThai, String hinhAnh) {
+    public Topping(String maTp, String tenTp, String dinhLuong, int giaBan, int thuTuHienThi, boolean trangThai, String hinhAnh) {
         this.maTp = maTp;
         this.tenTp = tenTp;
         this.dinhLuong = dinhLuong;
@@ -30,8 +31,8 @@ public class Topping {
         this.hinhAnh = hinhAnh;
     }
 
-    public int getMaTp() { return maTp; }
-    public void setMaTp(int maTp) { this.maTp = maTp; }
+    public String getMaTp() { return maTp; }
+    public void setMaTp(String maTp) { this.maTp = maTp; }
 
     public String getTenTp() { return tenTp; }
     public void setTenTp(String tenTp) { this.tenTp = tenTp; }

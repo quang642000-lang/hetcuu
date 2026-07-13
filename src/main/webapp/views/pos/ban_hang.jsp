@@ -14,21 +14,11 @@
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
-        :root {
-            --pos-bg: #f1f5f9;
-            --pos-primary: #10b981;
-            --pos-primary-dark: #059669;
-            --pos-secondary: #0f172a;
-            --pos-border: #e2e8f0;
-            --pos-text-main: #1e293b;
-            --pos-text-muted: #64748b;
-        }
+        /* Khóa cứng cuộn trang ngoài, đảm bảo quầy POS chuẩn chỉ cuộn trong khung quy định */
         html, body {
             height: 100vh;
             overflow: hidden;
-            background-color: var(--pos-bg);
-            color: var(--pos-text-main);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f1f5f9;
         }
         .pos-layout {
             display: flex;
@@ -37,10 +27,10 @@
         }
         .pos-category-sidebar {
             width: 110px;
-            background-color: var(--pos-secondary);
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--pos-border);
             overflow-y: auto;
             flex-shrink: 0;
             z-index: 10;
@@ -60,23 +50,12 @@
             gap: 6px;
             cursor: pointer;
             transition: all 0.2s ease-in-out;
-            border-bottom: 1px solid #1e293b;
-        }
-        .pos-category-btn i {
-            font-size: 24px;
-            transition: transform 0.2s ease;
-        }
-        .pos-category-btn:hover {
-            color: #ffffff;
-            background-color: #1e293b;
-        }
-        .pos-category-btn:hover i {
-            transform: scale(1.1);
+            border-bottom: 1px solid #f1f5f9;
         }
         .pos-category-btn.active {
-            color: #ffffff;
-            background-color: var(--pos-primary);
-            border-left: 4px solid #ffffff;
+            background-color: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+            border-left: 4px solid #10b981;
         }
         .pos-menu-area {
             flex-grow: 1;
@@ -84,36 +63,32 @@
             flex-direction: column;
             background-color: #f8fafc;
             overflow: hidden;
-            border-right: 1px solid var(--pos-border);
+            border-right: 1px solid #e2e8f0;
         }
         .pos-menu-header {
             padding: 14px 20px;
             background-color: #ffffff;
-            border-bottom: 1px solid var(--pos-border);
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
         }
         .pos-search-wrapper {
             position: relative;
+            max-width: 400px;
             flex-grow: 1;
-            max-width: 480px;
         }
         .pos-search-input {
             width: 100%;
             padding: 10px 16px 10px 40px;
-            font-size: 13.5px;
-            font-weight: 500;
-            border: 1.5px solid var(--pos-border);
             border-radius: 20px;
-            background-color: #f1f5f9;
-            transition: all 0.25s ease;
+            border: 1px solid #cbd5e1;
+            outline: none;
+            font-size: 13px;
+            transition: all 0.2s;
         }
         .pos-search-input:focus {
-            outline: none;
-            border-color: var(--pos-primary);
-            background-color: #ffffff;
+            border-color: #10b981;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
         .pos-search-icon {
@@ -121,7 +96,7 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--pos-text-muted);
+            color: #94a3b8;
             font-size: 16px;
         }
         .pos-product-container {
@@ -131,38 +106,35 @@
         }
         .pos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 16px;
+        }
+        .pos-card-wrapper {
+            display: block;
         }
         .pos-card {
             background-color: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
-            border: 1px solid var(--pos-border);
-            padding: 10px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
             position: relative;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 195px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
         }
         .pos-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.05);
-            border-color: var(--pos-primary);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+            border-color: #10b981;
         }
         .pos-card-img-wrapper {
             position: relative;
             width: 100%;
             height: 100px;
-            border-radius: 8px;
-            overflow: hidden;
-            background-color: #f1f5f9;
             margin-bottom: 8px;
+            overflow: hidden;
+            border-radius: 8px;
         }
         .pos-card-img {
             width: 100%;
@@ -172,9 +144,8 @@
         .pos-card-name {
             font-size: 13px;
             font-weight: 700;
-            color: var(--pos-text-main);
-            line-height: 1.4;
-            height: 36px;
+            color: #1e293b;
+            height: 38px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -183,8 +154,8 @@
         }
         .pos-card-price {
             font-size: 13px;
-            font-weight: 800;
-            color: var(--pos-primary);
+            font-weight: 850;
+            color: #10b981;
         }
         .pos-billing-area {
             width: 420px;
@@ -193,11 +164,12 @@
             flex-direction: column;
             flex-shrink: 0;
             z-index: 10;
+            border-left: 1px solid #e2e8f0;
         }
         .pos-billing-header {
             height: 60px;
             padding: 0 20px;
-            border-bottom: 1px solid var(--pos-border);
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -210,7 +182,7 @@
         }
         .pos-bill-item {
             padding: 14px 20px;
-            border-bottom: 1px solid var(--pos-border);
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             align-items: flex-start;
             gap: 12px;
@@ -225,25 +197,25 @@
         .pos-bill-item-title {
             font-size: 13px;
             font-weight: 700;
-            color: var(--pos-text-main);
+            color: #1e293b;
             margin-bottom: 2px;
         }
         .pos-bill-item-options {
             font-size: 11px;
-            color: var(--pos-text-muted);
+            color: #64748b;
             line-height: 1.5;
         }
         .pos-bill-item-price {
             font-size: 13px;
             font-weight: 700;
-            color: var(--pos-primary);
+            color: #10b981;
             margin-top: 4px;
         }
         .pos-crm-panel {
             padding: 14px 20px;
             background-color: #f8fafc;
-            border-top: 1.5px solid var(--pos-border);
-            border-bottom: 1.5px solid var(--pos-border);
+            border-top: 1.5px solid #e2e8f0;
+            border-bottom: 1.5px solid #e2e8f0;
         }
         .pos-checkout-panel {
             padding: 16px 20px;
@@ -254,22 +226,21 @@
             justify-content: space-between;
             margin-bottom: 6px;
             font-size: 13px;
-            font-weight: 500;
-            color: var(--pos-text-muted);
+            color: #475569;
         }
         .pos-total-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
+            border-top: 1px dashed #cbd5e1;
             padding-top: 10px;
-            border-top: 1.5px dashed var(--pos-border);
+            margin-top: 10px;
             margin-bottom: 12px;
         }
         .pos-total-label {
             font-size: 14px;
             font-weight: 800;
-            color: var(--pos-text-main);
+            color: #1e293b;
         }
         .pos-total-val {
             font-size: 22px;
@@ -281,11 +252,11 @@
             border-radius: 8px;
             padding: 8px 12px;
             margin-bottom: 12px;
-            border: 1px solid var(--pos-border);
+            border: 1px solid #e2e8f0;
         }
         .pos-cash-suggest-btn {
             background: #ffffff;
-            border: 1px solid var(--pos-border);
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
             padding: 4px 8px;
             font-size: 11px;
@@ -294,12 +265,12 @@
             transition: all 0.15s ease;
         }
         .pos-cash-suggest-btn:hover {
-            background-color: var(--pos-primary-dark);
+            background-color: #10b981;
             color: #ffffff;
-            border-color: var(--pos-primary-dark);
+            border-color: #10b981;
         }
         .pos-btn-submit {
-            background-color: var(--pos-primary);
+            background-color: #10b981;
             color: #ffffff;
             font-size: 15px;
             font-weight: 800;
@@ -311,7 +282,7 @@
             transition: all 0.2s ease-in-out;
         }
         .pos-btn-submit:hover {
-            background-color: var(--pos-primary-dark);
+            background-color: #059669;
             transform: translateY(-1px);
             box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
         }
@@ -361,12 +332,12 @@
     <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
     <div class="pos-category-sidebar">
         <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
-            <i class="bi bi-grid-fill"></i>
+            <i class="bi bi-grid-fill fs-4"></i>
             <span>TẤT CẢ</span>
         </button>
         <c:forEach var="cat" items="${categories}">
-            <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory(${cat.maDm})">
-                <i class="bi bi-cup-straw"></i>
+            <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory('${cat.maDm}')">
+                <i class="bi bi-cup-straw fs-4"></i>
                 <span class="text-uppercase"><c:out value="${cat.tenDm}"/></span>
             </button>
         </c:forEach>
@@ -385,9 +356,11 @@
                 <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
             </div>
         </div>
+
         <div class="pos-product-container">
             <div class="pos-grid" id="posProductGrid">
                 <c:forEach var="sp" items="${products}">
+                    <!-- CẤU HÌNH DỮ LIỆU TÙY CHỌN SẢN PHẨM VỚI DẢI MÃ CHUỖI AN TOÀN -->
                     <script>
                         window['sp_opt_' + '${sp.maSp}'] = {
                             choPhepDoiDa: ${sp.choPhepDoiDa},
@@ -399,7 +372,7 @@
                             ],
                             allToppings: [
                                 <c:forEach var="tp" items="${toppings}" varStatus="tLoop">
-                                { maTp: ${tp.maTp}, tenTp: '${tp.tenTp}', giaBan: ${tp.giaBan}, hinhAnh: '${tp.hinhAnh}' }${not tLoop.last ? ',' : ''}
+                                { maTp: '${tp.maTp}', tenTp: '${tp.tenTp}', giaBan: ${tp.giaBan}, hinhAnh: '${tp.hinhAnh}' }${not tLoop.last ? ',' : ''}
                                 </c:forEach>
                             ]
                         };
@@ -699,7 +672,10 @@
     // 1. Đồng hồ thời gian thực tại quầy thu ngân
     function updatePOSClock() {
         const now = new Date();
-        document.getElementById('posCurrentClock').innerText = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const clockEl = document.getElementById('posCurrentClock');
+        if (clockEl) {
+            clockEl.innerText = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
@@ -714,40 +690,52 @@
 
     // 3. Tính toán tiền trả lại khách hàng
     function calculateChangeRefund() {
-        const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
-        const customerCash = parseInt(document.getElementById('inputCustomerCash').value) || 0;
+        const totalPayablePriceEl = document.getElementById('totalPayablePrice');
+        const inputCustomerCashEl = document.getElementById('inputCustomerCash');
+        const txtCashRefundEl = document.getElementById('txtCashRefund');
+        if (!totalPayablePriceEl || !inputCustomerCashEl || !txtCashRefundEl) return;
+
+        const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
+        const customerCash = parseInt(inputCustomerCashEl.value) || 0;
         let refund = customerCash - totalPayable;
         if (refund < 0) {
-            document.getElementById('txtCashRefund').innerText = 'Khách đưa thiếu';
-            document.getElementById('txtCashRefund').className = 'text-danger';
+            txtCashRefundEl.innerText = 'Khách đưa thiếu';
+            txtCashRefundEl.className = 'text-danger fw-bold';
         } else {
-            document.getElementById('txtCashRefund').innerText = refund.toLocaleString('vi-VN') + ' đ';
-            document.getElementById('txtCashRefund').className = 'text-primary fw-bold';
+            txtCashRefundEl.innerText = refund.toLocaleString('vi-VN') + ' đ';
+            txtCashRefundEl.className = 'text-primary fw-bold';
         }
     }
 
     // Gợi ý bấm nhanh tiền mặt
     function suggestCashAmount(amount) {
-        const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
+        const totalPayablePriceEl = document.getElementById('totalPayablePrice');
+        const inputCustomerCashEl = document.getElementById('inputCustomerCash');
+        if (!totalPayablePriceEl || !inputCustomerCashEl) return;
+
+        const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
         if (amount === 0) {
-            document.getElementById('inputCustomerCash').value = totalPayable;
+            inputCustomerCashEl.value = totalPayable;
         } else {
-            document.getElementById('inputCustomerCash').value = amount;
+            inputCustomerCashEl.value = amount;
         }
         calculateChangeRefund();
     }
 
-    // 4. Lọc sản phẩm theo danh mục sidebar trái
+    // 4. Lọc sản phẩm theo danh mục sidebar trái - Hỗ trợ mốc chuỗi DMxxxxx
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
         if (maDm === 'all') {
             document.getElementById('btn_cat_all').classList.add('active');
             document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => card.style.display = 'block');
         } else {
-            document.getElementById('btn_cat_' + maDm).classList.add('active');
+            const activeBtn = document.getElementById('btn_cat_' + maDm);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
             document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
                 const parent = card.closest('.pos-card-wrapper');
-                if (parseInt(card.dataset.madm) === maDm) {
+                if (card.getAttribute('data-madm') === maDm) {
                     parent.style.display = 'block';
                 } else {
                     parent.style.display = 'none';
@@ -758,8 +746,10 @@
 
     // 5. Lọc nhanh theo nhãn (NEW, HOT, ALL)
     function filterBadge(type) {
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('btn-light', 'active-filter'));
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.add('btn-outline-secondary'));
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('btn-light', 'active-filter');
+            btn.classList.add('btn-outline-secondary');
+        });
         const activeBtn = document.getElementById('f_' + type);
         if (activeBtn) {
             activeBtn.classList.remove('btn-outline-secondary');
@@ -770,20 +760,19 @@
             if (type === 'all') {
                 parent.style.display = 'block';
             } else if (type === 'new') {
-                parent.style.display = card.dataset.isnew === 'true' ? 'block' : 'none';
+                parent.style.display = card.getAttribute('data-isnew') === 'true' ? 'block' : 'none';
             } else if (type === 'hot') {
-                parent.style.display = card.dataset.ishot === 'true' ? 'block' : 'none';
+                parent.style.display = card.getAttribute('data-ishot') === 'true' ? 'block' : 'none';
             }
         });
     }
 
     // 6. Tra cứu nhanh realtime không độ trễ
-    // (Bao gồm đồng thời cả lọc chuỗi gõ)
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
             const name = card.querySelector('.pos-card-name').innerText.toLowerCase();
-            const id = card.dataset.masp.toLowerCase();
+            const id = card.getAttribute('data-masp').toLowerCase();
             const parent = card.closest('.pos-card-wrapper');
             if (name.includes(keyword) || id.includes(keyword)) {
                 parent.style.display = 'block';
@@ -798,28 +787,19 @@
         posCart = [];
         resetVoucherAndPoints();
         renderPosCart();
-        document.getElementById('inputCustomerCash').value = '';
-        document.getElementById('txtCashRefund').innerText = '0 đ';
-    }
-
-    function resetVoucherAndPoints() {
-        appliedVoucher = null;
-        appliedPoints = 0;
-        document.getElementById("submit_maKm").value = "";
-        document.getElementById("submit_tienGiamGia").value = "0";
-        document.getElementById("submit_diemSuDung").value = "0";
-        document.getElementById("submit_tienTruDiem").value = "0";
-        document.getElementById("summaryDiscountRow").style.display = "none";
-        document.getElementById("summaryPointsRow").style.display = "none";
-        document.getElementById("manualVoucherInput").value = "";
+        const cashInput = document.getElementById('inputCustomerCash');
+        if (cashInput) cashInput.value = '';
+        const refundTxt = document.getElementById('txtCashRefund');
+        if (refundTxt) refundTxt.innerText = '0 đ';
     }
 
     // 8. Đổi phương thức thanh toán
     function changePaymentMethod(maPt) {
-        document.getElementById('submit_maPt').value = maPt;
+        const submitPt = document.getElementById('submit_maPt');
+        if (submitPt) submitPt.value = maPt;
     }
 
-    // 9. Submit đơn hàng POS - THỜI THƯỢNG, BẢO MẬT & QUOTE-SAFE
+    // 9. Submit đơn hàng POS - ĐỒNG BỘ HOÀN TOÀN MÃ SẢN PHẨM & MÃ SIZE CHUỖI
     function submitPOSOrderTransaction() {
         if (posCart.length === 0) {
             showToast('warning', 'Giỏ hàng POS trống, không thể in hóa đơn!');
@@ -835,16 +815,15 @@
             container.innerHTML += '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">';
             container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
             container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
-            // Map mảng topping định dạng chuẩn: maTp_soLuong_giaTp
+            // Map mảng topping định dạng chuẩn: maTp_soLuong_giaTp (maTp là chuỗi)
             let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
             container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
         });
 
-        const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, ''));
-        const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, ''));
+        const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
+        const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
         document.getElementById('submit_tongTienHang').value = totalRaw;
         document.getElementById('submit_tongPhaiTra').value = totalPayable;
-
         if (customerInfo) {
             document.getElementById('submit_maKh').value = customerInfo.maKh;
         }
@@ -874,117 +853,8 @@
 
     // 11. XỬ LÝ ĐỒNG BỘ CÀI ĐẶT CÁ NHÂN NHÂN VIÊN THU NGÂN (POS SETTINGS MODAL)
     const posSettingsModal = new bootstrap.Modal(document.getElementById('posSettingsModal'));
-
     function openPOSSettingsModal() {
         posSettingsModal.show();
-    }
-
-    function submitPOSInfoForm(event) {
-        event.preventDefault();
-        const hoTen = document.getElementById("pos_hoTen").value.trim();
-        const soDienThoai = document.getElementById("pos_soDienThoai").value.trim();
-        const email = document.getElementById("pos_email").value.trim();
-
-        Swal.fire({
-            title: 'Đang lưu cài đặt hồ sơ...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        const params = new URLSearchParams();
-        params.append("hoTen", hoTen);
-        params.append("soDienThoai", soDienThoai);
-        params.append("email", email);
-
-        fetch('${pageContext.request.contextPath}/pos/update-profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-            .then(res => res.json())
-            .then(data => {
-                Swal.close();
-                if (data.status === 'SUCCESS') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Đã lưu thay đổi!',
-                        text: 'Hồ sơ cá nhân của bạn đã được cập nhật thành công trên hệ thống máy chủ.',
-                        confirmButtonColor: '#10b981'
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lưu thất bại',
-                        text: data.message,
-                        confirmButtonColor: '#2e7d32'
-                    });
-                }
-            })
-            .catch(err => {
-                Swal.close();
-                showToast('error', 'Lỗi kết nối máy chủ!');
-            });
-    }
-
-    function submitPOSPassForm(event) {
-        event.preventDefault();
-        const oldPass = document.getElementById("pos_oldPassword").value;
-        const newPass = document.getElementById("pos_newPassword").value;
-        const confirmPass = document.getElementById("pos_confirmPassword").value;
-
-        if (newPass !== confirmPass) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Mật khẩu không trùng khớp',
-                text: 'Mật khẩu mới và mật khẩu xác nhận không giống nhau!',
-                confirmButtonColor: '#2e7d32'
-            });
-            return;
-        }
-
-        Swal.fire({
-            title: 'Đang kiểm tra bảo mật...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        const params = new URLSearchParams();
-        params.append("oldPassword", oldPass);
-        params.append("newPassword", newPass);
-
-        fetch('${pageContext.request.contextPath}/pos/change-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-            .then(res => res.json())
-            .then(data => {
-                Swal.close();
-                if (data.status === 'SUCCESS') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Đổi mật khẩu thành công!',
-                        text: 'Mật khẩu bảo mật đăng nhập mới của bạn đã được áp dụng.',
-                        confirmButtonColor: '#10b981'
-                    }).then(() => {
-                        posSettingsModal.hide();
-                        document.getElementById("posPassForm").reset();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Thất bại',
-                        text: data.message,
-                        confirmButtonColor: '#2e7d32'
-                    });
-                }
-            })
-            .catch(err => {
-                Swal.close();
-                showToast('error', 'Lỗi kết nối máy chủ!');
-            });
     }
 
     // Lắng nghe xem có hóa đơn in từ backend trả về không
@@ -1010,10 +880,6 @@
             });
         }
     });
-
-    function getContextPath() {
-        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-    }
 </script>
 </body>
 </html>

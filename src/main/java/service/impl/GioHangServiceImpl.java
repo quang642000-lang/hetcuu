@@ -13,9 +13,11 @@ import java.util.List;
 public class GioHangServiceImpl implements IGioHangService {
     private static GioHangServiceImpl instance;
     private final IGioHangRepository gioHangRepository;
+
     private GioHangServiceImpl() {
         this.gioHangRepository = GioHangRepoImpl.getInstance();
     }
+
     public static synchronized GioHangServiceImpl getInstance() {
         if (instance == null) {
             instance = new GioHangServiceImpl();
@@ -44,8 +46,6 @@ public class GioHangServiceImpl implements IGioHangService {
     public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int soLuong,
                                        String mucDa, String mucDuong, String ghiChuMon,
                                        List<ChiTietToppingGioHang> toppings) {
-
-        // CƠ CHẾ PHÒNG VỆ: Chống sập khóa ngoại FK_CTGH_SPKC khi "Mua nhanh" sản phẩm không hỗ trợ Size mặc định
         ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
         List<SanPhamKichCo> availableSizes = sanPhamService.getSizesBySanPham(maSp);
         boolean sizeExists = false;
@@ -55,7 +55,6 @@ public class GioHangServiceImpl implements IGioHangService {
                 break;
             }
         }
-        // Nếu kích cỡ yêu cầu không khả dụng, lấy kích cỡ có sẵn đầu tiên của sản phẩm làm fallback
         if (!sizeExists && !availableSizes.isEmpty()) {
             maSize = availableSizes.get(0).getMaSize();
         }
@@ -90,6 +89,7 @@ public class GioHangServiceImpl implements IGioHangService {
             newItem.setMucDuong(mucDuong);
             newItem.setGhiChuMon(ghiChuMon);
             newItem.setChonMua(true);
+
             boolean isAdded = gioHangRepository.addOrUpdateChiTiet(newItem);
             if (isAdded && toppings != null && !toppings.isEmpty()) {
                 for (ChiTietToppingGioHang tp : toppings) {
@@ -111,10 +111,13 @@ public class GioHangServiceImpl implements IGioHangService {
         int size2 = (list2 == null) ? 0 : list2.size();
         if (size1 != size2) return false;
         if (size1 == 0) return true;
+
         for (ChiTietToppingGioHang tp1 : list1) {
             boolean found = false;
             for (ChiTietToppingGioHang tp2 : list2) {
-                if (tp1.getMaTp() == tp2.getMaTp() && tp1.getSoLuongTp() == tp2.getSoLuongTp()) {
+                // SỬA: so sánh chuỗi maTp bằng .equals()
+                if (tp1.getMaTp() != null && tp1.getMaTp().equals(tp2.getMaTp())
+                        && tp1.getSoLuongTp() == tp2.getSoLuongTp()) {
                     found = true;
                     break;
                 }

@@ -32,7 +32,7 @@ public class ToppingServiceImpl implements IToppingService {
     }
 
     @Override
-    public Topping getToppingById(int id) {
+    public Topping getToppingById(String id) {
         return toppingRepository.getById(id);
     }
 
@@ -47,12 +47,12 @@ public class ToppingServiceImpl implements IToppingService {
     }
 
     @Override
-    public boolean deleteTopping(int id) {
+    public boolean deleteTopping(String id) {
         return toppingRepository.delete(id);
     }
 
     @Override
-    public boolean updateTrangThaiTopping(int maTp, boolean status) {
+    public boolean updateTrangThaiTopping(String maTp, boolean status) {
         return toppingRepository.updateTrangThai(maTp, status);
     }
 }

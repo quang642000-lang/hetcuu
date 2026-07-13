@@ -16,7 +16,7 @@ public class DBConnect {
             config.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
             // Đường dẫn URL kết nối cơ sở dữ liệu QuanLyQuanCafe [1]
-            config.setJdbcUrl("jdbc:sqlserver://localhost:1433;databaseName=QuanLyQuanCafe;encrypt=true;trustServerCertificate=true;");
+            config.setJdbcUrl("jdbc:sqlserver://localhost:1433;databaseName=QuanLyQuanCafe5;encrypt=true;trustServerCertificate=true;");
             config.setUsername("sa");
             config.setPassword("P6t4q29!");
 

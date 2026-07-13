@@ -8,7 +8,6 @@ import service.IGioHangService;
 import service.impl.GioHangServiceImpl;
 import repository.impl.GioHangRepoImpl;
 import config.DBConnect;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -33,20 +32,15 @@ public class PortalCartController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
-
         String uri = request.getRequestURI();
         if (uri.endsWith("/cart/delete")) {
             performDeleteCartItem(request, response);
             return;
         }
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
-
-        // Cập nhật lại số lượng giỏ hàng vào Session để render Header Badge đồng bộ
         int cartCount = (gh != null && gh.getChiTietGioHangList() != null) ? gh.getChiTietGioHangList().size() : 0;
         request.getSession().setAttribute("customerCartCount", cartCount);
-
         request.setAttribute("cart", gh);
         request.getRequestDispatcher("/views/portal/gio_hang.jsp").forward(request, response);
     }
@@ -55,8 +49,6 @@ public class PortalCartController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
-
-        // Phát hiện nếu cuộc gọi là AJAX
         String requestedWith = request.getHeader("X-Requested-With");
         boolean isAjax = "XMLHttpRequest".equals(requestedWith) || "true".equals(request.getParameter("ajax"));
 
@@ -71,20 +63,18 @@ public class PortalCartController extends HttpServlet {
             return;
         }
 
-        KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
-
-        if (uri.endsWith("/cart/add")) {
-            performAddToCart(request, response, currentCustomer.getMaKh(), isAjax);
-        } else if (uri.endsWith("/cart/update")) {
+        if (uri.endsWith("/cart/update")) {
             performUpdateQuantity(request, response);
-        } else if (uri.endsWith("/cart/delete")) {
-            performDeleteCartItem(request, response);
-        } else if (uri.endsWith("/cart/toggle-select")) {
-            performToggleSelect(request, response);
+            return;
         }
-    }
+        if (uri.endsWith("/cart/toggle-select")) {
+            performToggleSelect(request, response);
+            return;
+        }
 
-    private void performAddToCart(HttpServletRequest request, HttpServletResponse response, String maKh, boolean isAjax) throws IOException {
+        KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
+        String maKh = currentCustomer.getMaKh();
+
         try {
             String maSp = request.getParameter("maSp");
             int maSize = Integer.parseInt(request.getParameter("maSize"));
@@ -93,11 +83,11 @@ public class PortalCartController extends HttpServlet {
             String mucDuong = request.getParameter("mucDuong");
             String ghiChuMon = request.getParameter("ghiChuMon");
             String[] arrToppings = request.getParameterValues("toppings[]");
-
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
+
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
-                    int maTp = Integer.parseInt(tpIdStr);
+                    String maTp = tpIdStr; // STRING Key TPxxxxx
                     int qty = 1;
                     String qtyStr = request.getParameter("topping_qty_" + maTp);
                     if (qtyStr != null && !qtyStr.trim().isEmpty()) {
@@ -111,20 +101,17 @@ public class PortalCartController extends HttpServlet {
                 }
             }
 
-            // CHẾ ĐỘ CHỈNH SỬA / CẬP NHẬT TÙY BIẾN TRONG GIỎ HÀNG
             String maCtghStr = request.getParameter("maCtgh");
             if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
                 long maCtgh = Long.parseLong(maCtghStr.trim());
                 boolean updated = updateCartItemDetails(maCtgh, maSize, soLuong, mucDa, mucDuong, ghiChuMon);
                 if (updated) {
-                    // Xóa toppings cũ và nạp lại toppings mới
                     GioHangRepoImpl.getInstance().removeToppingsFromChiTiet(maCtgh);
                     if (!toppingList.isEmpty()) {
                         for (ChiTietToppingGioHang tp : toppingList) {
                             GioHangRepoImpl.getInstance().addToppingToGioHang(maCtgh, tp.getMaTp(), tp.getSoLuongTp());
                         }
                     }
-
                     if (isAjax) {
                         response.getWriter().write("SUCCESS|" + request.getSession().getAttribute("customerCartCount"));
                     } else {
@@ -140,7 +127,6 @@ public class PortalCartController extends HttpServlet {
                 return;
             }
 
-            // CHẾ ĐỘ THÊM MỚI BÌNH THƯỜNG
             boolean success = gioHangService.addSanPhamToGioHang(maKh, maSp, maSize, soLuong, mucDa, mucDuong, ghiChuMon, toppingList);
             if (isAjax) {
                 if (success) {

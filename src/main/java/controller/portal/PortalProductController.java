@@ -15,7 +15,6 @@ import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import service.impl.ToppingServiceImpl;
 import service.impl.GioHangServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -47,15 +46,20 @@ public class PortalProductController extends HttpServlet {
     }
 
     private void showProductList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String maDmStr = request.getParameter("category");
+        String maDmStr = request.getParameter("category"); // Ma danh muc kieu String DM00001
         String keyword = request.getParameter("search");
+        String filter = request.getParameter("filter"); // new, hot
+
         List<SanPham> products;
         try {
             if (keyword != null && !keyword.trim().isEmpty()) {
                 products = sanPhamService.searchSanPham(keyword.trim());
+            } else if ("new".equals(filter)) {
+                products = sanPhamService.getNewArrivals();
+            } else if ("hot".equals(filter)) {
+                products = sanPhamService.getBestsellers();
             } else if (maDmStr != null && !maDmStr.trim().isEmpty()) {
-                int maDm = Integer.parseInt(maDmStr);
-                products = sanPhamService.getSanPhamByDanhMuc(maDm);
+                products = sanPhamService.getSanPhamByDanhMuc(maDmStr.trim());
             } else {
                 products = sanPhamService.getAllSanPham();
             }
@@ -68,7 +72,7 @@ public class PortalProductController extends HttpServlet {
 
             // ==================== NGHIỆP VỤ PHÂN TRANG (PAGINATION) ====================
             int page = 1;
-            int pageSize = 9; // 9 sản phẩm/trang, phù hợp chia lưới 3x3
+            int pageSize = 9; // 9 ly nuoc tren moi trang portal
             String pageStr = request.getParameter("page");
             if (pageStr != null && !pageStr.trim().isEmpty()) {
                 try {
@@ -92,20 +96,16 @@ public class PortalProductController extends HttpServlet {
             }
 
             List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
+
             request.setAttribute("products", paginatedProducts);
             request.setAttribute("categories", categories);
             request.setAttribute("selectedCategory", maDmStr);
             request.setAttribute("searchKeyword", keyword);
-
-            // Gửi các tham số phân trang ra JSP
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalProducts", totalProducts);
 
             request.getRequestDispatcher("/views/portal/danh_sach_san_pham.jsp").forward(request, response);
-        } catch (NumberFormatException e) {
-            LOGGER.log(Level.WARNING, "Định dạng mã danh mục không hợp lệ: " + maDmStr, e);
-            response.sendRedirect(request.getContextPath() + "/products?msg=error");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi tải danh sách sản phẩm ngoài trang Portal", e);
             response.sendRedirect(request.getContextPath() + "/home?msg=error");
@@ -147,7 +147,6 @@ public class PortalProductController extends HttpServlet {
                         LOGGER.log(Level.WARNING, "Lỗi bóc tách mã chi tiết giỏ hàng chỉnh sửa", ex);
                     }
                 }
-
                 request.getRequestDispatcher("/views/portal/chi_tiet_san_pham.jsp").forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/products?msg=notfound");

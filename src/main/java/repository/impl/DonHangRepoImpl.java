@@ -11,6 +11,7 @@ import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
+
     private DonHangRepoImpl() {}
 
     public static synchronized DonHangRepoImpl getInstance() {
@@ -48,7 +49,9 @@ public class DonHangRepoImpl implements IDonHangRepository {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToDonHang(rs);
+                    DonHang dh = mapResultSetToDonHang(rs);
+                    dh.setChiTietDonHangList(getChiTietDonHang(id));
+                    return dh;
                 }
             }
         } catch (SQLException e) {
@@ -59,66 +62,65 @@ public class DonHangRepoImpl implements IDonHangRepository {
 
     @Override
     public boolean add(DonHang entity) {
-        Connection conn = null;
-        PreparedStatement psDh = null;
-        PreparedStatement psCtdh = null;
-        PreparedStatement psCttp = null;
         String sqlDh = "INSERT INTO DON_HANG (ma_dh, ma_kh, ma_nv, ma_pt, ma_km, loai_don_hang, thoi_gian_hen_lay, " +
-                "tong_tien_hang, tien_giam_gia, diem_su_dung, tien_tru_diem, tong_phai_tra, ghi_chu_don, ly_do_huy, " +
-                "trang_thai_thanh_toan, trang_thai_don, thoi_gian_tao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+                "tong_tien_hang, tien_giam_gia, diem_su_dung, tien_tru_diem, tong_phai_tra, ghi_chu_don, " +
+                "trang_thai_thanh_toan, trang_thai_don, thoi_gian_tao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
         String sqlCtdh = "INSERT INTO CHI_TIET_DON_HANG (ma_dh, ma_sp, ma_size, so_luong, gia_chot, muc_da, muc_duong, ghi_chu_mon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCttp = "INSERT INTO CHI_TIET_TOPPING (ma_ctdh, ma_tp, so_luong, gia_chot_tp) VALUES (?, ?, ?, ?)";
+        Connection conn = null;
         try {
             conn = DBConnect.getConnection();
             conn.setAutoCommit(false);
-            psDh = conn.prepareStatement(sqlDh);
-            psDh.setString(1, entity.getMaDh());
-            psDh.setString(2, entity.getMaKh());
-            psDh.setString(3, entity.getMaNv());
-            psDh.setInt(4, entity.getMaPt());
-            psDh.setString(5, entity.getMaKm());
-            psDh.setInt(6, entity.getLoaiDonHang());
-            psDh.setTimestamp(7, entity.getThoiGianHenLay());
-            psDh.setInt(8, entity.getTongTienHang());
-            psDh.setInt(9, entity.getTienGiamGia());
-            psDh.setInt(10, entity.getDiemSuDung());
-            psDh.setInt(11, entity.getTienTruDiem());
-            psDh.setInt(12, entity.getTongPhaiTra());
-            psDh.setString(13, entity.getGhiChuDon());
-            psDh.setString(14, entity.getLyDoHuy());
-            psDh.setInt(15, entity.getTrangThaiThanhToan());
-            psDh.setInt(16, entity.getTrangThaiDon());
-            psDh.executeUpdate();
 
-            psCtdh = conn.prepareStatement(sqlCtdh, Statement.RETURN_GENERATED_KEYS);
-            psCttp = conn.prepareStatement(sqlCttp);
+            try (PreparedStatement psDh = conn.prepareStatement(sqlDh)) {
+                psDh.setString(1, entity.getMaDh());
+                psDh.setString(2, entity.getMaKh());
+                psDh.setString(3, entity.getMaNv());
+                psDh.setInt(4, entity.getMaPt());
+                psDh.setString(5, entity.getMaKm());
+                psDh.setInt(6, entity.getLoaiDonHang());
+                psDh.setTimestamp(7, entity.getThoiGianHenLay());
+                psDh.setInt(8, entity.getTongTienHang());
+                psDh.setInt(9, entity.getTienGiamGia());
+                psDh.setInt(10, entity.getDiemSuDung());
+                psDh.setInt(11, entity.getTienTruDiem());
+                psDh.setInt(12, entity.getTongPhaiTra());
+                psDh.setString(13, entity.getGhiChuDon());
+                psDh.setInt(14, entity.getTrangThaiThanhToan());
+                psDh.setInt(15, entity.getTrangThaiDon());
+                psDh.executeUpdate();
+            }
 
-            for (ChiTietDonHang detail : entity.getChiTietDonHangList()) {
-                psCtdh.setString(1, entity.getMaDh());
-                psCtdh.setString(2, detail.getMaSp());
-                psCtdh.setInt(3, detail.getMaSize());
-                psCtdh.setInt(4, detail.getSoLuong());
-                psCtdh.setInt(5, detail.getGiaChot());
-                psCtdh.setString(6, detail.getMucDa());
-                psCtdh.setString(7, detail.getMucDuong());
-                psCtdh.setString(8, detail.getGhiChuMon());
-                psCtdh.executeUpdate();
+            try (PreparedStatement psCtdh = conn.prepareStatement(sqlCtdh, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement psCttp = conn.prepareStatement(sqlCttp)) {
+                for (ChiTietDonHang detail : entity.getChiTietDonHangList()) {
+                    psCtdh.setString(1, entity.getMaDh());
+                    psCtdh.setString(2, detail.getMaSp());
+                    psCtdh.setInt(3, detail.getMaSize());
+                    psCtdh.setInt(4, detail.getSoLuong());
+                    psCtdh.setInt(5, detail.getGiaChot());
+                    psCtdh.setString(6, detail.getMucDa());
+                    psCtdh.setString(7, detail.getMucDuong());
+                    psCtdh.setString(8, detail.getGhiChuMon());
+                    psCtdh.executeUpdate();
 
-                long generatedCtdhId = -1;
-                try (ResultSet rsKeys = psCtdh.getGeneratedKeys()) {
-                    if (rsKeys.next()) {
-                        generatedCtdhId = rsKeys.getLong(1);
+                    long generatedCtdhId = -1;
+                    try (ResultSet rsKeys = psCtdh.getGeneratedKeys()) {
+                        if (rsKeys.next()) {
+                            generatedCtdhId = rsKeys.getLong(1);
+                        }
                     }
-                }
-                if (generatedCtdhId != -1) {
-                    for (ChiTietTopping topping : detail.getToppingsList()) {
-                        psCttp.setLong(1, generatedCtdhId);
-                        psCttp.setInt(2, topping.getMaTp());
-                        psCttp.setInt(3, topping.getSoLuong());
-                        psCttp.setInt(4, topping.getGiaChotTp());
-                        psCttp.addBatch();
+
+                    if (generatedCtdhId != -1) {
+                        for (ChiTietTopping topping : detail.getToppingsList()) {
+                            psCttp.setLong(1, generatedCtdhId);
+                            psCttp.setString(2, topping.getMaTp()); // STRING ma_tp parameter
+                            psCttp.setInt(3, topping.getSoLuong());
+                            psCttp.setInt(4, topping.getGiaChotTp());
+                            psCttp.addBatch();
+                        }
+                        psCttp.executeBatch();
                     }
-                    psCttp.executeBatch();
                 }
             }
             conn.commit();
@@ -130,23 +132,18 @@ public class DonHangRepoImpl implements IDonHangRepository {
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                if (psDh != null) psDh.close();
-                if (psCtdh != null) psCtdh.close();
-                if (psCttp != null) psCttp.close();
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException e) { e.printStackTrace(); }
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
         }
     }
 
     @Override
     public boolean update(DonHang entity) {
-        String sql = "UPDATE DON_HANG SET ma_kh = ?, ma_nv = ?, ma_pt = ?, ma_km = ?, loai_don_hang = ?, thoi_gian_hen_lay = ?, " +
-                "tong_tien_hang = ?, tien_giam_gia = ?, diem_su_dung = ?, tien_tru_diem = ?, tong_phai_tra = ?, " +
-                "ghi_chu_don = ?, ly_do_huy = ?, trang_thai_thanh_toan = ?, trang_thai_don = ? WHERE ma_dh = ?";
+        String sql = "UPDATE DON_HANG SET ma_kh = ?, ma_nv = ?, ma_pt = ?, ma_km = ?, loai_don_hang = ?, " +
+                "thoi_gian_hen_lay = ?, tong_tien_hang = ?, tien_giam_gia = ?, diem_su_dung = ?, " +
+                "tien_tru_diem = ?, tong_phai_tra = ?, ghi_chu_don = ?, ly_do_huy = ?, " +
+                "trang_thai_thanh_toan = ?, trang_thai_don = ?, thoi_gian_hoan_thanh = ? WHERE ma_dh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, entity.getMaKh());
@@ -164,7 +161,8 @@ public class DonHangRepoImpl implements IDonHangRepository {
             ps.setString(13, entity.getLyDoHuy());
             ps.setInt(14, entity.getTrangThaiThanhToan());
             ps.setInt(15, entity.getTrangThaiDon());
-            ps.setString(16, entity.getMaDh());
+            ps.setTimestamp(16, entity.getThoiGianHoanThanh());
+            ps.setString(17, entity.getMaDh());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -188,7 +186,9 @@ public class DonHangRepoImpl implements IDonHangRepository {
             ps.setString(1, maKh);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSetToDonHang(rs));
+                    DonHang dh = mapResultSetToDonHang(rs);
+                    dh.setChiTietDonHangList(getChiTietDonHang(dh.getMaDh()));
+                    list.add(dh);
                 }
             }
         } catch (SQLException e) {
@@ -208,7 +208,9 @@ public class DonHangRepoImpl implements IDonHangRepository {
             ps.setInt(1, trangThaiDon);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapResultSetToDonHang(rs));
+                    DonHang dh = mapResultSetToDonHang(rs);
+                    dh.setChiTietDonHangList(getChiTietDonHang(dh.getMaDh()));
+                    list.add(dh);
                 }
             }
         } catch (SQLException e) {
@@ -258,7 +260,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietDonHang> getChiTietDonHang(String maDh) {
         List<ChiTietDonHang> list = new ArrayList<>();
-        // ĐỒNG BỘ: JOIN thêm SAN_PHAM để lấy chính xác ten_sp làm phong phú giao diện
         String sql = "SELECT ct.ma_ctdh, ct.ma_dh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.gia_chot, ct.muc_da, ct.muc_duong, ct.ghi_chu_mon, kc.ten_size, sp.ten_sp " +
                 "FROM CHI_TIET_DON_HANG ct " +
                 "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
@@ -269,7 +270,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
             ps.setString(1, maDh);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    ChiTietDonHang ctdh = new ChiTietDonHang(
+                    ChiTietDonHang item = new ChiTietDonHang(
                             rs.getLong("ma_ctdh"),
                             rs.getString("ma_dh"),
                             rs.getString("ma_sp"),
@@ -280,9 +281,10 @@ public class DonHangRepoImpl implements IDonHangRepository {
                             rs.getString("muc_duong"),
                             rs.getString("ghi_chu_mon")
                     );
-                    ctdh.setTenSize(rs.getString("ten_size"));
-                    ctdh.setTenSp(rs.getString("ten_sp")); // Thiết lập tên tiếng Việt đầy đủ!
-                    list.add(ctdh);
+                    item.setTenSize(rs.getString("ten_size"));
+                    // We can temporarily set product name into a supplemental field or use tenSize dynamically.
+                    // For CRM Web and POS, toppings are loaded inside getToppingsOfChiTiet.
+                    list.add(item);
                 }
             }
         } catch (SQLException e) {
@@ -305,7 +307,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                 while (rs.next()) {
                     list.add(new ChiTietTopping(
                             rs.getLong("ma_ctdh"),
-                            rs.getInt("ma_tp"),
+                            rs.getString("ma_tp"), // STRING Topping Code TPxxxxx
                             rs.getInt("so_luong"),
                             rs.getInt("gia_chot_tp"),
                             rs.getString("ten_tp")
@@ -326,12 +328,14 @@ public class DonHangRepoImpl implements IDonHangRepository {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 long seqVal = rs.getLong(1);
-                return "TEA" + String.format("%06d", seqVal);
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+                String dateStr = sdf.format(new java.util.Date());
+                return "TEA-" + dateStr + "-" + String.format("%06d", seqVal);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "TEA" + (System.currentTimeMillis() / 1000);
+        return "TEA-" + System.currentTimeMillis();
     }
 
     private DonHang mapResultSetToDonHang(ResultSet rs) throws SQLException {

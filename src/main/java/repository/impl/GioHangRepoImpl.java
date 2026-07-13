@@ -59,7 +59,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
     @Override
     public List<ChiTietGioHang> getChiTietGioHang(int maGh) {
         List<ChiTietGioHang> list = new ArrayList<>();
-        // ĐỒNG BỘ: JOIN thêm KICH_CO để lấy chính xác ten_size động của mốc kích cỡ
         String sql = "SELECT ct.ma_ctgh, ct.ma_gh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.muc_da, " +
                 "ct.muc_duong, ct.ghi_chu_mon, ct.is_chon_mua, ct.thoi_gian_them, pk.gia_ban, " +
                 "s.ten_sp, s.hinh_anh, kc.ten_size " +
@@ -134,6 +133,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 ps.setString(6, chiTiet.getMucDuong());
                 ps.setString(7, chiTiet.getGhiChuMon());
                 ps.setBoolean(8, chiTiet.isChonMua());
+
                 int affectedRows = ps.executeUpdate();
                 if (affectedRows > 0) {
                     try (ResultSet rsKeys = ps.getGeneratedKeys()) {
@@ -204,7 +204,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 while (rs.next()) {
                     ChiTietToppingGioHang tp = new ChiTietToppingGioHang(
                             rs.getLong("ma_ctgh"),
-                            rs.getInt("ma_tp"),
+                            rs.getString("ma_tp"), // ĐỌC DƯỚI DẠNG STRING
                             rs.getInt("so_luong_tp")
                     );
                     tp.setGiaTp(rs.getInt("gia_ban"));
@@ -219,7 +219,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
     }
 
     @Override
-    public boolean addToppingToGioHang(long maCtgh, int maTp, int soLuongTp) {
+    public boolean addToppingToGioHang(long maCtgh, String maTp, int soLuongTp) {
         String sql = "IF EXISTS (SELECT 1 FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh = ? AND ma_tp = ?) " +
                 "  UPDATE CHI_TIET_TOPPING_GIO_HANG SET so_luong_tp = so_luong_tp + ? WHERE ma_ctgh = ? AND ma_tp = ? " +
                 "ELSE " +
@@ -227,12 +227,12 @@ public class GioHangRepoImpl implements IGioHangRepository {
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, maCtgh);
-            ps.setInt(2, maTp);
+            ps.setString(2, maTp);
             ps.setInt(3, soLuongTp);
             ps.setLong(4, maCtgh);
-            ps.setInt(5, maTp);
+            ps.setString(5, maTp);
             ps.setLong(6, maCtgh);
-            ps.setInt(7, maTp);
+            ps.setString(7, maTp);
             ps.setInt(8, soLuongTp);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -270,7 +270,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
         ct.setGiaBan(rs.getInt("gia_ban"));
         ct.setTenSp(rs.getString("ten_sp"));
         ct.setHinhAnh(rs.getString("hinh_anh"));
-        ct.setTenSize(rs.getString("ten_size")); // GÁN CHẶT TÊN SIZE ĐỘNG TỪ DATABASE JOIN
+        ct.setTenSize(rs.getString("ten_size"));
         return ct;
     }
 }

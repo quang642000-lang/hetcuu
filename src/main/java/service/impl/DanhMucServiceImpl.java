@@ -32,7 +32,7 @@ public class DanhMucServiceImpl implements IDanhMucService {
     }
 
     @Override
-    public DanhMuc getDanhMucById(int id) {
+    public DanhMuc getDanhMucById(String id) {
         return danhMucRepository.getById(id);
     }
 
@@ -53,13 +53,12 @@ public class DanhMucServiceImpl implements IDanhMucService {
     }
 
     @Override
-    public boolean deleteDanhMuc(int id) {
-        // IDanhMucRepository.delete đã có sẵn kiểm tra sản phẩm ràng buộc trong tầng Repo
+    public boolean deleteDanhMuc(String id) {
         return danhMucRepository.delete(id);
     }
 
     @Override
-    public boolean isTenDanhMucDuplicate(String tenDm, Integer excludeId) {
+    public boolean isTenDanhMucDuplicate(String tenDm, String excludeId) {
         return danhMucRepository.checkTenDanhMucTrung(tenDm, excludeId);
     }
 }

@@ -11,16 +11,24 @@ function getContextPath() {
 function resetVoucherAndPoints() {
     appliedVoucher = null;
     appliedPoints = 0;
-    document.getElementById("submit_maKm").value = "";
-    document.getElementById("submit_tienGiamGia").value = "0";
-    document.getElementById("submit_diemSuDung").value = "0";
-    document.getElementById("submit_tienTruDiem").value = "0";
-    document.getElementById("summaryDiscountRow").style.display = "none";
-    document.getElementById("summaryPointsRow").style.display = "none";
-    document.getElementById("manualVoucherInput").value = "";
+    const maKmEl = document.getElementById("submit_maKm");
+    const valGiamEl = document.getElementById("submit_tienGiamGia");
+    const dsuDungEl = document.getElementById("submit_diemSuDung");
+    const valTruDiemEl = document.getElementById("submit_tienTruDiem");
+    const sumDiscRow = document.getElementById("summaryDiscountRow");
+    const sumPtsRow = document.getElementById("summaryPointsRow");
+    const manualVoucherEl = document.getElementById("manualVoucherInput");
+
+    if (maKmEl) maKmEl.value = "";
+    if (valGiamEl) valGiamEl.value = "0";
+    if (dsuDungEl) dsuDungEl.value = "0";
+    if (valTruDiemEl) valTruDiemEl.value = "0";
+    if (sumDiscRow) sumDiscRow.style.display = "none";
+    if (sumPtsRow) sumPtsRow.style.display = "none";
+    if (manualVoucherEl) manualVoucherEl.value = "";
 }
 
-// Bật/tắt số lượng Topping trên Popup
+// Bật/tắt số lượng Topping trên Popup - maTp bây giờ là kiểu String (ví dụ: 'TP00001')
 function toggleToppingQty(maTp) {
     const chk = document.getElementById('tp_' + maTp);
     const container = document.getElementById('tp_qty_container_' + maTp);
@@ -119,10 +127,11 @@ function openCustomizePopup(arg1, arg2, arg3) {
             ? '<img src="' + tp.hinhAnh + '" class="rounded me-2" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid #ddd;">'
             : '<div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border: 1px solid #ddd;"><i class="bi bi-egg-fried text-muted"></i></div>';
 
+        // Chú ý: Bọc chuỗi mã Topping 'tp.maTp' kỹ càng tránh lỗi Syntax Error khi biên dịch HTML
         html += '<div class="form-check d-flex justify-content-between align-items-center mb-2 bg-light p-2 rounded border shadow-sm">';
         html += '  <div class="d-flex align-items-center flex-grow-1">';
         html += '    <input class="form-check-input topping-chk border-secondary me-2" type="checkbox" value="' + tp.maTp + '" ';
-        html += '       data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" id="tp_' + tp.maTp + '" onchange="toggleToppingQty(' + tp.maTp + ')">';
+        html += '       data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" id="tp_' + tp.maTp + '" onchange="toggleToppingQty(\'' + tp.maTp + '\')">';
         html += '    <label class="form-check-label d-flex align-items-center mb-0 cursor-pointer" for="tp_' + tp.maTp + '">';
         html += imgHtml;
         html += '      <div>';
@@ -132,9 +141,9 @@ function openCustomizePopup(arg1, arg2, arg3) {
         html += '    </label>';
         html += '  </div>';
         html += '  <div class="input-group input-group-sm" id="tp_qty_container_' + tp.maTp + '" style="width: 80px; display: none !important;">';
-        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0" onclick="adjustPopupToppingQty(' + tp.maTp + ', -1)">-</button>';
+        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0" onclick="adjustPopupToppingQty(\'' + tp.maTp + '\', -1)">-</button>';
         html += '    <input type="text" id="tp_qty_' + tp.maTp + '" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="1" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">';
-        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success" onclick="adjustPopupToppingQty(' + tp.maTp + ', 1)">+</button>';
+        html += '    <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success" onclick="adjustPopupToppingQty(\'' + tp.maTp + '\', 1)">+</button>';
         html += '  </div>';
         html += '</div>';
     });
@@ -172,7 +181,7 @@ function recalculatePopupPrice() {
     let sizePrice = checkedSize ? parseInt(checkedSize.dataset.price) : 0;
     let toppingPrice = 0;
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
-        const tpId = tp.value;
+        const tpId = tp.value; // Dạng chuỗi TPxxxxx
         const qtyInput = document.getElementById('tp_qty_' + tpId);
         const qty = qtyInput ? parseInt(qtyInput.value) : 1;
         toppingPrice += parseInt(tp.dataset.price) * qty;
@@ -196,7 +205,7 @@ function addCustomizedToCart() {
 
     let toppingsList = [];
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
-        const tpId = parseInt(tp.value);
+        const tpId = tp.value; // Giữ nguyên kiểu String TPxxxxx
         const qtyInput = document.getElementById('tp_qty_' + tpId);
         const qty = qtyInput ? parseInt(qtyInput.value) : 1;
         toppingsList.push({
@@ -229,6 +238,8 @@ function addCustomizedToCart() {
 // Kết xuất giỏ hàng POS với toppings có số lượng hiển thị chi tiết
 function renderPosCart() {
     const container = document.getElementById('posCartItems');
+    if (!container) return;
+
     if (posCart.length === 0) {
         container.innerHTML =
             '<div class="text-center text-muted py-5 my-5">' +
@@ -238,21 +249,19 @@ function renderPosCart() {
         recalculatePOSBill(0);
         return;
     }
+
     container.innerHTML = '';
     let tongTienHang = 0;
-
     posCart.forEach((item, idx) => {
         let toppingTotal = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let rowPrice = (item.giaBan + toppingTotal) * item.soLuong;
         tongTienHang += rowPrice;
-
         let toppingsText = '';
         if (item.toppings && item.toppings.length > 0) {
             item.toppings.forEach(t => {
                 toppingsText += '<br>+ Topping: ' + t.tenTp + ' (x' + t.soLuongTp + ')';
             });
         }
-
         container.innerHTML +=
             '<div class="pos-bill-item">' +
             '  <div class="pos-bill-item-details">' +
@@ -293,7 +302,6 @@ function removeCartItem(idx) {
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     if (!sdt || sdt.length < 10) return;
-
     fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
@@ -301,7 +309,6 @@ function searchCustomerCRM() {
                 customerInfo = data;
                 document.getElementById('submit_maKh').value = data.maKh;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
-
                 let rankName = 'MỚI';
                 if (data.maHang === 1) rankName = 'ĐỒNG';
                 else if (data.maHang === 2) rankName = 'BẠC';
@@ -319,7 +326,6 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.display = "none";
                 document.getElementById("posAddCustomerArea").style.display = "block";
-
                 Swal.fire({
                     icon: 'question',
                     title: 'Số điện thoại mới!',
@@ -334,9 +340,9 @@ function searchCustomerCRM() {
                         openQuickAddCustomerModal();
                     }
                 });
-                resetVoucherAndPoints();
-                renderPosCart();
             }
+            resetVoucherAndPoints();
+            renderPosCart();
         });
 }
 
@@ -386,7 +392,6 @@ function openQuickAddCustomerModal() {
             params.append('tenKh', result.value.tenKh);
             params.append('email', result.value.email);
             params.append('soDienThoai', result.value.sdt);
-
             fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -433,13 +438,11 @@ function applyManualVoucherCode() {
         return;
     }
     const maKh = document.getElementById("submit_maKh").value;
-
     Swal.fire({
         title: 'Đang áp mã Voucher...',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
-
     const url = getContextPath() + '/pos/apply-voucher';
     const params = new URLSearchParams();
     params.append('code', code);
@@ -534,7 +537,6 @@ function applyPointsDiscount() {
         });
         return;
     }
-
     Swal.fire({
         title: 'QUY ĐỔI ĐIỂM CRM',
         text: 'Hội viên hiện đang sở hữu ' + customerInfo.diemTichLuy + ' điểm tích lũy. Nhập số điểm muốn tiêu dùng quy đổi (1 Điểm = 1.000 VNĐ):',
@@ -568,7 +570,6 @@ function applyPointsDiscount() {
 function recalculatePOSBill(tongTienHang) {
     let rawSum = tongTienHang;
     let discount = 0;
-
     if (appliedVoucher) {
         if (rawSum >= appliedVoucher.donToiThieu) {
             if (appliedVoucher.loaiGiam === 1) {
@@ -612,17 +613,14 @@ function recalculatePOSBill(tongTienHang) {
 
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
-
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
 
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
-
     document.getElementById('submit_tongTienHang').value = rawSum;
     document.getElementById('submit_tongPhaiTra').value = finalPayable;
-
     calculateChangeRefund();
 }
 
@@ -631,13 +629,11 @@ function formatVND(amount) {
 }
 
 function loadAndShowPrintReceipt(orderId) {
-    // Render loading indicator inside Modal Container to prevent caching issues
     document.getElementById("billItemsContainer").innerHTML =
         '<div class="text-center py-4">' +
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
-
     fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -648,19 +644,16 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.display = 'flex';
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.display = 'none';
                 }
-
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
 
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
-
                 data.items.forEach(item => {
                     let html = '<div style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">';
                     html += '  <div class="d-flex justify-content-between">';
@@ -668,7 +661,6 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '    <strong>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</strong>';
                     html += '  </div>';
                     html += '  <small style="font-size: 9px; color: #555;">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + '</small>';
-
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div style="padding-left: 8px; font-size: 9px; color: #555;">';
                         item.toppings.forEach(tp => {
@@ -679,7 +671,6 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.innerHTML += html;
                 });
-
                 const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                 printModal.show();
             } else {

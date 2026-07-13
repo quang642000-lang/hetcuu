@@ -19,7 +19,7 @@
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
-            <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-grid-1x2-fill me-2"></i>QUẢN LÝ DANH MỤC</h3>
@@ -29,25 +29,35 @@
                         <i class="bi bi-plus-circle-fill"></i> Thêm Danh Mục Mới
                     </button>
                 </div>
+
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger d-flex align-items-center gap-2" style="border-radius: 8px;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>${error}</span>
+                    </div>
+                </c:if>
+
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="categoryTable">
                         <thead>
                         <tr class="table-light text-center">
-                            <th style="width: 100px;">Mã DM</th>
-                            <th style="width: 120px;" class="text-center">Hình Ảnh</th>
-                            <th>Tên Nhóm Danh Mục</th>
-                            <th class="text-center" style="width: 150px;">Thứ Tự</th>
-                            <th class="text-center" style="width: 180px;">Trạng Thái</th>
-                            <th class="text-end" style="width: 200px;">Thao Tác</th>
+                            <th style="width: 80px;">STT</th>
+                            <th style="width: 120px;">Mã nhóm</th>
+                            <th style="width: 100px;">Ảnh minh họa</th>
+                            <th class="text-start">Tên danh mục trà sữa</th>
+                            <th style="width: 150px;">Thứ tự hiển thị</th>
+                            <th style="width: 180px;">Trạng thái</th>
+                            <th style="width: 200px;">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
                         <c:choose>
                             <c:when test="${not empty categories}">
-                                <c:forEach var="item" items="${categories}">
-                                    <tr class="category-row text-center">
-                                        <td><strong>DM${item.maDm}</strong></td>
-                                        <td class="text-center">
+                                <c:forEach var="item" items="${categories}" varStatus="loop">
+                                    <tr class="category-row text-center" data-id="${item.maDm}" data-name="${item.tenDm}">
+                                        <td><strong>${loop.index + 1}</strong></td>
+                                        <td><code class="fw-bold text-dark">${item.maDm}</code></td>
+                                        <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
                                                     <img src="${item.hinhAnh}" class="rounded border" style="width: 50px; height: 50px; object-fit: cover;">
@@ -59,70 +69,68 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
-                                        <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
-                                        <td class="text-center">
-<span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} bg-opacity-10 ${item.trangThai ? 'text-success' : 'text-danger'} border px-3 py-1.5">
-        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-</span>
+                                        <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
+                                        <td><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
+                                        <td>
+                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+                                                </span>
                                         </td>
                                         <td class="text-end">
-                                            <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5 me-1"
-                                                    data-id="${item.maDm}"
-                                                    data-name="${item.tenDm}"
-                                                    data-img="${item.hinhAnh}"
-                                                    data-sort="${item.thuTuHienThi}"
-                                                    data-status="${item.trangThai ? 1 : 0}"
-                                                    onclick="handleEditDanhMucClick(this)">
-                                                <i class="bi bi-pencil-square"></i> Sửa
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5"
-                                                    onclick="confirmDeleteDanhMuc(${item.maDm})">
-                                                <i class="bi bi-trash3-fill"></i> Xóa
-                                            </button>
+                                            <div class="d-flex justify-content-end gap-1.5">
+                                                <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5"
+                                                        data-id="${item.maDm}"
+                                                        data-name="${item.tenDm}"
+                                                        data-img="${item.hinhAnh}"
+                                                        data-sort="${item.thuTuHienThi}"
+                                                        data-status="${item.trangThai ? 1 : 0}"
+                                                        onclick="handleEditDanhMucClick(this)">
+                                                    <i class="bi bi-pencil-square"></i> Sửa
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5"
+                                                        onclick="confirmDeleteDanhMuc('${item.maDm}')">
+                                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr><td colspan="6" class="text-center py-5 text-muted">Chưa có thông tin danh mục!</td></tr>
+                                <tr><td colspan="7" class="text-center py-5 text-muted">Chưa có thông tin danh mục!</td></tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
                     </table>
                 </div>
-                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG ĐỘNG Ở TRANG QUẢN TRỊ ADMIN -->
+
                 <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
-                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu lọc</div>
-                    <nav aria-label="Table pagination">
-                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
-                            <!-- Nạp động nút phân trang bằng JS -->
-                        </ul>
+                    <div class="small text-muted" id="adminPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="adminPaginationButtons"></ul>
                     </nav>
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
-<!-- MODAL FORM ĐỘNG -->
+
 <div class="modal fade" id="danhMucFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 12px;">
-            <div class="modal-header text-white py-3" style="background-color: var(--primary-color);">
+            <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">
                 <h5 class="modal-title fw-bold" id="modalTitle">THÊM DANH MỤC</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="danhMucForm" action="${pageContext.request.contextPath}/admin/danhmuc" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" id="formAction" value="create">
-                <input type="hidden" name="maDm" id="formMaDm" value="0">
+                <input type="hidden" name="maDm" id="formMaDm" value="">
                 <input type="hidden" name="currentHinhAnh" id="currentHinhAnh" value="">
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 text-start">
                     <div class="mb-3">
                         <label for="tenDm" class="form-label fw-bold small">Tên nhóm danh mục <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off">
+                        <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off" placeholder="Ví dụ: Trà trái cây...">
                     </div>
-                    <!-- Hỗ trợ uploader từ máy tính -->
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="catImgTab" role="tablist">
@@ -151,27 +159,29 @@
                         <label class="form-label fw-bold small d-block">Trạng thái bán</label>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="trangThai" id="statusActive" value="1" checked>
-                            <label class="form-check-label text-success fw-medium" for="statusActive">Đang hoạt động</label>
+                            <label class="form-check-label text-success fw-bold" for="statusActive">Đang hoạt động</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="trangThai" id="statusInactive" value="0">
-                            <label class="form-check-label text-danger" for="statusInactive">Ngừng hoạt động</label>
+                            <label class="form-check-label text-danger" for="statusInactive">Ngừng bán</label>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light" style="border-radius: 0 0 12px 12px;">
                     <button type="button" class="btn btn-secondary-teapos" data-bs-dismiss="modal">Hủy bỏ</button>
-                    <button type="submit" class="btn-teapos btn-primary-teapos fw-bold"><i class="bi bi-save me-1"></i> Lưu dữ liệu</button>
+                    <button type="submit" class="btn btn-primary-teapos fw-bold"><i class="bi bi-save me-1"></i> Lưu dữ liệu</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const modalElement = document.getElementById('danhMucFormModal');
     const bsModal = new bootstrap.Modal(modalElement);
+
     function switchCatUploadType(type) {
         document.getElementById('uploadType').value = type;
         if (type === 'file') {
@@ -182,11 +192,12 @@
             document.getElementById('catUrlPanel').style.setProperty('display', 'block', 'important');
         }
     }
+
     function openCreateModal() {
         document.getElementById("danhMucForm").reset();
         document.getElementById("modalTitle").innerText = "THÊM DANH MỤC MỚI";
         document.getElementById("formAction").value = "create";
-        document.getElementById("formMaDm").value = "0";
+        document.getElementById("formMaDm").value = "";
         document.getElementById("currentHinhAnh").value = "";
         document.getElementById("statusActive").checked = true;
         document.getElementById("hinhAnhFile").value = "";
@@ -194,6 +205,7 @@
         switchCatUploadType('file');
         bsModal.show();
     }
+
     function handleEditDanhMucClick(button) {
         const id = button.getAttribute("data-id");
         const name = button.getAttribute("data-name");
@@ -202,8 +214,9 @@
         const status = parseInt(button.getAttribute("data-status"));
         openEditModal(id, name, img, sort, status);
     }
+
     function openEditModal(maDm, tenDm, hinhAnh, thuTu, trangThai) {
-        document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC";
+        document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC: " + maDm;
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaDm").value = maDm;
         document.getElementById("tenDm").value = tenDm;
@@ -219,6 +232,7 @@
         switchCatUploadType(hinhAnh && hinhAnh.startsWith('http') ? 'url' : 'file');
         bsModal.show();
     }
+
     function confirmDeleteDanhMuc(maDm) {
         Swal.fire({
             title: 'Xác nhận xóa?',
@@ -235,64 +249,66 @@
             }
         });
     }
+
     // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN DANH MỤC
     let currentPage = 1;
-    const pageSize = 10; // 10 bản ghi trên một trang
+    const pageSize = 10;
+
     function paginateAdminTable() {
         const rows = Array.from(document.querySelectorAll("#categoryTable tbody .category-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
+
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        rows.forEach((row, idx) => {
-            if (idx >= startIndex && idx < endIndex) {
+
+        rows.forEach((row, index) => {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            if (index >= start && index < end) {
                 row.style.display = "table-row";
             } else {
                 row.style.display = "none";
             }
         });
-// Render bộ nút phân trang
-        const infoEl = document.getElementById("paginatedInfo");
-        if (infoEl) {
-            infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-        }
-        renderPaginationButtons(totalPages);
-    }
-    function renderPaginationButtons(totalPages) {
-        const controls = document.getElementById("paginatedControls");
-        if (!controls) return;
+
+        const info = document.getElementById("adminPaginationInfo");
+        const startIdx = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const endIdx = Math.min(currentPage * pageSize, totalRecords);
+        info.innerText = 'Hiển thị từ ' + startIdx + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRecords + ' dòng dữ liệu';
+
+        const controls = document.getElementById("adminPaginationButtons");
         controls.innerHTML = "";
+
         if (totalPages <= 1) {
-            const area = document.getElementById("adminPaginationArea");
-            if (area) area.style.display = "none";
+            document.getElementById("adminPaginationArea").style.display = "none";
             return;
         }
-        const area = document.getElementById("adminPaginationArea");
-        if (area) area.style.display = "flex";
-// Nút Trang trước
+        document.getElementById("adminPaginationArea").style.display = "flex";
+
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
         controls.appendChild(prevLi);
-// Các mốc số trang
+
         for (let i = 1; i <= totalPages; i++) {
             const pageLi = document.createElement("li");
             pageLi.className = "page-item " + (currentPage === i ? "active" : "");
             pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
             controls.appendChild(pageLi);
         }
-// Nút Trang sau
+
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
         controls.appendChild(nextLi);
     }
+
     function changeAdminPage(newPage) {
         currentPage = newPage;
         paginateAdminTable();
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -303,8 +319,8 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Không thể xóa!',
-                text: 'Hệ thống phát hiện danh mục này hiện đã liên kết với sản phẩm. Vui lòng xóa các sản phẩm bên trong trước.',
-                confirmButtonColor: '#2e7d32'
+                text: 'Hệ thống phát hiện danh mục này hiện đã liên kết với sản phẩm. Vui lòng gỡ các sản phẩm bên trong trước.',
+                confirmButtonColor: '#10b981'
             });
         }
         paginateAdminTable();

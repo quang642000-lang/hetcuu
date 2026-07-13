@@ -3,13 +3,11 @@ package repository.impl;
 import config.DBConnect;
 import model.entity.SanPham;
 import repository.ISanPhamRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SanPhamRepoImpl implements ISanPhamRepository {
-
     private static SanPhamRepoImpl instance;
 
     private SanPhamRepoImpl() {}
@@ -56,10 +54,11 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
 
     @Override
     public boolean add(SanPham entity) {
+        // Gọi Stored Procedure sp_ThemSanPham tự sinh mã sản phẩm định dạng chuỗi: SP00001
         String sql = "{call sp_ThemSanPham(?, ?, ?, ?)}";
         try (Connection conn = DBConnect.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
-            cs.setInt(1, entity.getMaDm());
+            cs.setString(1, entity.getMaDm());
             cs.setString(2, entity.getTenSp());
             cs.setString(3, entity.getMoTa());
             cs.setString(4, entity.getHinhAnh());
@@ -82,8 +81,8 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, entity.isChoPhepDoiDa());
             ps.setBoolean(2, entity.isChoPhepDoiDuong());
-            ps.setBoolean(3, entity.getIsNew()); // Đã sửa
-            ps.setBoolean(4, entity.getIsBestseller()); // Đã sửa
+            ps.setBoolean(3, entity.getIsNew());
+            ps.setBoolean(4, entity.getIsBestseller());
             ps.setBoolean(5, entity.isTrangThai());
             ps.setString(6, entity.getMaSp());
             ps.executeUpdate();
@@ -95,14 +94,14 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
         String sql = "UPDATE SAN_PHAM SET ma_dm = ?, ten_sp = ?, mo_ta = ?, hinh_anh = ?, cho_phep_doi_da = ?, cho_phep_doi_duong = ?, is_new = ?, is_bestseller = ?, trang_thai = ? WHERE ma_sp = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, entity.getMaDm());
+            ps.setString(1, entity.getMaDm());
             ps.setString(2, entity.getTenSp());
             ps.setString(3, entity.getMoTa());
             ps.setString(4, entity.getHinhAnh());
             ps.setBoolean(5, entity.isChoPhepDoiDa());
             ps.setBoolean(6, entity.isChoPhepDoiDuong());
-            ps.setBoolean(7, entity.getIsNew()); // Đã sửa
-            ps.setBoolean(8, entity.getIsBestseller()); // Đã sửa
+            ps.setBoolean(7, entity.getIsNew());
+            ps.setBoolean(8, entity.getIsBestseller());
             ps.setBoolean(9, entity.isTrangThai());
             ps.setString(10, entity.getMaSp());
             return ps.executeUpdate() > 0;
@@ -126,12 +125,12 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
     }
 
     @Override
-    public List<SanPham> getByDanhMuc(int maDm) {
+    public List<SanPham> getByDanhMuc(String maDm) {
         List<SanPham> list = new ArrayList<>();
         String sql = "SELECT ma_sp, ma_dm, ten_sp, mo_ta, hinh_anh, cho_phep_doi_da, cho_phep_doi_duong, is_new, is_bestseller, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM SAN_PHAM WHERE ma_dm = ? AND trang_thai = 1";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, maDm);
+            ps.setString(1, maDm);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapResultSetToSanPham(rs));
@@ -178,10 +177,11 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
     @Override
     public List<SanPham> searchByName(String keyword) {
         List<SanPham> list = new ArrayList<>();
-        String sql = "SELECT ma_sp, ma_dm, ten_sp, mo_ta, hinh_anh, cho_phep_doi_da, cho_phep_doi_duong, is_new, is_bestseller, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM SAN_PHAM WHERE ten_sp LIKE ? AND trang_thai = 1";
+        String sql = "SELECT ma_sp, ma_dm, ten_sp, mo_ta, hinh_anh, cho_phep_doi_da, cho_phep_doi_duong, is_new, is_bestseller, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM SAN_PHAM WHERE (ten_sp LIKE ? OR ma_sp LIKE ?) AND trang_thai = 1";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapResultSetToSanPham(rs));
@@ -196,7 +196,7 @@ public class SanPhamRepoImpl implements ISanPhamRepository {
     private SanPham mapResultSetToSanPham(ResultSet rs) throws SQLException {
         return new SanPham(
                 rs.getString("ma_sp"),
-                rs.getInt("ma_dm"),
+                rs.getString("ma_dm"),
                 rs.getString("ten_sp"),
                 rs.getString("mo_ta"),
                 rs.getString("hinh_anh"),
