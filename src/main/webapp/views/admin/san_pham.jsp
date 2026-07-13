@@ -15,17 +15,18 @@
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
         .filter-wrapper {
-            background-color: #f8fafc;
+            background-color: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
+            box-shadow: var(--shadow-sm);
         }
         .product-img-circle {
             width: 44px;
             height: 44px;
             object-fit: cover;
             border-radius: 50%;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--primary);
             box-shadow: var(--shadow-sm);
         }
     </style>
@@ -42,14 +43,14 @@
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-cup-straw me-2"></i>Quản Lý Sản Phẩm</h3>
                         <p class="text-muted small mb-0">Quản lý vòng đời đồ uống, các tùy biến pha chế và cấu hình biến thể kích cỡ bán</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/admin/sanpham?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold px-4 py-2.5 shadow-sm" style="border-radius: 8px;">
+                    <a href="${pageContext.request.contextPath}/admin/sanpham?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2">
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
 
                 <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM -->
                 <div class="filter-wrapper mb-4">
-                    <div class="row g-3">
+                    <div class="row g-3 text-start">
                         <div class="col-12 col-md-3">
                             <label class="form-label fw-bold text-muted small"><i class="bi bi-search"></i> Tra cứu nhanh</label>
                             <input type="text" id="productSearchInput" class="form-control form-control-teapos" placeholder="Tìm tên hoặc mã sản phẩm..." onkeyup="filterAndPaginateProducts()">
@@ -88,18 +89,18 @@
                             </select>
                         </div>
                         <div class="col-12 col-md-1 d-flex align-items-end">
-                            <button class="btn btn-secondary-teapos w-100 py-2.5 fw-bold" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+                            <button class="btn btn-secondary-teapos w-100 py-2" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="productTable">
+                <div class="table-responsive admin-table-container">
+                    <table class="table table-hover align-middle admin-table" id="productTable">
                         <thead>
-                        <tr class="table-success text-center">
+                        <tr class="text-center">
                             <th style="width: 60px;">STT</th>
-                            <th style="width: 100px;">Mã Đồ Uống</th>
+                            <th style="width: 120px;">Mã Đồ Uống</th>
                             <th style="width: 80px;">Hình Ảnh</th>
                             <th class="text-start">Tên Sản Phẩm</th>
                             <th class="text-start" style="width: 150px;">Danh Mục</th>
@@ -134,7 +135,7 @@
 
                                     <tr class="product-row text-center"
                                         data-masp="${item.maSp}"
-                                        data-tensp="${item.tenSp}"
+                                        data-tensp="<c:out value="${item.tenSp}"/>"
                                         data-madm="${item.maDm}"
                                         data-isnew="${item.isNew}"
                                         data-ishot="${item.isBestseller}"
@@ -187,17 +188,17 @@
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5 py-1.5">
+                                                <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit">
                                                     <i class="bi bi-pencil-square"></i> Sửa
                                                 </a>
                                                 <c:choose>
                                                     <c:when test="${item.trangThai}">
-                                                        <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5 py-1.5" onclick="confirmDeleteSanPham('${item.maSp}')">
+                                                        <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteSanPham('${item.maSp}')">
                                                             <i class="bi bi-toggle2-off"></i> Tạm dừng
                                                         </button>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-outline-success fw-semibold px-2.5 py-1.5">
+                                                        <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit">
                                                             <i class="bi bi-toggle2-on"></i> Kích hoạt
                                                         </a>
                                                     </c:otherwise>
@@ -220,16 +221,13 @@
                     </table>
                 </div>
 
-                <!-- THANH PHÂN TRANG ĐỘNG CLIENT-SIDE (DÀNH CHO ADMIN) -->
-                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="paginationWrapper">
+                <!-- Pagination block -->
+                <div class="pagination-container" id="paginationWrapper">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
-                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons">
-                            <!-- Các nút số trang được sinh tự động bằng JS -->
-                        </ul>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
@@ -248,10 +246,8 @@
         const statusVal = document.getElementById("filterStatus").value;
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
-
         const allRows = Array.from(document.querySelectorAll("#productTableBody .product-row"));
 
-        // Thực hiện lọc dữ liệu realtime
         filteredRows = allRows.filter(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -265,28 +261,23 @@
             let matchStatus = statusVal === "" || status === statusVal;
             let matchNew = newVal === "" || isNew === newVal;
             let matchHot = hotVal === "" || isHot === hotVal;
-
             return matchSearch && matchCat && matchStatus && matchNew && matchHot;
         });
 
-        currentPage = 1; // Reset về trang đầu sau khi lọc
+        currentPage = 1;
         renderTableRows();
     }
 
     function renderTableRows() {
         const allRows = document.querySelectorAll("#productTableBody .product-row");
-        allRows.forEach(row => row.style.display = "none"); // Ẩn hết
-
+        allRows.forEach(row => row.style.display = "none");
         const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
         const endIdx = startIdx + ROWS_PER_PAGE;
         const pageRows = filteredRows.slice(startIdx, endIdx);
-
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
-            // Cập nhật lại số thứ tự hiển thị tuần tự theo trang
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
         updatePaginationControls();
     }
 
@@ -296,31 +287,26 @@
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
 
-        // Cập nhật nhãn thông báo
         const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
         const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng dữ liệu';
-
         btnContainer.innerHTML = "";
 
-        // Nút lùi trang
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link" href="#" onclick="changePage(' + (currentPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
+        prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
         btnContainer.appendChild(prevLi);
 
-        // Các nút số trang
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
-            li.innerHTML = '<a class="page-link" href="#" onclick="changePage(' + i + ')">' + i + '</a>';
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="#" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
 
-        // Nút tiến trang
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link" href="#" onclick="changePage(' + (currentPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
+        nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
         btnContainer.appendChild(nextLi);
     }
 
@@ -359,7 +345,6 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         filterAndPaginateProducts();
-
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm mới món uống thành công!');

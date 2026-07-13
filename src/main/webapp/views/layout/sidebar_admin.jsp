@@ -8,17 +8,15 @@
     /* =========================================================================
        BULLETPROOF LAYOUT LOCKING & ELITE EMERALD-SLATE DESIGN FOR SIDEBAR
        ========================================================================= */
-
-    /* 1. KHÓA CỨNG TOÀN BỘ VIEWPORT TRANG - TRÁNH KÉO TRƯỢT LÊN XUỐNG NGOÀI Ý MUỐN */
+    /* 1. FORCE NO VIEWPORT VERTICAL DRIFT AT BODY LEVEL */
     html, body {
         height: 100vh !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: hidden !important; /* Triệt tiêu thanh cuộn dọc ngoài rìa màn hình */
-        background-color: #f8fafc !important;
+        overflow: hidden !important; /* Block master page scrolling */
     }
 
-    /* 2. KHUNG BAO BỌC FLEXBOX CHIẾM TRỌN MÀN HÌNH */
+    /* 2. REINFORCE THE FLEX CONTAINER AT WRAPPER LEVEL */
     .admin-wrapper {
         display: flex !important;
         flex-direction: row !important;
@@ -27,34 +25,34 @@
         overflow: hidden !important;
     }
 
-    /* 3. KHÓA CHẶT SIDEBAR BÊN TRÁI - KHÔNG CHO TRƯỢT LÊN XUỐNG THEO TRANG */
+    /* 3. SIDEBAR ANCHORING - LOCK IT SOLID */
     .admin-sidebar {
         width: 260px !important;
         height: 100vh !important;
-        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; /* Đen Slate cao cấp */
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important; /* Premium Slate Dark Gradient */
         color: #f8fafc !important;
         display: flex !important;
         flex-direction: column !important;
         flex-shrink: 0 !important;
         z-index: 1030 !important;
-        overflow-y: auto !important; /* Chỉ cuộn nội bộ khi các mục menu tràn */
+        overflow-y: auto !important; /* Scroll nested menus only if they overflow */
         border-right: 1px solid #334155 !important;
         box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15) !important;
-        transition: all 0.3s ease !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    /* 4. KHU VỰC NỘI DUNG CHÍNH CUỘN ĐỘC LẬP */
+    /* 4. MAIN CONTENT AREA SCROLL LOCK */
     .admin-content {
         flex-grow: 1 !important;
         min-width: 0 !important;
         height: 100vh !important;
-        overflow-y: auto !important; /* ĐÂY LÀ NƠI DUY NHẤT ĐƯỢC CUỘN DỌC TRÊN TRANG */
+        overflow-y: auto !important; /* ONLY SCROLLABLE AREA IN THE SYSTEM */
         display: flex !important;
         flex-direction: column !important;
         background-color: #f8fafc !important;
     }
 
-    /* 5. GIAO DIỆN CHUYÊN NGHIỆP CỦA SIDEBAR (EMERALD GREEN THEME) */
+    /* 5. GORGEOUS STYLING WITH SEMANTIC HOVERS */
     .sidebar-header {
         padding: 24px 20px !important;
         border-bottom: 1px solid #334155 !important;
@@ -85,17 +83,17 @@
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    /* Hover effect */
+    /* Hover translation effect */
     .sidebar-item a:hover {
         color: #ffffff !important;
-        background-color: rgba(16, 185, 129, 0.08) !important; /* Emerald nhạt */
-        padding-left: 20px !important; /* Hiệu ứng trượt nhẹ tinh tế */
+        background-color: rgba(16, 185, 129, 0.08) !important; /* Smooth Emerald tint overlay */
+        padding-left: 20px !important; /* Subtle slider slide-to-right */
     }
 
-    /* Active State */
+    /* Active Highlight emerald glow */
     .sidebar-item.active a {
         color: #ffffff !important;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; /* Gradient Xanh ngọc lục bảo */
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; /* Radiant Emerald gradient */
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
         font-weight: 600 !important;
     }
@@ -106,14 +104,14 @@
     }
 
     .sidebar-item a:hover i {
-        transform: scale(1.1) rotate(5deg) !important; /* Hiệu ứng lắc nhẹ icon khi hover */
+        transform: scale(1.1) rotate(5deg) !important; /* Dynamic icon vibration on hover */
     }
 
     .sidebar-item.active i {
         color: #ffffff !important;
     }
 
-    /* 6. RESPONSIVE LAYOUT - MOBILE SLIDE DRAWER */
+    /* 6. MOBILE SLIDE-IN DRAWER MEDIA QUERY */
     @media (max-width: 991.98px) {
         .admin-sidebar {
             position: fixed !important;
@@ -148,13 +146,12 @@
     }
 </style>
 
-<!-- Overlay dùng để chạm tắt đóng Sidebar trên Mobile/Tablet -->
+<!-- Sidebar mobile touch overlay backdrop -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <div class="admin-sidebar" id="adminSidebar">
-    <!-- Phần tiêu đề Sidebar -->
+    <!-- Sidebar Header branding -->
     <div class="sidebar-header d-flex flex-column align-items-center position-relative">
-        <!-- Nút đóng nhanh chỉ hiển thị trên mobile/tablet -->
         <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 d-lg-none" onclick="toggleSidebar()"></button>
         <div class="fs-2 text-success mb-2" style="color: #10b981 !important;">
             <i class="bi bi-cup-hot-fill animate-pulse text-success"></i>
@@ -163,7 +160,7 @@
         <small class="text-muted" style="font-size: 11px;">HỆ THỐNG QUẢN TRỊ VIÊN</small>
     </div>
 
-    <!-- Danh sách Menu liên kết -->
+    <!-- Sidebar Menus -->
     <ul class="sidebar-menu flex-grow-1 mb-0 ps-0">
         <!-- 1. Dashboard -->
         <li class="sidebar-item ${cPath eq '/admin/dashboard' || uri.contains('dashboard.jsp') ? 'active' : ''}">
@@ -172,7 +169,6 @@
                 <span>Trang tổng quan</span>
             </a>
         </li>
-
         <!-- 2. Quản lý Danh mục -->
         <li class="sidebar-item ${cPath eq '/admin/danhmuc' || uri.contains('danh_muc.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/danhmuc">
@@ -180,7 +176,6 @@
                 <span>Quản lý danh mục</span>
             </a>
         </li>
-
         <!-- 3. Quản lý Sản phẩm -->
         <li class="sidebar-item ${cPath eq '/admin/sanpham' || uri.contains('san_pham.jsp') || uri.contains('sanpham-form.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/sanpham">
@@ -188,7 +183,6 @@
                 <span>Quản lý sản phẩm</span>
             </a>
         </li>
-
         <!-- 4. Quản lý Topping -->
         <li class="sidebar-item ${cPath eq '/admin/topping' || uri.contains('topping.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/topping">
@@ -196,7 +190,6 @@
                 <span>Quản lý topping</span>
             </a>
         </li>
-
         <!-- 5. Quản lý Voucher -->
         <li class="sidebar-item ${cPath eq '/admin/voucher' || uri.contains('voucher.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/voucher">
@@ -204,7 +197,6 @@
                 <span>Khuyến mãi - Voucher</span>
             </a>
         </li>
-
         <!-- 6. Quản lý Hóa đơn -->
         <li class="sidebar-item ${cPath eq '/admin/hoadon' || uri.contains('hoa_don.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/hoadon">
@@ -212,7 +204,6 @@
                 <span>Lịch sử hóa đơn</span>
             </a>
         </li>
-
         <!-- 7. Quản lý Khách hàng -->
         <li class="sidebar-item ${cPath eq '/admin/khachhang' || uri.contains('khach_hang.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/khachhang">
@@ -220,7 +211,6 @@
                 <span>Khách hàng (CRM)</span>
             </a>
         </li>
-
         <!-- 8. Quản lý Nhân viên -->
         <li class="sidebar-item ${cPath eq '/admin/nhanvien' || uri.contains('nhan_vien.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/nhanvien">
@@ -228,7 +218,6 @@
                 <span>Hồ sơ nhân viên</span>
             </a>
         </li>
-
         <!-- 9. Nhật ký hoạt động -->
         <li class="sidebar-item ${cPath eq '/admin/auditlog' || uri.contains('nhat_ky.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/auditlog">
@@ -236,7 +225,6 @@
                 <span>Nhật ký hoạt động</span>
             </a>
         </li>
-
         <!-- 10. Cài đặt hệ thống -->
         <li class="sidebar-item ${cPath eq '/admin/settings' || uri.contains('cai_dat.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/settings">
@@ -246,7 +234,7 @@
         </li>
     </ul>
 
-    <!-- Khu vực chuyển nhanh sang giao diện POS của thu ngân -->
+    <!-- Quick back action to thu ngân POS quầy -->
     <div class="p-3 border-top border-secondary" style="background-color: #0f172a;">
         <a href="${pageContext.request.contextPath}/pos" class="btn btn-outline-success btn-sm w-100 py-2 d-flex align-items-center justify-content-center gap-2 border-2" style="border-radius: 6px;">
             <i class="bi bi-cart3"></i>

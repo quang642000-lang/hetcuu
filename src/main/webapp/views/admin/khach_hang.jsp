@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <!-- Khởi tạo các biến an toàn để phòng tránh NullPointerException và lỗi PropertyNotFound trên Tomcat 11 / EL 6.0 -->
+    <!-- Khai báo các biến an toàn để phòng tránh Null Property Access lỗi 500 trên Tomcat 11 / EL 6.0 -->
     <c:set var="maKh" value="" />
     <c:set var="tenKh" value="" />
     <c:set var="soDienThoai" value="" />
@@ -22,7 +22,10 @@
         <c:set var="tenKh" value="${customer.tenKh}" />
         <c:set var="soDienThoai" value="${customer.soDienThoai}" />
         <c:set var="email" value="${customer.email}" />
-        <c:set var="ngaySinh" value="${customer.ngaySinh}" />
+        <!-- Định dạng ngày sinh an toàn tuyệt đối chống sập lỗi 500 -->
+        <c:if test="${not empty customer.ngaySinh}">
+            <fmt:formatDate value="${customer.ngaySinh}" pattern="yyyy-MM-dd" var="ngaySinh"/>
+        </c:if>
         <c:set var="gioiTinh" value="${customer.gioiTinh}" />
         <c:set var="diaChiLienHe" value="${customer.diaChiLienHe}" />
         <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
@@ -30,7 +33,6 @@
         <c:set var="maHang" value="${customer.maHang}" />
         <c:set var="trangThaiVal" value="${customer['trangThai']}" />
     </c:if>
-
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,18 +51,18 @@
                 <%-- ==================== TRƯỜNG HỢP 1: HIỂN THỊ CHI TIẾT TABS KHÁCH HÀNG CRM ==================== --%>
                 <c:when test="${not empty customer}">
                     <div class="mb-3">
-                        <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                        <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-secondary-teapos d-inline-flex align-items-center gap-1">
                             <i class="bi bi-arrow-left"></i> Quay lại danh sách CRM
                         </a>
                     </div>
                     <div class="row g-4 text-start">
                         <!-- Khung thông tin nhanh bên trái -->
                         <div class="col-12 col-lg-4">
-                            <div class="card card-teapos p-4 text-center bg-white shadow-sm" style="border-radius: 12px;">
+                            <div class="card card-teapos p-4 text-center bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
                                 <img src="${not empty hinhAnhUrl ? hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
-                                <span class="badge bg-success-subtle text-success border border-success px-3 py-1.5 fs-6 mb-3">
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 fs-6 mb-3" style="border-radius: 50px;">
                                     👑 Hạng:
                                     <c:choose>
                                         <c:when test="${maHang == 1}">ĐỒNG</c:when>
@@ -91,21 +93,21 @@
 
                         <!-- Khối thông tin chi tiết Tabs bên phải -->
                         <div class="col-12 col-lg-8">
-                            <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px;">
+                            <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
                                 <!-- Danh mục Tabs liên kết -->
                                 <ul class="nav nav-tabs nav-tabs-teapos mb-4" id="crmDetailTab" role="tablist">
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link active fw-bold" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Hồ sơ cá nhân</button>
+                                        <button class="nav-link active fw-bold text-success" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Hồ sơ cá nhân</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link fw-bold" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">Lịch sử hóa đơn</button>
+                                        <button class="nav-link fw-bold text-success" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">Lịch sử hóa đơn</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link fw-bold" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers" type="button" role="tab">Kho Voucher khả dụng</button>
+                                        <button class="nav-link fw-bold text-success" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers" type="button" role="tab">Kho Voucher khả dụng</button>
                                     </li>
                                 </ul>
                                 <div class="tab-content" id="crmDetailTabContent">
-                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỔI HỒ SƠ -->
+                                    <!-- TAB 1: THÔNG TIN CHI TIẾT & SỬA ĐỒNG BỘ -->
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
@@ -260,23 +262,22 @@
                     <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div>
-                                <h3 class="fw-bold mb-1 text-success"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
+                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
                                 <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng Loyalty và phân hạng khách hàng</p>
                             </div>
                         </div>
 
-                        <!-- Bảng dữ liệu CRM -->
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle text-center" id="customerTable">
+                        <div class="table-responsive admin-table-container">
+                            <table class="table table-hover align-middle text-center admin-table" id="customerTable">
                                 <thead>
-                                <tr class="table-success">
+                                <tr>
                                     <th style="width: 100px;">Mã KH</th>
                                     <th class="text-start">Họ và tên thành viên</th>
                                     <th>Số điện thoại</th>
                                     <th>Địa chỉ Email</th>
                                     <th>Hạng thẻ</th>
                                     <th>Ví Điểm CRM</th>
-                                    <th>Trạng Trạng</th>
+                                    <th>Trạng Thái</th>
                                     <th class="text-end" style="width: 150px;">Hành động</th>
                                 </tr>
                                 </thead>
@@ -311,8 +312,8 @@
                                                         </span>
                                                 </td>
                                                 <td class="text-end">
-                                                    <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-outline-success fw-bold px-3 py-1.5" style="border-radius: 6px;">
-                                                        <i class="bi bi-eye-fill"></i> Chi tiết CRM
+                                                    <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-action-info">
+                                                        <i class="bi bi-eye-fill"></i> Chi tiết
                                                     </a>
                                                 </td>
                                             </tr>
@@ -328,8 +329,8 @@
                             </table>
                         </div>
 
-                        <!-- PHÂN TRANG CLIENT SIDE CHO KHÁCH HÀNG CRM -->
-                        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="crmPaginationWrapper">
+                        <!-- CRM Pagination Block -->
+                        <div class="pagination-container" id="crmPaginationWrapper">
                             <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                             <nav>
                                 <ul class="pagination pagination-sm mb-0 justify-content-end" id="crmPaginationButtons"></ul>
@@ -351,21 +352,17 @@
 
     function paginateCrmCustomers() {
         const tableBody = document.getElementById("customerTableBody");
-        if (!tableBody) return; // Nếu ở trang Detail, bỏ qua
-
+        if (!tableBody) return; // If on Detail view, bypass pagination
         crmRows = Array.from(document.querySelectorAll("#customerTableBody .customer-row"));
         renderCrmRows();
     }
 
     function renderCrmRows() {
         crmRows.forEach(row => row.style.display = "none");
-
         const startIdx = (currentCrmPage - 1) * ROWS_PER_PAGE_CRM;
         const endIdx = startIdx + ROWS_PER_PAGE_CRM;
         const pageRows = crmRows.slice(startIdx, endIdx);
-
         pageRows.forEach(row => row.style.display = "table-row");
-
         updateCrmPaginationControls();
     }
 
@@ -380,24 +377,23 @@
         const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
         const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng khách hàng';
-
         btnContainer.innerHTML = "";
 
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentCrmPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
+        prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
         btnContainer.appendChild(prevLi);
 
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentCrmPage === i ? "active" : "");
-            li.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
+            li.innerHTML = '<a class="page-link ' + (currentCrmPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="#" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
 
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentCrmPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link" href="#" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
+        nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
         btnContainer.appendChild(nextLi);
     }
 
@@ -410,7 +406,6 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         paginateCrmCustomers();
-
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật hồ sơ khách hàng thành công!');
@@ -419,7 +414,7 @@
             icon: 'error',
             title: 'Lỗi đồng bộ',
             text: '${error}',
-            confirmButtonColor: '#2e7d32'
+            confirmButtonColor: '#10b981'
         });
         </c:if>
     });
