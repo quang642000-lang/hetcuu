@@ -45,7 +45,6 @@
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
         <div class="row g-4">
-
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
                 <!-- 1. HẸN GIỜ LẤY NƯỚC -->
@@ -81,7 +80,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- CỘT PHẢI: TÓM TẮT ĐƠN HÀNG, TOÀN BỘ TOPPINGS & ĐIỂM CRM -->
             <div class="col-12 col-lg-5">
                 <div class="card checkout-card p-4 shadow-sm sticky-top" style="top: 80px;">
@@ -127,7 +125,6 @@
                             </div>
                         </c:forEach>
                     </div>
-
                     <!-- TIÊU ĐIỂM CRM TÍCH LŨY -->
                     <div class="loyalty-box mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -152,7 +149,7 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <!-- ĐỐI SOÁT TÍNH TIỀN HÓA ĐƠN -->
+                    <!-- ĐỐI SOÁT TÍNH TIỀN HÓD ĐƠN -->
                     <div class="bg-light rounded p-3 mb-4 small" style="border: 1px dashed var(--border-color);">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Tiền cốc nước gốc (Kèm Toppings):</span>
@@ -188,41 +185,33 @@
     </form>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 <script>
     const userMaxPointsAvailable = ${not empty sessionScope.customer.diemTichLuy ? sessionScope.customer.diemTichLuy : 0};
     const rawBillTotal = ${tongTienHang};
-
     document.addEventListener("DOMContentLoaded", function() {
         const now = new Date();
         now.setMinutes(now.getMinutes() + 15);
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const minTimeString = hours + ':' + minutes;
-
         const inputTime = document.getElementById("thoiGianHenLay");
         // Gán giờ tối thiểu nhận nước và giá trị mặc định của ô input
         inputTime.min = minTimeString;
         inputTime.value = minTimeString;
-
         calculateRealtimeBill();
     });
-
     function useMaxPoints() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         inputPoints.value = userMaxPointsAvailable;
         calculateRealtimeBill();
     }
-
     function calculateRedeemPointsRealtime() {
         calculateRealtimeBill();
     }
-
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;
         let pointsDiscount = 0;
-
         const select = document.getElementById("selectVoucher");
         const selectedOpt = select.options[select.selectedIndex];
         if (selectedOpt && selectedOpt.value !== "") {
@@ -231,7 +220,6 @@
             const value = parseInt(selectedOpt.dataset.value);
             const maxVal = parseInt(selectedOpt.dataset.max);
             const minVal = parseInt(selectedOpt.dataset.min);
-
             if (rawSum < minVal) {
                 Swal.fire({
                     icon: 'warning',
@@ -242,7 +230,6 @@
                 calculateRealtimeBill();
                 return;
             }
-
             if (type === 1) {
                 voucherDiscount = value;
             } else if (type === 2) {
@@ -260,7 +247,6 @@
             document.getElementById("param_tienGiamGia").value = 0;
             document.getElementById("display_discount").innerText = '-0 đ';
         }
-
         const inputPoints = document.getElementById("inputRedeemPoints");
         let pointsToUse = parseInt(inputPoints.value);
         if (isNaN(pointsToUse) || pointsToUse < 0) {
@@ -272,7 +258,6 @@
             inputPoints.value = pointsToUse;
             showToast('warning', 'Quý khách chỉ có tối đa ' + userMaxPointsAvailable + ' điểm CRM!');
         }
-
         pointsDiscount = pointsToUse * 1000;
         const limitPrePoints = rawSum - voucherDiscount;
         if (pointsDiscount > limitPrePoints) {
@@ -280,7 +265,6 @@
             pointsToUse = pointsDiscount / 1000;
             inputPoints.value = pointsToUse > 0 ? pointsToUse : "";
         }
-
         if (pointsToUse > 0) {
             document.getElementById("displayPointsRow").style.display = 'flex';
             document.getElementById("txtPointsRedeemed").innerText = pointsToUse;
@@ -292,16 +276,15 @@
             document.getElementById("param_diemSuDung").value = 0;
             document.getElementById("param_tienTruDiem").value = 0;
         }
-
         let billBeforeTax = rawSum - voucherDiscount - pointsDiscount;
         if (billBeforeTax < 0) billBeforeTax = 0;
         let vatPrice = Math.round(billBeforeTax * 0.08);
         let finalPayable = billBeforeTax + vatPrice;
-
         document.getElementById("display_vat").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
         document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN') + ' đ';
         document.getElementById("param_tongPhaiTra").value = finalPayable;
     }
 </script>
+<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

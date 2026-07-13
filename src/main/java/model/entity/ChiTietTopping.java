@@ -5,6 +5,7 @@ public class ChiTietTopping {
     private int maTp;
     private int soLuong;
     private int giaChotTp;
+    private String tenTopping; // Bổ sung tên topping để hiển thị có dấu chuẩn chỉ
 
     // Constructor mặc định không tham số
     public ChiTietTopping() {}
@@ -15,6 +16,15 @@ public class ChiTietTopping {
         this.maTp = maTp;
         this.soLuong = soLuong;
         this.giaChotTp = giaChotTp;
+    }
+
+    // Constructor mở rộng kèm tên topping
+    public ChiTietTopping(long maCtdh, int maTp, int soLuong, int giaChotTp, String tenTopping) {
+        this.maCtdh = maCtdh;
+        this.maTp = maTp;
+        this.soLuong = soLuong;
+        this.giaChotTp = giaChotTp;
+        this.tenTopping = tenTopping;
     }
 
     // Getter và Setter cho các thuộc tính liên kết dữ liệu
@@ -48,5 +58,13 @@ public class ChiTietTopping {
 
     public void setGiaChotTp(int giaChotTp) {
         this.giaChotTp = giaChotTp;
+    }
+
+    public String getTenTopping() {
+        return tenTopping;
+    }
+
+    public void setTenTopping(String tenTopping) {
+        this.tenTopping = tenTopping;
     }
 }

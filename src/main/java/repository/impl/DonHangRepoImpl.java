@@ -11,7 +11,9 @@ import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
+
     private DonHangRepoImpl() {}
+
     public static synchronized DonHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new DonHangRepoImpl();
@@ -91,6 +93,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
 
             psCtdh = conn.prepareStatement(sqlCtdh, Statement.RETURN_GENERATED_KEYS);
             psCttp = conn.prepareStatement(sqlCttp);
+
             for (ChiTietDonHang detail : entity.getChiTietDonHangList()) {
                 psCtdh.setString(1, entity.getMaDh());
                 psCtdh.setString(2, detail.getMaSp());
@@ -108,6 +111,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                         generatedCtdhId = rsKeys.getLong(1);
                     }
                 }
+
                 if (generatedCtdhId != -1) {
                     for (ChiTietTopping topping : detail.getToppingsList()) {
                         psCttp.setLong(1, generatedCtdhId);
@@ -289,7 +293,11 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietTopping> getToppingsOfChiTiet(long maCtdh) {
         List<ChiTietTopping> list = new ArrayList<>();
-        String sql = "SELECT ma_ctdh, ma_tp, so_luong, gia_chot_tp FROM CHI_TIET_TOPPING WHERE ma_ctdh = ?";
+        // ĐỒNG BỘ: Thực hiện JOIN thêm bảng TOPPING để lấy ra tên của Topping tiếng Việt có dấu mượt mà
+        String sql = "SELECT ct.ma_ctdh, ct.ma_tp, ct.so_luong, ct.gia_chot_tp, t.ten_tp " +
+                "FROM CHI_TIET_TOPPING ct " +
+                "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +
+                "WHERE ct.ma_ctdh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, maCtdh);
@@ -299,7 +307,8 @@ public class DonHangRepoImpl implements IDonHangRepository {
                             rs.getLong("ma_ctdh"),
                             rs.getInt("ma_tp"),
                             rs.getInt("so_luong"),
-                            rs.getInt("gia_chot_tp")
+                            rs.getInt("gia_chot_tp"),
+                            rs.getString("ten_tp")
                     ));
                 }
             }
@@ -309,7 +318,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
         return list;
     }
 
-    // ĐỒNG BỘ MÃ KHÓA CHÍNH: Phát sinh mã đơn hàng chuẩn hóa không nhảy vọt, không hỗn loạn
     @Override
     public String generateNextMaDh() {
         String sql = "SELECT NEXT VALUE FOR seq_DonHang";
@@ -318,12 +326,11 @@ public class DonHangRepoImpl implements IDonHangRepository {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 long seqVal = rs.getLong(1);
-                return "TEA" + String.format("%06d", seqVal); // Ví dụ: TEA000001, TEA000123
+                return "TEA" + String.format("%06d", seqVal);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        // Fallback an toàn nếu database gặp sự cố tạm thời
         return "TEA" + (System.currentTimeMillis() / 1000);
     }
 

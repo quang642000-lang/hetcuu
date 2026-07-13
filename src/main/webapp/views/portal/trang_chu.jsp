@@ -44,7 +44,6 @@
 </head>
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-4">
     <!-- BANNER CHƯƠNG TRÌNH KHUYẾN MÃI -->
     <div class="portal-banner mb-5 shadow-sm d-flex align-items-center">
@@ -62,7 +61,6 @@
             </div>
         </div>
     </div>
-
     <!-- KHU VỰC DANH MỤC SẢN PHẨM -->
     <div class="mb-5">
         <h4 class="fw-bold mb-3 d-flex align-items-center gap-2">
@@ -88,7 +86,6 @@
             </c:forEach>
         </div>
     </div>
-
     <!-- SẢN PHẨM BÁN CHẠY (BESTSELLERS) -->
     <div class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -107,7 +104,6 @@
                         </div>
                         <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${sp.tenSp}"/></h6>
                         <p class="text-muted small text-truncate mb-3"><c:out value="${sp.moTa}"/></p>
-
                         <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">Giá khởi điểm:</span>
@@ -127,7 +123,6 @@
             </c:forEach>
         </div>
     </div>
-
     <!-- MÓN MỚI LÊN KỆ (NEW ARRIVALS) -->
     <div class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -146,7 +141,6 @@
                         </div>
                         <h6 class="fw-bold text-dark mb-1 text-truncate"><c:out value="${sp.tenSp}"/></h6>
                         <p class="text-muted small text-truncate mb-3"><c:out value="${sp.moTa}"/></p>
-
                         <div class="d-flex flex-column gap-2 mt-auto border-top pt-2.5">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">Giá khởi điểm:</span>
@@ -167,8 +161,7 @@
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

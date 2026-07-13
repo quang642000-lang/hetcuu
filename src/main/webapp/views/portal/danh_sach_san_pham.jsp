@@ -138,6 +138,6 @@
     </div>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

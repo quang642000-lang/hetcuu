@@ -19,9 +19,7 @@
     </style>
 </head>
 <body class="bg-light">
-
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-5">
     <div class="card border-0 p-4 shadow-sm mb-4" style="border-radius: 16px;">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -33,7 +31,6 @@
                 <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="confirmCancelOrder('${order.maDh}')">HỦY ĐƠN HÀNG</button>
             </c:if>
         </div>
-
         <!-- DÒNG TIẾN ĐỘ THỜI GIAN THỰC (TIMELINE) -->
         <div class="position-relative mb-5 py-2">
             <div class="timeline-progress"></div>
@@ -60,7 +57,6 @@
                 </div>
             </div>
         </div>
-
         <!-- CHI TIẾT SẢN PHẨM HOÁ ĐƠN -->
         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-receipt"></i> Hóa đơn thanh toán chi tiết</h5>
         <div class="table-responsive">
@@ -68,19 +64,36 @@
                 <thead>
                 <tr>
                     <th>Tên món & Size</th>
-                    <th>Cấu hình riêng</th>
+                    <th>Cấu hình riêng & Toppings</th>
                     <th class="text-center">Số lượng</th>
                     <th class="text-end">Đơn giá</th>
                     <th class="text-end">Thành tiền</th>
                 </tr>
                 </thead>
                 <tbody>
-                <c:forEach var="item" items="${order.items}">
+                <%-- SỬA ĐỔI CHÍ MẠNG: Đổi từ order.items (không tồn tại trong entity) sang order.chiTietDonHangList --%>
+                <c:forEach var="item" items="${order.chiTietDonHangList}">
                     <tr>
-                        <td><strong><c:out value="${item.tenMon}"/></strong> (Size ${item.tenSize})</td>
                         <td>
-                            <span class="badge bg-light text-dark border">Đá: ${item.mucDa}</span>
-                            <span class="badge bg-light text-dark border">Đường: ${item.mucDuong}</span>
+                            <strong><c:out value="${item.maSp}"/></strong> (Size ${item.tenSize})
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <span class="badge bg-light text-dark border">Đá: ${item.mucDa}</span>
+                                <span class="badge bg-light text-dark border">Đường: ${item.mucDuong}</span>
+                            </div>
+                                <%-- BỔ SUNG: Hiển thị đầy đủ toppings đi kèm với tên tiếng Việt chuẩn có dấu --%>
+                            <c:if test="${not empty item.toppingsList}">
+                                <div class="text-success small mt-1">
+                                    <i class="bi bi-plus-circle"></i> Toppings:
+                                    <c:forEach var="tp" items="${item.toppingsList}" varStatus="tpLoop">
+                                        <c:out value="${not empty tp.tenTopping ? tp.tenTopping : 'Topping #' += tp.maTp}"/> (x${tp.soLuong})${!tpLoop.last ? ', ' : ''}
+                                    </c:forEach>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty item.ghiChuMon && item.ghiChuMon ne 'Normal' && item.ghiChuMon ne 'Quick Add'}">
+                                <div class="text-danger small font-monospace mt-1"><i class="bi bi-pencil-fill"></i> Ghi chú: ${item.ghiChuMon}</div>
+                            </c:if>
                         </td>
                         <td class="text-center fw-bold">${item.soLuong}</td>
                         <td class="text-end"><fmt:formatNumber value="${item.giaChot}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
@@ -92,9 +105,7 @@
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmCancelOrder(maDh) {

@@ -31,7 +31,6 @@
                 <p class="text-muted mb-4"><c:out value="${product.moTa}"/></p>
                 <form id="addToCartForm" action="${pageContext.request.contextPath}/cart/add" method="POST">
                     <input type="hidden" name="maSp" value="${product.maSp}">
-
                     <!-- Truyền ID chi tiết giỏ hàng nếu đang sửa -->
                     <c:if test="${not empty editItem}">
                         <input type="hidden" name="maCtgh" value="${editItem.maCtgh}">
@@ -305,5 +304,6 @@
         calculateRealtimeTotal();
     });
 </script>
+<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

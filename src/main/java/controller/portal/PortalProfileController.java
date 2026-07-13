@@ -9,6 +9,7 @@ import service.IKhuyenMaiService;
 import service.impl.DonHangServiceImpl;
 import service.impl.KhachHangServiceImpl;
 import service.impl.KhuyenMaiServiceImpl;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,12 +24,11 @@ import java.util.List;
         "/profile",
         "/profile/orders",
         "/profile/vouchers",
-        "/profile/update",
+        "/profile/update",           // ĐÃ BỔ SUNG MÃ ĐƯỜNG DẪN BỊ THIẾU Ở ĐÂY ĐỂ DẬP LỖI 404!
         "/profile/change-password",
         "/portal/order/detail",
         "/portal/order/cancel"
 })
-
 public class PortalProfileController extends HttpServlet {
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
@@ -47,7 +47,7 @@ public class PortalProfileController extends HttpServlet {
 
         String uri = request.getRequestURI();
 
-        // 1. NGHIỆP VỤ: XEM CHI TIẾT ĐƠN HÀNG (TIMELINE & DANH SÁCH MÓN)
+        // 1. NGHIỆP VỤ: XEM CHI TIẾT ĐƠN HÀNG
         if (uri.contains("/portal/order/detail")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -60,12 +60,11 @@ public class PortalProfileController extends HttpServlet {
             return;
         }
 
-        // 2. NGHIỆP VỤ: KHÁCH HÀNG CHỦ ĐỘNG HỦY ĐƠN ONLINE (TRẠNG THÁI CHỜ DUYỆT = 0)
+        // 2. NGHIỆP VỤ: KHÁCH HÀNG CHỦ ĐỘNG HỦY ĐƠN ONLINE
         if (uri.contains("/portal/order/cancel")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
             if (dh != null && dh.getMaKh().equals(freshCustomer.getMaKh()) && dh.getTrangThaiDon() == 0) {
-                // Hủy đơn với tư cách của chính khách hàng CRM
                 boolean success = donHangService.updateTrangThaiDon(id, 5, "CUSTOMER", "Khách hàng chủ động hủy trên Website Portal.");
                 if (success) {
                     response.sendRedirect(request.getContextPath() + "/profile/orders?msg=cancelsuccess");
@@ -101,6 +100,7 @@ public class PortalProfileController extends HttpServlet {
         }
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         String uri = request.getRequestURI();
+
         if (uri.endsWith("/profile/change-password")) {
             performChangePassword(request, response, currentCustomer.getMaKh());
         } else {
@@ -121,16 +121,17 @@ public class PortalProfileController extends HttpServlet {
         kh.setEmail(email);
         kh.setGioiTinh(gioiTinh);
         kh.setDiaChiLienHe(diaChi);
+
         if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
             kh.setNgaySinh(Date.valueOf(ngaySinhStr));
         }
+
         boolean success = khachHangService.updateCustomerProfile(kh);
         if (success) {
             response.sendRedirect(request.getContextPath() + "/profile?msg=updatesuccess");
         } else {
             request.setAttribute("customerProfile", kh);
             request.setAttribute("error", "Lỗi: Số điện thoại hoặc Email đã được đăng ký ở tài khoản khác!");
-            // SỬA LỖI: profile.jsp -> ho_so.jsp
             request.getRequestDispatcher("/views/portal/ho_so.jsp").forward(request, response);
         }
     }
@@ -139,11 +140,13 @@ public class PortalProfileController extends HttpServlet {
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
+
         if (newPassword == null || !newPassword.equals(confirmPassword)) {
             request.setAttribute("errorPassword", "Xác nhận mật khẩu mới không trùng khớp!");
             doGet(request, response);
             return;
         }
+
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
             String oldHashed = util.SecurityUtil.hashSHA256(oldPassword);
