@@ -5,6 +5,7 @@
 <html lang="vi">
 <head>
     <!-- Khai báo các biến an toàn để phòng tránh Null Property Access lỗi 500 trên Tomcat 11 / EL 6.0 -->
+    <!-- CHỈNH SỬA CHÍ MẠNG: Dùng requestScope.customer thay vì customer chung chung để phân tách với Session customer của cổng Portal khách hàng! -->
     <c:set var="maKh" value="" />
     <c:set var="tenKh" value="" />
     <c:set var="soDienThoai" value="" />
@@ -16,22 +17,21 @@
     <c:set var="diemTichLuy" value="0" />
     <c:set var="maHang" value="1" />
     <c:set var="trangThaiVal" value="true" />
-
-    <c:if test="${not empty customer}">
-        <c:set var="maKh" value="${customer.maKh}" />
-        <c:set var="tenKh" value="${customer.tenKh}" />
-        <c:set var="soDienThoai" value="${customer.soDienThoai}" />
-        <c:set var="email" value="${customer.email}" />
+    <c:if test="${not empty requestScope.customer}">
+        <c:set var="maKh" value="${requestScope.customer.maKh}" />
+        <c:set var="tenKh" value="${requestScope.customer.tenKh}" />
+        <c:set var="soDienThoai" value="${requestScope.customer.soDienThoai}" />
+        <c:set var="email" value="${requestScope.customer.email}" />
         <!-- Định dạng ngày sinh an toàn tuyệt đối chống sập lỗi 500 -->
-        <c:if test="${not empty customer.ngaySinh}">
-            <fmt:formatDate value="${customer.ngaySinh}" pattern="yyyy-MM-dd" var="ngaySinh"/>
+        <c:if test="${not empty requestScope.customer.ngaySinh}">
+            <fmt:formatDate value="${requestScope.customer.ngaySinh}" pattern="yyyy-MM-dd" var="ngaySinh"/>
         </c:if>
-        <c:set var="gioiTinh" value="${customer.gioiTinh}" />
-        <c:set var="diaChiLienHe" value="${customer.diaChiLienHe}" />
-        <c:set var="hinhAnhUrl" value="${customer.hinhAnhUrl}" />
-        <c:set var="diemTichLuy" value="${customer.diemTichLuy}" />
-        <c:set var="maHang" value="${customer.maHang}" />
-        <c:set var="trangThaiVal" value="${customer['trangThai']}" />
+        <c:set var="gioiTinh" value="${requestScope.customer.gioiTinh}" />
+        <c:set var="diaChiLienHe" value="${requestScope.customer.diaChiLienHe}" />
+        <c:set var="hinhAnhUrl" value="${requestScope.customer.hinhAnhUrl}" />
+        <c:set var="diemTichLuy" value="${requestScope.customer.diemTichLuy}" />
+        <c:set var="maHang" value="${requestScope.customer.maHang}" />
+        <c:set var="trangThaiVal" value="${requestScope.customer['trangThai']}" />
     </c:if>
     <title>TEA POS - Quản Lý Hồ Sơ Khách Hàng CRM</title>
     <meta charset="UTF-8">
@@ -49,7 +49,7 @@
         <div class="p-4">
             <c:choose>
                 <%-- ==================== TRƯỜNG HỢP 1: HIỂN THỊ CHI TIẾT TABS KHÁCH HÀNG CRM ==================== --%>
-                <c:when test="${not empty customer}">
+                <c:when test="${not empty requestScope.customer}">
                     <div class="mb-3">
                         <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-secondary-teapos d-inline-flex align-items-center gap-1">
                             <i class="bi bi-arrow-left"></i> Quay lại danh sách CRM
@@ -90,7 +90,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Khối thông tin chi tiết Tabs bên phải -->
                         <div class="col-12 col-lg-8">
                             <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
@@ -167,7 +166,6 @@
                                             </button>
                                         </form>
                                     </div>
-
                                     <!-- TAB 2: LỊCH SỬ GIAO DỊCH -->
                                     <div class="tab-pane fade" id="orders" role="tabpanel">
                                         <div class="table-responsive">
@@ -192,9 +190,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-                                                                        <span class="badge bg-light text-dark border">
-                                                                                ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-                                                                        </span>
+                                                                    <span class="badge bg-light text-dark border">
+                                                                            ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+                                                                    </span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -222,7 +220,6 @@
                                             </table>
                                         </div>
                                     </div>
-
                                     <!-- TAB 3: VOUCHER VIP KHẢ DỤNG -->
                                     <div class="tab-pane fade" id="vouchers" role="tabpanel">
                                         <div class="row g-3">
@@ -256,7 +253,6 @@
                         </div>
                     </div>
                 </c:when>
-
                 <%-- ==================== TRƯỜNG HỢP 2: HIỂN THỊ DANH SÁCH KHÁCH HÀNG (LIST) ==================== --%>
                 <c:otherwise>
                     <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
@@ -266,7 +262,6 @@
                                 <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng Loyalty và phân hạng khách hàng</p>
                             </div>
                         </div>
-
                         <div class="table-responsive admin-table-container">
                             <table class="table table-hover align-middle text-center admin-table" id="customerTable">
                                 <thead>
@@ -307,9 +302,9 @@
                                                 </td>
                                                 <td class="fw-bold text-success">${item.diemTichLuy} điểm</td>
                                                 <td>
-                                                        <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                                ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
-                                                        </span>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                            ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
+                                                    </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-action-info">
@@ -328,7 +323,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <!-- CRM Pagination Block -->
                         <div class="pagination-container" id="crmPaginationWrapper">
                             <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -342,7 +336,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -371,7 +364,6 @@
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
         const infoEl = document.getElementById("crmPaginationInfo");
         const btnContainer = document.getElementById("crmPaginationButtons");
-
         if (!infoEl || !btnContainer) return;
 
         const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;

@@ -13,7 +13,8 @@ public class ChiTietDonHang {
     private String mucDa;
     private String mucDuong;
     private String ghiChuMon;
-    private String tenSize; // THÊM ĐỂ ĐỒNG BỘ ĐỘNG TÊN SIZE XL/GIANT
+    private String tenSize;
+    private String tenSp; // THÊM ĐỂ ĐỒNG BỘ HIỂN THỊ TÊN TIẾNG VIỆT CHUẨN TRÊN PORTAL KHÁCH
 
     // QUAN HỆ 1-N: Một ly nước chi tiết có thể chọn đi kèm nhiều món Topping bổ sung
     private List<ChiTietTopping> toppingsList = new ArrayList<>();
@@ -66,7 +67,10 @@ public class ChiTietDonHang {
     public String getTenSize() { return tenSize; }
     public void setTenSize(String tenSize) { this.tenSize = tenSize; }
 
-    // Hàm lấy danh sách Topping đi kèm của ly nước (Giải quyết triệt để lỗi getToppingsList)
+    public String getTenSp() { return tenSp; }
+    public void setTenSp(String tenSp) { this.tenSp = tenSp; }
+
+    // Hàm lấy danh sách Topping đi kèm của ly nước
     public List<ChiTietTopping> getToppingsList() { return toppingsList; }
     public void setToppingsList(List<ChiTietTopping> toppingsList) { this.toppingsList = toppingsList; }
 }

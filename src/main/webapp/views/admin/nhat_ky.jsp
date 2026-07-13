@@ -37,6 +37,7 @@
                         </c:if>
                     </form>
                 </div>
+
                 <!-- BẢNG DANH SÁCH NHẬT KÝ -->
                 <div class="table-responsive">
                     <table class="table table-hover table-teapos align-middle text-center" id="logTable">
@@ -58,7 +59,16 @@
                                     <tr class="log-row">
                                         <td><code>#${item.maLog}</code></td>
                                         <td class="small"><fmt:formatDate value="${item.thoiGian}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
-                                        <td><span class="badge bg-light text-dark border"><strong>${item.maNv}</strong></span></td>
+                                        <td>
+                                                <%-- ĐỒNG BỘ: Duyệt tìm để hiển thị Tên thật của nhân sự thay vì mã ID NVxxxx gây khó hiểu cho Admin --%>
+                                            <c:set var="matchedStaffName" value="${item.maNv}" />
+                                            <c:forEach var="nv" items="${employees}">
+                                                <c:if test="${nv.maNv eq item.maNv}">
+                                                    <c:set var="matchedStaffName" value="${nv.hoTen}" />
+                                                </c:if>
+                                            </c:forEach>
+                                            <span class="badge bg-light text-dark border" title="Mã NV: ${item.maNv}"><strong><c:out value="${matchedStaffName}"/></strong></span>
+                                        </td>
                                         <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.hanhDong}"/></span></td>
                                         <td><code>${item.bangTacDong}</code></td>
                                         <td><small class="text-muted">${not empty item.ipAddress ? item.ipAddress : '127.0.0.1'}</small></td>
@@ -67,12 +77,12 @@
                                                 <!-- ĐỒNG BỘ: Sử dụng data-attributes chống gãy rụng dấu quote lồng nhau -->
                                                 <button type="button" class="btn btn-sm btn-outline-success fw-bold px-2.5 py-1 small"
                                                         data-log="#${item.maLog}"
-                                                        data-nv="${item.maNv}"
+                                                        data-nv="${matchedStaffName} (${item.maNv})"
                                                         data-action="${item.hanhDong}"
                                                         data-old="${item.duLieuCu}"
                                                         data-new="${item.duLieuMoi}"
                                                         onclick="handleAuditDiffClick(this)">
-                                                    <i class="bi bi-file-earmark-diff"></i> So sánh dữ liệu
+                                                    <i class="bi bi-file-earmark-diff"></i> Đối soát
                                                 </button>
                                             </div>
                                         </td>
@@ -100,7 +110,7 @@
         </div>
     </div>
 </div>
-</div>
+
 <!-- MODAL BÓC TÁCH JSON ĐỐI SOÁT DỮ LIỆU CŨ VÀ MỚI (DIFF VIEWER) -->
 <div class="modal fade" id="auditDiffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -124,6 +134,15 @@
                         <strong id="diffHanhDong" class="text-primary"></strong>
                     </div>
                 </div>
+
+                <!-- BẢNG PHÂN TÍCH BIẾN ĐỘNG CHI TIẾT (HUMAN-READABLE DIFF) -->
+                <div class="card p-3 mb-3 border border-success" style="border-radius: 8px; background-color: #fefefe;">
+                    <h6 class="fw-bold text-success mb-2" style="font-size: 13px;"><i class="bi bi-search"></i> BẢNG PHÂN TÍCH BIẾN ĐỘNG THUỘC TÍNH (HUMAN-READABLE):</h6>
+                    <ul id="friendlyDiffContainer" class="small text-dark mb-0 ps-3" style="line-height: 1.8;">
+                        <!-- JS tự động băm nạp phân tích so sánh thuộc tính cũ/mới -->
+                    </ul>
+                </div>
+
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold text-danger small"><i class="bi bi-dash-circle-fill"></i> Trạng thái dữ liệu cũ (JSON)</label>
@@ -141,10 +160,12 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const diffModal = new bootstrap.Modal(document.getElementById('auditDiffModal'));
+
     function handleAuditDiffClick(button) {
         const maLog = button.getAttribute("data-log");
         const maNv = button.getAttribute("data-nv");
@@ -153,15 +174,88 @@
         const newVal = button.getAttribute("data-new");
         viewAuditDiff(maLog, maNv, hanhDong, encodeURIComponent(oldVal || ''), encodeURIComponent(newVal || ''));
     }
+
+    // BỘ PHÂN TÍCH TỰ ĐỘNG BIẾN ĐỘNG CHI TIẾT (DIFF ENGINE)
+    function generateFriendlyDiff(oldObj, newObj) {
+        if (!oldObj && newObj) {
+            return ["<li><span class='badge bg-success me-1'>[THÊM MỚI]</span> Khởi tạo và lưu thông tin bản ghi mới tinh vào hệ thống!</li>"];
+        }
+        if (oldObj && !newObj) {
+            return ["<li><span class='badge bg-danger me-1'>[XÓA BỎ]</span> Gỡ bỏ cứng hoàn toàn bản ghi khỏi CSDL!</li>"];
+        }
+
+        let diffs = [];
+        const labels = {
+            "tenSp": "Tên sản phẩm",
+            "maSp": "Mã sản phẩm",
+            "maDm": "Mã danh mục",
+            "moTa": "Mô tả",
+            "hinhAnh": "Ảnh minh họa",
+            "choPhepDoiDa": "Tùy chọn chỉnh Đá",
+            "choPhepDoiDuong": "Tùy chọn chỉnh Đường",
+            "isNew": "Trạng thái nhãn MỚI",
+            "isBestseller": "Trạng thái nhãn HOT",
+            "trangThai": "Trạng thái mở bán / Hoạt động",
+            "tenKm": "Tên khuyến mãi",
+            "maCode": "Mã CODE Voucher",
+            "giaTriGiam": "Giá trị giảm giá",
+            "giamToiDa": "Chặn giảm tối đa",
+            "donToiThieu": "Đơn tối thiểu áp dụng",
+            "soLuong": "Số lượng phát hành",
+            "ngayBatDau": "Ngày bắt đầu",
+            "ngayKetThuc": "Ngày kết thúc",
+            "tenTp": "Tên Topping",
+            "giaBan": "Giá bán lẻ",
+            "hoTen": "Họ và tên",
+            "soDienThoai": "Số điện thoại di động",
+            "email": "Địa chỉ Email",
+            "tenDangNhap": "Tên đăng nhập",
+            "maVt": "Quyền vai trò (1: Admin, 2: Staff)",
+            "diaChiLienHe": "Địa chỉ liên hệ",
+            "gioiTinh": "Giới tính"
+        };
+
+        for (let key in newObj) {
+            if (oldObj.hasOwnProperty(key)) {
+                let oldVal = oldObj[key];
+                let newVal = newObj[key];
+
+                if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                    let label = labels[key] || key;
+                    if (typeof newVal === 'boolean') {
+                        let oTxt = oldVal ? "ĐANG BẬT" : "ĐANG TẮT";
+                        let nTxt = newVal ? "ĐANG BẬT" : "ĐANG TẮT";
+                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">${oTxt}</span> sang <span class="text-success fw-bold">${nTxt}</span>.</li>`);
+                    } else if (key.toLowerCase().includes("gia") || key.toLowerCase().includes("tien") || key.toLowerCase().includes("giam")) {
+                        let oPrice = parseInt(oldVal) || 0;
+                        let nPrice = parseInt(newVal) || 0;
+                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">${oPrice.toLocaleString('vi-VN')} đ</span> sang <span class="text-success fw-bold">${nPrice.toLocaleString('vi-VN')} đ</span>.</li>`);
+                    } else {
+                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">'${oldVal}'</span> sang <span class="text-success fw-bold">'${newVal}'</span>.</li>`);
+                    }
+                }
+            }
+        }
+
+        if (diffs.length === 0) {
+            return ["<li><span class='badge bg-secondary me-1'>[KHÔNG BIẾN ĐỘNG]</span> Không phát hiện bất kỳ thay đổi thuộc tính cốt lõi nào (chỉ cập nhật mốc thời gian hệ thống).</li>"];
+        }
+        return diffs;
+    }
+
     function viewAuditDiff(maLog, maNv, hanhDong, encodedOld, encodedNew) {
         document.getElementById("diffMaLog").innerText = maLog;
         document.getElementById("diffMaNv").innerText = maNv;
         document.getElementById("diffHanhDong").innerText = hanhDong;
+
         let oldStr = decodeURIComponent(encodedOld).trim();
         let newStr = decodeURIComponent(encodedNew).trim();
+        let parsedOld = null;
+        let parsedNew = null;
+
         try {
             if (oldStr && oldStr !== 'null') {
-                let parsedOld = JSON.parse(oldStr);
+                parsedOld = JSON.parse(oldStr);
                 document.getElementById("jsonOld").innerText = JSON.stringify(parsedOld, null, 2);
             } else {
                 document.getElementById("jsonOld").innerText = "Chưa phát sinh (Tạo mới hoàn toàn)";
@@ -169,9 +263,10 @@
         } catch (e) {
             document.getElementById("jsonOld").innerText = oldStr ? oldStr : "Không có dữ liệu cũ";
         }
+
         try {
             if (newStr && newStr !== 'null') {
-                let parsedNew = JSON.parse(newStr);
+                parsedNew = JSON.parse(newStr);
                 document.getElementById("jsonNew").innerText = JSON.stringify(parsedNew, null, 2);
             } else {
                 document.getElementById("jsonNew").innerText = "Hủy bỏ / Xóa sạch";
@@ -179,15 +274,26 @@
         } catch (e) {
             document.getElementById("jsonNew").innerText = newStr ? newStr : "Không có dữ liệu mới";
         }
+
+        // Tạo human-readable diff
+        const diffContainer = document.getElementById("friendlyDiffContainer");
+        diffContainer.innerHTML = "";
+        const diffList = generateFriendlyDiff(parsedOld, parsedNew);
+        diffList.forEach(item => {
+            diffContainer.innerHTML += item;
+        });
+
         diffModal.show();
     }
+
     document.addEventListener("DOMContentLoaded", function() {
-// PHÂN TRANG CLIENT-SIDE
+        // PHÂN TRANG CLIENT-SIDE
         const pageSize = 10;
         let currentPage = 1;
         const rows = Array.from(document.querySelectorAll("#logTable tbody .log-row"));
         const totalRecords = rows.length;
         const totalPages = Math.ceil(totalRecords / pageSize);
+
         function paginateLogTable() {
             if (totalRecords === 0) {
                 document.getElementById("logPaginationArea").style.display = "none";
@@ -207,6 +313,7 @@
             document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
             renderPaginationButtons();
         }
+
         function renderPaginationButtons() {
             const controls = document.getElementById("paginatedControls");
             controls.innerHTML = "";
@@ -219,21 +326,25 @@
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
             prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
             controls.appendChild(prevLi);
+
             for (let i = 1; i <= totalPages; i++) {
                 const pageLi = document.createElement("li");
                 pageLi.className = "page-item " + (currentPage === i ? "active" : "");
                 pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
                 controls.appendChild(pageLi);
             }
+
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
             nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
             controls.appendChild(nextLi);
         }
+
         window.changePage = function(newPage) {
             currentPage = newPage;
             paginateLogTable();
         }
+
         if (rows.length > 0) {
             paginateLogTable();
         }

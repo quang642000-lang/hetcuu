@@ -45,8 +45,7 @@
                             <option value="4" ${statusFilter eq '4' ? 'selected' : ''}>Hoàn thành</option>
                             <option value="5" ${statusFilter eq '5' ? 'selected' : ''}>Đã hủy</option>
                         </select>
-
-                        <!-- NÂNG CẤP: Thêm bộ lọc nhân sự đảm nhận xử lý đơn hàng (Realtime AJAX / Client Filter) -->
+                        <!-- NÂNG CẤP: Lọc theo nhân viên có dấu mượt mà -->
                         <select id="filterNhanVien" class="form-select form-select-sm" style="max-width: 200px;" onchange="filterOrdersRealtime()">
                             <option value="">Tất cả nhân viên đảm nhiệm</option>
                             <option value="SYSTEM">Hệ thống tự động / Chưa nhận đơn</option>
@@ -54,7 +53,6 @@
                                 <option value="${nv.maNv}"><c:out value="${nv.hoTen}"/> (${nv.maNv})</option>
                             </c:forEach>
                         </select>
-
                         <button type="submit" class="btn btn-sm btn-primary-teapos px-3"><i class="bi bi-funnel"></i> Lọc đơn</button>
                     </form>
                 </div>
@@ -68,9 +66,8 @@
                             <th class="text-end">Tiền gốc</th>
                             <th class="text-end">Khấu trừ KM</th>
                             <th class="text-end">Thành tiền</th>
-                            <th class="text-center">Thanh Toán</th>
+                            <th class="text-center">Thanh Toản</th>
                             <th class="text-center">Trạng Thái Đơn</th>
-                            <!-- Thêm cột người xử lý hiển thị minh bạch -->
                             <th class="text-center">Nhân viên đảm nhiệm</th>
                             <th class="text-end">Thao tác</th>
                         </tr>
@@ -94,9 +91,9 @@
                                         <td class="text-end text-danger">-<fmt:formatNumber value="${item.tienGiamGia + item.tienTruDiem}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-end text-success fw-bold"><fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center">
-<span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
-        ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
-</span>
+                                            <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
+                                                    ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
+                                            </span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -111,7 +108,14 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.maNv}">
-                                                    <span class="badge bg-light text-dark border"><i class="bi bi-person-badge text-success me-1"></i>${item.maNv}</span>
+                                                    <%-- ĐỒNG BỘ: Duyệt tìm để hiển thị Tên thật của nhân sự thay vì mã ID NVxxxx gây khó hiểu --%>
+                                                    <c:set var="matchedStaffName" value="${item.maNv}" />
+                                                    <c:forEach var="nv" items="${employees}">
+                                                        <c:if test="${nv.maNv eq item.maNv}">
+                                                            <c:set var="matchedStaffName" value="${nv.hoTen}" />
+                                                        </c:if>
+                                                    </c:forEach>
+                                                    <span class="badge bg-light text-dark border"><i class="bi bi-person-badge text-success me-1"></i><c:out value="${matchedStaffName}"/></span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span class="text-muted small">Chờ nhận đơn / Online</span>
@@ -133,7 +137,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- Bộ phân trang Client-side điều khiển mượt mà -->
                 <div class="pagination-container" id="paginationBlock" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 đơn hàng</span>
@@ -141,11 +144,9 @@
                         <ul class="pagination pagination-sm mb-0" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- POPUP CHI TIẾT HÓA ĐƠN & IN BILL POS -->
@@ -212,7 +213,6 @@
     function showReceiptDetail(maDh) {
         // Chống lỗi lưu cache hóa đơn cũ của trình duyệt
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
-
         fetch('${pageContext.request.contextPath}/admin/hoadon?action=detailJson&id=' + maDh)
             .then(res => res.json())
             .then(data => {
@@ -284,7 +284,6 @@
     function filterOrdersRealtime() {
         const selectedNv = document.getElementById("filterNhanVien").value;
         const allRows = document.querySelectorAll("#ordersTable tbody .order-row");
-
         filteredRows = [];
         allRows.forEach(row => {
             const rowNv = row.getAttribute("data-manv");
@@ -295,7 +294,6 @@
                 row.style.display = "none";
             }
         });
-
         showPage(1);
     }
 
@@ -315,14 +313,11 @@
         }
 
         document.getElementById("paginationBlock").style.display = "flex";
-
         const start = (page - 1) * rowsPerPage;
         const end = Math.min(start + rowsPerPage, totalRows);
-
         for (let i = start; i < end; i++) {
             filteredRows[i].style.display = "table-row";
         }
-
         document.getElementById("paginationInfo").innerText = "Hiển thị từ " + (start + 1) + " đến " + end + " của " + totalRows + " đơn hàng";
 
         // Vẽ lại các nút phân trang
@@ -352,7 +347,6 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         initPagination();
-
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật trạng thái đơn hàng thành công!');

@@ -11,7 +11,6 @@ import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
-
     private DonHangRepoImpl() {}
 
     public static synchronized DonHangRepoImpl getInstance() {
@@ -111,7 +110,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
                         generatedCtdhId = rsKeys.getLong(1);
                     }
                 }
-
                 if (generatedCtdhId != -1) {
                     for (ChiTietTopping topping : detail.getToppingsList()) {
                         psCttp.setLong(1, generatedCtdhId);
@@ -260,9 +258,11 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietDonHang> getChiTietDonHang(String maDh) {
         List<ChiTietDonHang> list = new ArrayList<>();
-        String sql = "SELECT ct.ma_ctdh, ct.ma_dh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.gia_chot, ct.muc_da, ct.muc_duong, ct.ghi_chu_mon, kc.ten_size " +
+        // ĐỒNG BỘ: JOIN thêm SAN_PHAM để lấy chính xác ten_sp làm phong phú giao diện
+        String sql = "SELECT ct.ma_ctdh, ct.ma_dh, ct.ma_sp, ct.ma_size, ct.so_luong, ct.gia_chot, ct.muc_da, ct.muc_duong, ct.ghi_chu_mon, kc.ten_size, sp.ten_sp " +
                 "FROM CHI_TIET_DON_HANG ct " +
                 "JOIN KICH_CO kc ON ct.ma_size = kc.ma_size " +
+                "JOIN SAN_PHAM sp ON ct.ma_sp = sp.ma_sp " +
                 "WHERE ct.ma_dh = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -281,6 +281,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                             rs.getString("ghi_chu_mon")
                     );
                     ctdh.setTenSize(rs.getString("ten_size"));
+                    ctdh.setTenSp(rs.getString("ten_sp")); // Thiết lập tên tiếng Việt đầy đủ!
                     list.add(ctdh);
                 }
             }
@@ -293,7 +294,6 @@ public class DonHangRepoImpl implements IDonHangRepository {
     @Override
     public List<ChiTietTopping> getToppingsOfChiTiet(long maCtdh) {
         List<ChiTietTopping> list = new ArrayList<>();
-        // ĐỒNG BỘ: Thực hiện JOIN thêm bảng TOPPING để lấy ra tên của Topping tiếng Việt có dấu mượt mà
         String sql = "SELECT ct.ma_ctdh, ct.ma_tp, ct.so_luong, ct.gia_chot_tp, t.ten_tp " +
                 "FROM CHI_TIET_TOPPING ct " +
                 "JOIN TOPPING t ON ct.ma_tp = t.ma_tp " +

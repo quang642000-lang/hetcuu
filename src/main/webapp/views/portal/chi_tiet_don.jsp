@@ -31,6 +31,7 @@
                 <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="confirmCancelOrder('${order.maDh}')">HỦY ĐƠN HÀNG</button>
             </c:if>
         </div>
+
         <!-- DÒNG TIẾN ĐỘ THỜI GIAN THỰC (TIMELINE) -->
         <div class="position-relative mb-5 py-2">
             <div class="timeline-progress"></div>
@@ -57,6 +58,7 @@
                 </div>
             </div>
         </div>
+
         <!-- CHI TIẾT SẢN PHẨM HOÁ ĐƠN -->
         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-receipt"></i> Hóa đơn thanh toán chi tiết</h5>
         <div class="table-responsive">
@@ -71,11 +73,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <%-- SỬA ĐỔI CHÍ MẠNG: Đổi từ order.items (không tồn tại trong entity) sang order.chiTietDonHangList --%>
+                <%-- SỬA ĐỔI CHÍ MẠNG: Đổi từ item.maSp sang item.tenSp để hiển thị tên tiếng Việt cực kỳ rõ ràng, dễ hiểu! --%>
                 <c:forEach var="item" items="${order.chiTietDonHangList}">
                     <tr>
                         <td>
-                            <strong><c:out value="${item.maSp}"/></strong> (Size ${item.tenSize})
+                            <strong><c:out value="${item.tenSp}"/></strong> (Size ${item.tenSize})
                         </td>
                         <td>
                             <div class="mb-1">
