@@ -23,10 +23,12 @@ import java.util.List;
         "/profile",
         "/profile/orders",
         "/profile/vouchers",
+        "/profile/update",
         "/profile/change-password",
         "/portal/order/detail",
         "/portal/order/cancel"
 })
+
 public class PortalProfileController extends HttpServlet {
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();

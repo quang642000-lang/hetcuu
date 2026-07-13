@@ -22,12 +22,9 @@ public class AuditLogController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         if ("view".equals(action)) {
-            // Hiển thị chi tiết bản ghi vết dữ liệu cũ/mới dạng JSON
             showLogDetail(request, response);
         } else {
-            // Liệt kê toàn bộ danh sách nhật ký hoạt động
             showLogList(request, response);
         }
     }
@@ -35,36 +32,43 @@ public class AuditLogController extends HttpServlet {
     private void showLogList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String filterNv = request.getParameter("filterNhanVien");
         List<NhatKyHoatDong> logs;
-
         if (filterNv != null && !filterNv.trim().isEmpty()) {
             logs = nhatKyRepository.getLogsByNhanVien(filterNv.trim());
         } else {
             logs = nhatKyRepository.getAllLogs();
         }
-
         request.setAttribute("logs", logs);
         request.setAttribute("filterNhanVien", filterNv);
         request.getRequestDispatcher("/views/admin/nhat_ky.jsp").forward(request, response);
     }
 
     private void showLogDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        long id = Long.parseLong(request.getParameter("id"));
-        NhatKyHoatDong targetLog = null;
-
-        // Duyệt tìm nhật ký theo mã log
-        List<NhatKyHoatDong> allLogs = nhatKyRepository.getAllLogs();
-        for (NhatKyHoatDong log : allLogs) {
-            if (log.getMaLog() == id) {
-                targetLog = log;
-                break;
-            }
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/auditlog?msg=error");
+            return;
         }
 
-        if (targetLog != null) {
-            request.setAttribute("log", targetLog);
-            request.getRequestDispatcher("/views/admin/nhat_ky.jsp").forward(request, response);
-        } else {
-            response.sendRedirect(request.getContextPath() + "/admin/auditlog?msg=notfound");
+        try {
+            long id = Long.parseLong(idStr.trim());
+            NhatKyHoatDong targetLog = null;
+            List<NhatKyHoatDong> allLogs = nhatKyRepository.getAllLogs();
+            if (allLogs != null) {
+                for (NhatKyHoatDong log : allLogs) {
+                    if (log.getMaLog() == id) {
+                        targetLog = log;
+                        break;
+                    }
+                }
+            }
+            if (targetLog != null) {
+                request.setAttribute("log", targetLog);
+                request.getRequestDispatcher("/views/admin/nhat_ky.jsp").forward(request, response);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/auditlog?msg=notfound");
+            }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/auditlog?msg=error");
         }
     }
 }

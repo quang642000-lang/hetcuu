@@ -2,6 +2,7 @@ package controller.auth;
 
 import service.IKhachHangService;
 import service.impl.KhachHangServiceImpl;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,7 +19,6 @@ public class VerifyOtpController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
-
         if (uri.endsWith("/resend-otp")) {
             if (session != null && session.getAttribute("otpEmail") != null) {
                 String email = (String) session.getAttribute("otpEmail");
@@ -79,8 +79,7 @@ public class VerifyOtpController extends HttpServlet {
             if (verified) {
                 session.removeAttribute("otpEmail");
                 session.removeAttribute("otpType");
-                request.setAttribute("success", "Kích hoạt thành công! Vui lòng đăng nhập.");
-                // SỬA LỖI: login-customer.jsp -> login_customer.jsp
+                request.setAttribute("success", "Kích hoạt tài khoản thành công! Vui lòng đăng nhập.");
                 request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
             } else {
                 request.setAttribute("error", "Mã OTP kích hoạt không chính xác hoặc đã hết hiệu lực 2 phút.");
@@ -90,7 +89,6 @@ public class VerifyOtpController extends HttpServlet {
         } else if ("recovery".equals(type)) {
             String newPassword = request.getParameter("newPassword");
             String confirmPassword = request.getParameter("confirmPassword");
-
             if (newPassword == null || newPassword.trim().isEmpty() || confirmPassword == null || confirmPassword.trim().isEmpty()) {
                 request.setAttribute("error", "Vui lòng điền đầy đủ Mật khẩu mới.");
                 request.setAttribute("type", type);
@@ -103,13 +101,11 @@ public class VerifyOtpController extends HttpServlet {
                 request.getRequestDispatcher("/views/auth/verify_otp.jsp").forward(request, response);
                 return;
             }
-
             boolean updated = khachHangService.resetPasswordWithOTP(email, otp, newPassword);
             if (updated) {
                 session.removeAttribute("otpEmail");
                 session.removeAttribute("otpType");
-                request.setAttribute("success", "Khôi phục mật khẩu thành công!");
-                // SỬA LỖI: login-customer.jsp -> login_customer.jsp
+                request.setAttribute("success", "Khôi phục mật khẩu thành công! Vui lòng đăng nhập.");
                 request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
             } else {
                 request.setAttribute("error", "Mã OTP khôi phục không chính xác hoặc đã hết hạn.");

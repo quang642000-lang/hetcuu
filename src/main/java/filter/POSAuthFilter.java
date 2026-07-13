@@ -19,13 +19,13 @@ public class POSAuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
-
         boolean loggedIn = false;
         boolean hasAccess = false;
 
         if (session != null) {
-            NhanVien nhanVien = (NhanVien) session.getAttribute("user"); // Đã đồng bộ Key "user"
-            if (nhanVien != null) {
+            Object userObj = session.getAttribute("user");
+            if (userObj instanceof NhanVien) {
+                NhanVien nhanVien = (NhanVien) userObj;
                 loggedIn = true;
                 if (nhanVien.getMaVt() == 1 || nhanVien.getMaVt() == 2) { // Quản lý hoặc Thu ngân
                     hasAccess = true;

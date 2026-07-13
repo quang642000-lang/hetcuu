@@ -19,13 +19,13 @@ public class AdminAuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
-
         boolean loggedIn = false;
         boolean isAdmin = false;
 
         if (session != null) {
-            NhanVien nhanVien = (NhanVien) session.getAttribute("user"); // Đã đồng bộ Key "user"
-            if (nhanVien != null) {
+            Object userObj = session.getAttribute("user");
+            if (userObj instanceof NhanVien) {
+                NhanVien nhanVien = (NhanVien) userObj;
                 loggedIn = true;
                 if (nhanVien.getMaVt() == 1) { // 1: Admin
                     isAdmin = true;
@@ -38,7 +38,7 @@ public class AdminAuthFilter implements Filter {
         } else {
             session = httpRequest.getSession();
             session.setAttribute("errorMessage", "Yêu cầu quyền quản trị viên! Vui lòng đăng nhập lại.");
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login"); // Đưa về URL login chính xác
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
         }
     }
 
