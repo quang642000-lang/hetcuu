@@ -17,6 +17,7 @@
             border-radius: 16px;
             border: none;
             background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
         .item-thumbnail {
             width: 60px;
@@ -25,8 +26,8 @@
             border-radius: 10px;
         }
         .loyalty-box {
-            background-color: var(--primary-light);
-            border: 1px solid rgba(46, 125, 50, 0.15);
+            background-color: #ecfdf5;
+            border: 1px solid rgba(16, 185, 129, 0.15);
             border-radius: 12px;
             padding: 16px;
         }
@@ -44,6 +45,7 @@
         <input type="hidden" name="diemSuDung" id="param_diemSuDung" value="0">
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
+
         <div class="row g-4">
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
@@ -52,8 +54,7 @@
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC</h5>
                     <p class="small text-muted mb-3">Vui lòng thiết lập giờ nhận nước tại quầy (Đảm bảo tối thiểu cách 15 phút so với hiện tại để Barista kịp chuẩn bị pha chế tốt nhất. Chỉ hỗ trợ lấy ngay trong ngày hôm nay).</p>
                     <div class="mb-3">
-                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Chọn giờ đến lấy hôm nay <span class="text-danger">*</span></label>
-                        <!-- SỬA ĐỔI: Chuyển đổi từ datetime-local sang type="time" để chỉ nhập giờ trong ngày -->
+                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Thời gian đến lấy nước <span class="text-danger">*</span></label>
                         <input type="time" class="form-control form-control-teapos" id="thoiGianHenLay" name="thoiGianHenLay" required>
                     </div>
                     <div class="mb-3">
@@ -149,7 +150,7 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <!-- ĐỐI SOÁT TÍNH TIỀN HÓD ĐƠN -->
+                    <!-- ĐỐI SOÁT TÍNH TIỀN HÓA ĐƠN -->
                     <div class="bg-light rounded p-3 mb-4 small" style="border: 1px dashed var(--border-color);">
                         <div class="d-flex justify-content-between mb-2">
                             <span>Tiền cốc nước gốc (Kèm Toppings):</span>
@@ -195,25 +196,59 @@
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const minTimeString = hours + ':' + minutes;
         const inputTime = document.getElementById("thoiGianHenLay");
-        // Gán giờ tối thiểu nhận nước và giá trị mặc định của ô input
-        inputTime.min = minTimeString;
-        inputTime.value = minTimeString;
+        if (inputTime) {
+            inputTime.min = minTimeString;
+            inputTime.value = minTimeString;
+        }
         calculateRealtimeBill();
     });
+
     function useMaxPoints() {
         const inputPoints = document.getElementById("inputRedeemPoints");
-        inputPoints.value = userMaxPointsAvailable;
-        calculateRealtimeBill();
+        if (inputPoints) {
+            const select = document.getElementById("selectVoucher");
+            let voucherDiscount = 0;
+            if (select && select.selectedIndex > 0) {
+                const selectedOpt = select.options[select.selectedIndex];
+                const type = parseInt(selectedOpt.dataset.type);
+                const value = parseInt(selectedOpt.dataset.value);
+                const maxVal = parseInt(selectedOpt.dataset.max);
+                if (type === 1) {
+                    voucherDiscount = value;
+                } else if (type === 2) {
+                    voucherDiscount = (rawBillTotal * value) / 100;
+                    if (maxVal > 0 && voucherDiscount > maxVal) {
+                        voucherDiscount = maxVal;
+                    }
+                }
+            }
+            const remainingBill = rawBillTotal - voucherDiscount;
+            const maxPointsToUse = Math.min(userMaxPointsAvailable, Math.floor(remainingBill / 1000));
+            inputPoints.value = maxPointsToUse > 0 ? maxPointsToUse : 0;
+            calculateRealtimeBill();
+        }
     }
+
     function calculateRedeemPointsRealtime() {
+        const inputPoints = document.getElementById("inputRedeemPoints");
+        if (inputPoints) {
+            let val = parseInt(inputPoints.value) || 0;
+            if (val < 0) {
+                inputPoints.value = 0;
+            } else if (val > userMaxPointsAvailable) {
+                inputPoints.value = userMaxPointsAvailable;
+                showToast('warning', 'Quý khách chỉ có tối đa ' + userMaxPointsAvailable + ' điểm CRM!');
+            }
+        }
         calculateRealtimeBill();
     }
+
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;
         let pointsDiscount = 0;
         const select = document.getElementById("selectVoucher");
-        const selectedOpt = select.options[select.selectedIndex];
+        const selectedOpt = select ? select.options[select.selectedIndex] : null;
         if (selectedOpt && selectedOpt.value !== "") {
             const code = selectedOpt.value;
             const type = parseInt(selectedOpt.dataset.type);
@@ -248,16 +283,7 @@
             document.getElementById("display_discount").innerText = '-0 đ';
         }
         const inputPoints = document.getElementById("inputRedeemPoints");
-        let pointsToUse = parseInt(inputPoints.value);
-        if (isNaN(pointsToUse) || pointsToUse < 0) {
-            pointsToUse = 0;
-            inputPoints.value = "";
-        }
-        if (pointsToUse > userMaxPointsAvailable) {
-            pointsToUse = userMaxPointsAvailable;
-            inputPoints.value = pointsToUse;
-            showToast('warning', 'Quý khách chỉ có tối đa ' + userMaxPointsAvailable + ' điểm CRM!');
-        }
+        let pointsToUse = parseInt(inputPoints.value) || 0;
         pointsDiscount = pointsToUse * 1000;
         const limitPrePoints = rawSum - voucherDiscount;
         if (pointsDiscount > limitPrePoints) {
@@ -285,6 +311,5 @@
         document.getElementById("param_tongPhaiTra").value = finalPayable;
     }
 </script>
-<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

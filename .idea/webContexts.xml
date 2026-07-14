@@ -5,9 +5,11 @@
       <map>
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/admin/danh_muc.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/admin/hoa_don.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/admin" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/views/admin/khach_hang.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/admin/nhat_ky.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/admin/sanpham-form.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/auth/login_admin.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/auth" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/views/layout/header_portal.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/layout" />
       </map>
     </option>
   </component>

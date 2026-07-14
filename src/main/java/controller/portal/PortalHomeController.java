@@ -6,7 +6,6 @@ import service.IDanhMucService;
 import service.ISanPhamService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,17 +21,30 @@ public class PortalHomeController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Tải danh mục hoạt động
-        List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
-        // Tải sản phẩm Bestseller
-        List<SanPham> bestsellers = sanPhamService.getBestsellers();
-        // Tải sản phẩm Mới
-        List<SanPham> newArrivals = sanPhamService.getNewArrivals();
+        try {
+            List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
+            List<SanPham> bestsellers = sanPhamService.getBestsellers();
+            List<SanPham> newArrivals = sanPhamService.getNewArrivals();
 
-        request.setAttribute("categories", categories);
-        request.setAttribute("bestsellers", bestsellers);
-        request.setAttribute("newArrivals", newArrivals);
-        request.getRequestDispatcher("/views/portal/trang_chu.jsp").forward(request, response);
+            if (bestsellers != null) {
+                for (SanPham sp : bestsellers) {
+                    sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
+                }
+            }
+            if (newArrivals != null) {
+                for (SanPham sp : newArrivals) {
+                    sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
+                }
+            }
+
+            request.setAttribute("categories", categories);
+            request.setAttribute("bestsellers", bestsellers);
+            request.setAttribute("newArrivals", newArrivals);
+            request.getRequestDispatcher("/views/portal/trang_chu.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/home?msg=error");
+        }
     }
 
     @Override

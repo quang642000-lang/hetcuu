@@ -35,7 +35,6 @@
                     <c:if test="${not empty editItem}">
                         <input type="hidden" name="maCtgh" value="${editItem.maCtgh}">
                     </c:if>
-
                     <!-- 1. CHỌN SIZE -->
                     <div class="mb-4">
                         <label class="form-label fw-bold text-dark d-block">1. Chọn kích cỡ cốc nước <span class="text-danger">*</span></label>
@@ -57,7 +56,7 @@
                                 <div class="col-4">
                                     <input type="radio" class="btn-check" name="maSize" id="size_${size.maSize}" value="${size.maSize}" data-price="${size.giaBan}" ${isSizeChecked == 'true' ? 'checked' : ''} onchange="calculateRealtimeTotal()">
                                     <label class="btn btn-outline-success py-2.5 w-100 text-center fw-bold" for="size_${size.maSize}">
-                                        Size ${size.tenSize} <br>
+                                        Size ${size.tenSize == '1' ? "S" : (size.tenSize == '2' ? "M" : (size.tenSize == '3' ? "L" : size.tenSize))} <br>
                                         <small class="text-muted fw-normal" style="font-size: 11px;">+<fmt:formatNumber value="${size.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</small>
                                     </label>
                                 </div>
@@ -107,17 +106,18 @@
                                 <div class="col-12 col-md-6">
                                     <div class="border rounded p-2.5 d-flex justify-content-between align-items-center bg-white shadow-sm">
                                         <div class="form-check mb-0 d-flex align-items-center flex-grow-1">
-                                            <input class="form-check-input topping-check border-secondary me-2" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="toggleWebToppingQty(${tp.maTp})" ${isTpChecked == 'true' ? 'checked' : ''}>
+                                            <!-- BỌC MÃ TOPPING CHUỖI TRONG NHÁY ĐƠN TRÊN ONCHANGE CHỐNG LỖI CÚ PHÁP -->
+                                            <input class="form-check-input topping-check border-secondary me-2" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="toggleWebToppingQty('${tp.maTp}')" ${isTpChecked == 'true' ? 'checked' : ''}>
                                             <label class="form-check-label fw-semibold text-dark small" for="tp_${tp.maTp}">
                                                 <c:out value="${tp.tenTp}"/> <br>
                                                 <span class="text-success fw-bold font-monospace small">+<fmt:formatNumber value="${tp.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</span>
                                             </label>
                                         </div>
-                                        <!-- Spinner tăng giảm số lượng topping -->
+                                        <!-- Spinner tăng giảm số lượng topping - BỌC MÃ TOPPING CHUỖI TRONG NHÁY ĐƠN TRÊN ONCLICK -->
                                         <div class="input-group input-group-sm" id="web_tp_qty_container_${tp.maTp}" style="${isTpChecked == 'true' ? 'display: flex !important;' : 'display: none !important;'}">
-                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustWebToppingQty(${tp.maTp}, -1)">-</button>
+                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', -1)">-</button>
                                             <input type="text" id="web_tp_qty_${tp.maTp}" name="topping_qty_${tp.maTp}" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="${tpQty}" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">
-                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustWebToppingQty(${tp.maTp}, 1)">+</button>
+                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', 1)">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -242,16 +242,14 @@
         })
             .then(res => {
                 if (res.status === 401) {
-                    Swal.close();
                     window.location.href = '${pageContext.request.contextPath}/customer/login';
                     throw new Error('SESSION_EXPIRED');
                 }
                 return res.text();
             })
-            .then(data => {
+            .then(cleanData => {
                 Swal.close();
-                const cleanData = data.trim();
-                if (cleanData === 'NOT_LOGGED_IN' || cleanData === 'SESSION_EXPIRED') {
+                if (cleanData.trim() === 'SESSION_EXPIRED' || cleanData.trim() === 'NOT_LOGGED_IN') {
                     window.location.href = '${pageContext.request.contextPath}/customer/login';
                     return;
                 }
@@ -304,6 +302,5 @@
         calculateRealtimeTotal();
     });
 </script>
-<%-- ĐÃ LƯỢC BỎ ĐOẠN IMPORT TRÙNG LẶP BOOTSTRAP JS TẠI ĐÂY ĐỂ TRÁNH LỖI HỎNG DROPDOWN --%>
 </body>
 </html>

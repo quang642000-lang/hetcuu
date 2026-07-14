@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,8 +38,8 @@ public class PortalProductController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String uri = request.getRequestURI();
-        if (uri.endsWith("/product/detail")) {
+        String path = request.getServletPath();
+        if ("/product/detail".equals(path)) {
             showProductDetail(request, response);
         } else {
             showProductList(request, response);
@@ -46,9 +47,10 @@ public class PortalProductController extends HttpServlet {
     }
 
     private void showProductList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String maDmStr = request.getParameter("category"); // Ma danh muc kieu String DM00001
+        String maDmStr = request.getParameter("category");
         String keyword = request.getParameter("search");
-        String filter = request.getParameter("filter"); // new, hot
+        String filter = request.getParameter("filter");
+        String sort = request.getParameter("sort");
 
         List<SanPham> products;
         try {
@@ -64,15 +66,35 @@ public class PortalProductController extends HttpServlet {
                 products = sanPhamService.getAllSanPham();
             }
 
-            if (products != null) {
-                for (SanPham sp : products) {
-                    sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
+            if (products == null) {
+                products = new ArrayList<>();
+            }
+
+            for (SanPham sp : products) {
+                List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(sp.getMaSp());
+                sp.setSizesList(sizes);
+            }
+
+            if (sort != null && !sort.trim().isEmpty()) {
+                if ("price_asc".equals(sort)) {
+                    products.sort(new Comparator<SanPham>() {
+                        @Override
+                        public int compare(SanPham o1, SanPham o2) {
+                            return Integer.compare(getMinPrice(o1), getMinPrice(o2));
+                        }
+                    });
+                } else if ("price_desc".equals(sort)) {
+                    products.sort(new Comparator<SanPham>() {
+                        @Override
+                        public int compare(SanPham o1, SanPham o2) {
+                            return Integer.compare(getMinPrice(o2), getMinPrice(o1));
+                        }
+                    });
                 }
             }
 
-            // ==================== NGHIỆP VỤ PHÂN TRANG (PAGINATION) ====================
             int page = 1;
-            int pageSize = 9; // 9 ly nuoc tren moi trang portal
+            int pageSize = 9;
             String pageStr = request.getParameter("page");
             if (pageStr != null && !pageStr.trim().isEmpty()) {
                 try {
@@ -82,17 +104,17 @@ public class PortalProductController extends HttpServlet {
                 }
             }
 
-            int totalProducts = (products != null) ? products.size() : 0;
+            int totalProducts = products.size();
             int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
-            if (totalPages == 0) totalPages = 1;
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
+            if (page > totalPages && totalPages > 0) {
+                page = totalPages;
+            }
 
-            int fromIndex = (page - 1) * pageSize;
-            int toIndex = Math.min(fromIndex + pageSize, totalProducts);
+            int startIdx = (page - 1) * pageSize;
+            int endIdx = Math.min(startIdx + pageSize, totalProducts);
             List<SanPham> paginatedProducts = new ArrayList<>();
-            if (products != null && fromIndex < totalProducts && fromIndex >= 0) {
-                paginatedProducts = products.subList(fromIndex, toIndex);
+            if (startIdx < totalProducts) {
+                paginatedProducts = products.subList(startIdx, endIdx);
             }
 
             List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
@@ -101,6 +123,8 @@ public class PortalProductController extends HttpServlet {
             request.setAttribute("categories", categories);
             request.setAttribute("selectedCategory", maDmStr);
             request.setAttribute("searchKeyword", keyword);
+            request.setAttribute("currentFilter", filter);
+            request.setAttribute("currentSort", sort);
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalProducts", totalProducts);
@@ -110,6 +134,19 @@ public class PortalProductController extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Lỗi tải danh sách sản phẩm ngoài trang Portal", e);
             response.sendRedirect(request.getContextPath() + "/home?msg=error");
         }
+    }
+
+    private int getMinPrice(SanPham sp) {
+        if (sp.getSizesList() == null || sp.getSizesList().isEmpty()) {
+            return 0;
+        }
+        int min = Integer.MAX_VALUE;
+        for (SanPhamKichCo sk : sp.getSizesList()) {
+            if (sk.isTrangThai() && sk.getGiaBan() < min) {
+                min = sk.getGiaBan();
+            }
+        }
+        return min == Integer.MAX_VALUE ? 0 : min;
     }
 
     private void showProductDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -123,7 +160,6 @@ public class PortalProductController extends HttpServlet {
                 request.setAttribute("sizes", sizes);
                 request.setAttribute("toppings", toppings);
 
-                // KIỂM TRA TÙY BIẾN SỬA ĐỒNG BỘ CHO GIỎ HÀNG
                 String editCtghStr = request.getParameter("maCtgh");
                 if (editCtghStr != null && !editCtghStr.trim().isEmpty()) {
                     try {
@@ -155,5 +191,10 @@ public class PortalProductController extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Lỗi truy xuất thông tin chi tiết của sản phẩm mã: " + id, e);
             response.sendRedirect(request.getContextPath() + "/products?msg=error");
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
     }
 }

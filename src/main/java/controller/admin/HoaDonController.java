@@ -17,7 +17,6 @@ import service.impl.KhachHangServiceImpl;
 import service.impl.NhanVienServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import service.impl.ToppingServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -41,6 +40,7 @@ public class HoaDonController extends HttpServlet {
         if (action == null) {
             action = "list";
         }
+
         if ("detailJson".equals(action)) {
             response.setContentType("application/json;charset=UTF-8");
             String id = request.getParameter("id");
@@ -51,27 +51,47 @@ public class HoaDonController extends HttpServlet {
             DonHang dh = donHangService.getDonHangById(id);
             if (dh != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String formattedDate = dh.getThoiGianTao() != null ? sdf.format(dh.getThoiGianTao()) : "Chưa xác định";
-
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append("\"status\":\"SUCCESS\",");
                 json.append("\"maDh\":\"").append(dh.getMaDh()).append("\",");
-                json.append("\"thoiGianTao\":\"").append(formattedDate).append("\",");
+                json.append("\"thoiGianTao\":\"").append(sdf.format(dh.getThoiGianTao())).append("\",");
 
                 String tenKh = "Khách lẻ vãng lai";
+                String sdtKh = "N/A";
                 if (dh.getMaKh() != null) {
                     KhachHang kh = khachHangService.getKhachHangById(dh.getMaKh());
-                    if (kh != null) tenKh = kh.getTenKh();
+                    if (kh != null) {
+                        tenKh = kh.getTenKh();
+                        sdtKh = kh.getSoDienThoai();
+                    }
                 }
                 json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
+                json.append("\"sdtKhachHang\":\"").append(sdtKh).append("\",");
 
-                String tenNv = "Hệ thống tự động";
+                String tenNv = "Hệ thống tự động / Đặt Online";
                 if (dh.getMaNv() != null) {
                     NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
                     if (nv != null) tenNv = nv.getHoTen();
                 }
                 json.append("\"tenNhanVien\":\"").append(tenNv).append("\",");
+
+                // Nạp tên phương thức thanh toán
+                String tenPt = "Tiền mặt";
+                if (dh.getMaPt() == 2) {
+                    tenPt = "Chuyển khoản QR";
+                }
+                json.append("\"tenPhuongThucTT\":\"").append(tenPt).append("\",");
+
+                // Nạp Loại đơn hàng
+                String strLoaiDon = "Tại quầy";
+                if (dh.getLoaiDonHang() == 2) {
+                    strLoaiDon = "Mang đi";
+                } else if (dh.getLoaiDonHang() == 3) {
+                    strLoaiDon = "Đặt online";
+                }
+                json.append("\"loaiDonHang\":\"").append(strLoaiDon).append("\",");
+
                 json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
                 json.append("\"tienGiamGia\":").append(dh.getTienGiamGia()).append(",");
                 json.append("\"diemSuDung\":").append(dh.getDiemSuDung()).append(",");
@@ -88,22 +108,18 @@ public class HoaDonController extends HttpServlet {
 
                     json.append("{");
                     json.append("\"tenMon\":\"").append(tenSp).append("\",");
-                    json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "M").append("\",");
-                    json.append("\"mucDa\":\"").append(item.getMucDa() != null ? item.getMucDa() : "100%").append("\",");
-                    json.append("\"mucDuong\":\"").append(item.getMucDuong() != null ? item.getMucDuong() : "100%").append("\",");
+                    json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : (item.getMaSize() == 1 ? "S" : (item.getMaSize() == 2 ? "M" : "L"))).append("\",");
                     json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
                     json.append("\"giaChot\":").append(item.getGiaChot()).append(",");
+                    json.append("\"mucDa\":\"").append(item.getMucDa()).append("\",");
+                    json.append("\"mucDuong\":\"").append(item.getMucDuong()).append("\",");
                     json.append("\"toppings\":[");
 
                     List<ChiTietTopping> toppings = item.getToppingsList();
                     for (int j = 0; j < toppings.size(); j++) {
                         ChiTietTopping tp = toppings.get(j);
-                        String tenTp = "Topping " + tp.getMaTp();
-                        Topping topping = toppingService.getToppingById(tp.getMaTp());
-                        if (topping != null) tenTp = topping.getTenTp();
-
                         json.append("{");
-                        json.append("\"tenTopping\":\"").append(tenTp).append("\",");
+                        json.append("\"tenTopping\":\"").append(tp.getTenTopping() != null ? tp.getTenTopping() : "Topping " + tp.getMaTp()).append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
                         json.append("\"giaChotTp\":").append(tp.getGiaChotTp());
                         json.append("}");
@@ -117,20 +133,12 @@ public class HoaDonController extends HttpServlet {
                 json.append("}");
                 response.getWriter().write(json.toString());
             } else {
-                response.getWriter().write("{\"status\":\"NOT_FOUND\"}");
+                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Hóa đơn không tồn tại!\"}");
             }
-            return;
-        }
-        switch (action) {
-            case "list":
-                showList(request, response);
-                break;
-            case "view":
-                showDetail(request, response);
-                break;
-            default:
-                showList(request, response);
-                break;
+        } else if ("view".equals(action)) {
+            showDetail(request, response);
+        } else {
+            showList(request, response);
         }
     }
 
@@ -147,6 +155,7 @@ public class HoaDonController extends HttpServlet {
         } else {
             orders = donHangService.getAllDonHang();
         }
+
         List<NhanVien> employees = nhanVienService.getAllNhanVien();
         request.setAttribute("orders", orders);
         request.setAttribute("employees", employees);
@@ -177,12 +186,10 @@ public class HoaDonController extends HttpServlet {
         String maDh = request.getParameter("maDh");
         String statusStr = request.getParameter("trangThaiDon");
         String lyDoHuy = request.getParameter("lyDoHuy");
-
         if (maDh == null || statusStr == null) {
             response.sendRedirect(request.getContextPath() + "/admin/hoadon?msg=error");
             return;
         }
-
         try {
             int status = Integer.parseInt(statusStr);
             NhanVien user = null;
