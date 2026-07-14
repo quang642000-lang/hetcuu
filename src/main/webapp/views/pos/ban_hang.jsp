@@ -7,10 +7,14 @@
     <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <!-- Custom styling -->
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
@@ -19,12 +23,14 @@
             height: 100vh;
             overflow: hidden;
             background-color: #f1f5f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .pos-layout {
             display: flex;
             height: calc(100vh - 60px);
             overflow: hidden;
         }
+        /* CỘT 1: Sidebar phân loại danh mục (Trái) */
         .pos-category-sidebar {
             width: 110px;
             background: #ffffff;
@@ -33,166 +39,181 @@
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
-            z-index: 10;
         }
         .pos-category-btn {
             width: 100%;
-            padding: 18px 8px;
+            padding: 15px 5px;
             border: none;
             background: transparent;
-            color: #94a3b8;
+            text-align: center;
             font-size: 11px;
             font-weight: 700;
-            text-align: center;
+            color: #64748b;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            border-bottom: 1px solid #f1f5f9;
+            justify-content: center;
+            gap: 4px;
+        }
+        .pos-category-btn:hover {
+            background-color: #f8fafc;
+            color: #10b981;
         }
         .pos-category-btn.active {
-            background-color: rgba(16, 185, 129, 0.08);
+            background-color: #ecfdf5;
             color: #10b981;
             border-left: 4px solid #10b981;
         }
+        /* CỘT 2: LƯỚI SẢN PHẨM (Giữa) */
         .pos-menu-area {
             flex-grow: 1;
+            padding: 16px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             background-color: #f8fafc;
-            overflow: hidden;
-            border-right: 1px solid #e2e8f0;
         }
         .pos-menu-header {
-            padding: 14px 20px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+            gap: 16px;
         }
         .pos-search-wrapper {
             position: relative;
-            max-width: 400px;
             flex-grow: 1;
+            max-width: 450px;
+        }
+        .pos-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
         }
         .pos-search-input {
             width: 100%;
-            padding: 10px 16px 10px 40px;
+            padding: 10px 16px 10px 38px;
             border-radius: 20px;
             border: 1px solid #cbd5e1;
-            outline: none;
             font-size: 13px;
-            transition: all 0.2s;
+            outline: none;
+            transition: all 0.2s ease;
         }
         .pos-search-input:focus {
             border-color: #10b981;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
-        .pos-search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 16px;
-        }
         .pos-product-container {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding-right: 4px;
         }
         .pos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 16px;
         }
         .pos-card-wrapper {
-            display: block;
-        }
-        .pos-card {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 12px;
-            text-align: center;
+            overflow: hidden;
+            transition: all 0.2s ease;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
-        .pos-card:hover {
+        .pos-card-wrapper:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             border-color: #10b981;
         }
-        .pos-card-img-wrapper {
-            position: relative;
+        .pos-card-img-container {
             width: 100%;
-            height: 100px;
-            margin-bottom: 8px;
+            height: 110px;
+            background-color: #f1f5f9;
             overflow: hidden;
-            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .pos-card-img {
+        .pos-product-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         .pos-card-name {
+            padding: 8px 10px 4px 8px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             color: #1e293b;
-            height: 38px;
-            overflow: hidden;
+            text-align: left;
+            line-height: 1.3;
+            flex-grow: 1;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            margin-bottom: 4px;
+            overflow: hidden;
         }
         .pos-card-price {
+            padding: 0 10px 10px 10px;
+            text-align: left;
             font-size: 13px;
-            font-weight: 850;
+            font-weight: 700;
             color: #10b981;
         }
+        /* CỘT 3: HÓA ĐƠN & THANH TOÁN (Phải) */
         .pos-billing-area {
             width: 420px;
             background-color: #ffffff;
+            border-left: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.02);
             flex-shrink: 0;
-            z-index: 10;
-            border-left: 1px solid #e2e8f0;
         }
         .pos-billing-header {
-            height: 60px;
-            padding: 0 20px;
+            padding: 14px 16px;
             border-bottom: 1px solid #e2e8f0;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            height: 60px;
+            flex-shrink: 0;
             background-color: #ffffff;
         }
         .pos-cart-items-wrapper {
             flex-grow: 1;
             overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             background-color: #ffffff;
         }
         .pos-bill-item {
-            padding: 14px 20px;
-            border-bottom: 1px solid #e2e8f0;
             display: flex;
+            justify-content: space-between;
             align-items: flex-start;
-            gap: 12px;
-            transition: background-color 0.2s ease;
-        }
-        .pos-bill-item:hover {
+            padding: 12px;
             background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+            gap: 12px;
         }
         .pos-bill-item-details {
             flex-grow: 1;
+            text-align: left;
         }
         .pos-bill-item-title {
             font-size: 13px;
@@ -203,7 +224,7 @@
         .pos-bill-item-options {
             font-size: 11px;
             color: #64748b;
-            line-height: 1.5;
+            line-height: 1.4;
         }
         .pos-bill-item-price {
             font-size: 13px;
@@ -211,88 +232,113 @@
             color: #10b981;
             margin-top: 4px;
         }
+        /* CRM Panel & Checkout Panel */
         .pos-crm-panel {
-            padding: 14px 20px;
+            padding: 14px 16px;
             background-color: #f8fafc;
-            border-top: 1.5px solid #e2e8f0;
-            border-bottom: 1.5px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
         }
         .pos-checkout-panel {
-            padding: 16px 20px;
-            background-color: #ffffff;
+            padding: 16px;
+            flex-shrink: 0;
         }
         .pos-line-price {
             display: flex;
             justify-content: space-between;
+            font-size: 12px;
+            color: #64748b;
             margin-bottom: 6px;
-            font-size: 13px;
-            color: #475569;
         }
         .pos-total-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 10px;
-            margin-top: 10px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+            margin-top: 6px;
             margin-bottom: 12px;
         }
         .pos-total-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #1e293b;
         }
         .pos-total-val {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 800;
-            color: #dc2626;
+            color: #ef4444;
         }
         .pos-cash-calculator {
             background-color: #f8fafc;
             border-radius: 8px;
-            padding: 8px 12px;
-            margin-bottom: 12px;
+            padding: 10px;
             border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
         }
         .pos-cash-suggest-btn {
-            background: #ffffff;
+            flex-grow: 1;
             border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 4px 8px;
+            background-color: #ffffff;
+            color: #475569;
             font-size: 11px;
             font-weight: 700;
-            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
             transition: all 0.15s ease;
         }
         .pos-cash-suggest-btn:hover {
-            background-color: #10b981;
-            color: #ffffff;
             border-color: #10b981;
+            color: #10b981;
+            background-color: #ecfdf5;
         }
-        .pos-btn-submit {
-            background-color: #10b981;
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 800;
+        .btn-primary-teapos {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-            transition: all 0.2s ease-in-out;
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+            transition: all 0.2s ease;
         }
-        .pos-btn-submit:hover {
-            background-color: #059669;
+        .btn-primary-teapos:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+        }
+        /* Custom styling for SweetAlert customizer */
+        .selection-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .selection-radio-input {
+            display: none;
+        }
+        .selection-label {
+            padding: 6px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .selection-radio-input:checked + .selection-label {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+            color: #10b981;
         }
     </style>
 </head>
 <body>
-<!-- HEADER MÁY POS -->
-<nav class="navbar navbar-dark bg-dark px-3 shadow-sm" style="height: 60px; z-index: 100;">
+
+<!-- CHÂN TRANG ĐẦU ĐỒNG BỘ ĐIỀU HÀNH -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3" style="height: 60px; z-index: 1000; background-color: #0f172a !important;">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-success d-flex align-items-center" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
+        <a class="navbar-brand d-flex align-items-center fw-bold text-success fs-5" href="${pageContext.request.contextPath}/home">
             <i class="bi bi-cup-hot-fill me-2 fs-4 text-success"></i>
             <span>TEA POS PRO</span>
             <span class="badge bg-success-subtle text-success border border-success ms-2 font-monospace" style="font-size: 10px; padding: 3px 6px;">V2.5 STABLE</span>
@@ -308,7 +354,7 @@
         <div class="d-flex align-items-center gap-3 text-white ms-auto">
             <!-- Thu ngân profile & settings trigger dropdown -->
             <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
-                <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
@@ -316,14 +362,16 @@
                 </ul>
             </div>
             <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-                <i class="bi bi-clock-fill me-1 text-warning"></i> <span id="posCurrentClock">00:00:00</span>
+                <i class="bi bi-calendar-event me-1 text-info"></i> <span id="posDate">13/07/2026</span>
             </span>
-            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-xs btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
-                <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
-            </a>
-            <a href="${pageContext.request.contextPath}/logout" class="btn btn-xs btn-outline-danger border-2">
-                <i class="bi bi-box-arrow-right"></i>
-            </a>
+            <span class="small font-monospace text-warning d-flex align-items-center gap-1.5" style="width: 80px;">
+                <i class="bi bi-clock-fill"></i> <strong id="posClock">00:00:00</strong>
+            </span>
+            <div class="border-start ps-3 border-secondary">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success fw-bold" style="border-radius: 6px;">
+                    <i class="bi bi-shield-shaded me-1"></i> Quản trị
+                </a>
+            </div>
         </div>
     </div>
 </nav>
@@ -377,38 +425,31 @@
                             ]
                         };
                     </script>
-                    <div class="pos-card-wrapper">
-                        <div class="pos-card"
-                             data-masp="${sp.maSp}"
-                             data-madm="${sp.maDm}"
-                             data-isnew="${sp.isNew}"
-                             data-ishot="${sp.isBestseller}"
-                             data-tensp="${sp.tenSp}"
-                             onclick="handlePosCardClick(this)">
-                            <div class="pos-card-img-wrapper">
-                                <c:choose>
-                                    <c:when test="${not empty sp.hinhAnh}">
-                                        <img src="${sp.hinhAnh}" class="pos-card-img" alt="Ảnh">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
-                                            <i class="bi bi-cup-straw fs-2 text-muted"></i>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                                <c:if test="${sp.isNew}">
-                                    <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-1" style="font-size: 9px; font-weight: 800;">MỚI</span>
-                                </c:if>
-                                <c:if test="${sp.isBestseller}">
-                                    <span class="position-absolute top-0 end-0 badge bg-danger text-white m-1" style="font-size: 9px; font-weight: 800;">HOT</span>
-                                </c:if>
-                            </div>
-                            <div class="pos-card-name"><c:out value="${sp.tenSp}"/></div>
-                            <div class="pos-card-price text-success fw-bold">
-                                <c:forEach var="sz" items="${sp.sizesList}" end="0">
-                                    <fmt:formatNumber value="${sz.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
-                                </c:forEach>
-                            </div>
+
+                    <div class="pos-card-wrapper" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}">
+                        <div class="pos-card-img-container" onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>', encodeURIComponent(JSON.stringify(window['sp_opt_' + '${sp.maSp}'])))">
+                            <c:choose>
+                                <c:when test="${not empty sp.hinhAnh}">
+                                    <img src="${sp.hinhAnh}" class="pos-product-img rounded" alt="Pic">
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 100%; height: 100%;">
+                                        <i class="bi bi-cup-straw fs-2 text-muted"></i>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                            <c:if test="${sp.isNew}">
+                                <span class="position-absolute top-0 start-0 badge bg-warning text-dark m-1" style="font-size: 9px; font-weight: 800;">MỚI</span>
+                            </c:if>
+                            <c:if test="${sp.isBestseller}">
+                                <span class="position-absolute top-0 end-0 badge bg-danger text-white m-1" style="font-size: 9px; font-weight: 800;">HOT</span>
+                            </c:if>
+                        </div>
+                        <div class="pos-card-name" onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>', encodeURIComponent(JSON.stringify(window['sp_opt_' + '${sp.maSp}'])))"><c:out value="${sp.tenSp}"/></div>
+                        <div class="pos-card-price text-success fw-bold">
+                            <c:forEach var="sz" items="${sp.sizesList}" end="0">
+                                <fmt:formatNumber value="${sz.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
+                            </c:forEach>
                         </div>
                     </div>
                 </c:forEach>
@@ -427,6 +468,7 @@
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
         </div>
+
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
                 <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
@@ -436,10 +478,10 @@
 
         <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
         <div class="pos-crm-panel">
-            <div class="input-group input-group-sm mb-2 shadow-sm" style="border-radius: 6px; overflow: hidden;">
+            <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-telephone-fill"></i></span>
-                <input type="text" class="form-control border-start-0 py-2" id="customerPhoneSearch" placeholder="Nhập Số Điện Thoại khách CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
-                <button class="btn btn-success fw-bold" type="button" onclick="searchCustomerCRM()">XÁC THỰC</button>
+                <input type="text" class="form-control border-start-0 py-2" id="customerPhoneSearch" placeholder="Nhập SĐT khách hàng tích điểm CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
+                <button class="btn btn-success fw-bold px-3" type="button" onclick="searchCustomerCRM()"><i class="bi bi-search"></i></button>
             </div>
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-start">
@@ -448,11 +490,13 @@
                 </div>
                 <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
             </div>
+
             <div id="posAddCustomerArea" style="display: none;" class="mt-2 border-top pt-2">
                 <button type="button" class="btn btn-sm btn-primary w-100 fw-bold py-2" onclick="openQuickAddCustomerModal()">
                     <i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN VIP MỚI
                 </button>
             </div>
+
             <div id="crmLoyaltyArea" style="display: none;" class="border-top pt-2 mt-2">
                 <div class="row g-2">
                     <div class="col-6">
@@ -480,13 +524,14 @@
             <div id="submitItemsContainer"></div>
 
             <div class="pos-checkout-panel bg-white border-top">
-                <div class="mb-2">
-                    <div class="input-group input-group-sm shadow-sm" style="border-radius: 6px; overflow: hidden;">
-                        <span class="input-group-text bg-white border-end-0 text-success"><i class="bi bi-ticket-perforated-fill"></i></span>
-                        <input type="text" class="form-control border-start-0" id="manualVoucherInput" placeholder="Nhập mã Voucher thủ công...">
-                        <button class="btn btn-outline-success fw-bold" type="button" onclick="applyManualVoucherCode()">ÁP MÃ</button>
+                <div class="mb-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-muted small"><i class="bi bi-ticket-perforated-fill"></i> Gõ mã Voucher thủ công:</span>
+                        <input type="text" class="form-control" id="manualVoucherInput" placeholder="Ví dụ: OPEN10K...">
+                        <button class="btn btn-outline-success fw-bold text-uppercase px-3" type="button" onclick="applyManualVoucherCode()">ÁP MÃ</button>
                     </div>
                 </div>
+
                 <div class="pos-line-price">
                     <span>Tổng tiền nước & Toppings:</span>
                     <strong class="text-dark" id="totalRawPrice">0 đ</strong>
@@ -503,18 +548,19 @@
                     <span>Thuế GTGT VAT (8%):</span>
                     <strong class="text-dark" id="totalTaxPrice">0 đ</strong>
                 </div>
+
                 <div class="pos-total-row">
                     <span class="pos-total-label">TỔNG TIỀN PHẢI THU:</span>
                     <span class="pos-total-val" id="totalPayablePrice">0 đ</span>
                 </div>
 
-                <div class="pos-cash-calculator">
+                <div class="pos-cash-calculator" id="cashCalculatorSection">
                     <div class="row align-items-center g-2 mb-2">
                         <div class="col-5">
                             <small class="fw-bold text-muted" style="font-size: 11px;">TIỀN KHÁCH ĐƯA:</small>
                         </div>
                         <div class="col-7">
-                            <input type="number" id="inputCustomerCash" class="form-control form-control-sm text-end fw-bold" placeholder="Nhập số tiền..." onkeyup="calculateChangeRefund()" onchange="calculateChangeRefund()">
+                            <input type="number" id="inputCustomerCash" class="form-control form-control-sm text-end fw-bold border-secondary" placeholder="Nhập số tiền..." onkeyup="calculateChangeRefund()" onchange="calculateChangeRefund()">
                         </div>
                     </div>
                     <div class="d-flex justify-content-between gap-1 mb-2">
@@ -533,12 +579,14 @@
                     <div class="btn-group w-100" role="group">
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onclick="changePaymentMethod(1)">
                         <label class="btn btn-outline-success py-2 fw-semibold" for="pt_cash"><i class="bi bi-cash-coin me-1"></i> TIỀN MẶT</label>
+
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_qr" value="2" onclick="changePaymentMethod(2)">
-                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr"><i class="bi bi-qr-code-scan me-1"></i> CHUYỂN KHOẢN QR</label>
+                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr"><i class="bi bi-qr-code-scan me-1"></i> Chuyển khoản QR</label>
                     </div>
                 </div>
-                <button type="button" class="pos-btn-submit text-uppercase" onclick="submitPOSOrderTransaction()">
-                    <i class="bi bi-printer-fill me-1"></i> Giao dịch & In hóa đơn
+
+                <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
+                    <i class="bi bi-printer me-1"></i> GIAO DỊCH & IN HOÁ ĐƠN
                 </button>
             </div>
         </form>
@@ -572,36 +620,32 @@
                                 <input type="text" name="hoTen" id="pos_hoTen" class="form-control" value="<c:out value='${sessionScope.user.hoTen}'/>" required autocomplete="off">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-muted small">Số điện thoại liên hệ</label>
-                                <input type="text" name="soDienThoai" id="pos_soDienThoai" class="form-control" value="${sessionScope.user.soDienThoai}" required autocomplete="off">
+                                <label class="form-label fw-bold text-muted small">Số điện thoại di động</label>
+                                <input type="text" name="soDienThoai" id="pos_sdt" class="form-control" value="${sessionScope.user.soDienThoai}" required autocomplete="off">
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label class="form-label fw-bold text-muted small">Địa chỉ Email</label>
                                 <input type="email" name="email" id="pos_email" class="form-control" value="${sessionScope.user.email}" required autocomplete="off">
                             </div>
-                            <button type="submit" class="btn btn-success w-100 fw-bold py-2.5 rounded-pill shadow-sm">
-                                <i class="bi bi-save me-1"></i> LƯU THAY ĐỔI HỒ SƠ
-                            </button>
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2"><i class="bi bi-check-circle-fill me-1"></i> CẬP NHẬT HỒ SƠ</button>
                         </form>
                     </div>
-                    <!-- Tab Panel 2: Đổi mật khẩu đăng nhập -->
+                    <!-- Tab Panel 2: Sửa mật khẩu -->
                     <div class="tab-pane fade" id="posPassPanel" role="tabpanel">
                         <form id="posPassForm" onsubmit="submitPOSPassForm(event)">
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-muted small">Mật khẩu hiện tại</label>
-                                <input type="password" name="oldPassword" id="pos_oldPassword" class="form-control" required placeholder="Nhập mật khẩu đang dùng...">
+                                <label class="form-label fw-bold text-muted small">Mật khẩu cũ hiện tại</label>
+                                <input type="password" name="oldPassword" id="pos_oldPass" class="form-control" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-muted small">Mật khẩu mới</label>
-                                <input type="password" name="newPassword" id="pos_newPassword" class="form-control" required placeholder="Mật khẩu tối thiểu 8 ký tự..." minlength="8">
+                                <label class="form-label fw-bold text-muted small">Mật khẩu mới thay đổi</label>
+                                <input type="password" name="newPassword" id="pos_newPass" class="form-control" required minlength="8">
                             </div>
-                            <div class="mb-4">
-                                <label class="form-label fw-bold text-muted small">Xác nhận mật khẩu mới</label>
-                                <input type="password" name="confirmPassword" id="pos_confirmPassword" class="form-control" required placeholder="Xác nhận lại mật khẩu mới...">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted small">Nhập lại mật khẩu mới</label>
+                                <input type="password" name="confirmPassword" id="pos_confirmPass" class="form-control" required minlength="8">
                             </div>
-                            <button type="submit" class="btn btn-danger w-100 fw-bold py-2.5 rounded-pill shadow-sm">
-                                <i class="bi bi-key-fill me-1"></i> XÁC NHẬN ĐỔI MẬT KHẨU
-                            </button>
+                            <button type="submit" class="btn btn-primary-teapos w-100 py-2"><i class="bi bi-key-fill me-1"></i> THAY ĐỔI MẬT KHẨU</button>
                         </form>
                     </div>
                 </div>
@@ -665,22 +709,34 @@
     </div>
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Global App JS -->
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
+<!-- POS Operations JS Bundle -->
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
+
 <script>
-    // 1. Đồng hồ thời gian thực tại quầy thu ngân
+    // 1. Đồng hồ thời gian hệ thống và ngày hiện hành
     function updatePOSClock() {
-        const now = new Date();
-        const clockEl = document.getElementById('posCurrentClock');
+        const clockEl = document.getElementById('posClock');
+        const dateEl = document.getElementById('posDate');
         if (clockEl) {
+            const now = new Date();
             clockEl.innerText = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        if (dateEl) {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            dateEl.innerText = day + '/' + month + '/' + year;
         }
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
 
-    // 2. Định dạng SĐT và gọi Ajax tìm khách hàng CRM
+    // 2. Định dạng SĐT và tự tìm khách hàng CRM khi đủ 10 số
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
@@ -688,81 +744,54 @@
         }
     }
 
-    // 3. Tính toán tiền trả lại khách hàng
-    function calculateChangeRefund() {
-        const totalPayablePriceEl = document.getElementById('totalPayablePrice');
-        const inputCustomerCashEl = document.getElementById('inputCustomerCash');
-        const txtCashRefundEl = document.getElementById('txtCashRefund');
-        if (!totalPayablePriceEl || !inputCustomerCashEl || !txtCashRefundEl) return;
+    // 3. Thay đổi giao diện gợi ý tiền mặt và dọn dẹp khi chuyển QR
+    function changePaymentMethod(maPt) {
+        const submitPt = document.getElementById('submit_maPt');
+        const cashSection = document.getElementById('cashCalculatorSection');
+        if (submitPt) submitPt.value = maPt;
 
-        const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
-        const customerCash = parseInt(inputCustomerCashEl.value) || 0;
-        let refund = customerCash - totalPayable;
-        if (refund < 0) {
-            txtCashRefundEl.innerText = 'Khách đưa thiếu';
-            txtCashRefundEl.className = 'text-danger fw-bold';
+        if (maPt === 2) {
+            // Chuyển khoản QR: Ẩn phần tiền mặt, bypass validation
+            if (cashSection) cashSection.style.display = "none";
         } else {
-            txtCashRefundEl.innerText = refund.toLocaleString('vi-VN') + ' đ';
-            txtCashRefundEl.className = 'text-primary fw-bold';
+            // Tiền mặt: Hiện lại calculator
+            if (cashSection) cashSection.style.display = "block";
         }
-    }
-
-    // Gợi ý bấm nhanh tiền mặt
-    function suggestCashAmount(amount) {
-        const totalPayablePriceEl = document.getElementById('totalPayablePrice');
-        const inputCustomerCashEl = document.getElementById('inputCustomerCash');
-        if (!totalPayablePriceEl || !inputCustomerCashEl) return;
-
-        const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
-        if (amount === 0) {
-            inputCustomerCashEl.value = totalPayable;
-        } else {
-            inputCustomerCashEl.value = amount;
-        }
-        calculateChangeRefund();
     }
 
     // 4. Lọc sản phẩm theo danh mục sidebar trái - Hỗ trợ mốc chuỗi DMxxxxx
     function filterCategory(maDm) {
+        // Active button styling
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
-        if (maDm === 'all') {
-            document.getElementById('btn_cat_all').classList.add('active');
-            document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => card.style.display = 'block');
-        } else {
-            const activeBtn = document.getElementById('btn_cat_' + maDm);
-            if (activeBtn) {
-                activeBtn.classList.add('active');
+        const activeBtn = document.getElementById('btn_cat_' + maDm);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Filter cards
+        document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
+            const rowMaDm = card.getAttribute('data-madm');
+            if (maDm === 'all' || rowMaDm === maDm) {
+                card.style.setProperty('display', 'block', 'important');
+            } else {
+                card.style.setProperty('display', 'none', 'important');
             }
-            document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
-                const parent = card.closest('.pos-card-wrapper');
-                if (card.getAttribute('data-madm') === maDm) {
-                    parent.style.display = 'block';
-                } else {
-                    parent.style.display = 'none';
-                }
-            });
-        }
+        });
     }
 
-    // 5. Lọc nhanh theo nhãn (NEW, HOT, ALL)
+    // 5. Bộ lọc tag đặc biệt (NEW, HOT, ALL)
     function filterBadge(type) {
-        document.querySelectorAll('.btn-group .btn').forEach(btn => {
-            btn.classList.remove('btn-light', 'active-filter');
-            btn.classList.add('btn-outline-secondary');
-        });
+        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('btn-light', 'active-filter'));
         const activeBtn = document.getElementById('f_' + type);
-        if (activeBtn) {
-            activeBtn.classList.remove('btn-outline-secondary');
-            activeBtn.classList.add('btn-light', 'active-filter');
-        }
-        document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
-            const parent = card.closest('.pos-card-wrapper');
+        if (activeBtn) activeBtn.classList.add('btn-light', 'active-filter');
+
+        document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             if (type === 'all') {
-                parent.style.display = 'block';
+                card.style.setProperty('display', 'block', 'important');
             } else if (type === 'new') {
-                parent.style.display = card.getAttribute('data-isnew') === 'true' ? 'block' : 'none';
+                const isNew = card.getAttribute('data-isnew') === 'true';
+                card.style.setProperty('display', isNew ? 'block' : 'none', 'important');
             } else if (type === 'hot') {
-                parent.style.display = card.getAttribute('data-ishot') === 'true' ? 'block' : 'none';
+                const isHot = card.getAttribute('data-ishot') === 'true';
+                card.style.setProperty('display', isHot ? 'block' : 'none', 'important');
             }
         });
     }
@@ -770,94 +799,18 @@
     // 6. Tra cứu nhanh realtime không độ trễ
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
-        document.querySelectorAll('#posProductGrid .pos-card').forEach(card => {
+        document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             const name = card.querySelector('.pos-card-name').innerText.toLowerCase();
             const id = card.getAttribute('data-masp').toLowerCase();
-            const parent = card.closest('.pos-card-wrapper');
             if (name.includes(keyword) || id.includes(keyword)) {
-                parent.style.display = 'block';
+                card.style.setProperty('display', 'block', 'important');
             } else {
-                parent.style.display = 'none';
+                card.style.setProperty('display', 'none', 'important');
             }
         });
     }
 
-    // 7. Hủy toàn bộ giỏ hàng
-    function clearFullPosCart() {
-        posCart = [];
-        resetVoucherAndPoints();
-        renderPosCart();
-        const cashInput = document.getElementById('inputCustomerCash');
-        if (cashInput) cashInput.value = '';
-        const refundTxt = document.getElementById('txtCashRefund');
-        if (refundTxt) refundTxt.innerText = '0 đ';
-    }
-
-    // 8. Đổi phương thức thanh toán
-    function changePaymentMethod(maPt) {
-        const submitPt = document.getElementById('submit_maPt');
-        if (submitPt) submitPt.value = maPt;
-    }
-
-    // 9. Submit đơn hàng POS - ĐỒNG BỘ HOÀN TOÀN MÃ SẢN PHẨM & MÃ SIZE CHUỖI
-    function submitPOSOrderTransaction() {
-        if (posCart.length === 0) {
-            showToast('warning', 'Giỏ hàng POS trống, không thể in hóa đơn!');
-            return;
-        }
-        const container = document.getElementById('submitItemsContainer');
-        container.innerHTML = '';
-        posCart.forEach(item => {
-            container.innerHTML += '<input type="hidden" name="item_maSp[]" value="' + item.maSp + '">';
-            container.innerHTML += '<input type="hidden" name="item_maSize[]" value="' + item.maSize + '">';
-            container.innerHTML += '<input type="hidden" name="item_soLuong[]" value="' + item.soLuong + '">';
-            container.innerHTML += '<input type="hidden" name="item_giaChot[]" value="' + item.giaBan + '">';
-            container.innerHTML += '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">';
-            container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
-            container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
-            // Map mảng topping định dạng chuẩn: maTp_soLuong_giaTp (maTp là chuỗi)
-            let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
-            container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
-        });
-
-        const totalPayable = parseInt(document.getElementById('totalPayablePrice').innerText.replace(/\D/g, '')) || 0;
-        const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
-        document.getElementById('submit_tongTienHang').value = totalRaw;
-        document.getElementById('submit_tongPhaiTra').value = totalPayable;
-        if (customerInfo) {
-            document.getElementById('submit_maKh').value = customerInfo.maKh;
-        }
-
-        Swal.fire({
-            title: 'Chốt giao dịch quầy POS',
-            text: 'Tiến hành in hóa đơn bán lẻ và đồng bộ ví điểm CRM cho khách hàng?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý & In Bill'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById('posCheckoutForm').submit();
-            }
-        });
-    }
-
-    // 10. Đóng gói click card gọi openCustomizePopup an toàn tuyệt đối chống lỗi dấu nháy quote symbol
-    function handlePosCardClick(cardElement) {
-        const maSp = cardElement.getAttribute('data-masp');
-        const tenSp = cardElement.getAttribute('data-tensp');
-        const optionsObj = window['sp_opt_' + maSp];
-        openCustomizePopup(maSp, tenSp, encodeURIComponent(JSON.stringify(optionsObj)));
-    }
-
-    // 11. XỬ LÝ ĐỒNG BỘ CÀI ĐẶT CÁ NHÂN NHÂN VIÊN THU NGÂN (POS SETTINGS MODAL)
-    const posSettingsModal = new bootstrap.Modal(document.getElementById('posSettingsModal'));
-    function openPOSSettingsModal() {
-        posSettingsModal.show();
-    }
-
-    // Lắng nghe xem có hóa đơn in từ backend trả về không
+    // 7. Lắng nghe xem có hóa đơn in từ backend trả về không sau khi redirect
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('orderId');
