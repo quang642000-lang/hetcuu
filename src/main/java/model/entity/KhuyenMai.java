@@ -1,5 +1,4 @@
 package model.entity;
-
 import java.sql.Timestamp;
 
 public class KhuyenMai {
@@ -8,7 +7,7 @@ public class KhuyenMai {
     private String maCode;
     private String moTaDieuKien;
     private String hinhAnhUrl;
-    private int loaiGiam; // 1: Tiền mặt, 2: % [10]
+    private int loaiGiam; // 1: Tiền mặt, 2: %
     private int giaTriGiam;
     private int giamToiDa;
     private int donToiThieu;
@@ -17,12 +16,42 @@ public class KhuyenMai {
     private Timestamp ngayBatDau;
     private Timestamp ngayKetThuc;
     private boolean trangThai;
+    private int soLuotDungCaNhan = 0; // NEW FIELD
 
     public KhuyenMai() {}
     public KhuyenMai(String maKm, String tenKm, String maCode, String moTaDieuKien, String hinhAnhUrl, int loaiGiam, int giaTriGiam, int giamToiDa, int donToiThieu, boolean isPublic, int soLuong, Timestamp ngayBatDau, Timestamp ngayKetThuc, boolean trangThai) {
-        this.maKm = maKm; this.tenKm = tenKm; this.maCode = maCode; this.moTaDieuKien = moTaDieuKien; this.hinhAnhUrl = hinhAnhUrl; this.loaiGiam = loaiGiam; this.giaTriGiam = giaTriGiam; this.giamToiDa = giamToiDa; this.donToiThieu = donToiThieu; this.isPublic = isPublic; this.soLuong = soLuong; this.ngayBatDau = ngayBatDau; this.ngayKetThuc = ngayKetThuc; this.trangThai = trangThai;
+        this.maKm = maKm;
+        this.tenKm = tenKm;
+        this.maCode = maCode;
+        this.moTaDieuKien = moTaDieuKien;
+        this.hinhAnhUrl = hinhAnhUrl;
+        this.loaiGiam = loaiGiam;
+        this.giaTriGiam = giaTriGiam;
+        this.giamToiDa = giamToiDa;
+        this.donToiThieu = donToiThieu;
+        this.isPublic = isPublic;
+        this.soLuong = soLuong;
+        this.ngayBatDau = ngayBatDau;
+        this.ngayKetThuc = ngayKetThuc;
+        this.trangThai = trangThai;
     }
-
+    public KhuyenMai(String maKm, String tenKm, String maCode, String moTaDieuKien, String hinhAnhUrl, int loaiGiam, int giaTriGiam, int giamToiDa, int donToiThieu, boolean isPublic, int soLuong, Timestamp ngayBatDau, Timestamp ngayKetThuc, boolean trangThai, int soLuotDungCaNhan) {
+        this.maKm = maKm;
+        this.tenKm = tenKm;
+        this.maCode = maCode;
+        this.moTaDieuKien = moTaDieuKien;
+        this.hinhAnhUrl = hinhAnhUrl;
+        this.loaiGiam = loaiGiam;
+        this.giaTriGiam = giaTriGiam;
+        this.giamToiDa = giamToiDa;
+        this.donToiThieu = donToiThieu;
+        this.isPublic = isPublic;
+        this.soLuong = soLuong;
+        this.ngayBatDau = ngayBatDau;
+        this.ngayKetThuc = ngayKetThuc;
+        this.trangThai = trangThai;
+        this.soLuotDungCaNhan = soLuotDungCaNhan;
+    }
     public String getMaKm() { return maKm; }
     public void setMaKm(String maKm) { this.maKm = maKm; }
     public String getTenKm() { return tenKm; }
@@ -51,4 +80,6 @@ public class KhuyenMai {
     public void setNgayKetThuc(Timestamp ngayKetThuc) { this.ngayKetThuc = ngayKetThuc; }
     public boolean isTrangThai() { return trangThai; }
     public void setTrangThai(boolean trangThai) { this.trangThai = trangThai; }
+    public int getSoLuotDungCaNhan() { return soLuotDungCaNhan; }
+    public void setSoLuotDungCaNhan(int soLuotDungCaNhan) { this.soLuotDungCaNhan = soLuotDungCaNhan; }
 }

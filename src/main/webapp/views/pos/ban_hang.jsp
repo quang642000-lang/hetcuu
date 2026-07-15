@@ -12,7 +12,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-
     <!-- Custom styling -->
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
@@ -257,14 +256,13 @@
             </a>
             <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                 <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
+                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠY QUẦY
                 </a>
                 <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
                     <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
                 </a>
             </div>
         </div>
-
         <div class="d-flex align-items-center gap-3 text-white ms-auto">
             <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
                 <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -275,10 +273,9 @@
                 </ul>
             </div>
             <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-                    <i class="bi bi-calendar3 text-success me-1"></i>
-                    <span id="posCurrentClock">--:--:--</span>
-                </span>
-
+<i class="bi bi-calendar3 text-success me-1"></i>
+<span id="posCurrentClock">--:--:--</span>
+</span>
             <!-- NÚT ĐĂNG XUẤT NỔI BẬT CHỐT CA -->
             <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm">
                 <i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT
@@ -289,7 +286,6 @@
         </div>
     </div>
 </nav>
-
 <div class="pos-layout">
     <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
     <div class="pos-category-sidebar">
@@ -298,14 +294,12 @@
             <span>TẤT CẢ</span>
         </button>
         <c:forEach var="cat" items="${categories}">
-            <!-- ĐỒNG BỘ CÚ PHÁP TRUYỀN THAM SỐ CHUỖI CÓ NHÁY ĐƠN -->
             <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory('${cat.maDm}')">
                 <i class="bi bi-cup-straw fs-4 mb-1"></i>
                 <span class="text-uppercase"><c:out value="${cat.tenDm}"/></span>
             </button>
         </c:forEach>
     </div>
-
     <!-- CỘT 2: LƯỚI SẢN PHẨM -->
     <div class="pos-menu-area">
         <div class="pos-menu-header">
@@ -319,7 +313,6 @@
                 <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
             </div>
         </div>
-
         <div class="pos-product-container">
             <div class="pos-grid" id="posProductGrid">
                 <c:forEach var="sp" items="${products}">
@@ -328,6 +321,7 @@
                             window['sp_opt_' + '${sp.maSp}'] = {
                                 choPhepDoiDa: ${sp.choPhepDoiDa},
                                 choPhepDoiDuong: ${sp.choPhepDoiDuong},
+                                choPhepTopping: ${sp.choPhepTopping},
                                 sizes: [
                                     <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
                                     { maSize: ${sz.maSize}, tenSize: '${sz.maSize == 1 ? "S" : (sz.maSize == 2 ? "M" : "L")}', giaBan: ${sz.giaBan} }${not sLoop.last ? ',' : ''}
@@ -363,7 +357,6 @@
             </div>
         </div>
     </div>
-
     <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN (SƯỜN PHẢI) -->
     <div class="pos-checkout-sidebar">
         <div class="pos-checkout-header">
@@ -373,7 +366,6 @@
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
         </div>
-
         <!-- DANH SÁCH SẢN PHẨM TRONG GIỎ HÀNG POS -->
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
@@ -381,7 +373,6 @@
                 <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
             </div>
         </div>
-
         <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
         <div class="pos-crm-panel">
             <div class="d-flex gap-2 mb-3">
@@ -395,7 +386,6 @@
                 </div>
                 <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
             </div>
-
             <!-- CRM LOYALTY AREA -->
             <div id="crmLoyaltyArea" class="mt-2" style="display: none;">
                 <div class="d-flex gap-1.5 mb-2">
@@ -405,7 +395,6 @@
             </div>
             <div id="posAddCustomerArea" style="display: none;"></div>
         </div>
-
         <!-- TỔNG HỢP TIỀN BÁO CÁO -->
         <div class="pos-summary-panel">
             <div class="mb-2">
@@ -435,7 +424,6 @@
                 <span>TỔNG THỰC THU:</span>
                 <span class="text-success" id="totalPayablePrice">0 đ</span>
             </div>
-
             <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
             <div class="mt-3 text-start" id="cashCalculatorSection">
                 <div class="d-flex justify-content-between align-items-center mb-1.5">
@@ -454,7 +442,6 @@
                     <span id="txtCashRefund" class="text-success">0 đ</span>
                 </div>
             </div>
-
             <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN -->
             <div class="mb-3 mt-3 text-start">
                 <label class="form-label text-muted small fw-bold"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
@@ -463,7 +450,6 @@
                     <option value="2">CHUYỂN KHOẢN QR ĐỘNG (QUÉT MÃ)</option>
                 </select>
             </div>
-
             <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
             <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                 <input type="hidden" name="maKh" id="submit_maKh" value="">
@@ -478,15 +464,13 @@
                 <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                 <div id="posFormItemsContainer"></div>
             </form>
-
             <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                 <i class="bi bi-printer me-1"></i> GIAO DỊCH & IN HOÁ ĐƠN
             </button>
         </div>
     </div>
 </div>
-
-<!-- MODAL CÀI ĐẶT THÔNG TIN TÀI KHOẢN NHÂN VIÊN THU NGÂN (POS PROFILE SETTINGS) -->
+<!-- MODAL CÀI ĐẶT THÔNG TIN TÀI KHOẢN -->
 <div class="modal fade" id="posSettingsModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -495,7 +479,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-light">
-                <!-- Nav Tabs đổi phần thiết lập -->
                 <ul class="nav nav-pills mb-3 bg-white p-1.5 rounded-pill border shadow-sm" id="posSettingsTab" role="tablist">
                     <li class="nav-item flex-fill text-center" role="presentation">
                         <button class="nav-link active rounded-pill py-2 w-100 fw-bold" id="pos-info-tab" data-bs-toggle="tab" data-bs-target="#posInfoPanel" type="button" role="tab">HỒ SƠ CỦA TÔI</button>
@@ -505,7 +488,6 @@
                     </li>
                 </ul>
                 <div class="tab-content bg-white p-4 rounded-3 border" id="posSettingsTabContent">
-                    <!-- Tab Panel 1: Sửa thông tin cá nhân -->
                     <div class="tab-pane fade show active" id="posInfoPanel" role="tabpanel">
                         <form id="posInfoForm" onsubmit="submitPOSInfoForm(event)">
                             <div class="mb-3 text-start">
@@ -523,7 +505,6 @@
                             <button type="submit" class="btn btn-success w-100 fw-bold py-2"><i class="bi bi-check-circle-fill me-1"></i> CẬP NHẬT HỒ SƠ</button>
                         </form>
                     </div>
-                    <!-- Tab Panel 2: Sửa mật khẩu -->
                     <div class="tab-pane fade" id="posPassPanel" role="tabpanel">
                         <form id="posPassForm" onsubmit="submitPOSPassForm(event)">
                             <div class="mb-3 text-start">
@@ -549,7 +530,6 @@
         </div>
     </div>
 </div>
-
 <!-- MODAL IN HÓA ĐƠN NHIỆT -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -601,7 +581,6 @@
         </div>
     </div>
 </div>
-
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
@@ -616,14 +595,12 @@
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
-
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
             searchCustomerCRM();
         }
     }
-
     function changePaymentMethod(maPt) {
         const submitPt = document.getElementById('submit_maPt');
         const cashSection = document.getElementById('cashCalculatorSection');
@@ -634,13 +611,10 @@
             if (cashSection) cashSection.style.setProperty('display', 'block', 'important');
         }
     }
-
-    // ĐỒNG BỘ: SỬA ĐÚNG CÚ PHÁP filterCategory nhận chuỗi string an toàn
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-sidebar .pos-category-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById('btn_cat_' + maDm);
         if (activeBtn) activeBtn.classList.add('active');
-
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             if (maDm === 'all') {
                 card.style.setProperty('display', 'block', 'important');
@@ -654,7 +628,6 @@
             }
         });
     }
-
     function filterBadge(type) {
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             if (type === 'all') {
@@ -668,7 +641,6 @@
             }
         });
     }
-
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
@@ -681,7 +653,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

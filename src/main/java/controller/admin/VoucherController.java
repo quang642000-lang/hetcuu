@@ -1,5 +1,4 @@
 package controller.admin;
-
 import model.entity.KhuyenMai;
 import model.entity.NhanVien;
 import model.entity.NhatKyHoatDong;
@@ -26,7 +25,6 @@ import config.DBConnect;
 public class VoucherController extends HttpServlet {
     private final IKhuyenMaiService khuyenMaiService = KhuyenMaiServiceImpl.getInstance();
     private final INhatKyRepository nhatKyRepository = NhatKyRepoImpl.getInstance();
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -54,18 +52,15 @@ public class VoucherController extends HttpServlet {
                 break;
         }
     }
-
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<KhuyenMai> list = khuyenMaiService.getAllKhuyenMai();
         request.setAttribute("vouchers", list);
         request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
     }
-
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("formTitle", "TẠO MỚI MÃ KHUYẾN MÃI");
         request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
     }
-
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String id = request.getParameter("id");
         KhuyenMai km = khuyenMaiService.getKhuyenMaiById(id);
@@ -77,7 +72,6 @@ public class VoucherController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=notfound");
         }
     }
-
     private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         boolean status = "1".equals(request.getParameter("status"));
@@ -111,7 +105,6 @@ public class VoucherController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=notfound");
         }
     }
-
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         KhuyenMai km = khuyenMaiService.getKhuyenMaiById(id);
@@ -172,7 +165,6 @@ public class VoucherController extends HttpServlet {
             }
         }
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -182,7 +174,6 @@ public class VoucherController extends HttpServlet {
             performUpdate(request, response);
         }
     }
-
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String tenKm = request.getParameter("tenKm");
         String maCode = request.getParameter("maCode");
@@ -199,10 +190,14 @@ public class VoucherController extends HttpServlet {
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
+        int soLuotDungCaNhan = 0;
+        try {
+            soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
+        } catch (NumberFormatException e) {
+            soLuotDungCaNhan = 0;
+        }
 
-        // ĐẶT maKm BẰNG NULL ĐỂ DATABASE TỰ ĐỘNG SINH QUA SEQUENCE & STORED PROCEDURE sp_ThemVoucher
-        KhuyenMai km = new KhuyenMai(null, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai);
-
+        KhuyenMai km = new KhuyenMai(null, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai, soLuotDungCaNhan);
         if (ngayKetThuc.before(ngayBatDau)) {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
@@ -218,13 +213,7 @@ public class VoucherController extends HttpServlet {
                 maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
             }
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv,
-                    "TẠO_VOUCHER_MỚI",
-                    "CHUONG_TRINH_KHUYEN_MAI",
-                    null,
-                    JsonParserUtil.toJson(km),
-                    request.getRemoteAddr(),
-                    null
+                    maNv, "TẠO_VOUCHER_MỚI", "CHUONG_TRINH_KHUYEN_MAI", null, JsonParserUtil.toJson(km), request.getRemoteAddr(), null
             ));
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=createsuccess");
         } else {
@@ -234,7 +223,6 @@ public class VoucherController extends HttpServlet {
             request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
         }
     }
-
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String maKm = request.getParameter("maKm");
         String tenKm = request.getParameter("tenKm");
@@ -252,6 +240,12 @@ public class VoucherController extends HttpServlet {
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
+        int soLuotDungCaNhan = 0;
+        try {
+            soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
+        } catch (NumberFormatException e) {
+            soLuotDungCaNhan = 0;
+        }
 
         KhuyenMai km = khuyenMaiService.getKhuyenMaiById(maKm);
         if (km == null) {
@@ -272,6 +266,7 @@ public class VoucherController extends HttpServlet {
         km.setNgayBatDau(ngayBatDau);
         km.setNgayKetThuc(ngayKetThuc);
         km.setTrangThai(trangThai);
+        km.setSoLuotDungCaNhan(soLuotDungCaNhan);
 
         if (ngayKetThuc.before(ngayBatDau)) {
             request.setAttribute("voucher", km);
@@ -288,13 +283,7 @@ public class VoucherController extends HttpServlet {
                 maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
             }
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv,
-                    "SỬA_THÔNG_TIN_VOUCHER",
-                    "CHUONG_TRINH_KHUYEN_MAI",
-                    oldJson,
-                    JsonParserUtil.toJson(km),
-                    request.getRemoteAddr(),
-                    null
+                    maNv, "SỬA_THÔNG_TIN_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", oldJson, JsonParserUtil.toJson(km), request.getRemoteAddr(), null
             ));
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=updatesuccess");
         } else {

@@ -18,7 +18,7 @@
 <div class="container py-5">
     <div class="row g-5">
         <!-- ẢNH ĐỒ UỐNG BÊN TRÁI -->
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-md-5 text-start">
             <div class="sticky-top" style="top: 80px;">
                 <img src="${not empty product.hinhAnh ? product.hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="w-100 rounded-4 shadow-sm border" style="object-fit: cover; max-height: 480px;" alt="Tea">
             </div>
@@ -26,9 +26,11 @@
         <!-- BẢNG TÙY BIẾN PHA CHẾ BÊN PHẢI -->
         <div class="col-12 col-md-7">
             <div class="card p-4 border-0 shadow-sm bg-white" style="border-radius: 16px;">
-                <span class="badge bg-success bg-opacity-10 text-success border border-success mb-2 px-3 py-1.5 fw-bold text-uppercase d-inline-block" style="max-width: fit-content;">Mã đồ uống: ${product.maSp}</span>
-                <h2 class="fw-bold mb-2 text-dark"><c:out value="${product.tenSp}"/></h2>
-                <p class="text-muted mb-4"><c:out value="${product.moTa}"/></p>
+                <div class="text-start">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success mb-2 px-3 py-1.5 fw-bold text-uppercase d-inline-block" style="max-width: fit-content;">Mã đồ uống: ${product.maSp}</span>
+                    <h2 class="fw-bold mb-2 text-dark"><c:out value="${product.tenSp}"/></h2>
+                    <p class="text-muted mb-4"><c:out value="${product.moTa}"/></p>
+                </div>
                 <form id="addToCartForm" action="${pageContext.request.contextPath}/cart/add" method="POST">
                     <input type="hidden" name="maSp" value="${product.maSp}">
                     <!-- Truyền ID chi tiết giỏ hàng nếu đang sửa -->
@@ -36,7 +38,7 @@
                         <input type="hidden" name="maCtgh" value="${editItem.maCtgh}">
                     </c:if>
                     <!-- 1. CHỌN SIZE -->
-                    <div class="mb-4">
+                    <div class="mb-4 text-start">
                         <label class="form-label fw-bold text-dark d-block">1. Chọn kích cỡ cốc nước <span class="text-danger">*</span></label>
                         <div class="row g-2">
                             <c:forEach var="size" items="${sizes}" varStatus="loop">
@@ -64,7 +66,7 @@
                         </div>
                     </div>
                     <!-- 2. ĐÁ & ĐƯỜNG -->
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-4 text-start">
                         <c:if test="${product.choPhepDoiDa}">
                             <div class="col-6">
                                 <label for="mucDa" class="form-label fw-bold text-dark small">2. Mức độ đá</label>
@@ -88,50 +90,57 @@
                             </div>
                         </c:if>
                     </div>
-                    <!-- 3. TOPPING (NÂNG CẤP ĐỘNG CÓ SỐ LƯỢNG SPINNER VÀ HÌNH ẢNH) -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold text-dark d-block">4. Thêm Topping dai giòn sần sật (Có thể chọn nhiều phần)</label>
-                        <div class="row g-2">
-                            <c:forEach var="tp" items="${toppings}">
-                                <c:set var="isTpChecked" value="false"/>
-                                <c:set var="tpQty" value="1"/>
-                                <c:if test="${not empty editItem}">
-                                    <c:forEach var="et" items="${editItem.toppingGioHangList}">
-                                        <c:if test="${et.maTp == tp.maTp}">
-                                            <c:set var="isTpChecked" value="true"/>
-                                            <c:set var="tpQty" value="${et.soLuongTp}"/>
+                    <!-- 3. TOPPING (Toggles dynamically based on product.choPhepTopping) -->
+                    <div class="mb-4 text-start">
+                        <c:choose>
+                            <c:when test="${product.choPhepTopping}">
+                                <label class="form-label fw-bold text-dark d-block">4. Thêm Topping dai giòn sần sật (Có thể chọn nhiều phần)</label>
+                                <div class="row g-2">
+                                    <c:forEach var="tp" items="${toppings}">
+                                        <c:set var="isTpChecked" value="false"/>
+                                        <c:set var="tpQty" value="1"/>
+                                        <c:if test="${not empty editItem}">
+                                            <c:forEach var="et" items="${editItem.toppingGioHangList}">
+                                                <c:if test="${et.maTp == tp.maTp}">
+                                                    <c:set var="isTpChecked" value="true"/>
+                                                    <c:set var="tpQty" value="${et.soLuongTp}"/>
+                                                </c:if>
+                                            </c:forEach>
                                         </c:if>
+                                        <div class="col-12 col-md-6">
+                                            <div class="border rounded p-2.5 d-flex justify-content-between align-items-center bg-white shadow-sm">
+                                                <div class="form-check mb-0 d-flex align-items-center flex-grow-1">
+                                                    <input class="form-check-input topping-check border-secondary me-2" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="toggleWebToppingQty('${tp.maTp}')" ${isTpChecked == 'true' ? 'checked' : ''}>
+                                                    <label class="form-check-label fw-semibold text-dark small" for="tp_${tp.maTp}">
+                                                        <c:out value="${tp.tenTp}"/> <br>
+                                                        <span class="text-success fw-bold font-monospace small">+<fmt:formatNumber value="${tp.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</span>
+                                                    </label>
+                                                </div>
+                                                <div class="input-group input-group-sm" id="web_tp_qty_container_${tp.maTp}" style="${isTpChecked == 'true' ? 'display: flex !important;' : 'display: none !important;'}">
+                                                    <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', -1)">-</button>
+                                                    <input type="text" id="web_tp_qty_${tp.maTp}" name="topping_qty_${tp.maTp}" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="${tpQty}" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">
+                                                    <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', 1)">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </c:forEach>
-                                </c:if>
-                                <div class="col-12 col-md-6">
-                                    <div class="border rounded p-2.5 d-flex justify-content-between align-items-center bg-white shadow-sm">
-                                        <div class="form-check mb-0 d-flex align-items-center flex-grow-1">
-                                            <!-- BỌC MÃ TOPPING CHUỖI TRONG NHÁY ĐƠN TRÊN ONCHANGE CHỐNG LỖI CÚ PHÁP -->
-                                            <input class="form-check-input topping-check border-secondary me-2" type="checkbox" name="toppings[]" id="tp_${tp.maTp}" value="${tp.maTp}" data-price="${tp.giaBan}" onchange="toggleWebToppingQty('${tp.maTp}')" ${isTpChecked == 'true' ? 'checked' : ''}>
-                                            <label class="form-check-label fw-semibold text-dark small" for="tp_${tp.maTp}">
-                                                <c:out value="${tp.tenTp}"/> <br>
-                                                <span class="text-success fw-bold font-monospace small">+<fmt:formatNumber value="${tp.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</span>
-                                            </label>
-                                        </div>
-                                        <!-- Spinner tăng giảm số lượng topping - BỌC MÃ TOPPING CHUỖI TRONG NHÁY ĐƠN TRÊN ONCLICK -->
-                                        <div class="input-group input-group-sm" id="web_tp_qty_container_${tp.maTp}" style="${isTpChecked == 'true' ? 'display: flex !important;' : 'display: none !important;'}">
-                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', -1)">-</button>
-                                            <input type="text" id="web_tp_qty_${tp.maTp}" name="topping_qty_${tp.maTp}" class="form-control text-center p-0 fw-bold border-secondary border-opacity-25" value="${tpQty}" readonly style="font-size: 11px; height: 24px; background-color: #ffffff;">
-                                            <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustWebToppingQty('${tp.maTp}', 1)">+</button>
-                                        </div>
-                                    </div>
                                 </div>
-                            </c:forEach>
-                        </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="p-3 bg-light rounded border border-dashed text-center">
+                                    <span class="text-muted small fw-semibold"><i class="bi bi-info-circle text-warning"></i> Sản phẩm bánh ngọt này không áp dụng ăn kèm Topping!</span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <!-- 4. GHI CHÚ -->
-                    <div class="mb-4">
+                    <div class="mb-4 text-start">
                         <label for="ghiChuMon" class="form-label fw-bold text-dark small">5. Ghi chú của bạn cho thợ pha chế</label>
                         <textarea class="form-control" id="ghiChuMon" name="ghiChuMon" rows="2" placeholder="Ví dụ: Mang ly đá riêng, bọc kỹ màng nhôm mang đi xa..."><c:out value="${not empty editItem ? editItem.ghiChuMon : ''}"/></textarea>
                     </div>
                     <!-- 5. TỔNG TIỀN VÀ SỐ LƯỢNG -->
                     <div class="d-flex align-items-center justify-content-between border-top pt-4 mb-4">
-                        <div>
+                        <div class="text-start">
                             <span class="text-muted d-block small fw-medium">Tổng giá trị cốc nước:</span>
                             <span class="fw-bold text-success fs-3" id="displayTotal">0 đ</span>
                         </div>
@@ -172,7 +181,6 @@
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
 <script>
-    // Bật/tắt ô số lượng topping ngoài Web
     function toggleWebToppingQty(maTp) {
         const chk = document.getElementById('tp_' + maTp);
         const container = document.getElementById('web_tp_qty_container_' + maTp);
@@ -188,7 +196,6 @@
         }
         calculateRealtimeTotal();
     }
-    // Điều chỉnh số lượng topping ngoài Web
     function adjustWebToppingQty(maTp, delta) {
         const qtyInput = document.getElementById('web_tp_qty_' + maTp);
         if (qtyInput) {
@@ -199,7 +206,6 @@
         }
         calculateRealtimeTotal();
     }
-    // Tính toán tổng tiền realtime phía Client có nhân số lượng topping
     function calculateRealtimeTotal() {
         let total = 0;
         const checkedSize = document.querySelector('input[name="maSize"]:checked');
@@ -217,7 +223,6 @@
         const finalPrice = total * qty;
         document.getElementById('displayTotal').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
     }
-    // Tăng giảm số lượng ly nước uống
     function adjustQty(amount) {
         const input = document.getElementById('qtyInput');
         let currentVal = parseInt(input.value);
@@ -226,7 +231,6 @@
         input.value = currentVal;
         calculateRealtimeTotal();
     }
-    // Luồng xử lý điều phối AJAX tích hợp: Tự động chuyển qua đăng nhập mượt mà không lỗi
     function handleCartAction(action) {
         const form = document.getElementById("addToCartForm");
         const formData = new FormData(form);

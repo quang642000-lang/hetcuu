@@ -1,5 +1,4 @@
 package repository.impl;
-
 import config.DBConnect;
 import model.entity.KhuyenMai;
 import repository.IKhuyenMaiRepository;
@@ -9,22 +8,17 @@ import java.util.List;
 
 public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
     private static KhuyenMaiRepoImpl instance;
-
     private KhuyenMaiRepoImpl() {}
-
     public static synchronized KhuyenMaiRepoImpl getInstance() {
         if (instance == null) {
             instance = new KhuyenMaiRepoImpl();
         }
         return instance;
     }
-
     @Override
     public List<KhuyenMai> getAll() {
         List<KhuyenMai> list = new ArrayList<>();
-        String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, " +
-                "gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, " +
-                "ngay_ket_thuc, trang_thai FROM CHUONG_TRINH_KHUYEN_MAI ORDER BY ngay_bat_dau DESC";
+        String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, ngay_ket_thuc, trang_thai, so_luot_dung_ca_nhan FROM CHUONG_TRINH_KHUYEN_MAI ORDER BY ngay_bat_dau DESC";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -36,12 +30,9 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
         }
         return list;
     }
-
     @Override
     public KhuyenMai getById(String id) {
-        String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, " +
-                "gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, " +
-                "ngay_ket_thuc, trang_thai FROM CHUONG_TRINH_KHUYEN_MAI WHERE ma_km = ?";
+        String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, ngay_ket_thuc, trang_thai, so_luot_dung_ca_nhan FROM CHUONG_TRINH_KHUYEN_MAI WHERE ma_km = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -55,11 +46,9 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
         }
         return null;
     }
-
     @Override
     public boolean add(KhuyenMai entity) {
-        // Gọi Stored Procedure sp_ThemVoucher tự sinh mã KM chuẩn hóa từ Sequence seq_Voucher
-        String sql = "{call sp_ThemVoucher(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        String sql = "{call sp_ThemVoucher(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}"; // 14 parameters
         try (Connection conn = DBConnect.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
             cs.setString(1, entity.getTenKm());
@@ -75,10 +64,9 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
             cs.setTimestamp(11, entity.getNgayBatDau());
             cs.setTimestamp(12, entity.getNgayKetThuc());
             cs.setBoolean(13, entity.isTrangThai());
-
+            cs.setInt(14, entity.getSoLuotDungCaNhan()); // PARAM 14
             try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
-                    // Gán mã KM tự sinh ngược lại thực thể Java
                     entity.setMaKm(rs.getString("ma_km"));
                     return true;
                 }
@@ -88,12 +76,11 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
         }
         return false;
     }
-
     @Override
     public boolean update(KhuyenMai entity) {
         String sql = "UPDATE CHUONG_TRINH_KHUYEN_MAI SET ten_km = ?, ma_code = ?, mo_ta_dieu_kien = ?, " +
                 "hinh_anh_url = ?, loai_giam = ?, gia_tri_giam = ?, giam_toi_da = ?, don_toi_thieu = ?, " +
-                "is_public = ?, so_luong = ?, ngay_bat_dau = ?, ngay_ket_thuc = ?, trang_thai = ? " +
+                "is_public = ?, so_luong = ?, ngay_bat_dau = ?, ngay_ket_thuc = ?, trang_thai = ?, so_luot_dung_ca_nhan = ? " +
                 "WHERE ma_km = ?";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -110,14 +97,14 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
             ps.setTimestamp(11, entity.getNgayBatDau());
             ps.setTimestamp(12, entity.getNgayKetThuc());
             ps.setBoolean(13, entity.isTrangThai());
-            ps.setString(14, entity.getMaKm());
+            ps.setInt(14, entity.getSoLuotDungCaNhan());
+            ps.setString(15, entity.getMaKm());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
     @Override
     public boolean delete(String id) {
         String sql = "UPDATE CHUONG_TRINH_KHUYEN_MAI SET trang_thai = 0 WHERE ma_km = ?";
@@ -130,12 +117,11 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
             return false;
         }
     }
-
     @Override
     public KhuyenMai getByCode(String code) {
         String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, " +
                 "gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, " +
-                "ngay_ket_thuc, trang_thai FROM CHUONG_TRINH_KHUYEN_MAI WHERE ma_code = ? AND trang_thai = 1";
+                "ngay_ket_thuc, trang_thai, so_luot_dung_ca_nhan FROM CHUONG_TRINH_KHUYEN_MAI WHERE ma_code = ? AND trang_thai = 1";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
@@ -149,13 +135,12 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
         }
         return null;
     }
-
     @Override
     public List<KhuyenMai> getVouchersKhaDung(int tongDonHang, String maKh) {
         List<KhuyenMai> list = new ArrayList<>();
         String sql = "SELECT ma_km, ten_km, ma_code, mo_ta_dieu_kien, hinh_anh_url, loai_giam, " +
                 "gia_tri_giam, giam_toi_da, don_toi_thieu, is_public, so_luong, ngay_bat_dau, " +
-                "ngay_ket_thuc, trang_thai FROM CHUONG_TRINH_KHUYEN_MAI " +
+                "ngay_ket_thuc, trang_thai, so_luot_dung_ca_nhan FROM CHUONG_TRINH_KHUYEN_MAI " +
                 "WHERE trang_thai = 1 AND so_luong > 0 AND GETDATE() BETWEEN ngay_bat_dau AND ngay_ket_thuc " +
                 "AND don_toi_thieu <= ? ORDER BY gia_tri_giam DESC";
         try (Connection conn = DBConnect.getConnection();
@@ -171,7 +156,6 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
         }
         return list;
     }
-
     @Override
     public boolean giamSoLuongVoucher(String maKm) {
         String sql = "UPDATE CHUONG_TRINH_KHUYEN_MAI SET so_luong = so_luong - 1 WHERE ma_km = ? AND so_luong > 0";
@@ -184,9 +168,8 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
             return false;
         }
     }
-
     private KhuyenMai mapResultSetToKhuyenMai(ResultSet rs) throws SQLException {
-        return new KhuyenMai(
+        KhuyenMai km = new KhuyenMai(
                 rs.getString("ma_km"),
                 rs.getString("ten_km"),
                 rs.getString("ma_code"),
@@ -202,5 +185,11 @@ public class KhuyenMaiRepoImpl implements IKhuyenMaiRepository {
                 rs.getTimestamp("ngay_ket_thuc"),
                 rs.getBoolean("trang_thai")
         );
+        try {
+            km.setSoLuotDungCaNhan(rs.getInt("so_luot_dung_ca_nhan"));
+        } catch (SQLException e) {
+            km.setSoLuotDungCaNhan(0);
+        }
+        return km;
     }
 }

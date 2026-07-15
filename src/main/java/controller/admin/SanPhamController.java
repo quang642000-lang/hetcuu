@@ -1,5 +1,4 @@
 package controller.admin;
-
 import model.entity.DanhMuc;
 import model.entity.KichCo;
 import model.entity.SanPham;
@@ -75,7 +74,6 @@ public class SanPhamController extends HttpServlet {
                 break;
         }
     }
-
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<SanPham> list = sanPhamService.getAllSanPham();
         if (list != null) {
@@ -88,7 +86,6 @@ public class SanPhamController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.getRequestDispatcher("/views/admin/san_pham.jsp").forward(request, response);
     }
-
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
         List<KichCo> sizes = kichCoRepository.getAll();
@@ -97,7 +94,6 @@ public class SanPhamController extends HttpServlet {
         request.setAttribute("formTitle", "THÊM SẢN PHẨM MỚI");
         request.getRequestDispatcher("/views/admin/sanpham-form.jsp").forward(request, response);
     }
-
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String id = request.getParameter("id");
         SanPham sp = sanPhamService.getSanPhamById(id);
@@ -138,7 +134,6 @@ public class SanPhamController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=notfound");
         }
     }
-
     private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         boolean status = "1".equals(request.getParameter("status"));
@@ -171,7 +166,6 @@ public class SanPhamController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=notfound");
         }
     }
-
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         HttpSession session = request.getSession(false);
@@ -238,7 +232,6 @@ public class SanPhamController extends HttpServlet {
             }
         }
     }
-
     private void performCheckSizeOrder(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String maSp = request.getParameter("maSp");
@@ -271,7 +264,6 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi kiểm tra đơn!\"}");
         }
     }
-
     private void performDeleteSizeMasterAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String maSizeStr = request.getParameter("maSize");
@@ -292,7 +284,6 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi xóa kích cỡ!\"}");
         }
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -304,7 +295,6 @@ public class SanPhamController extends HttpServlet {
             performAddSizeAjax(request, response);
         }
     }
-
     private void performAddSizeAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String tenSize = request.getParameter("tenSize");
@@ -338,7 +328,6 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Sự cố hệ thống khi thêm nhanh kích cỡ!\"}");
         }
     }
-
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         String actorNv = "SYSTEM";
@@ -367,6 +356,8 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
+            boolean choPhepTopping = request.getParameter("choPhepTopping") != null; // NEW PARAM
+
             SanPham sp = new SanPham();
             sp.setTenSp(tenSp);
             sp.setMaDm(maDmStr);
@@ -377,6 +368,8 @@ public class SanPhamController extends HttpServlet {
             sp.setIsNew(isNew);
             sp.setIsBestseller(isBestseller);
             sp.setTrangThai(trangThai);
+            sp.setChoPhepTopping(choPhepTopping); // SET NEW PARAM
+
             List<KichCo> allSizes = kichCoRepository.getAll();
             List<SanPhamKichCo> selectedSizes = new ArrayList<>();
             for (KichCo kc : allSizes) {
@@ -393,34 +386,6 @@ public class SanPhamController extends HttpServlet {
                         }
                     } catch (NumberFormatException e) {
                         LOGGER.log(Level.WARNING, "Lỗi định dạng giá bán cho kích cỡ mã " + kc.getMaSize(), e);
-                    }
-                }
-            }
-            java.util.Enumeration<String> parameterNames = request.getParameterNames();
-            while (parameterNames.hasMoreElements()) {
-                String paramName = parameterNames.nextElement();
-                if (paramName.startsWith("size_active_")) {
-                    int maSize = Integer.parseInt(paramName.replace("size_active_", ""));
-                    boolean alreadyProcessed = false;
-                    for (SanPhamKichCo sk : selectedSizes) {
-                        if (sk.getMaSize() == maSize) {
-                            alreadyProcessed = true;
-                            break;
-                        }
-                    }
-                    if (!alreadyProcessed) {
-                        try {
-                            String priceParam = request.getParameter("size_price_" + maSize);
-                            if (priceParam != null && !priceParam.trim().isEmpty()) {
-                                int giaBan = Integer.parseInt(priceParam.trim());
-                                String dinhLuong = request.getParameter("size_volume_" + maSize);
-                                boolean sizeStatus = request.getParameter("size_status_" + maSize) != null;
-                                SanPhamKichCo spkc = new SanPhamKichCo(null, maSize, giaBan, dinhLuong, sizeStatus);
-                                selectedSizes.add(spkc);
-                            }
-                        } catch (NumberFormatException e) {
-                            LOGGER.log(Level.WARNING, "Lỗi định dạng giá bán cho kích cỡ động mã " + maSize, e);
-                        }
                     }
                 }
             }
@@ -447,7 +412,6 @@ public class SanPhamController extends HttpServlet {
             showCreateForm(request, response);
         }
     }
-
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         String actorNv = "SYSTEM";
@@ -483,6 +447,8 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
+            boolean choPhepTopping = request.getParameter("choPhepTopping") != null; // NEW PARAM
+
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
                 String oldJson = JsonParserUtil.toJson(sp);
@@ -495,6 +461,8 @@ public class SanPhamController extends HttpServlet {
                 sp.setIsNew(isNew);
                 sp.setIsBestseller(isBestseller);
                 sp.setTrangThai(trangThai);
+                sp.setChoPhepTopping(choPhepTopping); // SET NEW PARAM
+
                 List<KichCo> allSizes = kichCoRepository.getAll();
                 List<SanPhamKichCo> selectedSizes = new ArrayList<>();
                 for (KichCo kc : allSizes) {
@@ -538,7 +506,6 @@ public class SanPhamController extends HttpServlet {
             showEditForm(request, response);
         }
     }
-
     private String uploadFile(HttpServletRequest request, String inputFieldName) {
         try {
             Part filePart = request.getPart(inputFieldName);

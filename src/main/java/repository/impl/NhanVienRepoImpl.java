@@ -1,5 +1,4 @@
 package repository.impl;
-
 import config.DBConnect;
 import model.entity.NhanVien;
 import repository.INhanVienRepository;
@@ -9,16 +8,13 @@ import java.util.List;
 
 public class NhanVienRepoImpl implements INhanVienRepository {
     private static NhanVienRepoImpl instance;
-
     private NhanVienRepoImpl() {}
-
     public static synchronized NhanVienRepoImpl getInstance() {
         if (instance == null) {
             instance = new NhanVienRepoImpl();
         }
         return instance;
     }
-
     @Override
     public List<NhanVien> getAll() {
         List<NhanVien> list = new ArrayList<>();
@@ -34,7 +30,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return list;
     }
-
     @Override
     public NhanVien getById(String id) {
         String sql = "SELECT ma_nv, ma_vt, ho_ten, so_dien_thoai, email, ten_dang_nhap, mat_khau, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM NHAN_VIEN WHERE ma_nv = ?";
@@ -51,7 +46,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return null;
     }
-
     @Override
     public boolean add(NhanVien entity) {
         String sql = "{call sp_ThemNhanVien(?, ?, ?, ?, ?, ?)}";
@@ -75,7 +69,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return false;
     }
-
     private void updateTrangThaiBoSung(NhanVien entity, Connection conn) throws SQLException {
         String sql = "UPDATE NHAN_VIEN SET trang_thai = ? WHERE ma_nv = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -84,7 +77,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
             ps.executeUpdate();
         }
     }
-
     @Override
     public boolean update(NhanVien entity) {
         String sql = "UPDATE NHAN_VIEN SET ma_vt = ?, ho_ten = ?, so_dien_thoai = ?, email = ?, ten_dang_nhap = ?, trang_thai = ? WHERE ma_nv = ?";
@@ -103,7 +95,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
             return false;
         }
     }
-
     @Override
     public boolean delete(String id) {
         String sql = "UPDATE NHAN_VIEN SET trang_thai = 0 WHERE ma_nv = ?";
@@ -116,7 +107,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
             return false;
         }
     }
-
     @Override
     public NhanVien getByTenDangNhap(String username) {
         String sql = "SELECT ma_nv, ma_vt, ho_ten, so_dien_thoai, email, ten_dang_nhap, mat_khau, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM NHAN_VIEN WHERE ten_dang_nhap = ?";
@@ -133,7 +123,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return null;
     }
-
     @Override
     public NhanVien getByEmail(String email) {
         String sql = "SELECT ma_nv, ma_vt, ho_ten, so_dien_thoai, email, ten_dang_nhap, mat_khau, trang_thai, thoi_gian_tao, thoi_gian_cap_nhat FROM NHAN_VIEN WHERE email = ?";
@@ -150,7 +139,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return null;
     }
-
     @Override
     public boolean updateMatKhau(String maNv, String matKhauMoi) {
         String sql = "UPDATE NHAN_VIEN SET mat_khau = ? WHERE ma_nv = ?";
@@ -164,7 +152,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
             return false;
         }
     }
-
     @Override
     public boolean checkTrungSdtOrEmail(String sdt, String email, String excludeMaNv) {
         String sql = excludeMaNv == null
@@ -187,7 +174,6 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         }
         return false;
     }
-
     private NhanVien mapResultSetToNhanVien(ResultSet rs) throws SQLException {
         return new NhanVien(
                 rs.getString("ma_nv"),

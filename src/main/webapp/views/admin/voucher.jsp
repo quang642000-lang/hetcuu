@@ -31,6 +31,7 @@
 <c:set var="trangThai" value="true" />
 <c:set var="hinhAnhUrl" value="" />
 <c:set var="moTaDieuKien" value="" />
+<c:set var="soLuotDungCaNhan" value="0" />
 <c:set var="formattedStart" value=""/>
 <c:set var="formattedEnd" value=""/>
 <c:if test="${not empty voucher}">
@@ -46,6 +47,7 @@
     <c:set var="trangThai" value="${voucher.isTrangThai()}" />
     <c:set var="hinhAnhUrl" value="${voucher.hinhAnhUrl}" />
     <c:set var="moTaDieuKien" value="${voucher.moTaDieuKien}" />
+    <c:set var="soLuotDungCaNhan" value="${voucher.soLuotDungCaNhan}" />
     <c:if test="${not empty voucher.ngayBatDau}">
         <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
     </c:if>
@@ -61,7 +63,7 @@
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <c:choose>
                     <c:when test="${not empty formTitle}">
-                        <div class="mb-3">
+                        <div class="mb-3 border-start border-success border-3 ps-2 text-start">
                             <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-sm btn-outline-secondary fw-bold" style="border-radius: 6px;">
                                 <i class="bi bi-arrow-left"></i> Quay lại danh sách
                             </a>
@@ -139,6 +141,11 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
+                                    <label for="soLuotDungCaNhan" class="form-label fw-bold small">Giới hạn / Cá nhân <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control form-control-teapos text-end" id="soLuotDungCaNhan" name="soLuotDungCaNhan"
+                                           value="${soLuotDungCaNhan}" min="0" placeholder="0 nếu không giới hạn..." required>
+                                </div>
+                                <div class="col-12">
                                     <label for="hinhAnhUrl" class="form-label fw-bold small">Ảnh minh họa (URL)</label>
                                     <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl"
                                            value="${hinhAnhUrl}" placeholder="https://image-url...">
@@ -177,6 +184,7 @@
                                     <th>Hạn Sử Dụng</th>
                                     <th>Số Lượng</th>
                                     <th>Phạm Vi</th>
+                                    <th>Giới Hạn</th>
                                     <th>Trạng Thế</th>
                                     <th class="text-end" style="width: 250px;">Hành Động</th>
                                 </tr>
@@ -209,14 +217,19 @@
                                                 </td>
                                                 <td class="fw-bold text-dark">${item.soLuong} mã</td>
                                                 <td>
-                                                    <span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
-                                                            ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
-                                                    </span>
+<span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
+        ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
+</span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                            ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
-                                                    </span>
+<span class="badge bg-secondary text-white px-2.5 py-1.5" style="border-radius: 6px;">
+        ${item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' Lần'}
+</span>
+                                                </td>
+                                                <td>
+<span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
+</span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
@@ -244,7 +257,7 @@
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
-                                        <tr><td colspan="9" class="text-center py-5 text-muted">Hệ thống chưa tạo mã khuyến mãi nào!</td></tr>
+                                        <tr><td colspan="10" class="text-center py-5 text-muted">Hệ thống chưa tạo mã khuyến mãi nào!</td></tr>
                                     </c:otherwise>
                                 </c:choose>
                                 </tbody>
@@ -280,17 +293,14 @@
             }
         });
     }
-
     let currentPage = 1;
     const rowsPerPage = 10;
     let filteredRows = [];
-
     function initPagination() {
         const allRows = document.querySelectorAll("#voucherTable tbody .voucher-row");
         filteredRows = Array.from(allRows);
         showPage(1);
     }
-
     function showPage(page) {
         currentPage = page;
         const totalRows = filteredRows.length;
@@ -326,7 +336,6 @@
         nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page + 1) + ')">&raquo;</a>';
         buttonsContainer.appendChild(nextLi);
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

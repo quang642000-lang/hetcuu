@@ -15,7 +15,7 @@
     <c:set var="isNew" value="${not empty product ? product.isNew : false}" />
     <c:set var="isBestseller" value="${not empty product ? product.isBestseller : false}" />
     <c:set var="trangThai" value="${not empty product ? product.trangThai : true}" />
-
+    <c:set var="choPhepTopping" value="${not empty product ? product.choPhepTopping : true}" />
     <title>TEA POS - ${not empty product ? "Cập Nhật" : "Thêm"} Sản Phẩm Đồ Uống</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,25 +67,21 @@
                     <i class="bi bi-arrow-left"></i> Quay lại danh sách
                 </a>
             </div>
-
             <div class="card form-card p-4 shadow-sm">
                 <!-- TIÊU ĐỀ BIỂU MẪU -->
                 <h4 class="fw-bold mb-4 text-success border-bottom pb-3">
                     <i class="bi bi-gear-wide-connected me-2 text-success"></i>
                     <c:out value="${formTitle}" />
                 </h4>
-
                 <form id="productForm" action="${pageContext.request.contextPath}/admin/sanpham" method="POST" enctype="multipart/form-data">
                     <!-- Các trường giá trị ẩn để xác định luồng -->
                     <input type="hidden" name="action" id="formAction" value="${not empty product ? 'edit' : 'create'}">
                     <input type="hidden" name="maSp" id="formMaSp" value="${not empty product ? maSp : ''}">
-
                     <div class="row g-4 text-start">
                         <!-- PHẦN THÔNG TIN CHUNG BÊN TRÁI -->
                         <div class="col-12 col-md-8">
                             <div class="bg-light p-3.5 rounded mb-4" style="border: 1px solid var(--border-color);">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-success"></i> 1. Thông Tin Đồ Uống Cơ Bản</h6>
-
                                 <div class="row g-3">
                                     <!-- Mã sản phẩm (Tự sinh hoặc tải từ biến an toàn) -->
                                     <div class="col-12 col-md-4">
@@ -139,12 +135,17 @@
                                     </div>
                                 </div>
                             </div>
-
                             <!-- THIẾT LẬP ĐẶC TÍNH SẢN PHẨM -->
                             <div class="bg-light p-3.5 rounded mb-4" style="border: 1px solid var(--border-color);">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-gear-fill text-success"></i> 2. Thiết Lập Đặc Tính & Tùy Chọn Pha Chế</h6>
-
                                 <div class="row g-3 text-start">
+                                    <div class="col-6 col-md-3">
+                                        <div class="form-check form-switch p-2 rounded bg-white border ps-5">
+                                            <input class="form-check-input" type="checkbox" id="choPhepTopping" name="choPhepTopping" value="1"
+                                            ${choPhepTopping == 'true' || choPhepTopping == true ? 'checked' : ''}>
+                                            <label class="form-check-label fw-semibold text-dark small" for="choPhepTopping">Topping đi kèm</label>
+                                        </div>
+                                    </div>
                                     <div class="col-6 col-md-3">
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDa" name="choPhepDoiDa" value="1"
@@ -156,7 +157,7 @@
                                         <div class="form-check form-switch p-2 rounded bg-white border ps-5">
                                             <input class="form-check-input" type="checkbox" id="choPhepDoiDuong" name="choPhepDoiDuong" value="1"
                                             ${choPhepDoiDuong == 'true' || choPhepDoiDuong == true ? 'checked' : ''}>
-                                            <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDuong">Đổi Đường (Sugar)</label>
+                                            <label class="form-check-label fw-semibold text-dark small" for="choPhepDoiDuong">Đổi Đường</label>
                                         </div>
                                     </div>
                                     <div class="col-6 col-md-3">
@@ -189,7 +190,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- PHẦN XEM TRƯỚC HÌNH ẢNH BÊN PHẢI -->
                         <div class="col-12 col-md-4">
                             <div class="bg-light p-3.5 rounded h-100" style="border: 1px solid var(--border-color);">
@@ -200,7 +200,6 @@
                                 <p class="small text-muted text-center" style="line-height: 1.4;">Đo lường tỉ lệ hiển thị tối ưu là 500x500px tỉ lệ vuông (1:1) để đồ uống hiển thị sắc nét nhất trên cả POS và Website.</p>
                             </div>
                         </div>
-
                         <!-- PHẦN QUẢN LÝ KÍCH CỠ & GIÁ BÁN -->
                         <div class="col-12">
                             <div class="size-box shadow-sm">
@@ -208,7 +207,6 @@
                                     <i class="bi bi-tags-fill text-success"></i>
                                     <span>3. Cấu hình Kích cỡ (Size) và Giá bán chốt của cốc nước</span>
                                 </h5>
-
                                 <!-- CÔNG CỤ THÊM NHANH TÊN KÍCH CỠ ĐỘNG BẰNG AJAX -->
                                 <div class="row g-2 mb-4 p-3 bg-white rounded border">
                                     <div class="col-12">
@@ -221,9 +219,7 @@
                                         <button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="addNewSizeAjax()"><i class="bi bi-plus-circle"></i> THÊM TÊN SIZE MỚI</button>
                                     </div>
                                 </div>
-
                                 <p class="small text-muted">Vui lòng tích chọn kích cỡ khả dụng để thiết lập giá bán và định lượng cho cốc nước. (Hệ thống yêu cầu ít nhất một kích cỡ hoạt động để mở bán món uống thành công).</p>
-
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle bg-white rounded border overflow-hidden" id="sizesConfigTable">
                                         <thead class="table-success text-center">
@@ -243,7 +239,6 @@
                                             <c:set var="savedPrice" value=""/>
                                             <c:set var="savedVolume" value=""/>
                                             <c:set var="sizeStatus" value="true"/>
-
                                             <c:forEach var="cp" items="${currentPrices}">
                                                 <c:if test="${cp.maSize == sz.maSize}">
                                                     <c:set var="isConfigured" value="true"/>
@@ -252,7 +247,6 @@
                                                     <c:set var="sizeStatus" value="${cp.trangThai}"/>
                                                 </c:if>
                                             </c:forEach>
-
                                             <tr class="text-center" id="row_size_${sz.maSize}">
                                                 <td>
                                                     <input type="checkbox" name="size_active_${sz.maSize}" id="size_active_${sz.maSize}"
@@ -289,7 +283,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu [Quote-Safe] -->
+                                                    <!-- Nút xóa cấu hình mốc size nghiệp vụ sâu -->
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
                                                             data-id="${sz.maSize}" data-name="${sz.tenSize}"
                                                             onclick="handleDeleteSizeRowClick(this)">
@@ -303,7 +297,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- CÁC NÚT ĐIỀU HÀNH CHỐT BIỂU MẪU -->
                         <div class="col-12 d-flex justify-content-end gap-2 border-top pt-4">
                             <a href="${pageContext.request.contextPath}/admin/sanpham" class="btn btn-secondary-teapos px-4 py-2.5 fw-bold">HUỶ BỎ</a>
@@ -311,14 +304,12 @@
                                 <i class="bi bi-cloud-download-fill me-1"></i> LƯU SẢN PHẨM
                             </button>
                         </div>
-
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -341,7 +332,6 @@
             previewUrlImage(document.getElementById('hinhAnhUrl').value);
         }
     }
-
     function previewSelectedImage(input) {
         const preview = document.getElementById('imgPreview');
         if (input.files && input.files[0]) {
@@ -355,7 +345,6 @@
             preview.src = (curImg && curImg !== "") ? curImg : "https://cdn-icons-png.flaticon.com/512/3177/3177440.png";
         }
     }
-
     function previewUrlImage(url) {
         const preview = document.getElementById('imgPreview');
         if (url && url.trim() !== "") {
@@ -365,15 +354,12 @@
             preview.src = (curImg && curImg !== "") ? curImg : "https://cdn-icons-png.flaticon.com/512/3177/3177440.png";
         }
     }
-
-    // Tự động bật tắt các ô nhập liệu Giá & Định lượng & Switch hoạt động khi check/uncheck mốc Size
     function toggleSizeFields(maSize) {
         const check = document.getElementById("size_active_" + maSize);
         const priceInput = document.getElementById("size_price_" + maSize);
         const volumeInput = document.getElementById("size_volume_" + maSize);
         const statusSwitch = document.getElementById("size_status_" + maSize);
         const lblStatus = document.getElementById("lbl_status_" + maSize);
-
         if (check.checked) {
             priceInput.disabled = false;
             volumeInput.disabled = false;
@@ -395,8 +381,6 @@
             volumeInput.value = "";
         }
     }
-
-    // Lắng nghe sự kiện click switch trạng thái bán để đổi nhãn chữ realtime
     document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('.size-status-switch').forEach(el => {
             el.addEventListener('change', function() {
@@ -407,12 +391,9 @@
                 }
             });
         });
-
         const curImg = document.getElementById('currentHinhAnh').value;
         switchUploadType((curImg && curImg.startsWith('http')) ? 'url' : 'file');
     });
-
-    // AJAX thêm nhanh kích cỡ mới và tự động chèn Row dynamic [String concatenation an toàn tuyệt đối]
     function addNewSizeAjax() {
         const tenSizeInput = document.getElementById('newSizeNameInput');
         const tenSize = tenSizeInput.value.trim();
@@ -420,18 +401,15 @@
             showToast('warning', 'Vui lòng điền tên kích cỡ mới (Ví dụ: XL)!');
             return;
         }
-
         Swal.fire({
             title: 'Đang lưu kích cỡ...',
             allowOutsideClick: false,
             didOpen: function() { Swal.showLoading(); }
         });
-
         const url = getContextPath() + '/admin/sanpham';
         const params = new URLSearchParams();
         params.append('action', 'addSizeAjax');
         params.append('tenSize', tenSize);
-
         fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -443,20 +421,15 @@
                 if (data.status === 'SUCCESS') {
                     const maSize = data.maSize;
                     const normalizedTenSize = data.tenSize;
-
-                    // Kiểm tra trùng lắp row trên UI
                     if (document.getElementById('row_size_' + maSize)) {
                         showToast('info', 'Mốc kích cỡ này đã tồn tại trong danh sách chọn bên dưới!');
                         tenSizeInput.value = '';
                         return;
                     }
-
-                    // CHÈN DÒNG ROW MỚI BẰNG CHUỖI GHÉP CỘNG THUẦN (String Concatenation) cực kì an toàn
                     const tbody = document.getElementById('sizesConfigTableBody');
                     const newRow = document.createElement('tr');
                     newRow.className = 'text-center';
                     newRow.id = 'row_size_' + maSize;
-
                     let rowHtml = '';
                     rowHtml += '<td>';
                     rowHtml += '  <input type="checkbox" name="size_active_' + maSize + '" id="size_active_' + maSize + '" ';
@@ -489,15 +462,11 @@
                     rowHtml += '    <i class="bi bi-trash-fill"></i> Xóa';
                     rowHtml += '  </button>';
                     rowHtml += '</td>';
-
                     newRow.innerHTML = rowHtml;
                     tbody.appendChild(newRow);
-
-                    // Lắng nghe sự kiện thay đổi của Switch vừa sinh mới
                     document.getElementById("size_status_" + maSize).addEventListener('change', function() {
                         document.getElementById("lbl_status_" + maSize).innerText = this.checked ? "Mở bán" : "Ngừng bán";
                     });
-
                     showToast('success', 'Đã thêm thành công mốc kích cỡ ' + normalizedTenSize + ' vào biểu mẫu!');
                     tenSizeInput.value = '';
                     document.getElementById('size_price_' + maSize).focus();
@@ -511,19 +480,14 @@
                 showToast('error', 'Lỗi kết nối máy chủ!');
             });
     }
-
     function handleDeleteSizeRowClick(button) {
         const maSize = parseInt(button.getAttribute("data-id"));
         const tenSize = button.getAttribute("data-name");
         deleteSizeRow(maSize, tenSize);
     }
-
-    // Nghiệp vụ sâu: Xóa mốc Size (Kiểm toán AJAX xem đã bán chưa)
     function deleteSizeRow(maSize, tenSize) {
         const action = document.getElementById("formAction").value;
         const maSp = document.getElementById("formMaSp").value;
-
-        // Trường hợp 1: Đang thêm mới sản phẩm -> Cho phép xóa row UI ngay lập tức
         if (action === 'create' || !maSp) {
             const row = document.getElementById("row_size_" + maSize);
             if (row) {
@@ -536,21 +500,17 @@
             }
             return;
         }
-
-        // Trường hợp 2: Đang sửa cấu hình sản phẩm -> Phải gọi AJAX kiểm toán
         Swal.fire({
             title: 'Đang kiểm tra lịch sử bán...',
             allowOutsideClick: false,
             didOpen: function() { Swal.showLoading(); }
         });
-
         const checkUrl = getContextPath() + '/admin/sanpham?action=checkSizeOrder&maSp=' + maSp + '&maSize=' + maSize;
         fetch(checkUrl)
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 Swal.close();
                 if (data.status === 'HAS_ORDERS') {
-                    // Đã bán -> Chỉ cho phép tắt trạng thái (Soft Delete) để bảo toàn lịch sử in bill
                     Swal.fire({
                         icon: 'warning',
                         title: 'Không thể xóa cứng cấu hình!',
@@ -573,7 +533,6 @@
                         }
                     });
                 } else if (data.status === 'NO_ORDERS') {
-                    // Chưa bán -> Cho phép xóa cứng cấu hình hoặc xóa master
                     Swal.fire({
                         title: 'Xóa mốc kích cỡ?',
                         html: 'Mốc <strong>Size ' + tenSize + '</strong> chưa hề phát sinh giao dịch bán lẻ nào. Bạn có chắc muốn xóa vĩnh viễn mốc này khỏi sản phẩm (và cả bảng master kích cỡ nếu muốn)?',
@@ -634,11 +593,9 @@
                 showToast('error', 'Lỗi kết nối kiểm soát cơ sở dữ liệu!');
             });
     }
-
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
-
     document.getElementById("productForm").addEventListener("submit", function(e) {
         const activeChecks = document.querySelectorAll(".size-check:checked");
         if (activeChecks.length === 0) {
@@ -651,7 +608,6 @@
             });
             return;
         }
-
         let invalidPrice = false;
         activeChecks.forEach(function(chk) {
             const sizeId = chk.id.replace("size_active_", "");
@@ -663,7 +619,6 @@
                 }
             }
         });
-
         if (invalidPrice) {
             e.preventDefault();
             Swal.fire({
@@ -674,7 +629,6 @@
             });
         }
     });
-
     document.addEventListener("DOMContentLoaded", function() {
         <c:if test="${not empty error}">
         Swal.fire({
