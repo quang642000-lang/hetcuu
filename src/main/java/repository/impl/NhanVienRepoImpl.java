@@ -3,13 +3,11 @@ package repository.impl;
 import config.DBConnect;
 import model.entity.NhanVien;
 import repository.INhanVienRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NhanVienRepoImpl implements INhanVienRepository {
-
     private static NhanVienRepoImpl instance;
 
     private NhanVienRepoImpl() {}
@@ -68,7 +66,7 @@ public class NhanVienRepoImpl implements INhanVienRepository {
             try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     entity.setMaNv(rs.getString("ma_nv"));
-                    updateTrangThaiBoSung(entity);
+                    updateTrangThaiBoSung(entity, conn); // PASS Connection to prevent DEADLOCK & LEAK!
                     return true;
                 }
             }
@@ -78,10 +76,9 @@ public class NhanVienRepoImpl implements INhanVienRepository {
         return false;
     }
 
-    private void updateTrangThaiBoSung(NhanVien entity) throws SQLException {
+    private void updateTrangThaiBoSung(NhanVien entity, Connection conn) throws SQLException {
         String sql = "UPDATE NHAN_VIEN SET trang_thai = ? WHERE ma_nv = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, entity.isTrangThai());
             ps.setString(2, entity.getMaNv());
             ps.executeUpdate();

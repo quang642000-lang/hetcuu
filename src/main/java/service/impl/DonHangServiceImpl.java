@@ -62,17 +62,31 @@ public class DonHangServiceImpl implements IDonHangService {
     public boolean checkoutPOS(DonHang donHang, List<ChiTietDonHang> items, String maNv) {
         donHang.setMaNv(maNv);
         donHang.setChiTietDonHangList(items);
+
+        // 1. Gỉam số lượng Voucher khả dụng
         if (donHang.getMaKm() != null) {
             khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
         }
+
+        // 2. Khấu trừ điểm CRM của khách hàng nếu áp dụng tiêu điểm
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
+
         boolean success = donHangRepository.add(donHang);
         if (success) {
             donHangRepository.updateTrangThaiDon(donHang.getMaDh(), donHang.getTrangThaiDon());
+
+            // 3. TỰ ĐỘNG TÍCH LŨY ĐIỂM CRM CHO KHÁCH HÀNG THÀNH VIÊN (1 Điểm = 10.000 VNĐ chi tiêu thực tế)
+            if (donHang.getMaKh() != null) {
+                int diemCong = donHang.getTongPhaiTra() / 10000;
+                if (diemCong > 0) {
+                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(donHang.getMaKh(), diemCong, true);
+                }
+            }
+
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv, "CHỐT_ĐƠN_POS", "DON_HANG", null, "Mã hóa đơn vừa xuất: " + donHang.getMaDh(), "127.0.0.1", null));
+                    maNv, "CHỐT_ĐƠN_POS", "DON_HANG", null, "Mã hóa đơn: " + donHang.getMaDh() + " | Tích lũy điểm CRM thành công.", "127.0.0.1", null));
         }
         return success;
     }
@@ -84,6 +98,7 @@ public class DonHangServiceImpl implements IDonHangService {
         }
         donHang.setChiTietDonHangList(items);
         donHang.setTrangThaiDon(0);
+
         if (donHang.getMaKm() != null) {
             khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
         }
@@ -98,18 +113,41 @@ public class DonHangServiceImpl implements IDonHangService {
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
         dh.setMaNv(maNv);
+
         if (trangThaiDon == 5) {
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
+
+            // Hủy đơn -> Hoàn trả lại điểm tích lũy cũ đã dùng nếu có
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
             }
+            // Thu hồi lại số điểm CRM tích lũy đã cộng của đơn này
+            if (dh.getMaKh() != null) {
+                int diemCongDaNhan = dh.getTongPhaiTra() / 10000;
+                if (diemCongDaNhan > 0) {
+                    khachHangRepository.truDiemTichLuy(dh.getMaKh(), diemCongDaNhan);
+                }
+            }
+
             nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "HỦY_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Lý do hủy đơn " + maDh + ": " + lyDoHuy, "127.0.0.1", null));
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
+
         dh.setTrangThaiDon(trangThaiDon);
         donHangRepository.update(dh);
+
+        // 4. ĐỒNG BỘ: TỰ ĐỘNG TÍCH ĐIỂM CRM CHO KHÁCH HÀNG KHI ĐƠN HÀNG ONLINE CLICK & COLLECT HOÀN THÀNH (4)
+        if (trangThaiDon == 4) {
+            if (dh.getMaKh() != null) {
+                int diemCong = dh.getTongPhaiTra() / 10000;
+                if (diemCong > 0) {
+                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(dh.getMaKh(), diemCong, true);
+                }
+            }
+        }
+
         nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "CẬP_NHẬT_TRẠNG_THÁI_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Trạng thái mới: " + trangThaiDon, "127.0.0.1", null));
         return donHangRepository.updateTrangThaiDon(maDh, trangThaiDon);
     }
@@ -129,7 +167,7 @@ public class DonHangServiceImpl implements IDonHangService {
             if (dh != null && dh.getTrangThaiDon() == 0) {
                 if (Math.abs(dh.getTongPhaiTra() - amount) < 100) {
                     donHangRepository.updateTrangThaiThanhToan(extractedMaDh, 1);
-                    donHangRepository.updateTrangThaiDon(extractedMaDh, 2);
+                    updateTrangThaiDon(extractedMaDh, 2, "SYSTEM", "Khớp thành công đơn SePay Webhook.");
                     nhatKyRepository.addLog(new NhatKyHoatDong("SYSTEM", "KHỚP_ĐƠN_ONLINE_AUTO", "DON_HANG", null, "Khớp thành công đơn " + extractedMaDh + " qua SePay Webhook số tiền: " + amount, "127.0.0.1", null));
                     return true;
                 }
@@ -146,7 +184,6 @@ public class DonHangServiceImpl implements IDonHangService {
         return diffMinutes >= 15;
     }
 
-    // ĐỒNG BỘ MÃ KHÓA CHÍNH: Gọi sinh mã đơn hàng chuẩn hóa xuyên suốt hệ thống
     @Override
     public String generateNextMaDh() {
         return donHangRepository.generateNextMaDh();

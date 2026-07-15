@@ -9,26 +9,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        .form-card {
-            border-radius: 12px;
-            background: #ffffff;
-            border: none;
-        }
-        .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background-color: #ffffff;
-            border-top: 1px solid var(--border-color);
-        }
+        .form-card { border-radius: 12px; background: #ffffff; border: none; }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
     </style>
 </head>
 <body class="bg-light">
-<!-- Khởi tạo biến phòng thủ toàn cục tránh lỗi NullPointerException trên Tomcat 11 -->
 <c:set var="maKm" value="" />
 <c:set var="maCode" value="" />
 <c:set var="tenKm" value="" />
@@ -70,7 +60,6 @@
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
                 <c:choose>
-                    <%-- ==================== TRƯỜNG HỢP 1: THÊM MỚI / CHỈNH SỬA VOUCHER FORM ==================== --%>
                     <c:when test="${not empty formTitle}">
                         <div class="mb-3">
                             <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-sm btn-outline-secondary fw-bold" style="border-radius: 6px;">
@@ -82,12 +71,11 @@
                         </h4>
                         <form action="${pageContext.request.contextPath}/admin/voucher" method="POST">
                             <input type="hidden" name="action" value="${not empty voucher ? 'edit' : 'create'}">
-                            <div class="row g-3">
+                            <div class="row g-3 text-start">
                                 <div class="col-12 col-md-4">
-                                    <label for="maKm" class="form-label fw-bold small">Mã Khuyến Mãi <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-teapos" id="maKm" name="maKm"
-                                           value="${maKm}" ${not empty voucher ? 'readonly style="background-color: #e2e8f0; font-weight: bold;"' : ''}
-                                           placeholder="Ví dụ: KM001..." required autocomplete="off">
+                                    <label for="maKm" class="form-label fw-bold small">Mã Khuyến Mãi (Tự động sinh)</label>
+                                    <input type="text" class="form-control form-control-teapos bg-light" id="maKm" name="maKm"
+                                           value="${not empty voucher ? maKm : 'KMxxxxx (Hệ thống tự sinh)'}" readonly style="font-weight: bold;">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="maCode" class="form-label fw-bold small">Mã CODE áp dụng <span class="text-danger">*</span></label>
@@ -159,7 +147,7 @@
                                     <label for="moTaDieuKien" class="form-label fw-bold small">Mô tả điều kiện áp dụng chi tiết</label>
                                     <textarea name="moTaDieuKien" id="moTaDieuKien" class="form-control" rows="2" placeholder="Ví dụ: Chỉ áp dụng cho ly size L vàng, hóa đơn tối thiểu 50k...">${moTaDieuKien}</textarea>
                                 </div>
-                                <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                                <div class="col-12 d-flex justify-content-end gap-2 border-top pt-4 mt-4">
                                     <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-secondary-teapos px-4 py-2.5 fw-bold">HUỶ BỎ</a>
                                     <button type="submit" class="btn-teapos btn-primary-teapos px-5 py-2.5 fw-bold shadow-sm">
                                         <i class="bi bi-save me-1"></i> LƯU VOUCHER KHUYẾN MÃI
@@ -168,11 +156,10 @@
                             </div>
                         </form>
                     </c:when>
-                    <%-- ==================== TRƯỜNG HỢP 2: DANH SÁCH VOUCHER (LIST) ==================== --%>
                     <c:otherwise>
-                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                             <div>
-                                <h3 class="fw-bold mb-1" style="color: var(--primary-color);">QUẢN LÝ KHUYẾN MÃI - VOUCHER</h3>
+                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-ticket-perforated-fill me-2"></i>QUẢN LÝ KHUYẾN MÃI - VOUCHER</h3>
                                 <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá, kiểm soát bật/tắt (Tạm ngưng) và ràng buộc hóa đơn</p>
                             </div>
                             <a href="${pageContext.request.contextPath}/admin/voucher?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold">
@@ -222,22 +209,20 @@
                                                 </td>
                                                 <td class="fw-bold text-dark">${item.soLuong} mã</td>
                                                 <td>
-<span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
-        ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
-</span>
+                                                    <span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
+                                                            ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
+                                                    </span>
                                                 </td>
                                                 <td>
-<span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-        ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
-</span>
+                                                    <span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                            ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
+                                                    </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
                                                         <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-outline-primary fw-semibold px-2">
                                                             Sửa
                                                         </a>
-
-                                                        <!-- NÂNG CẤP: Nút Tạm ngưng / Bật chạy lại linh hoạt không mất lịch sử hóa đơn -->
                                                         <c:choose>
                                                             <c:when test="${item['trangThai']}">
                                                                 <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-outline-warning fw-semibold px-2">
@@ -250,7 +235,6 @@
                                                                 </a>
                                                             </c:otherwise>
                                                         </c:choose>
-
                                                         <button class="btn btn-sm btn-outline-danger px-2" onclick="confirmDeleteVoucher('${item.maKm}')">
                                                             Xóa
                                                         </button>
@@ -266,8 +250,6 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- Bộ phân trang Client-side mượt mà -->
                         <div class="pagination-container" id="paginationBlock" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
@@ -299,7 +281,6 @@
         });
     }
 
-    // BỘ PHÂN TRANG CLIENT-SIDE ĐỘNG
     let currentPage = 1;
     const rowsPerPage = 10;
     let filteredRows = [];
@@ -314,47 +295,32 @@
         currentPage = page;
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-        // Ẩn tất cả dòng trước
         document.querySelectorAll("#voucherTable tbody .voucher-row").forEach(row => {
             row.style.display = "none";
         });
-
         if (totalRows === 0) {
             document.getElementById("paginationBlock").style.display = "none";
             return;
         }
-
         document.getElementById("paginationBlock").style.display = "flex";
-
         const start = (page - 1) * rowsPerPage;
         const end = Math.min(start + rowsPerPage, totalRows);
-
         for (let i = start; i < end; i++) {
             filteredRows[i].style.display = "table-row";
         }
-
         document.getElementById("paginationInfo").innerText = "Hiển thị từ " + (start + 1) + " đến " + end + " của " + totalRows + " Voucher";
-
-        // Vẽ lại các nút phân trang
         const buttonsContainer = document.getElementById("paginationButtons");
         buttonsContainer.innerHTML = "";
-
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (page === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page - 1) + ')">&laquo;</a>';
         buttonsContainer.appendChild(prevLi);
-
-        // Các trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (i === page ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
             buttonsContainer.appendChild(li);
         }
-
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (page === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page + 1) + ')">&raquo;</a>';
@@ -370,7 +336,6 @@
         if (msg === 'softdeletesuccess') showToast('success', 'Voucher đã có giao dịch lịch sử, tự động đưa về tạm tắt!');
         if (msg === 'togglesuccess') showToast('success', 'Đã thay đổi trạng thái Voucher thành công!');
         if (msg === 'togglefailed') showToast('error', 'Cập nhật trạng thái Voucher thất bại!');
-
         initPagination();
     });
 </script>

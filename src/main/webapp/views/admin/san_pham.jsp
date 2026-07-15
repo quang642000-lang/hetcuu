@@ -14,21 +14,9 @@
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        .filter-wrapper {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-        .product-img-circle {
-            width: 44px;
-            height: 44px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
+        .filter-wrapper { background-color: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); }
+        .product-img-circle { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--primary); box-shadow: var(--shadow-sm); }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
     </style>
 </head>
 <body class="bg-light">
@@ -39,7 +27,7 @@
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                    <div>
+                    <div class="text-start">
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-cup-straw me-2"></i>Quản Lý Sản Phẩm</h3>
                         <p class="text-muted small mb-0">Quản lý vòng đời đồ uống, các tùy biến pha chế và cấu hình biến thể kích cỡ bán</p>
                     </div>
@@ -47,7 +35,6 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-
                 <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM -->
                 <div class="filter-wrapper mb-4">
                     <div class="row g-3 text-start">
@@ -93,7 +80,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="productTable">
@@ -108,7 +94,7 @@
                             <th class="text-end" style="width: 110px;">Giá S</th>
                             <th class="text-end" style="width: 110px;">Giá L</th>
                             <th style="width: 140px;">Trạng Thái</th>
-                            <th style="width: 170px;">Thao Tác</th>
+                            <th style="width: 250px;">Thao Tác</th>
                         </tr>
                         </thead>
                         <tbody id="productTableBody">
@@ -132,7 +118,6 @@
                                     <c:if test="${minPrice == 99999999}">
                                         <c:set var="minPrice" value="0"/>
                                     </c:if>
-
                                     <tr class="product-row text-center"
                                         data-masp="${item.maSp}"
                                         data-tensp="<c:out value="${item.tenSp}"/>"
@@ -182,27 +167,23 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                                </span>
+                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                    ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+                                            </span>
                                         </td>
                                         <td>
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit">
+                                            <!-- BỘ BA NÚT THAO TÁC ĐỒNG BỘ: SỬA, TRẠNG THÁI (BẬT/TẮT), XÓA -->
+                                            <div class="d-flex justify-content-center gap-1.5 align-items-center">
+                                                <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit" title="Cập nhật thông tin">
                                                     <i class="bi bi-pencil-square"></i> Sửa
                                                 </a>
-                                                <c:choose>
-                                                    <c:when test="${item.trangThai}">
-                                                        <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteSanPham('${item.maSp}')">
-                                                            <i class="bi bi-toggle2-off"></i> Tạm dừng
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit">
-                                                            <i class="bi bi-toggle2-on"></i> Kích hoạt
-                                                        </a>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <a href="${pageContext.request.contextPath}/admin/sanpham?action=toggle&id=${item.maSp}&status=${item.trangThai ? 0 : 1}"
+                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}" title="Thay đổi trạng thái bán">
+                                                    <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
+                                                </a>
+                                                <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteSanPham('${item.maSp}')" title="Xóa món ăn">
+                                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -220,7 +201,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- Pagination block -->
                 <div class="pagination-container" id="paginationWrapper">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -232,7 +212,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -247,7 +226,6 @@
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
         const allRows = Array.from(document.querySelectorAll("#productTableBody .product-row"));
-
         filteredRows = allRows.filter(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -255,7 +233,6 @@
             const isNew = row.dataset.isnew;
             const isHot = row.dataset.ishot;
             const status = row.dataset.trangthai;
-
             let matchSearch = maSp.includes(searchVal) || tenSp.includes(searchVal);
             let matchCat = catVal === "" || maDm === catVal;
             let matchStatus = statusVal === "" || status === statusVal;
@@ -263,7 +240,6 @@
             let matchHot = hotVal === "" || isHot === hotVal;
             return matchSearch && matchCat && matchStatus && matchNew && matchHot;
         });
-
         currentPage = 1;
         renderTableRows();
     }
@@ -286,24 +262,20 @@
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
-
         const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
         const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng dữ liệu';
         btnContainer.innerHTML = "";
-
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
         btnContainer.appendChild(prevLi);
-
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="#" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
@@ -328,13 +300,13 @@
 
     function confirmDeleteSanPham(maSp) {
         Swal.fire({
-            title: 'Dừng bán món uống này?',
-            text: "Cơ chế TẠM NGƯNG BÁN (Soft Delete) sẽ ẩn sản phẩm khỏi quầy POS và Web, giúp lưu vết báo cáo tài chính!",
+            title: 'Xác nhận xóa món uống?',
+            text: "Cơ chế kiểm toán 2 lớp: Nếu sản phẩm đã dính lịch sử hóa đơn bán nước, hệ thống tự động gạt về trạng thái khóa tạm dừng (Soft Delete). Nếu chưa từng bán, sản phẩm sẽ được xóa cứng hoàn toàn khỏi cơ sở dữ liệu!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý dừng bán',
+            confirmButtonText: 'Đồng ý xóa',
             cancelButtonText: 'Hủy bỏ'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -349,7 +321,15 @@
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm mới món uống thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu cấu hình sản phẩm!');
-        if (msg === 'deletesuccess') showToast('success', 'Đã ngưng hoạt động sản phẩm!');
+        if (msg === 'softdeletesuccess') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Tạm ẩn sản phẩm',
+                text: 'Sản phẩm này đã có lịch sử hóa đơn! Hệ thống tự động chuyển trạng thái hoạt động về 0 (Soft Delete) để bảo lưu báo cáo tài chính!',
+                confirmButtonColor: '#10b981'
+            });
+        }
+        if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa cứng vĩnh viễn sản phẩm khỏi CSDL!');
         if (msg === 'deletefailed') showToast('error', 'Cập nhật trạng thái sản phẩm thất bại!');
     });
 </script>

@@ -68,7 +68,6 @@ public class BanHangPOSController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String action = request.getParameter("action");
-
         if (uri.endsWith("/pos/create-customer") || "createCustomer".equals(action)) {
             performCreateCustomer(request, response);
         } else if (uri.endsWith("/pos/apply-voucher") || "applyVoucher".equals(action)) {
@@ -93,7 +92,8 @@ public class BanHangPOSController extends HttpServlet {
         }
         KhachHang kh = khachHangService.getKhachHangBySdt(sdt.trim());
         if (kh != null && kh.isTrangThai()) {
-            List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(10000, kh.getMaKh());
+            // NÂNG CẤP ĐỘT PHÁ: Sử dụng mốc đơn hàng cực cao (99.999.999đ) để kéo về toàn bộ ví Voucher VIP khả dụng của khách hàng, tránh bị lọc oan do mốc đơn hàng nhỏ lẻ giả lập
+            List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(99999999, kh.getMaKh());
             StringBuilder json = new StringBuilder();
             json.append("{");
             json.append("\"status\":\"SUCCESS\",");
@@ -242,7 +242,7 @@ public class BanHangPOSController extends HttpServlet {
             json.append("\"ghiChuDon\":\"").append(dh.getGhiChuDon() != null ? dh.getGhiChuDon().replace("\"", "\\\"") : "").append("\",");
             json.append("\"trangThaiDon\":").append(dh.getTrangThaiDon()).append(",");
             json.append("\"trangThaiThanhToan\":").append(dh.getTrangThaiThanhToan()).append(",");
-            json.append("\"toppings\":[],"); // dynamic mappings inside front end modal
+            json.append("\"toppings\":[],");
             json.append("\"items\":[");
             List<ChiTietDonHang> items = dh.getChiTietDonHangList();
             if (items != null) {
@@ -300,8 +300,8 @@ public class BanHangPOSController extends HttpServlet {
             int tienTruDiem = Integer.parseInt(request.getParameter("tienTruDiem"));
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             String ghiChuDon = request.getParameter("ghiChuDon");
-
             String maDh = donHangService.generateNextMaDh();
+
             DonHang dh = new DonHang();
             dh.setMaDh(maDh);
             dh.setMaKh(maKh != null && !maKh.trim().isEmpty() ? maKh : null);
@@ -331,7 +331,6 @@ public class BanHangPOSController extends HttpServlet {
                     ctdh.setMaSp(arrMaSp[i]);
                     ctdh.setMaSize(Integer.parseInt(arrMaSize[i]));
                     ctdh.setSoLuong(Integer.parseInt(arrSoLuong[i]));
-
                     int giaChot = 0;
                     if (arrGiaChot != null && i < arrGiaChot.length) {
                         giaChot = Integer.parseInt(arrGiaChot[i]);

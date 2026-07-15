@@ -9,17 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- NẠP THƯ VIỆN SWEETALERT2 PHỤC VỤ NÚT XÓA HOẠT ĐỘNG HOÀN HẢO -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background-color: #ffffff;
-            border-top: 1px solid var(--border-color);
-        }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
     </style>
 </head>
 <body class="bg-light">
@@ -38,7 +34,6 @@
                         <i class="bi bi-plus-circle-fill"></i> Thêm Topping Mới
                     </button>
                 </div>
-
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="toppingTable">
                         <thead>
@@ -58,7 +53,7 @@
                             <c:when test="${not empty toppings}">
                                 <c:forEach var="item" items="${toppings}">
                                     <tr class="topping-row text-center">
-                                        <td><strong>${item.maTp}</strong></td> <%-- REMOVED TP PREFIX BECAUSE maTp IS ALREADY TP00001 --%>
+                                        <td><strong>${item.maTp}</strong></td>
                                         <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
@@ -78,9 +73,9 @@
                                         </td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                            ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
-                                                    </span>
+                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                    ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
+                                            </span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-2 align-items-center">
@@ -99,7 +94,7 @@
                                                         onclick="handleEditToppingClick(this)">
                                                     Sửa
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteTopping('${item.maTp}')"> <%-- BỌC maTp TRONG NHÁY ĐƠN --%>
+                                                <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteTopping('${item.maTp}')">
                                                     Xóa
                                                 </button>
                                             </div>
@@ -114,7 +109,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <div class="pagination-container" id="adminPaginationArea">
                     <span class="small text-muted" id="paginatedInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav aria-label="Table pagination">
@@ -130,7 +124,7 @@
 <div class="modal fade" id="toppingFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header text-white py-3" style="background-color: var(--pos-primary);">
+            <div class="modal-header text-white py-3" style="background-color: var(--primary);">
                 <h5 class="modal-title fw-bold" id="toppingModalTitle">THÊM TOPPING MỚI</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -264,7 +258,8 @@
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý xóa'
+            confirmButtonText: 'Đồng ý xóa',
+            cancelButtonText: 'Hủy bỏ'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = '${pageContext.request.contextPath}/admin/topping?action=delete&id=' + maTp;
@@ -272,9 +267,9 @@
         });
     }
 
-    // Client-side pagination
     let currentPage = 1;
     const pageSize = 10;
+
     function paginateAdminTable() {
         const rows = Array.from(document.querySelectorAll("#toppingTable tbody .topping-row"));
         const totalRecords = rows.length;
