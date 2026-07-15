@@ -22,8 +22,8 @@ function resetVoucherAndPoints() {
     if (valGiamEl) valGiamEl.value = "0";
     if (dsuDungEl) dsuDungEl.value = "0";
     if (valTruDiemEl) valTruDiemEl.value = "0";
-    if (sumDiscRow) sumDiscRow.style.display = "none";
-    if (sumPtsRow) sumPtsRow.style.display = "none";
+    if (sumDiscRow) sumDiscRow.style.setProperty('display', 'none', 'important');
+    if (sumPtsRow) sumPtsRow.style.setProperty('display', 'none', 'important');
     if (manualVoucherEl) manualVoucherEl.value = "";
 }
 
@@ -32,28 +32,20 @@ function clearFullPosCart() {
     customerInfo = null;
     appliedVoucher = null;
     appliedPoints = 0;
-
     const phoneInput = document.getElementById("customerPhoneSearch");
     if (phoneInput) phoneInput.value = "";
-
     const nameResult = document.getElementById("customerNameResult");
     if (nameResult) nameResult.innerText = "Khách lẻ vãng lai";
-
     const ptsResult = document.getElementById("customerPoints");
     if (ptsResult) ptsResult.innerText = "Hạng: Mới | 0 Điểm";
-
     const crmLoyaltyArea = document.getElementById("crmLoyaltyArea");
-    if (crmLoyaltyArea) crmLoyaltyArea.style.display = "none";
-
+    if (crmLoyaltyArea) crmLoyaltyArea.style.setProperty('display', 'none', 'important');
     const posAddCustomerArea = document.getElementById("posAddCustomerArea");
-    if (posAddCustomerArea) posAddCustomerArea.style.display = "none";
-
+    if (posAddCustomerArea) posAddCustomerArea.style.setProperty('display', 'none', 'important');
     const manualVoucherInput = document.getElementById("manualVoucherInput");
     if (manualVoucherInput) manualVoucherInput.value = "";
-
     resetVoucherAndPoints();
     renderPosCart();
-
     if (typeof showToast === 'function') {
         showToast('info', 'Đã hủy đơn hàng hiện tại và làm sạch giỏ hàng POS!');
     }
@@ -64,37 +56,38 @@ function toggleToppingQty(checkbox, maTp) {
     const input = document.getElementById('tp_qty_' + maTp);
     if (checkbox.checked) {
         if (container) container.style.setProperty('display', 'flex', 'important');
-        if (input) input.value = "1";
+        if (input) input.value = 1;
     } else {
         if (container) container.style.setProperty('display', 'none', 'important');
-        if (input) input.value = "1";
+        if (input) input.value = 1;
     }
     recalculatePopupPrice();
 }
 
-function adjustPopupToppingQty(event, maTp, delta) {
+function adjustPopupToppingQty(event, maTp, change) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
     }
     const input = document.getElementById('tp_qty_' + maTp);
-    if (!input) return;
-    let qty = parseInt(input.value) || 1;
-    qty += delta;
-    if (qty < 1) qty = 1;
-    input.value = qty.toString();
+    if (input) {
+        let val = parseInt(input.value) || 1;
+        val += change;
+        if (val < 1) val = 1;
+        input.value = val;
+    }
     recalculatePopupPrice();
 }
 
 function recalculatePopupPrice() {
     const checkedSize = document.querySelector('.size-radio:checked');
     if (!checkedSize) return;
-    let basePrice = parseInt(checkedSize.dataset.price) || 0;
-
+    const basePrice = parseInt(checkedSize.dataset.price) || 0;
     let toppingsSum = 0;
+
     document.querySelectorAll('.topping-chk:checked').forEach(chk => {
-        const tpId = chk.value;
-        const qtyInput = document.getElementById('tp_qty_' + tpId);
+        const maTp = chk.value;
+        const qtyInput = document.getElementById('tp_qty_' + maTp);
         const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
         const price = parseInt(chk.dataset.price) || 0;
         toppingsSum += price * qty;
@@ -113,96 +106,106 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         console.error("Lỗi parse cấu hình sản phẩm:", e);
         return;
     }
+
     let html = '';
     html += '<div class="text-start" id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '">';
-    html += '<h5 class="fw-bold text-success mb-3">' + tenSp + '</h5>';
+    html += '  <h5 class="fw-bold text-success mb-3">' + tenSp + '</h5>';
 
-    html += '<div class="mb-3">';
-    html += '  <label class="fw-semibold small mb-2 d-block text-secondary">1. CHỌN KÍCH CỠ (SIZE)</label>';
-    html += '  <div class="selection-btn-group">';
+    // 1. CHỌN SIZE
+    html += '  <div class="mb-3">';
+    html += '    <label class="fw-semibold small mb-2 d-block text-secondary">1. CHỌN KÍCH CỠ (SIZE)</label>';
+    html += '    <div class="selection-btn-group d-flex gap-2">';
     rawOptions.sizes.forEach((s, idx) => {
         let checkedAttr = (idx === 0) ? 'checked' : '';
-        html += '    <input type="radio" class="selection-radio-input size-radio" name="popup_size" ' +
-            '           id="sz_' + s.maSize + '" value="' + s.maSize + '" data-price="' + s.giaBan + '" data-name="' + s.tenSize + '" ' + checkedAttr + ' onchange="recalculatePopupPrice()">';
-        html += '    <label class="selection-label" for="sz_' + s.maSize + '">Size ' + s.tenSize + ' (+' + formatVND(s.giaBan) + ')</label>';
+        html += '      <input type="radio" class="btn-check size-radio" name="popup_size" ' +
+            '             id="sz_' + s.maSize + '" value="' + s.maSize + '" data-price="' + s.giaBan + '" data-name="' + s.tenSize + '" ' + checkedAttr + ' onchange="recalculatePopupPrice()">';
+        html += '      <label class="btn btn-outline-success btn-sm flex-fill" for="sz_' + s.maSize + '">Size ' + s.tenSize + ' (+' + formatVND(s.giaBan) + ')</label>';
     });
+    html += '    </div>';
     html += '  </div>';
-    html += '</div>';
 
+    // 2. CHỌN ĐƯỜNG
     if (rawOptions.choPhepDoiDuong) {
-        html += '<div class="mb-3">';
-        html += '  <label class="fw-semibold small mb-2 d-block text-secondary">2. CHỌN MỨC ĐƯỜNG</label>';
-        html += '  <div class="selection-btn-group">';
+        html += '  <div class="mb-3">';
+        html += '    <label class="fw-semibold small mb-2 d-block text-secondary">2. CHỌN MỨC ĐƯỜNG</label>';
+        html += '    <div class="selection-btn-group d-flex gap-1">';
         const sugars = ["100%", "70%", "50%", "0%"];
         sugars.forEach((sugar, idx) => {
             let checkedAttr = (idx === 0) ? 'checked' : '';
-            html += '    <input type="radio" class="selection-radio-input sugar-radio" name="popup_sugar" ' +
-                '           id="sg_' + idx + '" value="' + sugar + '" ' + checkedAttr + '>';
-            html += '    <label class="selection-label" for="sg_' + idx + '">' + sugar + '</label>';
+            html += '      <input type="radio" class="btn-check sugar-radio" name="popup_sugar" ' +
+                '             id="sg_' + idx + '" value="' + sugar + '" ' + checkedAttr + '>';
+            html += '      <label class="btn btn-outline-secondary btn-sm flex-fill" for="sg_' + idx + '">' + sugar + '</label>';
         });
+        html += '    </div>';
         html += '  </div>';
-        html += '</div>';
     }
 
+    // 3. CHỌN ĐÁ
     if (rawOptions.choPhepDoiDa) {
-        html += '<div class="mb-3">';
-        html += '  <label class="fw-semibold small mb-2 d-block text-secondary">3. CHỌN MỨC ĐÁ</label>';
-        html += '  <div class="selection-btn-group">';
+        html += '  <div class="mb-3">';
+        html += '    <label class="fw-semibold small mb-2 d-block text-secondary">3. CHỌN MỨC ĐÁ</label>';
+        html += '    <div class="selection-btn-group d-flex gap-1">';
         const ices = ["100%", "70%", "50%", "0%"];
         ices.forEach((ice, idx) => {
             let checkedAttr = (idx === 0) ? 'checked' : '';
-            html += '    <input type="radio" class="selection-radio-input ice-radio" name="popup_ice" ' +
-                '           id="ic_' + idx + '" value="' + ice + '" ' + checkedAttr + '>';
-            html += '    <label class="selection-label" for="ic_' + idx + '">' + ice + '</label>';
+            html += '      <input type="radio" class="btn-check ice-radio" name="popup_ice" ' +
+                '             id="ic_' + idx + '" value="' + ice + '" ' + checkedAttr + '>';
+            html += '      <label class="btn btn-outline-secondary btn-sm flex-fill" for="ic_' + idx + '">' + ice + '</label>';
         });
+        html += '    </div>';
         html += '  </div>';
-        html += '</div>';
     }
 
+    // 4. CHỌN TOPPING ĐA LƯỢNG
     if (rawOptions.allToppings && rawOptions.allToppings.length > 0) {
-        html += '<div class="mb-3">';
-        html += '  <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING (TÙY CHỌN SỐ LƯỢNG)</label>';
-        html += '  <div style="max-height: 180px; overflow-y: auto; padding-right: 4px;">';
+        html += '  <div class="mb-3">';
+        html += '    <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING DAI GIÒN SẦN SẬT</label>';
+        html += '    <div style="max-height: 180px; overflow-y: auto; padding-right: 4px;">';
         rawOptions.allToppings.forEach(tp => {
             let imgHtml = tp.hinhAnh && tp.hinhAnh !== "None" && tp.hinhAnh !== ""
                 ? '<img src="' + tp.hinhAnh + '" alt="' + tp.tenTp + '" class="rounded me-2" style="width: 32px; height: 32px; object-fit: cover; border: 1px solid #ddd;">'
                 : '<div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border: 1px solid #ddd;"><i class="bi bi-egg-fried text-muted"></i></div>';
-            html += '    <div class="form-check d-flex justify-content-between align-items-center mb-1 bg-light p-1.5 rounded border shadow-sm">';
-            html += '      <div class="d-flex align-items-center">';
-            html += '        <input class="form-check-input topping-chk me-2" type="checkbox" value="' + tp.maTp + '" id="tp_' + tp.maTp + '" data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" onchange="toggleToppingQty(this, \'' + tp.maTp + '\')">';
-            html += '        <label class="form-check-label d-flex align-items-center cursor-pointer" for="tp_' + tp.maTp + '">';
+
+            html += '      <div class="form-check d-flex justify-content-between align-items-center mb-1 bg-light p-1.5 rounded border shadow-sm" style="padding-left: 30px;">';
+            html += '        <div class="d-flex align-items-center">';
+            html += '          <input class="form-check-input topping-chk me-2" type="checkbox" value="' + tp.maTp + '" id="tp_' + tp.maTp + '" data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" onchange="toggleToppingQty(this, \'' + tp.maTp + '\')">';
+            html += '          <label class="form-check-label d-flex align-items-center cursor-pointer" for="tp_' + tp.maTp + '">';
             html += imgHtml;
-            html += '          <div>';
-            html += '            <div class="fw-bold text-dark" style="font-size: 12px;">' + tp.tenTp + '</div>';
-            html += '            <div class="text-success font-monospace" style="font-size: 10px;">+' + formatVND(tp.giaBan) + '</div>';
-            html += '          </div>';
-            html += '        </label>';
+            html += '            <div>';
+            html += '              <div class="fw-bold text-dark" style="font-size: 12px;">' + tp.tenTp + '</div>';
+            html += '              <div class="text-success font-monospace" style="font-size: 10px;">+' + formatVND(tp.giaBan) + '</div>';
+            html += '            </div>';
+            html += '          </label>';
+            html += '        </div>';
+
+            // Bộ đếm số lượng Topping ẩn lúc đầu
+            html += '        <div class="input-group input-group-sm" id="tp_qty_container_' + tp.maTp + '" style="width: 80px; display: none !important;">';
+            html += '          <button type="button" class="btn btn-outline-secondary px-2 py-0 border-opacity-50" onclick="adjustPopupToppingQty(event, \'' + tp.maTp + '\', -1)">-</button>';
+            html += '          <input type="text" class="form-control text-center bg-white border-secondary border-opacity-25 px-0 fw-bold" id="tp_qty_' + tp.maTp + '" value="1" readonly style="font-size: 11px; height: 24px;">';
+            html += '          <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success border-opacity-50" onclick="adjustPopupToppingQty(event, \'' + tp.maTp + '\', 1)">+</button>';
+            html += '        </div>';
             html += '      </div>';
-            html += '      <div class="input-group input-group-sm" id="tp_qty_container_' + tp.maTp + '" style="width: 80px; display: none !important;">';
-            html += '        <button type="button" class="btn btn-outline-secondary px-2 py-0" onclick="adjustPopupToppingQty(event, \'' + tp.maTp + '\', -1)">-</button>';
-            html += '        <input type="text" class="form-control text-center bg-white border-secondary border-opacity-25 px-0 fw-bold popup-tp-qty" id="tp_qty_' + tp.maTp + '" value="1" readonly style="font-size: 11px; height: 24px;">';
-            html += '        <button type="button" class="btn btn-outline-secondary px-2 py-0 text-success" onclick="adjustPopupToppingQty(event, \'' + tp.maTp + '\', 1)">+</button>';
-            html += '      </div>';
-            html += '    </div>';
         });
+        html += '    </div>';
         html += '  </div>';
-        html += '</div>';
     }
 
-    html += '<div class="mb-3">';
-    html += '  <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
-    html += '  <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
-    html += '</div>';
-
-    html += '<div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">';
-    html += '  <div>';
-    html += '    <small class="text-muted d-block" style="font-size: 11px;">Thành tiền ly đơn:</small>';
-    html += '    <span class="fw-bold fs-4 text-success" id="popup_total">0 đ</span>';
+    // 5. GHI CHÚ
+    html += '  <div class="mb-3">';
+    html += '    <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
+    html += '    <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
     html += '  </div>';
-    html += '  <button class="btn btn-success fw-bold px-4 py-2.5" onclick="addCustomizedToCart()">';
-    html += '    <i class="bi bi-cart-plus me-1"></i> THÊM VÀO ĐƠN';
-    html += '  </button>';
-    html += '</div>';
+
+    // THÀNH TIỀN
+    html += '  <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">';
+    html += '    <div>';
+    html += '      <small class="text-muted d-block" style="font-size: 11px;">Thành tiền ly đơn:</small>';
+    html += '      <span class="fw-bold fs-4 text-success" id="popup_total">0 đ</span>';
+    html += '    </div>';
+    html += '    <button class="btn btn-success fw-bold px-4 py-2.5" onclick="addCustomizedToCart()">';
+    html += '      <i class="bi bi-cart-plus me-1"></i> THÊM VÀO ĐƠN';
+    html += '    </button>';
+    html += '  </div>';
     html += '</div>';
 
     if (typeof Swal !== 'undefined') {
@@ -224,18 +227,22 @@ function addCustomizedToCart() {
     const maSp = el.dataset.masp;
     const tenSp = el.dataset.tensp;
     const checkedSize = document.querySelector('.size-radio:checked');
+
     const maSize = parseInt(checkedSize.value);
     const tenSize = checkedSize.dataset.name;
     const giaBan = parseInt(checkedSize.dataset.price);
+
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
     const mucDuong = sugarEl ? sugarEl.value : "100%";
+
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
     const mucDa = iceEl ? iceEl.value : "100%";
+
     const ghiChuMon = document.getElementById('popup_note').value;
 
     let toppingsList = [];
     document.querySelectorAll('.topping-chk:checked').forEach(tp => {
-        const tpId = tp.value;
+        const tpId = tp.value; // string key
         const qtyInput = document.getElementById('tp_qty_' + tpId);
         const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
         toppingsList.push({
@@ -277,7 +284,7 @@ function addCustomizedToCart() {
     if (typeof Swal !== 'undefined') Swal.close();
     renderPosCart();
     if (typeof showToast === 'function') {
-        showToast('success', 'Đã chèn cốc ' + tenSp + ' vào giỏ hàng POS!');
+        showToast('success', 'Đã thêm cốc ' + tenSp + ' vào giỏ hàng POS!');
     }
 }
 
@@ -319,6 +326,7 @@ function renderPosCart() {
         tongTienHang += lineTotal;
 
         let noteText = item.ghiChuMon && item.ghiChuMon.trim() !== "" ? ' | Ghi chú: ' + item.ghiChuMon : '';
+
         container.innerHTML +=
             '<div class="pos-bill-item shadow-sm mb-2 p-3 bg-white rounded border">' +
             '  <div class="pos-bill-item-details d-flex justify-content-between align-items-start">' +
@@ -368,18 +376,19 @@ function searchCustomerCRM() {
                 customerInfo = data;
                 document.getElementById('submit_maKh').value = data.maKh;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
+
                 let rankName = 'MỚI';
                 if (data.maHang === 1) rankName = 'ĐỒNG';
                 else if (data.maHang === 2) rankName = 'BẠC';
                 else if (data.maHang === 3) rankName = 'VÀNG 👑';
                 else if (data.maHang === 4) rankName = 'VIP 💎';
-                document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
 
+                document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
                 if (typeof showToast === 'function') {
                     showToast('success', 'Tìm thấy thành viên: ' + data.tenKh);
                 }
-                document.getElementById("crmLoyaltyArea").style.display = "block";
-                document.getElementById("posAddCustomerArea").style.display = "none";
+                document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
+                document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
                 resetVoucherAndPoints();
                 renderPosCart();
             } else {
@@ -387,18 +396,18 @@ function searchCustomerCRM() {
                 document.getElementById('submit_maKh').value = "";
                 document.getElementById('customerNameResult').innerText = "Khách lẻ vãng lai";
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
-                document.getElementById("crmLoyaltyArea").style.display = "none";
-                document.getElementById("posAddCustomerArea").style.display = "block";
+                document.getElementById("crmLoyaltyArea").style.setProperty('display', 'none', 'important');
+                document.getElementById("posAddCustomerArea").style.setProperty('display', 'block', 'important');
 
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
+                        title: 'Hội viên chưa đăng ký',
+                        text: 'Số điện thoại này chưa được liên kết với bất kỳ tài khoản CRM nào. Tạo nhanh thành viên mới?',
                         icon: 'question',
-                        title: 'Số điện thoại mới!',
-                        html: 'Số điện thoại <strong>' + sdt + '</strong> chưa đăng ký thành viên CRM. Quý khách có muốn tạo nhanh tài khoản tích điểm không?',
                         showCancelButton: true,
                         confirmButtonColor: '#10b981',
                         cancelButtonColor: '#64748b',
-                        confirmButtonText: 'Tạo tài khoản mới',
+                        confirmButtonText: 'Đăng ký ngay',
                         cancelButtonText: 'Để sau'
                     }).then((res) => {
                         if (res.isConfirmed) {
@@ -428,44 +437,42 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="text" class="form-control" id="reg_tenKh" placeholder="Nhập họ tên đầy đủ..." required autocomplete="off">';
     html += '  </div>';
     html += '  <div class="mb-3">';
-    html += '    <label class="fw-bold small mb-1">Địa chỉ Email <span class="text-danger">*</span></label>';
-    html += '    <input type="email" class="form-control" id="reg_email" placeholder="khachhang@gmail.com..." required autocomplete="off">';
+    html += '    <label class="fw-bold small mb-1">Địa chỉ Email nhận OTP <span class="text-danger">*</span></label>';
+    html += '    <input type="email" class="form-control" id="reg_email" placeholder="Nhập email..." required autocomplete="off">';
     html += '  </div>';
     html += '</div>';
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'ĐĂNG KÝ HỘI VIÊN CRM MỚI',
+            title: 'ĐĂNG KÝ NHANH THÀNH VIÊN CRM',
             html: html,
             showCancelButton: true,
             confirmButtonColor: '#10b981',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Lưu tài khoản',
+            confirmButtonText: 'Tạo tài khoản',
             cancelButtonText: 'Hủy bỏ',
             preConfirm: () => {
-                const tenKh = document.getElementById('reg_tenKh').value.trim();
-                const email = document.getElementById('reg_email').value.trim();
-                const sdtVal = document.getElementById('reg_sdt').value.trim();
-
+                const tenKh = document.getElementById("reg_tenKh").value.trim();
+                const email = document.getElementById("reg_email").value.trim();
                 if (!tenKh || !email) {
-                    Swal.showValidationMessage('Họ tên và email bắt buộc phải nhập!');
+                    Swal.showValidationMessage('Vui lòng điền họ tên và email hợp lệ!');
                     return false;
                 }
-                return { tenKh: tenKh, email: email, sdt: sdtVal };
+                return { tenKh: tenKh, email: email, sdt: sdt };
             }
         }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({
-                    title: 'Đang lưu tài khoản...',
+                    title: 'Đang xử lý...',
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
-                const url = getContextPath() + '/pos';
+
+                const url = getContextPath() + '/pos/create-customer';
                 const params = new URLSearchParams();
-                params.append('action', 'createCustomer');
                 params.append('tenKh', result.value.tenKh);
-                params.append('email', result.value.email);
                 params.append('soDienThoai', result.value.sdt);
+                params.append('email', result.value.email);
 
                 fetch(url, {
                     method: 'POST',
@@ -480,8 +487,9 @@ function openQuickRegisterModal(sdt) {
                             document.getElementById('submit_maKh').value = data.maKh;
                             document.getElementById('customerNameResult').innerText = data.tenKh;
                             document.getElementById('customerPoints').innerText = 'Hạng: ĐỒNG | 0 Điểm';
-                            document.getElementById("crmLoyaltyArea").style.display = "block";
-                            document.getElementById("posAddCustomerArea").style.display = "none";
+                            document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
+                            document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
+
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Thành công',
@@ -496,7 +504,7 @@ function openQuickRegisterModal(sdt) {
                     })
                     .catch(err => {
                         Swal.close();
-                        console.error('Lỗi AJAX:', err);
+                        console.error('Lỗi đăng ký:', err);
                         if (typeof showToast === 'function') {
                             showToast('error', 'Lỗi kết nối máy chủ!');
                         }
@@ -518,6 +526,7 @@ function applyManualVoucherCode() {
         return;
     }
     const maKh = document.getElementById("submit_maKh").value;
+
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'Đang áp mã Voucher...',
@@ -541,8 +550,16 @@ function applyManualVoucherCode() {
         .then(data => {
             if (typeof Swal !== 'undefined') Swal.close();
             if (data.status === 'SUCCESS') {
-                appliedVoucher = data;
-                if (typeof showToast === 'function') showToast('success', 'Đã áp dụng thành công Voucher: ' + code);
+                appliedVoucher = {
+                    maKm: data.maKm,
+                    maCode: data.maCode,
+                    tenKm: data.tenKm,
+                    loaiGiam: data.loaiGiam,
+                    giaTriGiam: data.giaTriGiam,
+                    giamToiDa: data.giamToiDa,
+                    donToiThieu: data.donToiThieu
+                };
+                if (typeof showToast === 'function') showToast('success', 'Áp dụng mã Voucher ' + code + ' thành công!');
                 recalculatePOSBill(totalRaw);
             } else {
                 if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Lỗi áp mã', text: data.message });
@@ -585,23 +602,24 @@ function showVoucherSelectionModal() {
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'CHỌN VOUCHER VIP THÀNH VIÊN',
+            title: 'HỘP THƯ VOUCHER THÀNH VIÊN',
             html: selectHtml,
             showCancelButton: true,
             confirmButtonColor: '#10b981',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Áp dụng',
-            cancelButtonText: 'Đóng',
-            preConfirm: () => {
-                const code = document.getElementById('posVoucherSelector').value;
-                if (!code) return null;
-                return code;
-            }
+            confirmButtonText: 'Đồng ý áp dụng',
+            cancelButtonText: 'Hủy bỏ'
         }).then((result) => {
             if (result.isConfirmed) {
-                if (result.value) {
-                    const code = result.value;
+                const code = document.getElementById("posVoucherSelector").value;
+                if (code) {
                     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
+                    Swal.fire({
+                        title: 'Đang tải...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
                     const url = getContextPath() + '/pos/apply-voucher';
                     const params = new URLSearchParams();
                     params.append('code', code);
@@ -615,9 +633,18 @@ function showVoucherSelectionModal() {
                     })
                         .then(res => res.json())
                         .then(data => {
+                            Swal.close();
                             if (data.status === 'SUCCESS') {
-                                appliedVoucher = data;
-                                if (typeof showToast === 'function') showToast('success', 'Đã áp dụng Voucher: ' + code);
+                                appliedVoucher = {
+                                    maKm: data.maKm,
+                                    maCode: data.maCode,
+                                    tenKm: data.tenKm,
+                                    loaiGiam: data.loaiGiam,
+                                    giaTriGiam: data.giaTriGiam,
+                                    giamToiDa: data.giamToiDa,
+                                    donToiThieu: data.donToiThieu
+                                };
+                                if (typeof showToast === 'function') showToast('success', 'Đã lưu Voucher thành viên ' + code + '!');
                                 recalculatePOSBill(totalRaw);
                             } else {
                                 Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
@@ -696,7 +723,7 @@ function recalculatePOSBill(tongTienHang) {
                     discount = appliedVoucher.giamToiDa;
                 }
             }
-            document.getElementById("summaryDiscountRow").style.display = "flex";
+            document.getElementById("summaryDiscountRow").style.setProperty('display', 'flex', 'important');
             document.getElementById("txtAppliedCode").innerText = appliedVoucher.maCode;
             document.getElementById("totalDiscountPrice").innerText = "-" + formatVND(discount);
             document.getElementById("submit_maKm").value = appliedVoucher.maKm.toString();
@@ -704,7 +731,7 @@ function recalculatePOSBill(tongTienHang) {
         } else {
             if (typeof showToast === 'function') showToast('warning', 'Hóa đơn chưa đạt giá trị tối thiểu ' + formatVND(appliedVoucher.donToiThieu) + ' để giữ Voucher!');
             appliedVoucher = null;
-            document.getElementById("summaryDiscountRow").style.display = "none";
+            document.getElementById("summaryDiscountRow").style.setProperty('display', 'none', 'important');
             document.getElementById("submit_maKm").value = "";
             document.getElementById("submit_tienGiamGia").value = "0";
         }
@@ -716,25 +743,27 @@ function recalculatePOSBill(tongTienHang) {
     }
 
     if (appliedPoints > 0) {
-        document.getElementById("summaryPointsRow").style.display = "flex";
+        document.getElementById("summaryPointsRow").style.setProperty('display', 'flex', 'important');
         document.getElementById("txtUsedPoints").innerText = appliedPoints.toString();
         document.getElementById("totalPointsPrice").innerText = "-" + formatVND(pointsDiscount);
         document.getElementById("submit_diemSuDung").value = appliedPoints.toString();
         document.getElementById("submit_tienTruDiem").value = pointsDiscount.toString();
     } else {
-        document.getElementById("summaryPointsRow").style.display = "none";
+        document.getElementById("summaryPointsRow").style.setProperty('display', 'none', 'important');
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
 
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
+
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
 
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
 
@@ -761,6 +790,7 @@ function submitPOSInfoForm(event) {
             didOpen: () => { Swal.showLoading(); }
         });
     }
+
     const hoTen = document.getElementById("pos_hoTen").value.trim();
     const sdt = document.getElementById("pos_sdt").value.trim();
     const email = document.getElementById("pos_email").value.trim();
@@ -782,8 +812,8 @@ function submitPOSInfoForm(event) {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'success',
-                        title: 'Hồ sơ cập nhật thành công',
-                        text: 'Họ tên hiển thị đã được cập nhật realtime!',
+                        title: 'Lưu thành công',
+                        text: 'Hồ sơ nhân sự của bạn đã được cập nhật rộng khắp!',
                         confirmButtonColor: '#10b981'
                     }).then(() => {
                         location.reload();
@@ -808,11 +838,7 @@ function submitPOSPassForm(event) {
 
     if (newPass !== confirmPass) {
         if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Mật khẩu không khớp',
-                text: 'Nhập lại mật khẩu mới chưa trùng khớp với mật khẩu mới đã gõ!'
-            });
+            Swal.fire({ icon: 'warning', title: 'Không trùng khớp', text: 'Xác nhận mật khẩu mới không đúng!', confirmButtonColor: '#ef4444' });
         }
         return;
     }
@@ -826,36 +852,30 @@ function submitPOSPassForm(event) {
     }
 
     const params = new URLSearchParams();
-    params.append("action", "changePassword");
     params.append("oldPassword", oldPass);
     params.append("newPassword", newPass);
 
-    fetch(getContextPath() + "/admin/settings", {
+    fetch(getContextPath() + "/pos/change-password", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params
     })
-        .then(res => {
+        .then(res => res.json())
+        .then(data => {
             if (typeof Swal !== 'undefined') Swal.close();
-            if (res.redirected) {
+            if (data.status === 'SUCCESS') {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'success',
                         title: 'Đổi mật khẩu thành công',
-                        text: 'Hãy ghi nhớ mật khẩu mới cho phiên làm việc tiếp theo!',
+                        text: 'Mật khẩu đăng nhập mới của bạn đã được áp dụng!',
                         confirmButtonColor: '#10b981'
                     }).then(() => {
                         location.reload();
                     });
                 }
             } else {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Thao tác lỗi',
-                        text: 'Mật khẩu cũ không chính xác hoặc mật khẩu mới chưa đạt độ mạnh!'
-                    });
-                }
+                if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Thất bại', text: data.message });
             }
         })
         .catch(err => {
@@ -869,6 +889,7 @@ function calculateChangeRefund() {
     const totalPayablePriceEl = document.getElementById('totalPayablePrice');
     const inputCustomerCashEl = document.getElementById('inputCustomerCash');
     const txtCashRefundEl = document.getElementById('txtCashRefund');
+
     if (!totalPayablePriceEl || !inputCustomerCashEl || !txtCashRefundEl) return;
 
     const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
@@ -887,6 +908,7 @@ function calculateChangeRefund() {
 function suggestCashAmount(amount) {
     const inputCustomerCashEl = document.getElementById('inputCustomerCash');
     if (!inputCustomerCashEl) return;
+
     if (amount === 0) {
         const totalPayablePriceEl = document.getElementById('totalPayablePrice');
         const totalPayable = parseInt(totalPayablePriceEl.innerText.replace(/\D/g, '')) || 0;
@@ -906,9 +928,11 @@ function submitPOSOrderTransaction() {
     const maPt = parseInt(document.getElementById('submit_maPt').value) || 1;
     const totalPayable = parseInt(document.getElementById('submit_tongPhaiTra').value) || 0;
 
+    // Check cash constraints
     if (maPt === 1) {
         const inputCustomerCashEl = document.getElementById('inputCustomerCash');
         const customerCash = parseInt(inputCustomerCashEl.value) || 0;
+
         if (!inputCustomerCashEl.value.trim()) {
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
@@ -921,6 +945,7 @@ function submitPOSOrderTransaction() {
             inputCustomerCashEl.focus();
             return;
         }
+
         if (customerCash < totalPayable) {
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
@@ -946,7 +971,6 @@ function submitPOSOrderTransaction() {
         container.innerHTML += '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">';
         container.innerHTML += '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">';
         container.innerHTML += '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">';
-
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
     });
@@ -985,6 +1009,7 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
+
     fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -995,16 +1020,18 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
-                document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
 
+                document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
+
                 data.items.forEach(item => {
                     let html = '<div class="mb-2 border-bottom pb-1">';
                     html += '  <div class="d-flex justify-content-between">';

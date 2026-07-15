@@ -7,12 +7,12 @@
     <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap 5, Icons, SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- SweetAlert2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+
     <!-- Custom styling -->
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
@@ -45,22 +45,27 @@
             padding: 12px 6px;
             border: 0;
             background: none;
+            width: 100%;
             border-bottom: 1px solid #f1f5f9;
-            color: #64748b;
-            font-size: 10px;
-            font-weight: 700;
             transition: all 0.2s;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .pos-category-btn:hover {
+            background-color: #f8fafc;
+            color: #10b981;
         }
         .pos-category-btn.active {
             background-color: #ecfdf5;
             color: #10b981;
+            font-weight: bold;
             border-left: 4px solid #10b981;
         }
         .pos-menu-area {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background: #f8fafc;
             overflow: hidden;
         }
         .pos-menu-header {
@@ -84,6 +89,12 @@
             border-radius: 20px;
             border: 1px solid #cbd5e1;
             font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .pos-search-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
         .pos-search-icon {
             position: absolute;
@@ -104,17 +115,18 @@
         }
         .pos-card-wrapper {
             background: #ffffff;
-            border-radius: 12px;
             border: 1px solid #e2e8f0;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 12px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
             position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.2s;
         }
         .pos-card-wrapper:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             border-color: #10b981;
         }
         .pos-product-img {
@@ -134,11 +146,13 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             margin-bottom: 4px;
+            text-align: left;
         }
         .pos-card-price {
             font-size: 13px;
             color: #10b981;
             font-weight: 700;
+            text-align: left;
         }
         .pos-checkout-sidebar {
             width: 380px;
@@ -156,7 +170,6 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
-            flex-shrink: 0;
         }
         .pos-cart-items-wrapper {
             flex-grow: 1;
@@ -166,13 +179,15 @@
         }
         .pos-bill-item {
             background: #ffffff;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
             border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            text-align: left;
         }
         .pos-bill-item-title {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e293b;
         }
@@ -235,20 +250,21 @@
 <body>
 <!-- HEADER TOÀN NĂNG -->
 <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px;">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important;">
-            <i class="bi bi-cup-hot-fill me-2 fs-4 animate-pulse"></i>
-            <span>TEA POS PRO</span>
-            <span class="badge bg-success-subtle text-success border border-success ms-2 font-monospace" style="font-size: 10px; padding: 3px 6px;">V2.5 STABLE</span>
-        </a>
-        <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
-            <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
+    <div class="container-fluid d-flex align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
+                <i class="bi bi-cup-hot-fill me-2 fs-4 text-success"></i> TEA POS PRO
             </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
-                <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
-            </a>
+            <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
+                <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
+                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
+                </a>
+                <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
+                </a>
+            </div>
         </div>
+
         <div class="d-flex align-items-center gap-3 text-white ms-auto">
             <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
                 <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -262,6 +278,7 @@
                     <i class="bi bi-calendar3 text-success me-1"></i>
                     <span id="posCurrentClock">--:--:--</span>
                 </span>
+
             <!-- NÚT ĐĂNG XUẤT NỔI BẬT CHỐT CA -->
             <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm">
                 <i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT
@@ -277,13 +294,13 @@
     <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
     <div class="pos-category-sidebar">
         <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
-            <i class="bi bi-grid-fill fs-4"></i>
+            <i class="bi bi-grid-fill fs-4 mb-1"></i>
             <span>TẤT CẢ</span>
         </button>
         <c:forEach var="cat" items="${categories}">
-            <!-- ĐỒNG BỘ: ĐÚNG SỬA CÚ PHÁP TRUYỀN THAM SỐ CHUỖI CÓ NHÁY ĐƠN -->
+            <!-- ĐỒNG BỘ CÚ PHÁP TRUYỀN THAM SỐ CHUỖI CÓ NHÁY ĐƠN -->
             <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory('${cat.maDm}')">
-                <i class="bi bi-cup-straw fs-4"></i>
+                <i class="bi bi-cup-straw fs-4 mb-1"></i>
                 <span class="text-uppercase"><c:out value="${cat.tenDm}"/></span>
             </button>
         </c:forEach>
@@ -313,7 +330,7 @@
                                 choPhepDoiDuong: ${sp.choPhepDoiDuong},
                                 sizes: [
                                     <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
-                                    { maSize: ${sz.maSize}, tenSize: '${sz.tenSize}', giaBan: ${sz.giaBan} }${not sLoop.last ? ',' : ''}
+                                    { maSize: ${sz.maSize}, tenSize: '${sz.maSize == 1 ? "S" : (sz.maSize == 2 ? "M" : "L")}', giaBan: ${sz.giaBan} }${not sLoop.last ? ',' : ''}
                                     </c:forEach>
                                 ],
                                 allToppings: [
@@ -351,7 +368,7 @@
     <div class="pos-checkout-sidebar">
         <div class="pos-checkout-header">
             <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG CHỜ IN</h5>
-            <!-- CHỈNH SỬA: Nút Hủy Đơn Sài Được Ngay Realtime -->
+            <!-- Nút Hủy Đơn Sài Được Ngay Realtime -->
             <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()">
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
@@ -382,8 +399,8 @@
             <!-- CRM LOYALTY AREA -->
             <div id="crmLoyaltyArea" class="mt-2" style="display: none;">
                 <div class="d-flex gap-1.5 mb-2">
-                    <button type="button" class="btn btn-xs btn-outline-success fw-bold flex-fill small" style="font-size: 11px;" onclick="showVoucherSelectionModal()"><i class="bi bi-ticket-perforated-fill"></i> HỘP VOUCHER VIP</button>
-                    <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill small" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM</button>
+                    <button type="button" class="btn btn-xs btn-outline-success fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="showVoucherSelectionModal()"><i class="bi bi-ticket-perforated-fill"></i> HỘP VOUCHER VIP</button>
+                    <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM</button>
                 </div>
             </div>
             <div id="posAddCustomerArea" style="display: none;"></div>
@@ -398,7 +415,6 @@
                     <button class="btn btn-outline-success fw-bold text-uppercase px-3" type="button" onclick="applyManualVoucherCode()">ÁP MÃ</button>
                 </div>
             </div>
-
             <div class="pos-line-price">
                 <span>Tổng tiền hàng & Toppings:</span>
                 <strong id="totalRawPrice">0 đ</strong>
@@ -415,7 +431,6 @@
                 <span>Thuế GTGT VAT (8%):</span>
                 <strong class="text-dark" id="totalTaxPrice">0 đ</strong>
             </div>
-
             <div class="pos-total-row">
                 <span>TỔNG THỰC THU:</span>
                 <span class="text-success" id="totalPayablePrice">0 đ</span>
@@ -449,8 +464,8 @@
                 </select>
             </div>
 
-            <form id="posOrderForm" action="${pageContext.request.contextPath}/pos" method="POST" style="display: none;">
-                <input type="hidden" name="action" value="checkout">
+            <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
+            <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                 <input type="hidden" name="maKh" id="submit_maKh" value="">
                 <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
                 <input type="hidden" name="maPt" id="submit_maPt" value="1">
@@ -517,11 +532,11 @@
                             </div>
                             <div class="mb-3 text-start">
                                 <label class="form-label fw-bold text-muted small">Mật khẩu mới</label>
-                                <input type="password" name="newPassword" id="pos_newPass" class="form-control" required minlength="8">
+                                <input type="password" name="newPassword" id="pos_newPass" class="form-control" placeholder="Tối thiểu 8 ký tự..." minlength="8" required>
                             </div>
                             <div class="mb-3 text-start">
-                                <label class="form-label fw-bold text-muted small">Nhập lại mật khẩu mới</label>
-                                <input type="password" name="confirmPassword" id="pos_confirmPass" class="form-control" required minlength="8">
+                                <label class="form-label fw-bold text-muted small">Xác nhận mật khẩu mới</label>
+                                <input type="password" name="confirmPassword" id="pos_confirmPass" class="form-control" placeholder="Nhập lại mật khẩu..." minlength="8" required>
                             </div>
                             <button type="submit" class="btn btn-primary-teapos w-100 py-2"><i class="bi bi-key-fill me-1"></i> THAY ĐỔI MẬT KHẨU</button>
                         </form>
@@ -569,7 +584,7 @@
                     <strong id="billPointsDiscount"></strong>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 4px 0;"></div>
-                <div class="d-flex justify-content-between fw-bold text-success fs-6" style="font-size: 12px;">
+                <div class="d-flex justify-content-between fw-bold text-success" style="font-size: 12px;">
                     <span>CẦN THANH TOÁN:</span>
                     <span id="billFinalPayable"></span>
                 </div>
@@ -587,7 +602,7 @@
     </div>
 </div>
 
-<!-- Bootstrap JS Bundle (solely imported here for POS) -->
+<!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
@@ -614,9 +629,9 @@
         const cashSection = document.getElementById('cashCalculatorSection');
         if (submitPt) submitPt.value = maPt;
         if (maPt === 2) {
-            if (cashSection) cashSection.style.display = "none";
+            if (cashSection) cashSection.style.setProperty('display', 'none', 'important');
         } else {
-            if (cashSection) cashSection.style.display = "block";
+            if (cashSection) cashSection.style.setProperty('display', 'block', 'important');
         }
     }
 
@@ -641,10 +656,6 @@
     }
 
     function filterBadge(type) {
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('btn-light', 'active-filter'));
-        const activeBtn = document.getElementById('f_' + type);
-        if (activeBtn) activeBtn.classList.add('btn-light', 'active-filter');
-
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             if (type === 'all') {
                 card.style.setProperty('display', 'block', 'important');
