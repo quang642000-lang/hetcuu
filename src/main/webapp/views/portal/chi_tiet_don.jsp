@@ -31,7 +31,6 @@
                 <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="confirmCancelOrder('${order.maDh}')">HỦY ĐƠN HÀNG</button>
             </c:if>
         </div>
-
         <!-- DÒNG TIẾN ĐỘ THỜI GIAN THỰC (TIMELINE) -->
         <div class="position-relative mb-5 py-2">
             <div class="timeline-progress"></div>
@@ -58,7 +57,6 @@
                 </div>
             </div>
         </div>
-
         <!-- CHI TIẾT SẢN PHẨM HOÁ ĐƠN -->
         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-receipt"></i> Hóa đơn thanh toán chi tiết</h5>
         <div class="table-responsive">
@@ -73,7 +71,6 @@
                 </tr>
                 </thead>
                 <tbody>
-                <%-- SỬA ĐỔI CHÍ MẠNG: Đổi từ item.maSp sang item.tenSp để hiển thị tên tiếng Việt cực kỳ rõ ràng, dễ hiểu! --%>
                 <c:forEach var="item" items="${order.chiTietDonHangList}">
                     <tr>
                         <td>
@@ -84,7 +81,6 @@
                                 <span class="badge bg-light text-dark border">Đá: ${item.mucDa}</span>
                                 <span class="badge bg-light text-dark border">Đường: ${item.mucDuong}</span>
                             </div>
-                                <%-- BỔ SUNG: Hiển thị đầy đủ toppings đi kèm với tên tiếng Việt chuẩn có dấu --%>
                             <c:if test="${not empty item.toppingsList}">
                                 <div class="text-success small mt-1">
                                     <i class="bi bi-plus-circle"></i> Toppings:

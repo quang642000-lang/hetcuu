@@ -9,7 +9,6 @@ import service.IKhuyenMaiService;
 import service.impl.DonHangServiceImpl;
 import service.impl.KhachHangServiceImpl;
 import service.impl.KhuyenMaiServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,10 +23,11 @@ import java.util.List;
         "/profile",
         "/profile/orders",
         "/profile/vouchers",
-        "/profile/update",           // ĐÃ BỔ SUNG MÃ ĐƯỜNG DẪN BỊ THIẾU Ở ĐÂY ĐỂ DẬP LỖI 404!
+        "/profile/update",
         "/profile/change-password",
         "/portal/order/detail",
-        "/portal/order/cancel"
+        "/portal/order/cancel",
+        "/portal/order/payment-qr" // ADDED FOR PORTAL SEPAY QR FLOW
 })
 public class PortalProfileController extends HttpServlet {
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
@@ -41,10 +41,10 @@ public class PortalProfileController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
         session.setAttribute("customer", freshCustomer);
-
         String uri = request.getRequestURI();
 
         // 1. NGHIỆP VỤ: XEM CHI TIẾT ĐƠN HÀNG
@@ -60,7 +60,20 @@ public class PortalProfileController extends HttpServlet {
             return;
         }
 
-        // 2. NGHIỆP VỤ: KHÁCH HÀNG CHỦ ĐỘNG HỦY ĐƠN ONLINE
+        // 2. NGHIỆP VỤ: TRANG QUÉT MÃ QR THANH TOÁN SEPAY
+        if (uri.contains("/portal/order/payment-qr")) {
+            String id = request.getParameter("id");
+            DonHang dh = donHangService.getDonHangById(id);
+            if (dh != null && dh.getMaKh().equals(freshCustomer.getMaKh()) && dh.getTrangThaiThanhToan() == 0) {
+                request.setAttribute("order", dh);
+                request.getRequestDispatcher("/views/portal/thanh_toan_qr.jsp").forward(request, response);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/profile/orders?msg=invalid_action");
+            }
+            return;
+        }
+
+        // 3. NGHIỆP VỤ: KHÁCH HÀNG CHỦ ĐỘNG HỦY ĐƠN ONLINE
         if (uri.contains("/portal/order/cancel")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -100,7 +113,6 @@ public class PortalProfileController extends HttpServlet {
         }
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         String uri = request.getRequestURI();
-
         if (uri.endsWith("/profile/change-password")) {
             performChangePassword(request, response, currentCustomer.getMaKh());
         } else {
@@ -115,17 +127,14 @@ public class PortalProfileController extends HttpServlet {
         String gioiTinh = request.getParameter("gioiTinh");
         String diaChi = request.getParameter("diaChiLienHe");
         String ngaySinhStr = request.getParameter("ngaySinh");
-
         kh.setTenKh(tenKh);
         kh.setSoDienThoai(sdt);
         kh.setEmail(email);
         kh.setGioiTinh(gioiTinh);
         kh.setDiaChiLienHe(diaChi);
-
         if (ngaySinhStr != null && !ngaySinhStr.trim().isEmpty()) {
             kh.setNgaySinh(Date.valueOf(ngaySinhStr));
         }
-
         boolean success = khachHangService.updateCustomerProfile(kh);
         if (success) {
             response.sendRedirect(request.getContextPath() + "/profile?msg=updatesuccess");
@@ -139,14 +148,13 @@ public class PortalProfileController extends HttpServlet {
     private void performChangePassword(HttpServletRequest request, HttpServletResponse response, String maKh) throws ServletException, IOException {
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
-        String confirmPassword = request.getParameter("confirmPassword");
+        String confirm = request.getParameter("confirmPassword");
 
-        if (newPassword == null || !newPassword.equals(confirmPassword)) {
-            request.setAttribute("errorPassword", "Xác nhận mật khẩu mới không trùng khớp!");
+        if (newPassword == null || !newPassword.equals(confirm)) {
+            request.setAttribute("errorPassword", "Xác nhận mật khẩu mới không đúng!");
             doGet(request, response);
             return;
         }
-
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
             String oldHashed = util.SecurityUtil.hashSHA256(oldPassword);

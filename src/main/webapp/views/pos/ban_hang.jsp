@@ -256,7 +256,7 @@
             </a>
             <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                 <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠY QUẦY
+                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
                 </a>
                 <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
                     <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
@@ -286,6 +286,7 @@
         </div>
     </div>
 </nav>
+
 <div class="pos-layout">
     <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
     <div class="pos-category-sidebar">
@@ -300,6 +301,7 @@
             </button>
         </c:forEach>
     </div>
+
     <!-- CỘT 2: LƯỚI SẢN PHẨM -->
     <div class="pos-menu-area">
         <div class="pos-menu-header">
@@ -357,15 +359,16 @@
             </div>
         </div>
     </div>
+
     <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN (SƯỜN PHẢI) -->
     <div class="pos-checkout-sidebar">
         <div class="pos-checkout-header">
             <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG CHỜ IN</h5>
-            <!-- Nút Hủy Đơn Sài Được Ngay Realtime -->
             <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()">
                 <i class="bi bi-trash3-fill"></i> Hủy đơn
             </button>
         </div>
+
         <!-- DANH SÁCH SẢN PHẨM TRONG GIỎ HÀNG POS -->
         <div class="pos-cart-items-wrapper" id="posCartItems">
             <div class="text-center text-muted py-5 my-5">
@@ -373,6 +376,7 @@
                 <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
             </div>
         </div>
+
         <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
         <div class="pos-crm-panel">
             <div class="d-flex gap-2 mb-3">
@@ -395,6 +399,7 @@
             </div>
             <div id="posAddCustomerArea" style="display: none;"></div>
         </div>
+
         <!-- TỔNG HỢP TIỀN BÁO CÁO -->
         <div class="pos-summary-panel">
             <div class="mb-2">
@@ -424,6 +429,7 @@
                 <span>TỔNG THỰC THU:</span>
                 <span class="text-success" id="totalPayablePrice">0 đ</span>
             </div>
+
             <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
             <div class="mt-3 text-start" id="cashCalculatorSection">
                 <div class="d-flex justify-content-between align-items-center mb-1.5">
@@ -442,14 +448,16 @@
                     <span id="txtCashRefund" class="text-success">0 đ</span>
                 </div>
             </div>
+
             <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN -->
             <div class="mb-3 mt-3 text-start">
                 <label class="form-label text-muted small fw-bold"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
                 <select id="select_maPt_UI" class="form-select form-select-sm fw-bold text-dark" style="border-radius: 8px;" onchange="changePaymentMethod(parseInt(this.value))">
-                    <option value="1">TIỀN MẶT (BÁN TẠI QUẦY)</option>
+                    <option value="1">TIỀN MẶT (BÁN TẠY QUẦY)</option>
                     <option value="2">CHUYỂN KHOẢN QR ĐỘNG (QUÉT MÃ)</option>
                 </select>
             </div>
+
             <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
             <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                 <input type="hidden" name="maKh" id="submit_maKh" value="">
@@ -464,12 +472,14 @@
                 <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                 <div id="posFormItemsContainer"></div>
             </form>
+
             <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                 <i class="bi bi-printer me-1"></i> GIAO DỊCH & IN HOÁ ĐƠN
             </button>
         </div>
     </div>
 </div>
+
 <!-- MODAL CÀI ĐẶT THÔNG TIN TÀI KHOẢN -->
 <div class="modal fade" id="posSettingsModal" tabindex="-1" aria-hidden="true" style="z-index: 1070;">
     <div class="modal-dialog modal-dialog-centered">
@@ -530,6 +540,7 @@
         </div>
     </div>
 </div>
+
 <!-- MODAL IN HÓA ĐƠN NHIỆT -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -581,6 +592,7 @@
         </div>
     </div>
 </div>
+
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
@@ -595,12 +607,14 @@
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
+
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
             searchCustomerCRM();
         }
     }
+
     function changePaymentMethod(maPt) {
         const submitPt = document.getElementById('submit_maPt');
         const cashSection = document.getElementById('cashCalculatorSection');
@@ -611,6 +625,7 @@
             if (cashSection) cashSection.style.setProperty('display', 'block', 'important');
         }
     }
+
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-sidebar .pos-category-btn').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById('btn_cat_' + maDm);
@@ -628,6 +643,7 @@
             }
         });
     }
+
     function filterBadge(type) {
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
             if (type === 'all') {
@@ -641,6 +657,7 @@
             }
         });
     }
+
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => {
@@ -653,20 +670,13 @@
             }
         });
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         const orderId = urlParams.get('orderId');
         if (msg === 'createsuccess') {
-            Swal.fire({
-                icon: 'success',
-                title: 'Thanh toán hoàn tất',
-                html: 'Hóa đơn mã: <strong>' + orderId + '</strong> đã được xuất và in thành công! Đã tự động tích điểm CRM.',
-                confirmButtonColor: '#10b981',
-                confirmButtonText: 'Bán đơn mới'
-            }).then(() => {
-                window.location.href = '${pageContext.request.contextPath}/pos';
-            });
+            loadAndShowPrintReceipt(orderId);
         }
     });
 </script>

@@ -11,9 +11,7 @@ import java.util.List;
 
 public class GioHangRepoImpl implements IGioHangRepository {
     private static GioHangRepoImpl instance;
-
     private GioHangRepoImpl() {}
-
     public static synchronized GioHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new GioHangRepoImpl();
@@ -133,7 +131,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 ps.setString(6, chiTiet.getMucDuong());
                 ps.setString(7, chiTiet.getGhiChuMon());
                 ps.setBoolean(8, chiTiet.isChonMua());
-
                 int affectedRows = ps.executeUpdate();
                 if (affectedRows > 0) {
                     try (ResultSet rsKeys = ps.getGeneratedKeys()) {
@@ -152,11 +149,26 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public boolean deleteChiTiet(long maCtgh) {
-        String sql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_ctgh = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, maCtgh);
-            return ps.executeUpdate() > 0;
+        // CHỐT CHẶN BẢO MẬT: XÓA SẠCH CON TOPPINGS TRƯỚC ĐỂ TRÁNH LỖI RÀNG BUỘC KHÓA NGOẠI SQL SERVER
+        String deleteToppingsSql = "DELETE FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh = ?";
+        String deleteItemSql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_ctgh = ?";
+        try (Connection conn = DBConnect.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps1 = conn.prepareStatement(deleteToppingsSql);
+                 PreparedStatement ps2 = conn.prepareStatement(deleteItemSql)) {
+                ps1.setLong(1, maCtgh);
+                ps1.executeUpdate();
+
+                ps2.setLong(1, maCtgh);
+                int rows = ps2.executeUpdate();
+                conn.commit();
+                return rows > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -165,11 +177,26 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public boolean clearGioHang(int maGh) {
-        String sql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, maGh);
-            return ps.executeUpdate() > 0;
+        // XÓA SẠCH TOÀN BỘ TOPPINGS LIÊN KẾT TRƯỚC KHI GIẢI PHÓNG GIỎ
+        String deleteToppingsSql = "DELETE FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh IN (SELECT ma_ctgh FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?)";
+        String deleteItemsSql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?";
+        try (Connection conn = DBConnect.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps1 = conn.prepareStatement(deleteToppingsSql);
+                 PreparedStatement ps2 = conn.prepareStatement(deleteItemsSql)) {
+                ps1.setInt(1, maGh);
+                ps1.executeUpdate();
+
+                ps2.setInt(1, maGh);
+                int rows = ps2.executeUpdate();
+                conn.commit();
+                return rows >= 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -204,7 +231,7 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 while (rs.next()) {
                     ChiTietToppingGioHang tp = new ChiTietToppingGioHang(
                             rs.getLong("ma_ctgh"),
-                            rs.getString("ma_tp"), // ĐỌC DƯỚI DẠNG STRING
+                            rs.getString("ma_tp"),
                             rs.getInt("so_luong_tp")
                     );
                     tp.setGiaTp(rs.getInt("gia_ban"));

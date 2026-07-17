@@ -16,7 +16,6 @@ public class ForgotPasswordController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // SỬA LỖI ĐƯỜNG DẪN: Đổi từ forgot-password.jsp sang forgot_password.jsp (dùng gạch dưới _) để khớp với tệp tin figma/webapp thực tế
         request.getRequestDispatcher("/views/auth/forgot_password.jsp").forward(request, response);
     }
 
@@ -29,17 +28,14 @@ public class ForgotPasswordController extends HttpServlet {
             return;
         }
 
-        // Gọi Service gửi mã OTP khôi phục mật khẩu nếu Email hợp lệ
-        boolean isSent = khachHangService.sendForgotPasswordOTP(email);
-        if (isSent) {
+        boolean sent = khachHangService.sendForgotPasswordOTP(email.trim());
+        if (sent) {
             HttpSession session = request.getSession(true);
-            session.setAttribute("otpEmail", email);
-            session.setAttribute("otpType", "recovery"); // Lưu vết phân luồng OTP khôi phục
-
-            // Chuyển sang màn hình xác minh OTP đặt lại mật khẩu mới
+            session.setAttribute("otpEmail", email.trim());
+            session.setAttribute("otpType", "recovery");
             response.sendRedirect(request.getContextPath() + "/verify-otp?type=recovery");
         } else {
-            request.setAttribute("error", "Email này không tồn tại trong hệ thống hoặc tài khoản đang bị khóa.");
+            request.setAttribute("error", "Email này không tồn tại trong hệ thống hoặc tài khoản đang bị tạm khóa.");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/views/auth/forgot_password.jsp").forward(request, response);
         }
