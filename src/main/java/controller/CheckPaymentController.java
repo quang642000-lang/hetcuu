@@ -7,25 +7,37 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @WebServlet(name = "CheckPaymentController", urlPatterns = {"/api/check-payment", "/checkout/check-payment"})
 public class CheckPaymentController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        String orderId = request.getParameter("id");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter out = response.getWriter();
 
-        if (orderId == null || orderId.trim().isEmpty()) {
-            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Missing Order ID\"}");
+        String code = request.getParameter("code");
+        if (code == null || code.trim().isEmpty()) {
+            code = request.getParameter("id");
+        }
+
+        if (code == null || code.trim().isEmpty()) {
+            out.print("{\"status\":\"ERROR\", \"message\":\"Missing transaction code/id\"}");
             return;
         }
 
-        Boolean isPaid = PaymentStore.transactions.get(orderId);
-        if (isPaid != null && isPaid) {
-            PaymentStore.transactions.remove(orderId); // Free memory immediately
-            response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"PAID\"}");
+        String cleanCode = code.trim().toUpperCase();
+        String unDashedCode = cleanCode.replace("-", "");
+
+        // Check in PaymentStore cache
+        if (PaymentStore.transactions.containsKey(cleanCode) || PaymentStore.transactions.containsKey(unDashedCode)) {
+            PaymentStore.transactions.remove(cleanCode);
+            PaymentStore.transactions.remove(unDashedCode);
+            System.out.println("✅ [TEA POS API] Chốt đơn thanh toán thành công cho: " + cleanCode);
+            out.print("{\"status\":\"SUCCESS\", \"message\":\"Payment matched successfully\"}");
         } else {
-            response.getWriter().write("{\"status\":\"PENDING\",\"message\":\"Waiting for payment confirmation\"}");
+            out.print("{\"status\":\"PENDING\", \"message\":\"Waiting for transfer...\"}");
         }
     }
 }

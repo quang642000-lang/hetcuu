@@ -50,12 +50,12 @@ public class DonHangServiceImpl implements IDonHangService {
 
     @Override
     public List<DonHang> getDonHangByKhachHang(String maKh) {
-        return donHangRepository.getByKhachHang(maKh);
+        return donHangRepository.getByKhachHang(maKh); // ALIGNED WITH IDonHangRepository
     }
 
     @Override
     public List<DonHang> getDonHangByTrangThai(int trangThaiDon) {
-        return donHangRepository.getByTrangThai(trangThaiDon);
+        return donHangRepository.getByTrangThai(trangThaiDon); // ALIGNED WITH IDonHangRepository
     }
 
     @Override
@@ -63,7 +63,7 @@ public class DonHangServiceImpl implements IDonHangService {
         donHang.setMaNv(maNv);
         donHang.setChiTietDonHangList(items);
 
-        // 1. Gỉam số lượng Voucher khả dụng
+        // 1. Giảm số lượng Voucher khả dụng
         if (donHang.getMaKm() != null) {
             khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
         }
@@ -76,17 +76,17 @@ public class DonHangServiceImpl implements IDonHangService {
         boolean success = donHangRepository.add(donHang);
         if (success) {
             donHangRepository.updateTrangThaiDon(donHang.getMaDh(), donHang.getTrangThaiDon());
-
             // 3. TỰ ĐỘNG TÍCH LŨY ĐIỂM CRM CHO KHÁCH HÀNG THÀNH VIÊN (1 Điểm = 10.000 VNĐ chi tiêu thực tế)
             if (donHang.getMaKh() != null) {
                 int diemCong = donHang.getTongPhaiTra() / 10000;
                 if (diemCong > 0) {
-                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(donHang.getMaKh(), diemCong, true);
+                    khachHangRepository.congDiemTichLuy(donHang.getMaKh(), diemCong);
                 }
             }
-
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv, "CHỐT_ĐƠN_POS", "DON_HANG", null, "Mã hóa đơn: " + donHang.getMaDh() + " | Tích lũy điểm CRM thành công.", "127.0.0.1", null));
+                    maNv, "CHỐT_ĐƠN_POS", "DON_HANG", null,
+                    "Mã hóa đơn: " + donHang.getMaDh() + " | Tích lũy điểm CRM thành công.", "127.0.0.1", null
+            ));
         }
         return success;
     }
@@ -109,12 +109,12 @@ public class DonHangServiceImpl implements IDonHangService {
     }
 
     @Override
-    public boolean updateTrangThaiDon(String maDh, int trangThaiDon, String maNv, String lyDoHuy) {
+    public boolean updateTrangThaiDon(String maDh, int trangThaiMoi, String maNv, String lyDoHuy) {
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
         dh.setMaNv(maNv);
 
-        if (trangThaiDon == 5) {
+        if (trangThaiMoi == 5) {
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
@@ -123,6 +123,7 @@ public class DonHangServiceImpl implements IDonHangService {
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
             }
+
             // Thu hồi lại số điểm CRM tích lũy đã cộng của đơn này
             if (dh.getMaKh() != null) {
                 int diemCongDaNhan = dh.getTongPhaiTra() / 10000;
@@ -131,25 +132,36 @@ public class DonHangServiceImpl implements IDonHangService {
                 }
             }
 
-            nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "HỦY_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Lý do hủy đơn " + maDh + ": " + lyDoHuy, "127.0.0.1", null));
+            // Hoàn lại số lượng voucher đã áp dụng
+            if (dh.getMaKm() != null) {
+                khuyenMaiRepository.congSoLuongVoucher(dh.getMaKm()); // WORKS NOW WITH ADDED INTERFACE
+            }
+
+            nhatKyRepository.addLog(new NhatKyHoatDong(
+                    maNv, "HỦY_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(),
+                    "Lý do hủy đơn " + maDh + ": " + lyDoHuy, "127.0.0.1", null
+            ));
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
 
-        dh.setTrangThaiDon(trangThaiDon);
+        dh.setTrangThaiDon(trangThaiMoi);
         donHangRepository.update(dh);
 
-        // 4. ĐỒNG BỘ: TỰ ĐỘNG TÍCH ĐIỂM CRM CHO KHÁCH HÀNG KHI ĐƠN HÀNG ONLINE CLICK & COLLECT HOÀN THÀNH (4)
-        if (trangThaiDon == 4) {
+        // TỰ ĐỘNG TÍCH ĐIỂM CRM CHO KHÁCH HÀNG KHI ĐƠN HÀNG ONLINE CLICK & COLLECT HOÀN THÀNH (4)
+        if (trangThaiMoi == 4) {
             if (dh.getMaKh() != null) {
                 int diemCong = dh.getTongPhaiTra() / 10000;
                 if (diemCong > 0) {
-                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(dh.getMaKh(), diemCong, true);
+                    khachHangRepository.congDiemTichLuy(dh.getMaKh(), diemCong);
                 }
             }
         }
 
-        nhatKyRepository.addLog(new NhatKyHoatDong(maNv, "CẬP_NHẬT_TRẠNG_THÁI_ĐƠN", "DON_HANG", "Trạng thái cũ: " + dh.getTrangThaiDon(), "Trạng thái mới: " + trangThaiDon, "127.0.0.1", null));
-        return donHangRepository.updateTrangThaiDon(maDh, trangThaiDon);
+        nhatKyRepository.addLog(new NhatKyHoatDong(
+                maNv, "CẬP_NHẬT_TRẠNG_THÁI_ĐƠN", "DON_HANG",
+                "Trạng thái cũ: " + dh.getTrangThaiDon(), "Trạng thái mới: " + trangThaiMoi, "127.0.0.1", null
+        ));
+        return donHangRepository.updateTrangThaiDon(maDh, trangThaiMoi);
     }
 
     @Override
@@ -159,16 +171,24 @@ public class DonHangServiceImpl implements IDonHangService {
 
     @Override
     public boolean handleSePayWebhook(String content, double amount) {
-        Pattern pattern = Pattern.compile("TEA(\\d+)", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(content);
+        // Chuẩn hóa nội dung xóa khoảng trắng và dấu gạch ngang
+        String cleanContent = content.replaceAll("[\\s\\-]+", "").toUpperCase();
+        Pattern pattern = Pattern.compile("TEA(\\d{8})(\\d{6})", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(cleanContent);
+
         if (matcher.find()) {
-            String extractedMaDh = "TEA" + matcher.group(1);
+            String extractedMaDh = "TEA-" + matcher.group(1) + "-" + matcher.group(2);
             DonHang dh = donHangRepository.getById(extractedMaDh);
             if (dh != null && dh.getTrangThaiDon() == 0) {
                 if (Math.abs(dh.getTongPhaiTra() - amount) < 100) {
                     donHangRepository.updateTrangThaiThanhToan(extractedMaDh, 1);
                     updateTrangThaiDon(extractedMaDh, 2, "SYSTEM", "Khớp thành công đơn SePay Webhook.");
-                    nhatKyRepository.addLog(new NhatKyHoatDong("SYSTEM", "KHỚP_ĐƠN_ONLINE_AUTO", "DON_HANG", null, "Khớp thành công đơn " + extractedMaDh + " qua SePay Webhook số tiền: " + amount, "127.0.0.1", null));
+                    util.PaymentStore.transactions.put(extractedMaDh, true);
+                    util.PaymentStore.transactions.put(extractedMaDh.replace("-", ""), true);
+                    nhatKyRepository.addLog(new NhatKyHoatDong(
+                            "SYSTEM", "KHỚP_ĐƠN_ONLINE_AUTO", "DON_HANG", null,
+                            "Khớp thành công đơn " + extractedMaDh + " qua SePay Webhook số tiền: " + amount, "127.0.0.1", null
+                    ));
                     return true;
                 }
             }

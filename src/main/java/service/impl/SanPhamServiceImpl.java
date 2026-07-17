@@ -8,6 +8,7 @@ import repository.ISanPhamRepository;
 import repository.impl.SanPhamKichCoRepoImpl;
 import repository.impl.SanPhamRepoImpl;
 import service.ISanPhamService;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -155,7 +156,7 @@ public class SanPhamServiceImpl implements ISanPhamService {
             psSoftDelete = conn.prepareStatement(softDeleteSql);
             psHardDelete = conn.prepareStatement(hardDeleteSql);
 
-            // 3. XỬ LÝ DESELECT: Tìm các size cũ bị bỏ chọn trong form mới
+            // Xử lý các kích cỡ cũ đã bị bỏ chọn khỏi form
             for (SanPhamKichCo dbSize : allDbSizes) {
                 boolean stillSelected = false;
                 for (SanPhamKichCo newSize : sizes) {
@@ -184,12 +185,11 @@ public class SanPhamServiceImpl implements ISanPhamService {
                 }
             }
 
-            // 4. CẬP NHẬT HOẶC THÊM MỚI: Xử lý các size được chọn từ form mới gửi lên
+            // Xử lý chèn mới hoặc cập nhật các kích cỡ được chọn trên form
             for (SanPhamKichCo newSize : sizes) {
-                newSize.setMaSp(sanPham.getMaSp());
                 boolean existsInDb = false;
                 for (SanPhamKichCo dbSize : allDbSizes) {
-                    if (dbSize.getMaSize() == newSize.getMaSize()) {
+                    if (newSize.getMaSize() == dbSize.getMaSize()) {
                         existsInDb = true;
                         break;
                     }
@@ -203,6 +203,7 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 } else {
                     // Chưa tồn tại -> Thêm mới bản ghi liên kết vào DB
+                    newSize.setMaSp(sanPham.getMaSp());
                     boolean addedSize = sanPhamKichCoRepository.add(newSize);
                     if (!addedSize) {
                         conn.rollback();
@@ -210,6 +211,7 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 }
             }
+
             conn.commit();
             return true;
         } catch (SQLException e) {
@@ -245,5 +247,11 @@ public class SanPhamServiceImpl implements ISanPhamService {
     @Override
     public List<SanPhamKichCo> getSizesBySanPham(String maSp) {
         return sanPhamKichCoRepository.getBySanPham(maSp);
+    }
+
+    @Override
+    public int getGiaKichCoSanPham(String maSp, int maSize) {
+        SanPhamKichCo spkc = sanPhamKichCoRepository.getBySanPhamAndSize(maSp, maSize);
+        return spkc != null ? spkc.getGiaBan() : 0;
     }
 }

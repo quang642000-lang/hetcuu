@@ -12,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @WebServlet(name = "SePayWebhookController", urlPatterns = {"/api/sepay-webhook"})
 public class SePayWebhookController extends HttpServlet {
@@ -22,11 +20,9 @@ public class SePayWebhookController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json;charset=UTF-8");
-
-        // Read incoming JSON body from SePay Webhook
         StringBuilder sb = new StringBuilder();
-        String line;
         try (BufferedReader reader = request.getReader()) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
@@ -35,28 +31,24 @@ public class SePayWebhookController extends HttpServlet {
         try {
             String jsonStr = sb.toString();
             if (jsonStr.trim().isEmpty()) {
-                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Empty payload\"}");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"status\":\"FAILED\",\"message\":\"Empty payload\"}");
                 return;
             }
 
             JsonObject json = JsonParser.parseString(jsonStr).getAsJsonObject();
-
-            // Extract content (transfer description) and amount from SePay JSON schema
             String content = json.has("content") ? json.get("content").getAsString() : "";
             double amount = json.has("transferAmount") ? json.get("transferAmount").getAsDouble() : 0.0;
 
-            // Handle webhook matching inside Service layer
-            boolean success = donHangService.handleSePayWebhook(content, amount);
+            // Re-match content uppercase
+            String upperContent = content.toUpperCase();
+
+            // Execute Database matching and state transitions
+            boolean success = donHangService.handleSePayWebhook(upperContent, amount);
 
             if (success) {
-                // Parse order ID using regex (e.g. TEAxxxx) and put in PaymentStore
-                Pattern pattern = Pattern.compile("TEA(\\d+)", Pattern.CASE_INSENSITIVE);
-                Matcher matcher = pattern.matcher(content);
-                if (matcher.find()) {
-                    String orderId = "TEA" + matcher.group(1);
-                    PaymentStore.transactions.put(orderId, true);
-                }
-                response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Payment processed and matched successfully\"}");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Order matched and processed\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"status\":\"FAILED\",\"message\":\"No pending order matched this transfer\"}");

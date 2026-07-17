@@ -15,4 +15,7 @@ public interface ISanPhamService {
     boolean updateSanPham(SanPham sanPham, List<SanPhamKichCo> sizes);
     boolean deleteSanPham(String id);
     List<SanPhamKichCo> getSizesBySanPham(String maSp);
+
+    // ĐỒNG BỘ NGHIỆP VỤ: Lấy đơn giá của một kích cỡ cụ thể thuộc sản phẩm
+    int getGiaKichCoSanPham(String maSp, int maSize);
 }
