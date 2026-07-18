@@ -10,71 +10,42 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
-        .forgot-bg {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        }
-        .forgot-card {
-            width: 100%;
-            max-width: 480px;
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(46, 125, 50, 0.15);
-        }
+        body { background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .forgot-card { width: 100%; max-width: 460px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15); overflow: hidden; }
+        .card-header-teapos { background: #10b981; color: white; text-align: center; padding: 25px; }
     </style>
 </head>
 <body>
-
-<div class="forgot-bg">
-    <div class="forgot-card p-4 p-md-5">
-        <div class="text-center mb-4">
-            <div class="text-success fs-1 mb-2"><i class="bi bi-question-circle-fill"></i></div>
-            <h4 class="fw-bold mb-1">KHÔI PHỤC MẬT KHẨU</h4>
-            <p class="text-muted small">Hãy nhập địa chỉ Email đăng ký tài khoản của bạn để nhận mã xác thực OTP khôi phục [17]</p>
-        </div>
-
+<div class="forgot-card">
+    <div class="card-header-teapos">
+        <div class="fs-1 mb-2 text-white"><i class="bi bi-patch-question-fill"></i></div>
+        <h4 class="fw-bold mb-1 text-uppercase">KHÔI PHỤC MẬT KHẨU</h4>
+        <p class="mb-0 small text-white-50">Cơ chế xác thực an toàn OTP cho <c:out value="${role == 'employee' ? 'Nhân viên hệ thống' : 'Thành viên CRM'}" /></p>
+    </div>
+    <div class="p-4 text-start">
+        <c:if test="${not empty requestScope.error}">
+            <div class="alert alert-danger small text-center mb-3"><i class="bi bi-exclamation-triangle-fill"></i> ${requestScope.error}</div>
+        </c:if>
         <form action="${pageContext.request.contextPath}/forgot-password" method="POST">
-            <!-- Ô nhập Email -->
+            <input type="hidden" name="role" value="${role}">
             <div class="mb-4">
-                <label for="email" class="form-label fw-semibold text-dark small">Email đăng ký của bạn</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope-fill"></i></span>
-                    <input type="email" class="form-control bg-white border-start-0 py-2" id="email" name="email"
-                           placeholder="Nhập chính xác email để nhận OTP..." value="<c:out value='${email}'/>" required>
-                </div>
+                <label class="form-label fw-bold text-dark small">Nhập địa chỉ Email đăng ký</label>
+                <input type="email" class="form-control" name="email" value="<c:out value='${email}'/>" placeholder="Nhập email của bạn..." required>
             </div>
-
-            <!-- Nút gửi yêu cầu -->
-            <button type="submit" class="btn btn-primary-teapos w-100 py-2 fw-bold text-uppercase shadow-sm mb-3" style="border-radius: 8px;">
-                <i class="bi bi-send-fill me-2 small"></i> Gửi mã OTP xác nhận
-            </button>
-
-            <!-- Quay lại đăng nhập -->
-            <div class="text-center">
-                <a href="${pageContext.request.contextPath}/customer/login" class="text-success text-decoration-none fw-bold small">
-                    <i class="bi bi-arrow-left me-1"></i> Quay lại trang đăng nhập
-                </a>
+            <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold text-uppercase"><i class="bi bi-send-fill me-1"></i> Nhận mã OTP xác thực</button>
+            <div class="text-center mt-3">
+                <c:choose>
+                    <c:when test="${role == 'employee'}">
+                        <a href="${pageContext.request.contextPath}/login" class="text-success text-decoration-none fw-bold small"><i class="bi bi-arrow-left"></i> Đăng nhập hệ thống</a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/customer/login" class="text-success text-decoration-none fw-bold small"><i class="bi bi-arrow-left"></i> Quay lại trang chủ Portal</a>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        <c:if test="${not empty error}">
-        Swal.fire({
-            icon: 'error',
-            title: 'Không thể xử lý',
-            text: '${error}',
-            confirmButtonColor: '#2e7d32'
-        });
-        </c:if>
-    });
-</script>
 </body>
 </html>

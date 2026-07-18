@@ -3,21 +3,40 @@ package util;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class EmailSenderUtil {
-    // SMTP Gmail configuration parameters
-    private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String SMTP_PORT = "587";
-    private static final String SENDER_EMAIL = "teapos.devsquad@gmail.com"; // Replace with actual Gmail address
-    private static final String SENDER_PASSWORD = "your-app-password"; // Replace with 16-character App Password
+    private static final String SENDER_EMAIL;
+    private static final String SENDER_PASSWORD;
+
+    static {
+        Properties properties = new Properties();
+        String user = "quang642000@gmail.com";
+        String pass = "jhji ifwc qcga ynpw"; // Google App Password 16 ký tự mẫu từ codehoanhao
+        try (InputStream input = EmailSenderUtil.class.getClassLoader().getResourceAsStream("application.properties")) {
+            if (input != null) {
+                properties.load(input);
+                if (properties.getProperty("email.user") != null) {
+                    user = properties.getProperty("email.user");
+                }
+                if (properties.getProperty("email.password") != null) {
+                    pass = properties.getProperty("email.password");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[TEA POS WARNING] Không thể đọc application.properties, dùng mật khẩu ứng dụng Gmail mặc định: " + e.getMessage());
+        }
+        SENDER_EMAIL = user;
+        SENDER_PASSWORD = pass;
+    }
 
     public static boolean sendOTPEmail(String recipientEmail, String otpCode) {
         Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
         Session session = Session.getInstance(props, new Authenticator() {
@@ -33,7 +52,7 @@ public class EmailSenderUtil {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientEmail));
             message.setSubject("[TEA POS] MÃ XÁC THỰC OTP KÍCH HOẠT / KHÔI PHỤC");
 
-            // Custom professional HTML layout
+            // Thiết kế giao diện hộp thư HTML Emerald-Slate cực kỳ chuyên nghiệp
             String htmlContent = "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);\">"
                     + "  <div style=\"text-align: center; margin-bottom: 25px;\">"
                     + "    <h2 style=\"color: #10b981; margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 0.5px;\">TEA POS CAFÉ</h2>"
@@ -43,7 +62,7 @@ public class EmailSenderUtil {
                     + "  <div style=\"padding: 5px; color: #334155; line-height: 1.7; font-size: 15px;\">"
                     + "    <p>Xin chào quý khách,</p>"
                     + "    <p>Hệ thống nhận được yêu cầu đăng ký hội viên hoặc thay đổi bảo mật cho tài khoản của bạn trên Website Portal.</p>"
-                    + "    <p>Dưới đây là mã xác thực OTP dùng để kích hoạt (Mã có hiệu lực trong vòng <strong>5 phút</strong>):</p>"
+                    + "    <p>Dưới đây là mã xác thực OTP dùng để kích hoạt hoặc khôi phục tài khoản (Mã có hiệu lực trong vòng <strong>5 phút</strong>):</p>"
                     + "    <div style=\"text-align: center; margin: 30px 0;\">"
                     + "      <span style=\"font-size: 36px; font-weight: bold; color: #059669; letter-spacing: 6px; background-color: #ecfdf5; padding: 12px 40px; border-radius: 12px; border: 1px solid #a7f3d0; display: inline-block; font-family: 'Courier New', Courier, monospace;\">" + otpCode + "</span>"
                     + "    </div>"
@@ -56,10 +75,12 @@ public class EmailSenderUtil {
                     + "  </div>"
                     + "</div>";
 
-            message.setContent(htmlContent, "text/html;charset=UTF-8");
+            message.setContent(htmlContent, "text/html; charset=utf-8");
             Transport.send(message);
+            System.out.println("✅ [TEA POS EMAIL] Đã gửi thư OTP thành công tới: " + recipientEmail);
             return true;
         } catch (Exception e) {
+            System.err.println("❌ [TEA POS EMAIL] Gửi mail thất bại: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
