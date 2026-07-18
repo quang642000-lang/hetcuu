@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS - Đặt Lại Mật Khẩu</title>
+    <title>TEA POS - Đặt Lại Mật Khẩu Mới</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -29,18 +29,21 @@
     </style>
 </head>
 <body>
-
 <div class="reset-bg">
     <div class="reset-card p-4 p-md-5">
         <div class="text-center mb-4">
             <div class="text-success fs-1 mb-2"><i class="bi bi-shield-lock-fill"></i></div>
             <h4 class="fw-bold mb-1">MẬT KHẨU MỚI</h4>
-            <p class="text-muted small">Hãy tạo một mật khẩu mạnh để bảo mật tài khoản thành viên tốt nhất [20]</p>
+            <p class="text-muted small">Quý khách vui lòng tạo mật khẩu mới để bảo mật tài khoản (Yêu cầu tối thiểu từ 8 ký tự).</p>
         </div>
 
-        <form action="${pageContext.request.contextPath}/verify-otp?type=recovery" method="POST" id="resetForm">
+        <c:if test="${not empty requestScope.error}">
+            <div class="alert alert-danger small text-center mb-3"><i class="bi bi-exclamation-triangle-fill"></i> ${requestScope.error}</div>
+        </c:if>
+
+        <form action="${pageContext.request.contextPath}/reset-password" method="POST" id="resetForm">
             <!-- Mật khẩu mới -->
-            <div class="mb-3">
+            <div class="mb-3 text-start">
                 <label for="newPassword" class="form-label fw-semibold text-dark small">Mật khẩu mới</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-key-fill"></i></span>
@@ -48,9 +51,8 @@
                            placeholder="Nhập mật khẩu mới..." required>
                 </div>
             </div>
-
             <!-- Xác nhận mật khẩu -->
-            <div class="mb-4">
+            <div class="mb-4 text-start">
                 <label for="confirmPassword" class="form-label fw-semibold text-dark small">Xác nhận mật khẩu</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-shield-fill-check"></i></span>
@@ -58,22 +60,19 @@
                            placeholder="Nhập lại mật khẩu trùng khớp..." required>
                 </div>
             </div>
-
             <!-- Button Submit -->
             <button type="submit" class="btn btn-primary-teapos w-100 py-2 fw-bold text-uppercase shadow-sm" style="border-radius: 8px;">
-                <i class="bi bi-check-circle-fill me-2 small"></i> Lưu thay đổi mật khẩu
+                <i class="bi bi-check-circle-fill me-2 small"></i> Thay đổi mật khẩu
             </button>
         </form>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("resetForm");
         form.addEventListener("submit", function(e) {
             const password = document.getElementById("newPassword").value;
             const confirm = document.getElementById("confirmPassword").value;
-
             if (password !== confirm) {
                 e.preventDefault();
                 Swal.fire({
@@ -84,7 +83,6 @@
                 });
                 return;
             }
-
             if (password.length < 8) {
                 e.preventDefault();
                 Swal.fire({

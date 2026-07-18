@@ -23,13 +23,15 @@ public class VerifyOtpController extends HttpServlet {
         String role = request.getParameter("role");
         String action = request.getParameter("action");
         HttpSession session = request.getSession(false);
+
         if (session == null || session.getAttribute("otpEmail") == null) {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         String email = (String) session.getAttribute("otpEmail");
 
-        // Gửi lại mã OTP
+        // Gửi lại mã OTP qua AJAX
         if ("resend-otp".equals(action)) {
             response.setContentType("text/plain");
             boolean success = false;
@@ -60,9 +62,11 @@ public class VerifyOtpController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
         String email = (String) session.getAttribute("otpEmail");
         String type = request.getParameter("type");
         String role = request.getParameter("role");
+
         if (role == null) {
             role = (String) session.getAttribute("otpRole");
         }
@@ -84,41 +88,19 @@ public class VerifyOtpController extends HttpServlet {
         }
 
         if ("recovery".equals(type)) {
-            String newPassword = request.getParameter("newPassword");
-            String confirmPassword = request.getParameter("confirmPassword");
-            if (newPassword == null || newPassword.trim().isEmpty()) {
-                request.setAttribute("error", "Mật khẩu mới không được để trống!");
-                request.setAttribute("type", type);
-                request.setAttribute("role", role);
-                request.getRequestDispatcher("/views/auth/verify_otp.jsp").forward(request, response);
-                return;
-            }
-            if (!newPassword.equals(confirmPassword)) {
-                request.setAttribute("error", "Xác nhận mật khẩu mới không trùng khớp!");
-                request.setAttribute("type", type);
-                request.setAttribute("role", role);
-                request.getRequestDispatcher("/views/auth/verify_otp.jsp").forward(request, response);
-                return;
-            }
-
             boolean success = false;
-            // DỰA TRÊN VAI TRÒ ĐỂ GHI ĐÈ MẬT KHẨU VÀO ĐÚNG BẢNG
             if ("employee".equals(role)) {
-                success = nhanVienService.resetPasswordWithOTP(email, otp, newPassword);
+                success = nhanVienService.verifyForgotPasswordOTP(email, otp);
             } else {
-                success = khachHangService.resetPasswordWithOTP(email, otp, newPassword);
+                success = khachHangService.verifyForgotPasswordOTP(email, otp);
             }
 
             if (success) {
-                session.removeAttribute("otpEmail");
-                session.removeAttribute("otpType");
-                session.removeAttribute("otpRole");
-                request.setAttribute("success", "Khôi phục mật khẩu thành công! Hãy đăng nhập lại.");
-                if ("employee".equals(role)) {
-                    request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
-                } else {
-                    request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
-                }
+                // Set session verified, then redirect to reset-password screen
+                session.setAttribute("otpVerified", true);
+                session.setAttribute("otpEmail", email);
+                session.setAttribute("otpRole", role);
+                response.sendRedirect(request.getContextPath() + "/reset-password");
             } else {
                 request.setAttribute("error", "Mã OTP khôi phục không chính xác hoặc đã hết hiệu lực.");
                 request.setAttribute("type", type);
@@ -126,7 +108,7 @@ public class VerifyOtpController extends HttpServlet {
                 request.getRequestDispatcher("/views/auth/verify_otp.jsp").forward(request, response);
             }
         } else {
-            // Xác thực kích hoạt tài khoản CRM khách hàng mới
+            // Xác thực kích hoạt tài khoản CRM khách hàng mới (activation)
             boolean success = khachHangService.verifyActivationOTP(email, otp);
             if (success) {
                 session.removeAttribute("otpEmail");

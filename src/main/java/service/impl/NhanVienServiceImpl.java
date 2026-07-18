@@ -13,9 +13,6 @@ public class NhanVienServiceImpl implements INhanVienService {
     private static NhanVienServiceImpl instance;
     private final INhanVienRepository nhanVienRepository;
 
-    // Cache lưu trữ OTP cho nhân sự mở rộng
-    private final ConcurrentHashMap<String, OtpInfo> forgotPasswordOtpCache = new ConcurrentHashMap<>();
-
     private static class OtpInfo {
         String code;
         long expireTime;
@@ -24,6 +21,8 @@ public class NhanVienServiceImpl implements INhanVienService {
             this.expireTime = expireTime;
         }
     }
+
+    private final ConcurrentHashMap<String, OtpInfo> forgotPasswordOtpCache = new ConcurrentHashMap<>();
 
     private NhanVienServiceImpl() {
         this.nhanVienRepository = NhanVienRepoImpl.getInstance();
@@ -44,6 +43,11 @@ public class NhanVienServiceImpl implements INhanVienService {
     @Override
     public NhanVien getNhanVienById(String id) {
         return nhanVienRepository.getById(id);
+    }
+
+    @Override
+    public NhanVien getNhanVienByEmail(String email) {
+        return nhanVienRepository.getByEmail(email);
     }
 
     @Override
@@ -109,7 +113,6 @@ public class NhanVienServiceImpl implements INhanVienService {
 
     @Override
     public boolean isAccountLocked(String username) {
-        // Implement tracking logic
         return false;
     }
 
@@ -118,7 +121,6 @@ public class NhanVienServiceImpl implements INhanVienService {
         return 0;
     }
 
-    // BỒ SUNG OTP CHO NHÂN VIÊN
     @Override
     public boolean sendForgotPasswordOTP(String email) {
         NhanVien nv = nhanVienRepository.getByEmail(email);
@@ -126,9 +128,8 @@ public class NhanVienServiceImpl implements INhanVienService {
             return false;
         }
         String otpCode = String.format("%06d", new java.util.Random().nextInt(999999));
-        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút hiệu lực
+        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
         forgotPasswordOtpCache.put(email, new OtpInfo(otpCode, expireTime));
-
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KHÔI PHỤC MẬT KHẨU NHÂN VIÊN (FORGOT PASSWORD STAFF)]");
         System.out.println("Email tài khoản: " + email);
@@ -143,21 +144,25 @@ public class NhanVienServiceImpl implements INhanVienService {
     }
 
     @Override
-    public boolean resetPasswordWithOTP(String email, String otp, String newPassword) {
+    public boolean verifyForgotPasswordOTP(String email, String otp) {
         OtpInfo info = forgotPasswordOtpCache.get(email);
         if (info == null || System.currentTimeMillis() > info.expireTime) {
             forgotPasswordOtpCache.remove(email);
             return false;
         }
         if (info.code.equals(otp)) {
+            forgotPasswordOtpCache.remove(email);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean resetPasswordWithOTP(String email, String otp, String newPassword) {
+        if (verifyForgotPasswordOTP(email, otp)) {
             NhanVien nv = nhanVienRepository.getByEmail(email);
             if (nv != null) {
-                nv.setMatKhau(SecurityUtil.hashSHA256(newPassword));
-                boolean success = nhanVienRepository.update(nv);
-                if (success) {
-                    forgotPasswordOtpCache.remove(email);
-                    return true;
-                }
+                return resetPasswordByAdmin(nv.getMaNv(), newPassword);
             }
         }
         return false;

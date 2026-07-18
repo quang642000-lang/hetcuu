@@ -53,6 +53,11 @@ public class KhachHangServiceImpl implements IKhachHangService {
     }
 
     @Override
+    public KhachHang getKhachHangByEmail(String email) {
+        return khachHangRepository.getByEmail(email);
+    }
+
+    @Override
     public KhachHang registerCustomer(String tenKh, String sdt, String email, String password) {
         if (khachHangRepository.checkTrungSdtOrEmail(sdt, email, null)) {
             return null;
@@ -91,20 +96,17 @@ public class KhachHangServiceImpl implements IKhachHangService {
     @Override
     public boolean sendActivationOTP(String email) {
         String otpCode = String.format("%06d", new Random().nextInt(999999));
-        long expireTime = System.currentTimeMillis() + (2 * 60 * 1000);
+        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
         activationOtpCache.put(email, new OtpInfo(otpCode, expireTime));
-
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KÍCH HOẠT TÀI KHOẢN KHÁCH HÀNG MỚI]");
         System.out.println("Email khách nhận: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
-        System.out.println("Hãy sao chép mã này gõ vào ô OTP để kích hoạt ngay trong lúc Demo!");
         System.out.println("======================================================================");
-
         try {
             EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
-            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi (không sao cả, dùng mã in trên Console để nhập): " + e.getMessage());
+            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
         }
         return true;
     }
@@ -135,43 +137,49 @@ public class KhachHangServiceImpl implements IKhachHangService {
             return false;
         }
         String otpCode = String.format("%06d", new Random().nextInt(999999));
-        long expireTime = System.currentTimeMillis() + (2 * 60 * 1000);
+        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
         forgotPasswordOtpCache.put(email, new OtpInfo(otpCode, expireTime));
-
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KHÔI PHỤC MẬT KHẨU (FORGOT PASSWORD)]");
         System.out.println("Email tài khoản: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
-        System.out.println("Hãy sao chép mã này gõ vào ô OTP để đổi mật khẩu ngay trong lúc Demo!");
         System.out.println("======================================================================");
-
         try {
             EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
-            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi (không sao cả, dùng mã in trên Console để nhập): " + e.getMessage());
+            System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
         }
         return true;
     }
 
     @Override
-    public boolean resetPasswordWithOTP(String email, String otp, String newPassword) {
+    public boolean verifyForgotPasswordOTP(String email, String otp) {
         OtpInfo info = forgotPasswordOtpCache.get(email);
         if (info == null || System.currentTimeMillis() > info.expireTime) {
             forgotPasswordOtpCache.remove(email);
             return false;
         }
         if (info.code.equals(otp)) {
+            forgotPasswordOtpCache.remove(email);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean resetPasswordWithOTP(String email, String otp, String newPassword) {
+        if (verifyForgotPasswordOTP(email, otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
-                kh.setMatKhau(SecurityUtil.hashSHA256(newPassword));
-                boolean success = khachHangRepository.update(kh);
-                if (success) {
-                    forgotPasswordOtpCache.remove(email);
-                    return true;
-                }
+                return updateMatKhau(kh.getMaKh(), SecurityUtil.hashSHA256(newPassword));
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean updateMatKhau(String maKh, String matKhauMoi) {
+        return khachHangRepository.updateMatKhau(maKh, matKhauMoi);
     }
 
     @Override
@@ -179,11 +187,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (khachHangRepository.checkTrungSdtOrEmail(khachHang.getSoDienThoai(), khachHang.getEmail(), khachHang.getMaKh())) {
             return false;
         }
-
-        // BIỆN PHÁP PHÒNG THỦ (TRANS TRANSACTION PROTECTION):
-        // Truy vấn dữ liệu thực tế hiện hành trong Database của khách hàng trước khi lưu cập nhật.
-        // Chặn đứng hoàn toàn việc các dữ liệu cũ lưu trong Session (như số điểm diem_tich_luy cũ, hạng thẻ ma_hang cũ)
-        // đè đè và ghi khống ngược lại Database làm mất mát số dư ví điểm CRM của hội viên!
         KhachHang dbKh = khachHangRepository.getById(khachHang.getMaKh());
         if (dbKh != null) {
             dbKh.setTenKh(khachHang.getTenKh());
@@ -194,8 +197,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
             dbKh.setDiaChiLienHe(khachHang.getDiaChiLienHe());
             dbKh.setHinhAnhUrl(khachHang.getHinhAnhUrl());
             dbKh.setTrangThai(khachHang.isTrangThai());
-            // Bảo toàn tuyệt đối hai trường điểm số nhạy cảm:
-            // dbKh's diemTichLuy & dbKh's maHang được giữ nguyên không thay đổi!
             return khachHangRepository.update(dbKh);
         }
         return khachHangRepository.update(khachHang);
@@ -216,13 +217,13 @@ public class KhachHangServiceImpl implements IKhachHangService {
         KhachHang kh = khachHangRepository.getById(maKh);
         if (kh != null) {
             int currentDiem = kh.getDiemTichLuy();
-            int newHang = 1; // Mặc định ĐỒNG
+            int newHang = 1;
             if (currentDiem >= 500) {
-                newHang = 4; // Kim cương
+                newHang = 4;
             } else if (currentDiem >= 200) {
-                newHang = 3; // Vàng
+                newHang = 3;
             } else if (currentDiem >= 50) {
-                newHang = 2; // Bạc
+                newHang = 2;
             }
             if (kh.getMaHang() != newHang) {
                 kh.setMaHang(newHang);

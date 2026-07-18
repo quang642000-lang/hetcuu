@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS - Xác Minh OTP Tài Khoản</title>
+    <title>TEA POS - Xác Minh Mã OTP</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             transition: all 0.2s ease;
         }
         .otp-digit-input:focus {
-            border-color: var(--primary-color);
+            border-color: #10b981;
             background-color: #ffffff;
             outline: none;
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
@@ -47,16 +47,21 @@
     </style>
 </head>
 <body>
-
 <div class="otp-bg">
     <div class="otp-card p-4 p-md-5">
         <div class="text-center mb-4">
             <div class="text-success fs-1 mb-2"><i class="bi bi-patch-check-fill"></i></div>
             <h4 class="fw-bold mb-1">XÁC MINH OTP EMAIL</h4>
-            <p class="text-muted small">Chúng tôi đã gửi mã xác thực gồm 6 chữ số đến địa chỉ email đăng ký của bạn [26]. Vui lòng kiểm tra và nhập chính xác để tiếp tục.</p>
+            <p class="text-muted small">Chúng tôi đã gửi mã xác thực gồm 6 chữ số đến địa chỉ email đăng ký của bạn. Vui lòng kiểm tra và nhập chính xác để tiếp tục.</p>
         </div>
 
+        <c:if test="${not empty requestScope.error}">
+            <div class="alert alert-danger small text-center mb-3"><i class="bi bi-exclamation-triangle-fill"></i> ${requestScope.error}</div>
+        </c:if>
+
         <form action="${pageContext.request.contextPath}/verify-otp?type=${type}" method="POST" id="otpForm">
+            <input type="hidden" name="type" value="${type}">
+            <input type="hidden" name="role" value="${role}">
             <!-- 6 ô nhập mã OTP -->
             <div class="d-flex justify-content-center mb-4">
                 <input type="text" class="otp-digit-input" id="otp1" name="otp1" maxlength="1" required autocomplete="off">
@@ -67,23 +72,6 @@
                 <input type="text" class="otp-digit-input" id="otp6" name="otp6" maxlength="1" required autocomplete="off">
             </div>
 
-            <!-- Nếu thuộc luồng Recovery (Quên mật khẩu), hiển thị thêm trực tiếp 2 ô thiết lập mật khẩu mới (Đồng bộ xử lý doPost của VerifyOtpController) -->
-            <c:if test="${type eq 'recovery'}">
-                <div class="border-top pt-4 mt-4">
-                    <h6 class="fw-bold text-success mb-3"><i class="bi bi-key-fill me-1"></i> THIẾT LẬP MẬT KHẨU MỚI</h6>
-                    <div class="mb-3">
-                        <label for="newPassword" class="form-label fw-semibold small text-muted">Mật khẩu mới</label>
-                        <input type="password" class="form-control form-control-teapos" id="newPassword" name="newPassword"
-                               placeholder="Mật khẩu tối thiểu 8 ký tự..." required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="confirmPassword" class="form-label fw-semibold small text-muted">Xác nhận mật khẩu mới</label>
-                        <input type="password" class="form-control form-control-teapos" id="confirmPassword" name="confirmPassword"
-                               placeholder="Nhập lại mật khẩu mới..." required>
-                    </div>
-                </div>
-            </c:if>
-
             <!-- Bộ đếm ngược thời gian hiệu lực -->
             <div class="text-center mb-4">
                 <span class="text-muted small">Mã xác thực sẽ hết hiệu lực trong vòng:</span>
@@ -92,7 +80,7 @@
 
             <!-- Nút bấm xác nhận -->
             <button type="submit" class="btn btn-primary-teapos w-100 py-2 fw-bold text-uppercase shadow-sm mb-3" style="border-radius: 8px;">
-                <i class="bi bi-shield-lock-fill me-2 fs-5"></i> Xác nhận hoàn tất
+                <i class="bi bi-shield-lock-fill me-2 fs-5"></i> Xác nhận mã OTP
             </button>
 
             <!-- Nút gửi lại mã qua AJAX không tải lại trang -->
@@ -105,7 +93,6 @@
         </form>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // 1. Logic tự động nhảy ô nhập liệu OTP (Auto-focus & Backspace)
@@ -117,7 +104,6 @@
                     inputs[index + 1].focus();
                 }
             });
-
             input.addEventListener("keydown", function (e) {
                 if (e.key === "Backspace" && this.value.length === 0 && index > 0) {
                     inputs[index - 1].focus();
@@ -125,12 +111,11 @@
             });
         });
 
-        // 2. Logic đồng hồ đếm ngược đúng 2 phút (120 giây) để khớp hạn mức OTP của bạn [21, 22]
+        // 2. Logic đồng hồ đếm ngược đúng 2 phút (120 giây)
         let timeLeft = 120;
         const timerElement = document.getElementById("countdownTimer");
         const resendBtn = document.getElementById("resendOtpBtn");
 
-        // Ban đầu tắt nút gửi lại để tránh spam
         resendBtn.disabled = true;
         resendBtn.classList.add("opacity-50");
 
@@ -138,7 +123,6 @@
             const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
             const seconds = String(timeLeft % 60).padStart(2, '0');
             timerElement.textContent = minutes + ":" + seconds;
-
             if (timeLeft <= 0) {
                 clearInterval(countdownInterval);
                 timerElement.textContent = "Hết hạn";
@@ -147,30 +131,29 @@
                 Swal.fire({
                     icon: 'warning',
                     title: 'Mã OTP đã hết hiệu lực',
-                    text: 'Vui lòng nhấn "Gửi lại mã OTP mới" để tiếp tục [27].',
+                    text: 'Vui lòng nhấn "Gửi lại mã OTP mới" để tiếp tục.',
                     confirmButtonColor: '#2e7d32'
                 });
             }
             timeLeft--;
         }, 1000);
 
-        // 3. Logic AJAX gọi lên Endpoint /resend-otp để lấy mã mới không cần tải lại trang [23]
+        // 3. Logic AJAX gọi gửi lại mã mới
         resendBtn.addEventListener("click", function () {
             Swal.fire({
                 title: 'Đang gửi lại OTP...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
-
-            fetch('${pageContext.request.contextPath}/resend-otp')
+            fetch('${pageContext.request.contextPath}/verify-otp?action=resend-otp')
                 .then(res => res.text())
                 .then(data => {
                     Swal.close();
-                    if (data === 'SUCCESS') {
+                    if (data.trim() === 'SUCCESS') {
                         Swal.fire({
                             icon: 'success',
                             title: 'Thành công',
-                            text: 'Một mã xác thực OTP mới đã được gửi vào hòm thư điện tử của bạn [25]!',
+                            text: 'Một mã xác thực OTP mới đã được gửi vào hòm thư điện tử của bạn!',
                             confirmButtonColor: '#2e7d32'
                         }).then(() => {
                             location.reload(); // Tải lại trang để reset bộ đếm giờ mới
@@ -179,7 +162,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Thất bại',
-                            text: 'Gửi lại OTP không thành công hoặc phiên của bạn đã hết hiệu lực [25].',
+                            text: 'Gửi lại OTP không thành công hoặc phiên của bạn đã hết hiệu lực.',
                             confirmButtonColor: '#2e7d32'
                         });
                     }
@@ -189,16 +172,6 @@
                     console.error("Lỗi:", err);
                 });
         });
-
-        // 4. Đón bắt lỗi đẩy ra từ VerifyOtpController (Mã OTP nhập sai hoặc hết hạn 5 phút)
-        <c:if test="${not empty error}">
-        Swal.fire({
-            icon: 'error',
-            title: 'Xác thực không thành công',
-            text: '${error}',
-            confirmButtonColor: '#2e7d32'
-        });
-        </c:if>
     });
 </script>
 </body>

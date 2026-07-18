@@ -47,13 +47,13 @@ function clearFullPosCart() {
     if (nameResult) nameResult.innerText = "Khách lẻ vãng lai";
     const ptsResult = document.getElementById("customerPoints");
     if (ptsResult) ptsResult.innerText = "Hạng: Mới | 0 Điểm";
-
     const crmLoyaltyArea = document.getElementById("crmLoyaltyArea");
     if (crmLoyaltyArea) crmLoyaltyArea.style.setProperty('display', 'none', 'important');
     const posAddCustomerArea = document.getElementById("posAddCustomerArea");
     if (posAddCustomerArea) posAddCustomerArea.style.setProperty('display', 'none', 'important');
     const manualVoucherInput = document.getElementById("manualVoucherInput");
     if (manualVoucherInput) manualVoucherInput.value = "";
+
     resetVoucherAndPoints();
     renderPosCart();
 }
@@ -138,7 +138,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '  </div>';
     }
 
-    // 4. TOPPINGS (Chỉ render nếu sản phẩm mẹ cho phép Topping)
+    // 4. TOPPINGS
     if (rawOptions.choPhepTopping && rawOptions.allToppings && rawOptions.allToppings.length > 0) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING DAI GIÒN SẦN SẬT</label>';
@@ -619,6 +619,7 @@ function recalculatePOSBill(tongTienHang) {
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
     calculateChangeRefund();
@@ -681,6 +682,7 @@ function submitPOSOrderTransaction() {
         container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">');
         container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">');
         container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">');
+
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">');
     });
@@ -704,15 +706,12 @@ function submitPOSOrderTransaction() {
 function showPosQrCodeModal(orderId, payable) {
     currentPosQrOrderId = orderId;
     isPosQrActive = true;
-
     document.getElementById("posQrAmount").innerText = formatVND(parseInt(payable));
     document.getElementById("posQrCodeDisplay").innerText = orderId;
     document.getElementById("posQrImage").src = `https://img.vietqr.io/image/TPB-0346406405-compact2.png?amount=${payable}&addInfo=${orderId}`;
-
     document.getElementById("posQrSuccessOverlay").style.setProperty("display", "none", "important");
     document.getElementById("posQrExpiredOverlay").style.setProperty("display", "none", "important");
     document.getElementById("posQrLoadingStatus").style.setProperty("display", "flex", "important");
-
     const qrModal = new bootstrap.Modal(document.getElementById("posQrModal"));
     qrModal.show();
 
@@ -744,10 +743,8 @@ function showPosQrCodeModal(orderId, payable) {
                     isPosQrActive = false;
                     clearInterval(posQrPollInterval);
                     clearInterval(posQrCountdownInterval);
-
                     document.getElementById("posQrSuccessOverlay").style.setProperty("display", "flex", "important");
                     document.getElementById("posQrLoadingStatus").style.setProperty("display", "none", "important");
-
                     setTimeout(() => {
                         const qrModalEl = document.getElementById("posQrModal");
                         const qrModalInstance = bootstrap.Modal.getInstance(qrModalEl);
@@ -786,7 +783,8 @@ function loadAndShowPrintReceipt(orderId) {
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
 
-    fetch(getContextPath() + '/admin/hoadon?action=detailJson&id=' + orderId)
+    // THAY THẾ CHÍ MẠNG: Gọi /pos/bill-detail thay thế cho /admin/hoadon để Staff không bị AdminAuthFilter chặn đứng!
+    fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'SUCCESS') {
@@ -803,17 +801,19 @@ function loadAndShowPrintReceipt(orderId) {
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
-                document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
 
+                document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
+
                 data.items.forEach(item => {
                     let html = '<div class="mb-3 border-bottom border-dashed pb-2 text-start">';
                     html += '  <div class="d-flex justify-content-between fw-bold text-dark">';
-                    html += '    <span>' + item.tenMon + ' (Size ' + item.tenSize + ')</span>';
+                    html += '    <span>' + item.tenMon + ' (Size ' + (item.tenSize ? item.tenSize : (item.maSize == 1 ? "S" : (item.maSize == 2 ? "M" : "L"))) + ')</span>';
                     html += '    <span>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</span>';
                     html += '  </div>';
                     html += '  <div class="small text-muted">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + (item.ghiChuMon ? ' | Lưu ý: ' + item.ghiChuMon : '') + '</div>';
+
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div class="text-success small pl-2" style="font-size: 10px;">';
                         item.toppings.forEach(tp => {

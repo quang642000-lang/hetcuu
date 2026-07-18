@@ -3,15 +3,12 @@ package repository.impl;
 import config.DBConnect;
 import model.entity.KhachHang;
 import repository.IKhachHangRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class KhachHangRepoImpl implements IKhachHangRepository {
-
     private static KhachHangRepoImpl instance;
-
     private KhachHangRepoImpl() {}
 
     public static synchronized KhachHangRepoImpl getInstance() {
@@ -66,7 +63,7 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
             try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     entity.setMaKh(rs.getString("ma_kh"));
-                    updateKhachHangBoSung(entity, conn); // CHỈNH SỬA: Truyền Connection trực tiếp
+                    updateKhachHangBoSung(entity, conn);
                     return true;
                 }
             }
@@ -78,7 +75,6 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
 
     private void updateKhachHangBoSung(KhachHang entity, Connection conn) throws SQLException {
         String sql = "UPDATE KHACH_HANG SET ma_hang = ?, ngay_sinh = ?, gioi_tinh = ?, dia_chi_lien_he = ?, hinh_anh_url = ?, diem_tich_luy = ?, trang_thai = ? WHERE ma_kh = ?";
-        // Tái sử dụng đối tượng PreparedStatement từ conn được truyền từ hàm cha, tránh rò rỉ kết nối!
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, entity.getMaHang() <= 0 ? 1 : entity.getMaHang());
             ps.setDate(2, entity.getNgaySinh());
@@ -91,7 +87,6 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
             ps.executeUpdate();
         }
     }
-
 
     @Override
     public boolean update(KhachHang entity) {
@@ -213,6 +208,20 @@ public class KhachHangRepoImpl implements IKhachHangRepository {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public boolean updateMatKhau(String maKh, String matKhauMoi) {
+        String sql = "UPDATE KHACH_HANG SET mat_khau = ? WHERE ma_kh = ?";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, matKhauMoi);
+            ps.setString(2, maKh);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private KhachHang mapResultSetToKhachHang(ResultSet rs) throws SQLException {
