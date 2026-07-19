@@ -7,7 +7,6 @@
     <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Bootstrap 5, Icons, SweetAlert2, Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
@@ -44,7 +43,6 @@
             overflow: hidden;
             height: calc(100vh - 60px);
         }
-        /* Cột 1: Sidebar danh mục (Trái) */
         .pos-category-sidebar {
             width: 110px;
             background-color: #ffffff;
@@ -78,7 +76,6 @@
             color: var(--primary);
             border-left: 4px solid var(--primary);
         }
-        /* Cột 2: Lưới sản phẩm (Giữa) */
         .pos-menu-area {
             flex-grow: 1;
             padding: 20px;
@@ -168,7 +165,6 @@
             font-weight: 800;
             color: var(--primary);
         }
-        /* Cột 3: Hóa đơn & Giỏ hàng (Phải) */
         .pos-checkout-sidebar {
             width: 390px;
             background-color: #ffffff;
@@ -250,32 +246,18 @@
             font-weight: bold;
             transition: all 0.2s;
             cursor: pointer;
-            flex-fill: 1;
+            flex-grow: 1;
         }
         .pos-cash-suggest-btn:hover {
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary);
         }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
     </style>
 </head>
 <body>
 <div class="pos-wrapper">
-    <!-- HEADER TOÀN NĂNG -->
+    <!-- HEADER -->
     <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px; flex-shrink: 0;">
         <div class="container-fluid d-flex align-items-center">
             <div class="d-flex align-items-center gap-3">
@@ -284,7 +266,7 @@
                 </a>
                 <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                     <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                        <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠY QUẦY
+                        <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
                     </a>
                     <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
                         <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
@@ -297,13 +279,14 @@
                         <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                        <li><a class="dropdown-item py-2" href="${pageContext.request.contextPath}/admin/settings"><i class="bi bi-gear-fill me-2 text-success"></i>Cài đặt cá nhân</a></li>
+                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posProfileModal"><i class="bi bi-person-circle me-2 text-success"></i>Cài đặt cá nhân</a></li>
+                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posPasswordModal"><i class="bi bi-key-fill me-2 text-warning"></i>Đổi mật khẩu</a></li>
                     </ul>
                 </div>
                 <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-<i class="bi bi-calendar3 text-success me-1"></i>
-<span id="posCurrentClock">--:--:--</span>
-</span>
+                    <i class="bi bi-calendar3 text-success me-1"></i>
+                    <span id="posCurrentClock">--:--:--</span>
+                </span>
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                     <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
                 </a>
@@ -313,7 +296,8 @@
             </div>
         </div>
     </nav>
-    <!-- THÂN CHÍNH MÀN HÌNH POS -->
+
+    <!-- THÂN CHÍNH POS -->
     <div class="pos-main-container">
         <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
         <div class="pos-category-sidebar">
@@ -328,6 +312,7 @@
                 </button>
             </c:forEach>
         </div>
+
         <!-- CỘT 2: LƯỚI SẢN PHẨM -->
         <div class="pos-menu-area">
             <div class="pos-menu-header">
@@ -371,6 +356,7 @@
                 </div>
             </div>
         </div>
+
         <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN -->
         <div class="pos-checkout-sidebar">
             <div class="pos-checkout-header">
@@ -379,12 +365,14 @@
                     <i class="bi bi-trash3-fill"></i> Hủy đơn
                 </button>
             </div>
+
             <div class="pos-cart-items-wrapper" id="posCartItems">
                 <div class="text-center text-muted py-5 my-5">
                     <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
                     <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
                 </div>
             </div>
+
             <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
@@ -408,6 +396,7 @@
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
+
             <!-- TỔNG HỢP TIỀN BÁO CÁO -->
             <div class="pos-summary-panel">
                 <div class="mb-3">
@@ -437,6 +426,7 @@
                     <span>TỔNG THỰC THU:</span>
                     <span class="text-success" id="totalPayablePrice">0 đ</span>
                 </div>
+
                 <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
                 <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
@@ -444,25 +434,33 @@
                         <input type="number" class="form-control form-control-sm text-end fw-bold text-primary font-monospace bg-white" id="inputCustomerCash" placeholder="Nhập số tiền..." style="width: 140px; height: 30px;" oninput="calculateChangeRefund()">
                     </div>
                     <div class="d-flex justify-content-between gap-1 mb-2">
-                        <button type="button" class="pos-cash-suggest-btn flex-fill" onclick="suggestCashAmount(50000)">50k</button>
-                        <button type="button" class="pos-cash-suggest-btn flex-fill" onclick="suggestCashAmount(100000)">100k</button>
-                        <button type="button" class="pos-cash-suggest-btn flex-fill" onclick="suggestCashAmount(200000)">200k</button>
-                        <button type="button" class="pos-cash-suggest-btn flex-fill" onclick="suggestCashAmount(500000)">500k</button>
-                        <button type="button" class="pos-cash-suggest-btn flex-fill" onclick="suggestCashAmount(0)">ĐỦ</button>
+                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(50000)">50k</button>
+                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(100000)">100k</button>
+                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(200000)">200k</button>
+                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(500000)">500k</button>
+                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(0)">ĐỦ</button>
                     </div>
                     <div class="d-flex justify-content-between text-dark fw-bold border-top pt-2 small">
                         <span>TIỀN THỐI LẠI:</span>
                         <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
                     </div>
                 </div>
-                <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN -->
+
+                <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN (RESORED RADIO BUTTONS) -->
                 <div class="mb-3 text-start">
-                    <label class="form-label text-muted small fw-bold"><i class="bi bi-wallet2"></i> HÌNH THỨC THANH TOÁN:</label>
-                    <select id="select_maPt_UI" class="form-select form-select-sm fw-bold text-dark" style="border-radius: 8px;" onchange="changePaymentMethod(parseInt(this.value))">
-                        <option value="1">TIỀN MẶT (BÁN TẠI QUẦY)</option>
-                        <option value="2">CHUYỂN KHOẢN QR ĐỘNG (QUÉT MÃ)</option>
-                    </select>
+                    <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onchange="changePaymentMethod(1)">
+                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_cash">
+                            <i class="bi bi-cash-coin me-1"></i> TIỀN MẶT
+                        </label>
+                        <input type="radio" class="btn-check" name="payment_method_group" id="pt_qr" value="2" onchange="changePaymentMethod(2)">
+                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr">
+                            <i class="bi bi-qr-code-scan me-1"></i> CHUYỂN KHOẢN QR
+                        </label>
+                    </div>
                 </div>
+
                 <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
@@ -477,6 +475,7 @@
                     <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                     <div id="posFormItemsContainer"></div>
                 </form>
+
                 <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                     <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
                 </button>
@@ -484,7 +483,73 @@
         </div>
     </div>
 </div>
-<!-- ==================== MODAL IN HÓA ĐƠN NHIỆT (THERMAL BILL) ==================== -->
+
+<!-- ==================== MODALS PHỤ TRỢ (PROFILE & PASSWORD) ==================== -->
+<!-- PROFILE MODAL -->
+<div class="modal fade" id="posProfileModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title fw-bold m-0"><i class="bi bi-person-circle me-1"></i> THÔNG TIN CÁ NHÂN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-start bg-light">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Họ và tên nhân viên</label>
+                    <input type="text" id="profile_hoTen" class="form-control" value="<c:out value="${sessionScope.user.hoTen}"/>" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Số điện thoại liên hệ</label>
+                    <input type="text" id="profile_sdt" class="form-control" value="${sessionScope.user.soDienThoai}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Địa chỉ Email</label>
+                    <input type="email" id="profile_email" class="form-control" value="${sessionScope.user.email}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Tên đăng nhập hệ thống</label>
+                    <input type="text" class="form-control bg-light text-muted" value="<c:out value="${sessionScope.user.tenDangNhap}"/>" readonly>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top p-2.5">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-success btn-sm px-3" onclick="submitPosProfile()"><i class="bi bi-save me-1"></i> Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal fade" id="posPasswordModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header bg-warning text-dark py-3">
+                <h5 class="modal-title fw-bold m-0"><i class="bi bi-key-fill me-1"></i> ĐỔI MẬT KHẨU BẢO MẬT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-start bg-light">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                    <input type="password" id="password_old" class="form-control" placeholder="Nhập mật khẩu đang sử dụng..." required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Mật khẩu mới <span class="text-danger">*</span></label>
+                    <input type="password" id="password_new" class="form-control" placeholder="Tối thiểu từ 8 ký tự..." required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
+                    <input type="password" id="password_confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." required>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top p-2.5">
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" onclick="submitPosPassword()"><i class="bi bi-save me-1"></i> Lưu mật khẩu mới</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MODAL IN HÓA ĐƠN NHIỆT ==================== -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
@@ -535,6 +600,7 @@
         </div>
     </div>
 </div>
+
 <!-- ==================== MODAL THANH TOÁN QR ĐỘNG SEPAY ==================== -->
 <div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -574,6 +640,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -593,20 +660,6 @@
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
             searchCustomerCRM();
-        }
-    }
-
-    // Đổi phương thức thanh toán
-    function changePaymentMethod(maPt) {
-        const submitPt = document.getElementById('submit_maPt');
-        const selectPtUi = document.getElementById('select_maPt_UI');
-        const cashSection = document.getElementById('cashCalculatorSection');
-        if (submitPt) submitPt.value = maPt;
-        if (selectPtUi) selectPtUi.value = maPt;
-        if (maPt === 2) {
-            if (cashSection) cashSection.style.setProperty('display', 'none', 'important');
-        } else {
-            if (cashSection) cashSection.style.setProperty('display', 'block', 'important');
         }
     }
 
@@ -635,10 +688,12 @@
         document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
         const activeBtn = document.getElementById('f_' + tag);
         if (activeBtn) activeBtn.classList.add('active-filter', 'btn-light');
+
         document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
             const isNew = card.dataset.isnew === 'true';
             const isHot = card.dataset.ishot === 'true';
             const parent = card.closest('.pos-card-wrapper');
+
             if (tag === 'all') {
                 parent.style.setProperty('display', 'block', 'important');
             } else if (tag === 'new') {
@@ -658,6 +713,7 @@
             const name = card.querySelector('.pos-card-name').innerText.toLowerCase();
             const id = card.dataset.masp.toLowerCase();
             const parent = card.closest('.pos-card-wrapper');
+
             if (name.includes(keyword) || id.includes(keyword)) {
                 parent.style.setProperty('display', 'block', 'important');
             } else {
@@ -673,6 +729,7 @@
         const orderId = urlParams.get('orderId');
         const maPt = urlParams.get('maPt');
         const payable = urlParams.get('payable');
+
         if (msg === 'createsuccess' && orderId) {
             if (maPt === '2') {
                 // Hiển thị Modal quét mã QR SePay động và tiến hành Live Polling nhận tiền
@@ -684,6 +741,7 @@
         }
     });
 </script>
+
 <!-- Metadata cấu hình sản phẩm động được chèn đồng bộ -->
 <c:forEach var="sp" items="${products}">
     <script>

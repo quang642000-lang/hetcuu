@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +34,9 @@ import java.util.logging.Logger;
         "/pos/change-password"
 })
 public class BanHangPOSController extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(BanHangPOSController.class.getName());
+
     private final ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
     private final IToppingService toppingService = ToppingServiceImpl.getInstance();
@@ -49,6 +52,7 @@ public class BanHangPOSController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
         String uri = request.getRequestURI();
         if (uri.endsWith("/pos/search-customer")) {
             performSearchCustomer(request, response);
@@ -58,12 +62,15 @@ public class BanHangPOSController extends HttpServlet {
             performGetBillDetail(request, response);
             return;
         }
+
         List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
         List<SanPham> products = sanPhamService.getAllSanPham();
         List<Topping> toppings = toppingService.getActiveTopping();
+
         for (SanPham sp : products) {
             sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
         }
+
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("toppings", toppings);
@@ -83,6 +90,7 @@ public class BanHangPOSController extends HttpServlet {
         }
         toppingsJson.append("]");
         request.setAttribute("allToppingsJson", toppingsJson.toString());
+
         request.getRequestDispatcher("/views/pos/ban_hang.jsp").forward(request, response);
     }
 
@@ -111,6 +119,7 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"NOT_FOUND\"}");
             return;
         }
+
         KhachHang kh = khachHangService.getKhachHangBySdt(sdt.trim());
         if (kh != null && kh.isTrangThai()) {
             List<KhuyenMai> vouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(99999999, kh.getMaKh());
@@ -147,10 +156,12 @@ public class BanHangPOSController extends HttpServlet {
         String tenKh = request.getParameter("tenKh");
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
+
         if (tenKh == null || tenKh.trim().isEmpty() || sdt == null || sdt.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Các trường thông tin không được để trống!\"}");
             return;
         }
+
         try {
             KhachHang kh = khachHangService.registerCustomer(tenKh, sdt, email, "12345678");
             if (kh != null) {
@@ -180,14 +191,17 @@ public class BanHangPOSController extends HttpServlet {
         String code = request.getParameter("code");
         String maKh = request.getParameter("maKh");
         String tongTienHangStr = request.getParameter("tongTienHang");
+
         if (code == null || code.trim().isEmpty() || tongTienHangStr == null) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Voucher không hợp lệ!\"}");
             return;
         }
+
         int tongTienHang = getIntParameter(request, "tongTienHang", 0);
         if (maKh != null && maKh.trim().isEmpty()) {
             maKh = null;
         }
+
         boolean isValid = khuyenMaiService.validateVoucher(code.trim(), tongTienHang, maKh);
         if (isValid) {
             KhuyenMai km = khuyenMaiService.getKhuyenMaiByCode(code.trim());
@@ -226,6 +240,7 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mã hóa đơn không hợp lệ!\"}");
             return;
         }
+
         DonHang dh = donHangService.getDonHangById(id);
         if (dh != null) {
             StringBuilder json = new StringBuilder();
@@ -244,21 +259,25 @@ public class BanHangPOSController extends HttpServlet {
             }
             json.append("\"tenKhachHang\":\"").append(tenKh).append("\",");
             json.append("\"sdtKhachHang\":\"").append(sdtKh).append("\",");
+
             String textNhanVien = "Hệ thống tự động";
             if (dh.getMaNv() != null) {
                 NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
                 if (nv != null) textNhanVien = nv.getHoTen();
             }
             json.append("\"tenNhanVien\":\"").append(textNhanVien).append("\",");
+
             String tenPt = "Tiền mặt";
             if (dh.getMaPt() == 2) {
                 tenPt = "Chuyển khoản QR";
             }
             json.append("\"tenPhuongThucTT\":\"").append(tenPt).append("\",");
+
             String strLoaiDon = "Tại quầy";
             if (dh.getLoaiDonHang() == 2) strLoaiDon = "Mang đi";
             else if (dh.getLoaiDonHang() == 3) strLoaiDon = "Đặt online";
             json.append("\"loaiDonHang\":\"").append(strLoaiDon).append("\",");
+
             json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
             json.append("\"tienGiamGia\":").append(dh.getTienGiamGia()).append(",");
             json.append("\"diemSuDung\":").append(dh.getDiemSuDung()).append(",");
@@ -271,9 +290,11 @@ public class BanHangPOSController extends HttpServlet {
                 json.append("{");
                 json.append("\"tenMon\":\"").append(ctdh.getTenSp() != null ? ctdh.getTenSp() : ctdh.getMaSp()).append("\",");
                 json.append("\"maSize\":").append(ctdh.getMaSize()).append(",");
-                json.append("\"tenSize\":\"").append(ctdh.getTenSize()).append("\",");
+                json.append("\"tenSize\":\"").append(ctdh.getTenSize() != null ? ctdh.getTenSize() : (ctdh.getMaSize() == 1 ? "S" : (ctdh.getMaSize() == 2 ? "M" : "L"))).append("\",");
                 json.append("\"soLuong\":").append(ctdh.getSoLuong()).append(",");
                 json.append("\"giaChot\":").append(ctdh.getGiaChot()).append(",");
+                json.append("\"mucDa\":\"").append(ctdh.getMucDa() != null ? ctdh.getMucDa() : "100%").append("\",");
+                json.append("\"mucDuong\":\"").append(ctdh.getMucDuong() != null ? ctdh.getMucDuong() : "100%").append("\",");
                 json.append("\"toppings\":[");
                 List<ChiTietTopping> tps = ctdh.getToppingsList();
                 if (tps != null) {
@@ -332,37 +353,63 @@ public class BanHangPOSController extends HttpServlet {
             dh.setTongPhaiTra(tongPhaiTra);
             dh.setGhiChuDon(ghiChuDon);
 
-            // Set payment and order states based on method
-            if (maPt == 2) { // QR dynamic code
-                dh.setTrangThaiThanhToan(0); // Unpaid, waiting for webhook
-                dh.setTrangThaiDon(0); // Pending/waiting approval
-            } else { // Cash
-                dh.setTrangThaiThanhToan(1); // Paid at counter
-                dh.setTrangThaiDon(4); // Completed
+            // Set states
+            if (maPt == 2) {
+                dh.setTrangThaiThanhToan(0);
+                dh.setTrangThaiDon(0);
+            } else {
+                dh.setTrangThaiThanhToan(1);
+                dh.setTrangThaiDon(4);
             }
 
-            // Build chi tiết hóa đơn
-            List<ChiTietDonHang> items = new ArrayList<>();
+            // Supports both with and without bracket names robustly
             String[] itemMaSp = request.getParameterValues("item_maSp[]");
-            String[] itemMaSize = request.getParameterValues("item_maSize[]");
-            String[] itemSoLuong = request.getParameterValues("item_soLuong[]");
-            String[] itemToppingKeys = request.getParameterValues("item_toppingKeys[]");
+            if (itemMaSp == null) itemMaSp = request.getParameterValues("item_maSp");
 
+            String[] itemMaSize = request.getParameterValues("item_maSize[]");
+            if (itemMaSize == null) itemMaSize = request.getParameterValues("item_maSize");
+
+            String[] itemSoLuong = request.getParameterValues("item_soLuong[]");
+            if (itemSoLuong == null) itemSoLuong = request.getParameterValues("item_soLuong");
+
+            String[] itemGiaChot = request.getParameterValues("item_giaChot[]");
+            if (itemGiaChot == null) itemGiaChot = request.getParameterValues("item_giaChot");
+
+            String[] itemMucDa = request.getParameterValues("item_mucDa[]");
+            if (itemMucDa == null) itemMucDa = request.getParameterValues("item_mucDa");
+
+            String[] itemMucDuong = request.getParameterValues("item_mucDuong[]");
+            if (itemMucDuong == null) itemMucDuong = request.getParameterValues("item_mucDuong");
+
+            String[] itemGhiChuMon = request.getParameterValues("item_ghiChuMon[]");
+            if (itemGhiChuMon == null) itemGhiChuMon = request.getParameterValues("item_ghiChuMon");
+
+            String[] itemToppingKeys = request.getParameterValues("item_toppingKeys[]");
+            if (itemToppingKeys == null) itemToppingKeys = request.getParameterValues("item_toppingKeys");
+
+            List<ChiTietDonHang> items = new ArrayList<>();
             if (itemMaSp != null) {
                 for (int i = 0; i < itemMaSp.length; i++) {
+                    if (itemMaSp[i] == null || itemMaSp[i].trim().isEmpty()) {
+                        continue; // Skip invalid items defensively
+                    }
                     ChiTietDonHang ctdh = new ChiTietDonHang();
                     ctdh.setMaDh(maDh);
                     ctdh.setMaSp(itemMaSp[i]);
-                    ctdh.setMaSize(parseIntSafe(itemMaSize[i], 1));
-                    ctdh.setSoLuong(parseIntSafe(itemSoLuong[i], 1));
+                    ctdh.setMaSize(parseIntSafe(itemMaSize != null && i < itemMaSize.length ? itemMaSize[i] : "1", 1));
+                    ctdh.setSoLuong(parseIntSafe(itemSoLuong != null && i < itemSoLuong.length ? itemSoLuong[i] : "1", 1));
 
-                    // Lấy giá chốt size
-                    int itemGiaChot = sanPhamService.getGiaKichCoSanPham(itemMaSp[i], parseIntSafe(itemMaSize[i], 1));
-                    ctdh.setGiaChot(itemGiaChot);
+                    int priceChot = sanPhamService.getGiaKichCoSanPham(ctdh.getMaSp(), ctdh.getMaSize());
+                    if (priceChot <= 0 && itemGiaChot != null && i < itemGiaChot.length) {
+                        priceChot = parseIntSafe(itemGiaChot[i], 0);
+                    }
+                    ctdh.setGiaChot(priceChot);
+                    ctdh.setMucDa(itemMucDa != null && i < itemMucDa.length ? itemMucDa[i] : "100%");
+                    ctdh.setMucDuong(itemMucDuong != null && i < itemMucDuong.length ? itemMucDuong[i] : "100%");
+                    ctdh.setGhiChuMon(itemGhiChuMon != null && i < itemGhiChuMon.length ? itemGhiChuMon[i] : "Normal");
 
-                    // Toppings
                     List<ChiTietTopping> toppingsList = new ArrayList<>();
-                    if (itemToppingKeys != null && i < itemToppingKeys.length && !itemToppingKeys[i].isEmpty()) {
+                    if (itemToppingKeys != null && i < itemToppingKeys.length && itemToppingKeys[i] != null && !itemToppingKeys[i].isEmpty()) {
                         String[] rawTps = itemToppingKeys[i].split("\\|");
                         for (String rtp : rawTps) {
                             String[] parts = rtp.split("_");
@@ -382,7 +429,6 @@ public class BanHangPOSController extends HttpServlet {
 
             boolean isCheckedOut = donHangService.checkoutPOS(dh, items, currentStaff.getMaNv());
             if (isCheckedOut) {
-                // REDIRECT WITH PAYMENT PARAMS TO TRIGGER THE QR MODAL DIRECTLY
                 response.sendRedirect(request.getContextPath() + "/pos?msg=createsuccess&orderId=" + dh.getMaDh() + "&maPt=" + dh.getMaPt() + "&payable=" + dh.getTongPhaiTra());
             } else {
                 request.setAttribute("error", "Đã xảy ra lỗi hệ thống trong quá trình chốt giao dịch POS!");
@@ -402,17 +448,21 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Phiên làm việc đã hết hạn!\"}");
             return;
         }
+
         NhanVien currentStaff = (NhanVien) session.getAttribute("user");
         String hoTen = request.getParameter("hoTen");
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
+
         if (hoTen == null || hoTen.trim().isEmpty() || sdt == null || sdt.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Các trường thông tin không được để trống!\"}");
             return;
         }
+
         currentStaff.setHoTen(hoTen.trim());
         currentStaff.setSoDienThoai(sdt.trim());
         currentStaff.setEmail(email.trim());
+
         boolean success = nhanVienService.updateNhanVien(currentStaff);
         if (success) {
             session.setAttribute("user", currentStaff);
@@ -429,28 +479,31 @@ public class BanHangPOSController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Phiên làm việc đã hết hạn!\"}");
             return;
         }
+
         NhanVien currentStaff = (NhanVien) session.getAttribute("user");
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
-        if (oldPassword == null || newPassword == null) {
+
+        if (oldPassword == null || newPassword == null || oldPassword.trim().isEmpty() || newPassword.trim().isEmpty()) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mật khẩu không được để trống!\"}");
             return;
         }
+
         String hashedOld = SecurityUtil.hashSHA256(oldPassword);
         if (!currentStaff.getMatKhau().equals(hashedOld)) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mật khẩu cũ không chính xác!\"}");
             return;
         }
+
         currentStaff.setMatKhau(SecurityUtil.hashSHA256(newPassword));
         boolean success = nhanVienService.updateNhanVien(currentStaff);
         if (success) {
             response.getWriter().write("{\"status\":\"SUCCESS\"}");
         } else {
-            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Mật khẩu cũ không chính xác hoặc thay đổi thất bại!\"}");
+            response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Cập nhật mật khẩu thất bại!\"}");
         }
     }
 
-    // --- HELPER METHODS FOR ROBUST INTEGER PARSING ---
     private int getIntParameter(HttpServletRequest request, String paramName, int defaultValue) {
         String value = request.getParameter(paramName);
         if (value == null || value.trim().isEmpty()) {
