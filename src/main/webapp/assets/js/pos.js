@@ -26,7 +26,6 @@ function resetVoucherAndPoints() {
     const sumDiscRow = document.getElementById("summaryDiscountRow");
     const sumPtsRow = document.getElementById("summaryPointsRow");
     const manualVoucherEl = document.getElementById("manualVoucherInput");
-
     if (maKmEl) maKmEl.value = "";
     if (valGiamEl) valGiamEl.value = "0";
     if (dsuDungEl) dsuDungEl.value = "0";
@@ -53,7 +52,6 @@ function clearFullPosCart() {
     if (posAddCustomerArea) posAddCustomerArea.style.setProperty('display', 'none', 'important');
     const manualVoucherInput = document.getElementById("manualVoucherInput");
     if (manualVoucherInput) manualVoucherInput.value = "";
-
     resetVoucherAndPoints();
     renderPosCart();
 }
@@ -90,7 +88,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     const rawOptions = JSON.parse(decodeURIComponent(encodedOptions));
     let html = '';
     html += '<div id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '" class="text-start p-2">';
-
     // 1. CHỌN SIZE
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">1. CHỌN KÍCH CỠ LY NƯỚC (SIZE)</label>';
@@ -109,7 +106,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     });
     html += '    </div>';
     html += '  </div>';
-
     // 2. MỨC ĐÁ
     if (rawOptions.choPhepDoiDa) {
         html += '  <div class="mb-3">';
@@ -123,7 +119,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
-
     // 3. MỨC ĐƯỜNG
     if (rawOptions.choPhepDoiDuong) {
         html += '  <div class="mb-3">';
@@ -137,7 +132,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
-
     // 4. TOPPINGS
     if (rawOptions.choPhepTopping && rawOptions.allToppings && rawOptions.allToppings.length > 0) {
         html += '  <div class="mb-3">';
@@ -165,13 +159,11 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    <span class="text-muted small fw-semibold"><i class="bi bi-info-circle text-warning"></i> Sản phẩm này không áp dụng ăn kèm Topping!</span>';
         html += '  </div>';
     }
-
     // 5. GHI CHÚ
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
     html += '    <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
     html += '  </div>';
-
     // THÀNH TIỀN
     html += '  <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">';
     html += '    <div>';
@@ -183,7 +175,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '    </button>';
     html += '  </div>';
     html += '</div>';
-
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
@@ -224,7 +215,6 @@ function addCustomizedToCart() {
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
     const ice = iceEl ? iceEl.value : '100% Đá';
     const note = document.getElementById('popup_note').value.trim() || 'Normal';
-
     let toppings = [];
     document.querySelectorAll('.topping-check:checked').forEach(chk => {
         let tpPrice = parseInt(chk.dataset.price) || 0;
@@ -238,7 +228,6 @@ function addCustomizedToCart() {
             giaTp: tpPrice
         });
     });
-
     let duplicateItem = posCart.find(item =>
         item.maSp === maSp &&
         item.maSize === maSize &&
@@ -247,7 +236,6 @@ function addCustomizedToCart() {
         item.ghiChuMon === note &&
         isSameToppingsList(item.toppings, toppings)
     );
-
     if (duplicateItem) {
         duplicateItem.soLuong += 1;
     } else {
@@ -405,7 +393,6 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="email" class="form-control" id="reg_email" placeholder="example@teapos.vn" required>';
     html += '  </div>';
     html += '</div>';
-
     Swal.fire({
         title: 'ĐĂNG KÝ NHANH THÀNH VIÊN CRM',
         html: html,
@@ -413,7 +400,7 @@ function openQuickRegisterModal(sdt) {
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Tạo tài khoản',
-        cancelButtonText: 'Hủy bỏ',
+        cancelButtonText: 'Hủy bộ',
         preConfirm: () => {
             const tenKh = document.getElementById("reg_tenKh").value.trim();
             const email = document.getElementById("reg_email").value.trim();
@@ -459,7 +446,6 @@ function applyManualVoucherCode() {
     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
     if (totalRaw === 0) return;
     const maKh = document.getElementById("submit_maKh").value;
-
     fetch(getContextPath() + '/pos/apply-voucher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -498,7 +484,6 @@ function showVoucherSelectionModal() {
         selectHtml += '<option value="' + v.maCode + '">' + v.maCode + ' (Giảm ' + txtType + ' | Đơn từ ' + formatVND(v.donToiThieu) + ')</option>';
     });
     selectHtml += '</select>';
-
     Swal.fire({
         title: 'HỘP THƯ VOUCHER THÀNH VIÊN',
         html: selectHtml,
@@ -506,7 +491,7 @@ function showVoucherSelectionModal() {
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Đồng ý áp dụng',
-        cancelButtonText: 'Hủy bỏ'
+        cancelButtonText: 'Hủy bộ'
     }).then((result) => {
         if (result.isConfirmed) {
             const code = document.getElementById("posVoucherSelector").value;
@@ -553,7 +538,7 @@ function applyPointsDiscount() {
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
         confirmButtonText: 'Xác nhận trừ điểm',
-        cancelButtonText: 'Hủy bỏ',
+        cancelButtonText: 'Hủy bộ',
         preConfirm: (val) => {
             const pts = parseInt(val);
             if (isNaN(pts) || pts <= 0 || pts > customerInfo.diemTichLuy) {
@@ -594,7 +579,6 @@ function recalculatePOSBill(tongTienHang) {
             document.getElementById("submit_tienGiamGia").value = "0";
         }
     }
-
     let pointsDiscount = appliedPoints * 1000;
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
@@ -610,16 +594,13 @@ function recalculatePOSBill(tongTienHang) {
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
-
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
-
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
-
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
     calculateChangeRefund();
@@ -631,7 +612,6 @@ function calculateChangeRefund() {
     let refund = khachDua - phaiTra;
     let txtCashRefundEl = document.getElementById('txtCashRefund');
     if (!txtCashRefundEl) return;
-
     if (refund < 0) {
         txtCashRefundEl.innerText = 'Khách đưa thiếu';
         txtCashRefundEl.className = 'text-danger fw-bold';
@@ -653,56 +633,6 @@ function suggestCashAmount(amount) {
     calculateChangeRefund();
 }
 
-function submitPOSOrderTransaction() {
-    if (posCart.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'Giỏ hàng trống', text: 'Vui lòng chạm chọn ly trà sữa trước khi chốt đơn!' });
-        return;
-    }
-    const maPt = parseInt(document.getElementById('submit_maPt').value) || 1;
-    const totalPayable = parseInt(document.getElementById('submit_tongPhaiTra').value) || 0;
-
-    if (maPt === 1) { // Cash
-        const inputCustomerCashEl = document.getElementById('inputCustomerCash');
-        const customerCash = parseInt(inputCustomerCashEl.value) || 0;
-        if (!inputCustomerCashEl.value.trim() || customerCash < totalPayable) {
-            Swal.fire({ icon: 'warning', title: 'Thiếu tiền mặt', text: 'Hãy nhập đúng số tiền khách đưa lớn hơn hoặc bằng tổng bill!' });
-            inputCustomerCashEl.focus();
-            return;
-        }
-    }
-
-    // Nạp giỏ hàng động vào container
-    const container = document.getElementById('posFormItemsContainer');
-    container.innerHTML = '';
-    posCart.forEach(item => {
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_maSp[]" value="' + item.maSp + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_maSize[]" value="' + item.maSize + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_soLuong[]" value="' + item.soLuong + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_giaChot[]" value="' + item.giaBan + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_mucDa[]" value="' + item.mucDa + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_mucDuong[]" value="' + item.mucDuong + '">');
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_ghiChuMon[]" value="' + (item.ghiChuMon ? item.ghiChuMon : 'Normal') + '">');
-
-        let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
-        container.insertAdjacentHTML('beforeend', '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">');
-    });
-
-    Swal.fire({
-        title: 'Chốt giao dịch quầy POS',
-        text: maPt === 2 ? 'Xác nhận xuất mã QR và đợi nhận tiền SePay?' : 'Xác nhận in hóa đơn bán lẻ tại quầy và tích điểm CRM?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Xác nhận chốt đơn',
-        cancelButtonText: 'Hủy bỏ'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('posOrderForm').submit();
-        }
-    });
-}
-
 function showPosQrCodeModal(orderId, payable) {
     currentPosQrOrderId = orderId;
     isPosQrActive = true;
@@ -714,11 +644,9 @@ function showPosQrCodeModal(orderId, payable) {
     document.getElementById("posQrLoadingStatus").style.setProperty("display", "flex", "important");
     const qrModal = new bootstrap.Modal(document.getElementById("posQrModal"));
     qrModal.show();
-
     let timeLeft = 120;
     const countdownEl = document.getElementById("posQrCountdownText");
     if (countdownEl) countdownEl.innerText = timeLeft;
-
     if (posQrCountdownInterval) clearInterval(posQrCountdownInterval);
     posQrCountdownInterval = setInterval(() => {
         timeLeft--;
@@ -729,7 +657,6 @@ function showPosQrCodeModal(orderId, payable) {
             document.getElementById("posQrLoadingStatus").innerHTML = '<i class="bi bi-exclamation-circle text-danger me-1"></i><span class="text-danger small">Mã chuyển khoản hết hạn</span>';
         }
     }, 1000);
-
     if (posQrPollInterval) clearInterval(posQrPollInterval);
     posQrPollInterval = setInterval(() => {
         if (!isPosQrActive) {
@@ -782,8 +709,6 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
-
-    // THAY THẾ CHÍ MẠNG: Gọi /pos/bill-detail thay thế cho /admin/hoadon để Staff không bị AdminAuthFilter chặn đứng!
     fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -794,18 +719,15 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
-
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
                 let container = document.getElementById("billItemsContainer");
                 container.innerHTML = '';
-
                 data.items.forEach(item => {
                     let html = '<div class="mb-3 border-bottom border-dashed pb-2 text-start">';
                     html += '  <div class="d-flex justify-content-between fw-bold text-dark">';
@@ -813,7 +735,6 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '    <span>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</span>';
                     html += '  </div>';
                     html += '  <div class="small text-muted">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + (item.ghiChuMon ? ' | Lưu ý: ' + item.ghiChuMon : '') + '</div>';
-
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div class="text-success small pl-2" style="font-size: 10px;">';
                         item.toppings.forEach(tp => {
@@ -824,7 +745,6 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.insertAdjacentHTML('beforeend', html);
                 });
-
                 if (typeof bootstrap !== 'undefined') {
                     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                     printModal.show();

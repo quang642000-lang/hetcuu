@@ -13,7 +13,6 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-
     <style>
         :root {
             --primary: #10b981;
@@ -27,7 +26,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
-
         body {
             font-family: 'Inter', sans-serif;
             color: var(--text-main);
@@ -35,20 +33,17 @@
             height: 100vh;
             overflow: hidden;
         }
-
         .pos-wrapper {
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
-
         .pos-main-container {
             display: flex;
             flex-grow: 1;
             overflow: hidden;
             height: calc(100vh - 60px);
         }
-
         /* Cột 1: Sidebar danh mục (Trái) */
         .pos-category-sidebar {
             width: 110px;
@@ -59,7 +54,6 @@
             flex-shrink: 0;
             overflow-y: auto;
         }
-
         .pos-category-btn {
             width: 100%;
             border: none;
@@ -76,17 +70,14 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
-
         .pos-category-btn i {
             font-size: 20px;
         }
-
         .pos-category-btn.active, .pos-category-btn:hover {
             background-color: var(--primary-light);
             color: var(--primary);
             border-left: 4px solid var(--primary);
         }
-
         /* Cột 2: Lưới sản phẩm (Giữa) */
         .pos-menu-area {
             flex-grow: 1;
@@ -97,7 +88,6 @@
             gap: 16px;
             background-color: var(--bg-main);
         }
-
         .pos-menu-header {
             display: flex;
             justify-content: space-between;
@@ -105,13 +95,11 @@
             gap: 16px;
             flex-wrap: wrap;
         }
-
         .pos-search-wrapper {
             position: relative;
             flex-grow: 1;
             max-width: 400px;
         }
-
         .pos-search-input {
             width: 100%;
             padding: 10px 15px 10px 40px;
@@ -121,12 +109,10 @@
             transition: all 0.2s;
             font-size: 14px;
         }
-
         .pos-search-input:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
-
         .pos-search-icon {
             position: absolute;
             left: 15px;
@@ -134,18 +120,15 @@
             transform: translateY(-50%);
             color: var(--text-muted);
         }
-
         .pos-product-container {
             flex-grow: 1;
             overflow-y: auto;
         }
-
         .pos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 16px;
         }
-
         .pos-product-card {
             background: #ffffff;
             border-radius: 12px;
@@ -157,13 +140,11 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             position: relative;
         }
-
         .pos-product-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             border-color: var(--primary);
         }
-
         .pos-product-img {
             width: 100%;
             height: 90px;
@@ -171,7 +152,6 @@
             border-radius: 8px;
             margin-bottom: 10px;
         }
-
         .pos-card-name {
             font-size: 13px;
             font-weight: 700;
@@ -183,13 +163,11 @@
             -webkit-box-orient: vertical;
             margin-bottom: 4px;
         }
-
         .pos-card-price {
             font-size: 13px;
             font-weight: 800;
             color: var(--primary);
         }
-
         /* Cột 3: Hóa đơn & Giỏ hàng (Phải) */
         .pos-checkout-sidebar {
             width: 390px;
@@ -200,7 +178,6 @@
             flex-shrink: 0;
             box-shadow: -2px 0 10px rgba(0,0,0,0.02);
         }
-
         .pos-checkout-header {
             height: 60px;
             padding: 15px;
@@ -211,7 +188,6 @@
             flex-shrink: 0;
             background-color: #ffffff;
         }
-
         .pos-cart-items-wrapper {
             flex-grow: 1;
             overflow-y: auto;
@@ -221,21 +197,18 @@
             gap: 10px;
             background-color: #f8fafc;
         }
-
         .pos-crm-panel {
             padding: 12px 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
         .pos-summary-panel {
             padding: 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
         .pos-line-price {
             display: flex;
             justify-content: space-between;
@@ -243,7 +216,6 @@
             color: var(--text-muted);
             margin-bottom: 6px;
         }
-
         .pos-total-row {
             display: flex;
             justify-content: space-between;
@@ -255,7 +227,6 @@
             margin-top: 10px;
             margin-bottom: 15px;
         }
-
         .btn-primary-teapos {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
             border: none !important;
@@ -266,12 +237,10 @@
             cursor: pointer !important;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
         }
-
         .btn-primary-teapos:hover {
             transform: translateY(-1px) !important;
             box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
         }
-
         .pos-cash-suggest-btn {
             background: #ffffff;
             border: 1px solid #cbd5e1;
@@ -283,13 +252,11 @@
             cursor: pointer;
             flex-fill: 1;
         }
-
         .pos-cash-suggest-btn:hover {
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary);
         }
-
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
@@ -317,7 +284,7 @@
                 </a>
                 <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                     <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                        <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
+                        <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠY QUẦY
                     </a>
                     <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
                         <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
@@ -334,9 +301,9 @@
                     </ul>
                 </div>
                 <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-                    <i class="bi bi-calendar3 text-success me-1"></i>
-                    <span id="posCurrentClock">--:--:--</span>
-                </span>
+<i class="bi bi-calendar3 text-success me-1"></i>
+<span id="posCurrentClock">--:--:--</span>
+</span>
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                     <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
                 </a>
@@ -346,7 +313,6 @@
             </div>
         </div>
     </nav>
-
     <!-- THÂN CHÍNH MÀN HÌNH POS -->
     <div class="pos-main-container">
         <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
@@ -362,7 +328,6 @@
                 </button>
             </c:forEach>
         </div>
-
         <!-- CỘT 2: LƯỚI SẢN PHẨM -->
         <div class="pos-menu-area">
             <div class="pos-menu-header">
@@ -376,7 +341,6 @@
                     <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
                 </div>
             </div>
-
             <div class="pos-product-container">
                 <div class="pos-grid" id="posProductGrid">
                     <c:forEach var="sp" items="${products}">
@@ -407,7 +371,6 @@
                 </div>
             </div>
         </div>
-
         <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN -->
         <div class="pos-checkout-sidebar">
             <div class="pos-checkout-header">
@@ -416,14 +379,12 @@
                     <i class="bi bi-trash3-fill"></i> Hủy đơn
                 </button>
             </div>
-
             <div class="pos-cart-items-wrapper" id="posCartItems">
                 <div class="text-center text-muted py-5 my-5">
                     <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
                     <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
                 </div>
             </div>
-
             <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
@@ -447,7 +408,6 @@
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
-
             <!-- TỔNG HỢP TIỀN BÁO CÁO -->
             <div class="pos-summary-panel">
                 <div class="mb-3">
@@ -477,7 +437,6 @@
                     <span>TỔNG THỰC THU:</span>
                     <span class="text-success" id="totalPayablePrice">0 đ</span>
                 </div>
-
                 <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
                 <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
@@ -496,7 +455,6 @@
                         <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
                     </div>
                 </div>
-
                 <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN -->
                 <div class="mb-3 text-start">
                     <label class="form-label text-muted small fw-bold"><i class="bi bi-wallet2"></i> HÌNH THỨC THANH TOÁN:</label>
@@ -505,7 +463,6 @@
                         <option value="2">CHUYỂN KHOẢN QR ĐỘNG (QUÉT MÃ)</option>
                     </select>
                 </div>
-
                 <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
@@ -520,7 +477,6 @@
                     <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                     <div id="posFormItemsContainer"></div>
                 </form>
-
                 <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                     <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
                 </button>
@@ -528,7 +484,6 @@
         </div>
     </div>
 </div>
-
 <!-- ==================== MODAL IN HÓA ĐƠN NHIỆT (THERMAL BILL) ==================== -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -580,7 +535,6 @@
         </div>
     </div>
 </div>
-
 <!-- ==================== MODAL THANH TOÁN QR ĐỘNG SEPAY ==================== -->
 <div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -592,13 +546,12 @@
             <div class="modal-body text-center bg-white p-4">
                 <h3 class="text-danger fw-bold mb-1" id="posQrAmount">0 đ</h3>
                 <p class="text-muted small mb-3">Mã đơn: <span class="fw-bold text-dark font-monospace" id="posQrCodeDisplay"></span></p>
-
                 <div class="bg-light p-3 rounded-4 d-inline-block mb-3 position-relative border" style="border-radius: 12px !important;">
                     <img id="posQrImage" src="" alt="VietQR Payment Code" class="img-fluid" style="max-width: 200px; height: 200px; object-fit: contain;">
                     <!-- Success Overlay -->
                     <div id="posQrSuccessOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
-                        <h6 class="text-success mt-2 fw-bold mb-0">Đã Khợp Số Dư!</h6>
+                        <h6 class="text-success mt-2 fw-bold mb-0">Đã Khớp Số Dư!</h6>
                     </div>
                     <!-- Expired Overlay -->
                     <div id="posQrExpiredOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
@@ -606,7 +559,6 @@
                         <h6 class="text-danger mt-2 fw-bold mb-0">Mã Đã Hết Hạn</h6>
                     </div>
                 </div>
-
                 <div class="text-danger fw-bold small mb-2 text-uppercase">
                     <i class="bi bi-clock-history"></i> Có hiệu lực trong <span id="posQrCountdownText" class="fs-5">120</span> giây
                 </div>
@@ -622,10 +574,8 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
-
 <script>
     // Đồng hồ thời gian thực tại quầy thu ngân
     function updatePOSClock() {
@@ -651,10 +601,8 @@
         const submitPt = document.getElementById('submit_maPt');
         const selectPtUi = document.getElementById('select_maPt_UI');
         const cashSection = document.getElementById('cashCalculatorSection');
-
         if (submitPt) submitPt.value = maPt;
         if (selectPtUi) selectPtUi.value = maPt;
-
         if (maPt === 2) {
             if (cashSection) cashSection.style.setProperty('display', 'none', 'important');
         } else {
@@ -687,12 +635,10 @@
         document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
         const activeBtn = document.getElementById('f_' + tag);
         if (activeBtn) activeBtn.classList.add('active-filter', 'btn-light');
-
         document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
             const isNew = card.dataset.isnew === 'true';
             const isHot = card.dataset.ishot === 'true';
             const parent = card.closest('.pos-card-wrapper');
-
             if (tag === 'all') {
                 parent.style.setProperty('display', 'block', 'important');
             } else if (tag === 'new') {
@@ -712,7 +658,6 @@
             const name = card.querySelector('.pos-card-name').innerText.toLowerCase();
             const id = card.dataset.masp.toLowerCase();
             const parent = card.closest('.pos-card-wrapper');
-
             if (name.includes(keyword) || id.includes(keyword)) {
                 parent.style.setProperty('display', 'block', 'important');
             } else {
@@ -728,7 +673,6 @@
         const orderId = urlParams.get('orderId');
         const maPt = urlParams.get('maPt');
         const payable = urlParams.get('payable');
-
         if (msg === 'createsuccess' && orderId) {
             if (maPt === '2') {
                 // Hiển thị Modal quét mã QR SePay động và tiến hành Live Polling nhận tiền
@@ -740,8 +684,7 @@
         }
     });
 </script>
-
-<!-- Metadata cấu hình sản phẩm động được chèn đồng bộ, chống lỗi ghi đè xóa mảng sizesList -->
+<!-- Metadata cấu hình sản phẩm động được chèn đồng bộ -->
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {
@@ -761,7 +704,6 @@
         };
     </script>
 </c:forEach>
-
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 </body>
 </html>
