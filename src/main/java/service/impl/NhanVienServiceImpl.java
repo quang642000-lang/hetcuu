@@ -1,6 +1,7 @@
 package service.impl;
 
 import model.entity.NhanVien;
+import model.entity.NhatKyHoatDong;
 import repository.INhanVienRepository;
 import repository.impl.NhanVienRepoImpl;
 import service.INhanVienService;
@@ -21,8 +22,18 @@ public class NhanVienServiceImpl implements INhanVienService {
             this.expireTime = expireTime;
         }
     }
-
     private final ConcurrentHashMap<String, OtpInfo> forgotPasswordOtpCache = new ConcurrentHashMap<>();
+
+    // In-Memory cache quản lý số lần thử sai mật khóa để chống tấn công mò mật khẩu Brute Force
+    private static class LoginAttempt {
+        int attempts;
+        long lockTime;
+        LoginAttempt(int attempts, long lockTime) {
+            this.attempts = attempts;
+            this.lockTime = lockTime;
+        }
+    }
+    private final ConcurrentHashMap<String, LoginAttempt> loginAttemptsCache = new ConcurrentHashMap<>();
 
     private NhanVienServiceImpl() {
         this.nhanVienRepository = NhanVienRepoImpl.getInstance();
@@ -51,6 +62,30 @@ public class NhanVienServiceImpl implements INhanVienService {
     }
 
     @Override
+    public boolean isAccountLocked(String username) {
+        LoginAttempt attempt = loginAttemptsCache.get(username);
+        if (attempt == null) return false;
+
+        if (attempt.attempts >= 5) {
+            if (System.currentTimeMillis() < attempt.lockTime) {
+                return true; // Đang bị khóa cứng
+            } else {
+                loginAttemptsCache.remove(username); // Quá hạn phạt -> Tự động mở khóa
+                return false;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public long getRemainingLockTime(String username) {
+        LoginAttempt attempt = loginAttemptsCache.get(username);
+        if (attempt == null || attempt.attempts < 5) return 0;
+        long diff = attempt.lockTime - System.currentTimeMillis();
+        return diff > 0 ? diff / 1000 : 0;
+    }
+
+    @Override
     public NhanVien loginNhanVien(String username, String password, String ipAddress) {
         if (isAccountLocked(username)) {
             return null;
@@ -61,10 +96,25 @@ public class NhanVienServiceImpl implements INhanVienService {
         }
         String hashedInput = SecurityUtil.hashSHA256(password);
         if (nv.getMatKhau().equals(hashedInput)) {
+            // ĐĂNG NHẬP THÀNH CÔNG -> Reset bộ đếm thử sai
+            loginAttemptsCache.remove(username);
             repository.impl.NhatKyRepoImpl.getInstance().addLog(new model.entity.NhatKyHoatDong(
                     nv.getMaNv(), "ĐĂNG NHẬP", "NHAN_VIEN", null, "Đăng nhập thành công", ipAddress, null
             ));
             return nv;
+        } else {
+            // ĐĂNG NHẬP THẤT BẠI -> Cộng dồn số lần thử sai
+            LoginAttempt attempt = loginAttemptsCache.get(username);
+            if (attempt == null) {
+                loginAttemptsCache.put(username, new LoginAttempt(1, 0));
+            } else {
+                attempt.attempts++;
+                if (attempt.attempts >= 5) {
+                    // Khóa tài khoản trong vòng 5 phút (300.000 ms)
+                    attempt.lockTime = System.currentTimeMillis() + (5 * 60 * 1000);
+                    System.err.println("⚠️ [SECURITY WARNING] Tài khoản " + username + " đã bị khóa 5 phút do nhập sai mật khẩu liên tiếp 5 lần!");
+                }
+            }
         }
         return null;
     }
@@ -109,16 +159,6 @@ public class NhanVienServiceImpl implements INhanVienService {
     @Override
     public boolean resetPasswordByAdmin(String maNv, String newPassword) {
         return nhanVienRepository.updateMatKhau(maNv, SecurityUtil.hashSHA256(newPassword));
-    }
-
-    @Override
-    public boolean isAccountLocked(String username) {
-        return false;
-    }
-
-    @Override
-    public long getRemainingLockTime(String username) {
-        return 0;
     }
 
     @Override

@@ -62,7 +62,6 @@ public class PortalCartController extends HttpServlet {
             }
             return;
         }
-
         if (uri.endsWith("/cart/update")) {
             performUpdateQuantity(request, response);
             return;
@@ -71,20 +70,30 @@ public class PortalCartController extends HttpServlet {
             performToggleSelect(request, response);
             return;
         }
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         String maKh = currentCustomer.getMaKh();
-
         try {
             String maSp = request.getParameter("maSp");
             int maSize = Integer.parseInt(request.getParameter("maSize"));
             int soLuong = Integer.parseInt(request.getParameter("soLuong"));
+
+            // CHỐT CHẶN PHÒNG THỦ: Khi chọn bánh ngọt/cafe nóng không có đá/đường, tham số gửi lên sẽ là null.
+            // Gán giá trị mặc định tránh lỗi khóa ngoại và NOT NULL trong DB.
             String mucDa = request.getParameter("mucDa");
+            if (mucDa == null || mucDa.trim().isEmpty()) {
+                mucDa = "100% Đá";
+            }
             String mucDuong = request.getParameter("mucDuong");
+            if (mucDuong == null || mucDuong.trim().isEmpty()) {
+                mucDuong = "100% Đường";
+            }
             String ghiChuMon = request.getParameter("ghiChuMon");
+            if (ghiChuMon == null || ghiChuMon.trim().isEmpty()) {
+                ghiChuMon = "Normal";
+            }
+
             String[] arrToppings = request.getParameterValues("toppings[]");
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
-
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
                     String maTp = tpIdStr; // STRING Key TPxxxxx
@@ -100,7 +109,6 @@ public class PortalCartController extends HttpServlet {
                     toppingList.add(new ChiTietToppingGioHang(0L, maTp, qty));
                 }
             }
-
             String maCtghStr = request.getParameter("maCtgh");
             if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
                 long maCtgh = Long.parseLong(maCtghStr.trim());
@@ -126,7 +134,6 @@ public class PortalCartController extends HttpServlet {
                 }
                 return;
             }
-
             boolean success = gioHangService.addSanPhamToGioHang(maKh, maSp, maSize, soLuong, mucDa, mucDuong, ghiChuMon, toppingList);
             if (isAjax) {
                 if (success) {
@@ -160,9 +167,9 @@ public class PortalCartController extends HttpServlet {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maSize);
             ps.setInt(2, soLuong);
-            ps.setString(3, mucDa);
-            ps.setString(4, mucDuong);
-            ps.setString(5, ghiChuMon);
+            ps.setString(3, mucDa != null ? mucDa : "100% Đá");
+            ps.setString(4, mucDuong != null ? mucDuong : "100% Đường");
+            ps.setString(5, ghiChuMon != null ? ghiChuMon : "Normal");
             ps.setLong(6, maCtgh);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {

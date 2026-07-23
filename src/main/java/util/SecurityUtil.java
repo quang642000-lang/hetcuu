@@ -4,12 +4,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SecurityUtil {
-
-    // Constructor private để chặn việc khởi tạo thực thể
     private SecurityUtil() {}
 
     /**
-     * Hàm băm mật khẩu một chiều bằng thuật toán SHA-256
+     * Hàm băm mật khẩu một chiều bằng thuật toán SHA-256 thô (Duy trì tính tương thích ngược)
      * @param password Mật khẩu gốc dạng clear text
      * @return Chuỗi Hex dài 64 ký tự đã mã hóa thành công
      */
@@ -20,8 +18,6 @@ public class SecurityUtil {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = digest.digest(password.getBytes());
-
-            // Chuyển mảng byte đã băm sang dạng chuỗi Hexadecimal thập lục phân
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashedBytes) {
                 String hex = Integer.toHexString(0xff & b);
@@ -35,6 +31,19 @@ public class SecurityUtil {
             e.printStackTrace();
             throw new RuntimeException("Lỗi nghiêm trọng: Không tìm thấy thuật toán mã hóa SHA-256!");
         }
+    }
+
+    /**
+     * Hàm băm mật khẩu nâng cao kết hợp Muối độc bản (Salt) để chặn Rainbow Table
+     * Sử dụng Username/Email làm Salt động để đảm bảo tính độc bản của mỗi tài khoản
+     * @param password Mật khẩu thô
+     * @param salt Muối độc bản (tên đăng nhập hoặc email)
+     * @return Chuỗi băm bảo mật cao
+     */
+    public static String hashWithSalt(String password, String salt) {
+        if (password == null) return null;
+        String saltedPassword = password + "[$tea_pos_salt_key$]" + (salt != null ? salt : "");
+        return hashSHA256(saltedPassword);
     }
 
     /**

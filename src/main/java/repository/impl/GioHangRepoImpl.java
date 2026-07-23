@@ -11,7 +11,9 @@ import java.util.List;
 
 public class GioHangRepoImpl implements IGioHangRepository {
     private static GioHangRepoImpl instance;
+
     private GioHangRepoImpl() {}
+
     public static synchronized GioHangRepoImpl getInstance() {
         if (instance == null) {
             instance = new GioHangRepoImpl();
@@ -127,9 +129,12 @@ public class GioHangRepoImpl implements IGioHangRepository {
                 ps.setString(2, chiTiet.getMaSp());
                 ps.setInt(3, chiTiet.getMaSize());
                 ps.setInt(4, chiTiet.getSoLuong());
-                ps.setString(5, chiTiet.getMucDa());
-                ps.setString(6, chiTiet.getMucDuong());
-                ps.setString(7, chiTiet.getGhiChuMon());
+
+                // PHÒNG THỦ TUYỆT ĐỐI TẠI TẦNG REPOSITORY: Không bao giờ cho phép lưu NULL xuống cột NOT NULL CSDL
+                ps.setString(5, chiTiet.getMucDa() != null ? chiTiet.getMucDa() : "100% Đá");
+                ps.setString(6, chiTiet.getMucDuong() != null ? chiTiet.getMucDuong() : "100% Đường");
+                ps.setString(7, chiTiet.getGhiChuMon() != null ? chiTiet.getGhiChuMon() : "Normal");
+
                 ps.setBoolean(8, chiTiet.isChonMua());
                 int affectedRows = ps.executeUpdate();
                 if (affectedRows > 0) {
@@ -149,7 +154,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public boolean deleteChiTiet(long maCtgh) {
-        // CHỐT CHẶN BẢO MẬT: XÓA SẠCH CON TOPPINGS TRƯỚC ĐỂ TRÁNH LỖI RÀNG BUỘC KHÓA NGOẠI SQL SERVER
         String deleteToppingsSql = "DELETE FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh = ?";
         String deleteItemSql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_ctgh = ?";
         try (Connection conn = DBConnect.getConnection()) {
@@ -158,7 +162,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
                  PreparedStatement ps2 = conn.prepareStatement(deleteItemSql)) {
                 ps1.setLong(1, maCtgh);
                 ps1.executeUpdate();
-
                 ps2.setLong(1, maCtgh);
                 int rows = ps2.executeUpdate();
                 conn.commit();
@@ -177,7 +180,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
 
     @Override
     public boolean clearGioHang(int maGh) {
-        // XÓA SẠCH TOÀN BỘ TOPPINGS LIÊN KẾT TRƯỚC KHI GIẢI PHÓNG GIỎ
         String deleteToppingsSql = "DELETE FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_ctgh IN (SELECT ma_ctgh FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?)";
         String deleteItemsSql = "DELETE FROM CHI_TIET_GIO_HANG WHERE ma_gh = ?";
         try (Connection conn = DBConnect.getConnection()) {
@@ -186,7 +188,6 @@ public class GioHangRepoImpl implements IGioHangRepository {
                  PreparedStatement ps2 = conn.prepareStatement(deleteItemsSql)) {
                 ps1.setInt(1, maGh);
                 ps1.executeUpdate();
-
                 ps2.setInt(1, maGh);
                 int rows = ps2.executeUpdate();
                 conn.commit();
