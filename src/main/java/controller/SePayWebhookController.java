@@ -35,7 +35,7 @@ public class SePayWebhookController extends HttpServlet {
             System.err.println("[TEA POS WARNING] Không thể nạp application.properties để lấy sepay.token: " + e.getMessage());
         }
         if (sepayToken == null || sepayToken.trim().isEmpty()) {
-            sepayToken = "U4RXVN1VBGSWAZR68VQ3SMYHUPFFC6AGOYBKXY8PQBTXAT3YULOBQZI4KDPZ2WSE"; // Fallback từ application.properties
+            sepayToken = "U4RXVN1VBGSWAZR68VQ3SMYHUPFFC6AGOYBKXY8PQBTXAT3YULOBQZI4KDPZ2WSE"; // Fallback từ CSDL
         }
     }
 
@@ -58,11 +58,11 @@ public class SePayWebhookController extends HttpServlet {
                 }
             }
         } else {
-            authorized = true; // Bỏ qua nếu không cấu hình token
+            authorized = true; // Bỏ qua nếu không cấu hình token trong file properties
         }
 
         if (!authorized) {
-            System.err.println("⚠️ [SECURITY WARNING] Từ chối Webhook SePay do không khớp Token xác thực!");
+            System.err.println("⚠️ [SECURITY WARNING] Từ chối Webhook SePay do không khớp Token xác thực! Header: " + authHeader + " | Param: " + paramToken);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"status\":\"UNAUTHORIZED\",\"message\":\"Invalid webhook token\"}");
             return;
@@ -75,6 +75,7 @@ public class SePayWebhookController extends HttpServlet {
                 sb.append(line);
             }
         }
+
         try {
             String jsonStr = sb.toString();
             if (jsonStr.trim().isEmpty()) {
@@ -82,18 +83,31 @@ public class SePayWebhookController extends HttpServlet {
                 response.getWriter().write("{\"status\":\"FAILED\",\"message\":\"Empty payload\"}");
                 return;
             }
+
             JsonObject json = JsonParser.parseString(jsonStr).getAsJsonObject();
             String content = json.has("content") ? json.get("content").getAsString() : "";
-            double amount = json.has("transferAmount") ? json.get("transferAmount").getAsDouble() : 0.0;
+
+            // HỖ TRỢ ĐA KHÓA: Đọc cả transferAmount lẫn amount để tương thích với tất cả cấu hình webhook SePay
+            double amount = 0.0;
+            if (json.has("transferAmount")) {
+                amount = json.get("transferAmount").getAsDouble();
+            } else if (json.has("amount")) {
+                amount = json.get("amount").getAsDouble();
+            }
+
+            System.out.println("📬 [SEPAY WEBHOOK] Nhận tín hiệu thanh toán: Nội dung='" + content + "', Số tiền=" + amount);
 
             String upperContent = content.toUpperCase();
             boolean success = donHangService.handleSePayWebhook(upperContent, amount);
+
             if (success) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Order matched and processed\"}");
+                System.out.println("✅ [SEPAY WEBHOOK] Khớp đơn và cập nhật CSDL thành công cho nội dung: " + upperContent);
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"status\":\"FAILED\",\"message\":\"No pending order matched this transfer\"}");
+                System.err.println("❌ [SEPAY WEBHOOK] Không tìm thấy đơn hàng chờ thanh toán khớp với nội dung: " + upperContent + " hoặc sai lệch số tiền (" + amount + "đ)");
             }
         } catch (Exception e) {
             e.printStackTrace();

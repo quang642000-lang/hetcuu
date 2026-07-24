@@ -80,6 +80,7 @@ public class DonHangServiceImpl implements IDonHangService {
         boolean success = donHangRepository.add(donHang);
         if (success) {
             donHangRepository.updateTrangThaiDon(donHang.getMaDh(), donHang.getTrangThaiDon());
+
             // 3. TỰ ĐỘNG TÍCH LŨY ĐIỂM CRM CHO KHÁCH HÀNG THÀNH VIÊN (1 Điểm = 10.000 VNĐ chi tiêu thực tế)
             if (donHang.getMaKh() != null) {
                 int diemCong = donHang.getTongPhaiTra() / 10000;
@@ -87,6 +88,7 @@ public class DonHangServiceImpl implements IDonHangService {
                     khachHangRepository.congDiemTichLuy(donHang.getMaKh(), diemCong);
                 }
             }
+
             nhatKyRepository.addLog(new NhatKyHoatDong(
                     maNv, "CHỐT_ĐƠN_POS", "DON_HANG", null,
                     "Mã hóa đơn: " + donHang.getMaDh() + " | Tích lũy điểm CRM thành công.", "127.0.0.1", null
@@ -102,7 +104,6 @@ public class DonHangServiceImpl implements IDonHangService {
         }
         donHang.setChiTietDonHangList(items);
         donHang.setTrangThaiDon(0);
-
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
             if (!voucherDecremented) {
@@ -110,11 +111,9 @@ public class DonHangServiceImpl implements IDonHangService {
                 return false; // Chặn đơn online nếu voucher hết lượt
             }
         }
-
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
-
         return donHangRepository.add(donHang);
     }
 
@@ -122,13 +121,11 @@ public class DonHangServiceImpl implements IDonHangService {
     public boolean updateTrangThaiDon(String maDh, int trangThaiMoi, String maNv, String lyDoHuy) {
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
-
         dh.setMaNv(maNv);
         if (trangThaiMoi == 5) {
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
-
             // Hủy đơn -> Hoàn trả lại điểm tích lũy cũ đã dùng nếu có
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
@@ -150,7 +147,6 @@ public class DonHangServiceImpl implements IDonHangService {
             ));
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
-
         dh.setTrangThaiDon(trangThaiMoi);
         donHangRepository.update(dh);
 
@@ -163,7 +159,6 @@ public class DonHangServiceImpl implements IDonHangService {
                 }
             }
         }
-
         nhatKyRepository.addLog(new NhatKyHoatDong(
                 maNv, "CẬP_NHẬT_TRẠNG_THÁI_ĐƠN", "DON_HANG",
                 "Trạng thái cũ: " + dh.getTrangThaiDon(), "Trạng thái mới: " + trangThaiMoi, "127.0.0.1", null
@@ -190,7 +185,6 @@ public class DonHangServiceImpl implements IDonHangService {
                     updateTrangThaiDon(extractedMaDh, 2, "SYSTEM", "Khớp thành công đơn SePay Webhook.");
                     util.PaymentStore.transactions.put(extractedMaDh, true);
                     util.PaymentStore.transactions.put(extractedMaDh.replace("-", ""), true);
-
                     nhatKyRepository.addLog(new NhatKyHoatDong(
                             "SYSTEM", "KHỚP_ĐƠN_ONLINE_AUTO", "DON_HANG", null,
                             "Khớp thành công đơn " + extractedMaDh + " qua SePay Webhook số tiền: " + amount, "127.0.0.1", null
@@ -207,7 +201,8 @@ public class DonHangServiceImpl implements IDonHangService {
         if (thoiGianHenLay == null) return false;
         long current = System.currentTimeMillis();
         long diffMinutes = (thoiGianHenLay.getTime() - current) / (60 * 1000);
-        return diffMinutes >= 15;
+        // TỐI ƯU HÓA SIÊU MƯỢT: Cho phép dung sai trễ mạng 2 phút (chấp nhận từ 13 phút trở lên cho mốc hẹn tối thiểu 15 phút)
+        return diffMinutes >= 13;
     }
 
     @Override

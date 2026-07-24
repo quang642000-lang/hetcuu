@@ -36,7 +36,7 @@
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
 <div class="container py-5">
-    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cash-coin text-success me-2"></i>ĐẶT HÀNG CLICK & COLLECT</h3>
+    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cart3 text-success me-2"></i>GIỎ HÀNG CỦA BẠN</h3>
     <form action="${pageContext.request.contextPath}/checkout/place" method="POST" id="checkoutForm">
         <!-- Các trường dữ liệu ẩn gửi về Controller để chốt DB -->
         <input type="hidden" name="tongTienHang" id="param_tongTienHang" value="${tongTienHang}">
@@ -45,17 +45,18 @@
         <input type="hidden" name="diemSuDung" id="param_diemSuDung" value="0">
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
-
         <div class="row g-4">
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
-                <!-- 1. HẸN GIỜ LẤY NƯỚC -->
+                <!-- 1. HẸN GIỜ LẤY NƯỚC (DÙNG DROPDOWN 24H) -->
                 <div class="card checkout-card p-4 shadow-sm mb-4">
                     <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC</h5>
-                    <p class="small text-muted mb-3">Vui lòng thiết lập giờ nhận nước tại quầy (Đảm bảo tối thiểu cách 15 phút so với hiện tại để Barista kịp chuẩn bị pha chế tốt nhất. Chỉ hỗ trợ lấy ngay trong ngày hôm nay).</p>
-                    <div class="mb-3">
-                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Thời gian đến lấy nước <span class="text-danger">*</span></label>
-                        <input type="time" class="form-control form-control-teapos" id="thoiGianHenLay" name="thoiGianHenLay" required>
+                    <p class="small text-muted mb-3">Vui lòng chọn thời gian bạn đến cửa hàng nhận nước (Yêu cầu tối thiểu cách 15 phút so với hiện tại để Barista kịp pha chế chuẩn vị. Cửa hàng mở cửa từ 07:00 đến 22:30 hàng ngày).</p>
+                    <div class="mb-3 text-start">
+                        <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Thời gian đến lấy nước (24H Format) <span class="text-danger">*</span></label>
+                        <select class="form-select form-control-teapos fw-bold text-success fs-5 py-2.5" id="thoiGianHenLay" name="thoiGianHenLay" required>
+                            <!-- Các mốc giờ 24h sẽ được tự động nạp bằng JS phía dưới -->
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="ghiChuDon" class="form-label fw-bold small text-dark">Lời nhắn dặn dò riêng cho thợ pha chế</label>
@@ -189,16 +190,49 @@
 <script>
     const userMaxPointsAvailable = ${not empty sessionScope.customer.diemTichLuy ? sessionScope.customer.diemTichLuy : 0};
     const rawBillTotal = ${tongTienHang};
+
     document.addEventListener("DOMContentLoaded", function() {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() + 15);
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const minTimeString = hours + ':' + minutes;
-        const inputTime = document.getElementById("thoiGianHenLay");
-        if (inputTime) {
-            inputTime.min = minTimeString;
-            inputTime.value = minTimeString;
+        const selectTime = document.getElementById("thoiGianHenLay");
+        if (selectTime) {
+            selectTime.innerHTML = "";
+            const now = new Date();
+
+            // Mốc tối thiểu khả dụng: Hiện tại + 16 phút (dung sai an toàn vượt màng lọc server)
+            const startLimit = new Date(now.getTime() + 16 * 60 * 1000);
+
+            // Cửa hàng đóng cửa ngưng nhận đơn lúc 22:30
+            const endLimit = new Date();
+            endLimit.setHours(22, 30, 0, 0);
+
+            if (startLimit.getTime() > endLimit.getTime()) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Cửa hàng ngừng nhận đơn Click & Collect hôm nay (Đóng cửa lúc 22:30)";
+                selectTime.appendChild(opt);
+                selectTime.disabled = true;
+            } else {
+                // Làm tròn phút lên bội số của 5 để giao diện cực kỳ gọn gàng chuyên nghiệp
+                let currentStep = new Date(startLimit.getTime());
+                const rem = currentStep.getMinutes() % 5;
+                if (rem !== 0) {
+                    currentStep.setMinutes(currentStep.getMinutes() + (5 - rem));
+                }
+                currentStep.setSeconds(0, 0);
+
+                // Generate các mốc giờ 24h cách nhau 5 phút
+                while (currentStep.getTime() <= endLimit.getTime()) {
+                    const hr = String(currentStep.getHours()).padStart(2, '0');
+                    const mn = String(currentStep.getMinutes()).padStart(2, '0');
+                    const timeStr = hr + ":" + mn;
+
+                    const opt = document.createElement("option");
+                    opt.value = timeStr;
+                    opt.textContent = timeStr + " (Hôm nay)";
+                    selectTime.appendChild(opt);
+
+                    currentStep.setMinutes(currentStep.getMinutes() + 5);
+                }
+            }
         }
         calculateRealtimeBill();
     });
@@ -228,7 +262,6 @@
             calculateRealtimeBill();
         }
     }
-
     function calculateRedeemPointsRealtime() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         if (inputPoints) {
@@ -242,7 +275,6 @@
         }
         calculateRealtimeBill();
     }
-
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;

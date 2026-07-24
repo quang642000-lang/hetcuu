@@ -25,7 +25,6 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
-
         body {
             font-family: 'Inter', sans-serif;
             color: var(--text-main);
@@ -33,20 +32,17 @@
             height: 100vh;
             overflow: hidden;
         }
-
         .pos-wrapper {
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
-
         .pos-main-container {
             display: flex;
             flex-grow: 1;
             overflow: hidden;
             height: calc(100vh - 60px);
         }
-
         .pos-category-sidebar {
             width: 110px;
             background-color: #ffffff;
@@ -56,7 +52,6 @@
             overflow-y: auto;
             flex-shrink: 0;
         }
-
         .pos-category-btn {
             display: flex;
             flex-direction: column;
@@ -74,17 +69,14 @@
             cursor: pointer;
             text-decoration: none;
         }
-
         .pos-category-btn i {
             font-size: 20px;
         }
-
         .pos-category-btn.active, .pos-category-btn:hover {
             background-color: var(--primary-light);
             color: var(--primary);
             border-left: 4px solid var(--primary);
         }
-
         .pos-menu-area {
             flex-grow: 1;
             padding: 20px;
@@ -94,7 +86,6 @@
             gap: 16px;
             background-color: var(--bg-main);
         }
-
         .pos-menu-header {
             display: flex;
             justify-content: space-between;
@@ -102,13 +93,11 @@
             gap: 16px;
             flex-wrap: wrap;
         }
-
         .pos-search-wrapper {
             position: relative;
             flex-grow: 1;
             max-width: 400px;
         }
-
         .pos-search-input {
             width: 100%;
             padding: 10px 15px 10px 40px;
@@ -118,12 +107,10 @@
             transition: all 0.2s;
             font-size: 14px;
         }
-
         .pos-search-input:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
-
         .pos-search-icon {
             position: absolute;
             left: 15px;
@@ -131,18 +118,15 @@
             transform: translateY(-50%);
             color: var(--text-muted);
         }
-
         .pos-product-container {
             flex-grow: 1;
             overflow-y: auto;
         }
-
         .pos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 16px;
         }
-
         .pos-product-card {
             background: #ffffff;
             border-radius: 12px;
@@ -156,13 +140,11 @@
             flex-direction: column;
             height: 100%;
         }
-
         .pos-product-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 15px rgba(0,0,0,0.05);
             border-color: var(--primary);
         }
-
         .pos-product-img {
             width: 100%;
             height: 100px;
@@ -170,7 +152,6 @@
             border-radius: 8px;
             margin-bottom: 10px;
         }
-
         .pos-card-name {
             font-size: 13px;
             font-weight: 700;
@@ -182,14 +163,12 @@
             -webkit-box-orient: vertical;
             margin-bottom: 4px;
         }
-
         .pos-card-price {
             font-size: 13px;
             font-weight: 800;
             color: var(--primary);
             margin-top: auto;
         }
-
         .pos-checkout-sidebar {
             width: 390px;
             background-color: #ffffff;
@@ -199,7 +178,6 @@
             flex-shrink: 0;
             box-shadow: -2px 0 10px rgba(0,0,0,0.02);
         }
-
         .pos-checkout-header {
             height: 60px;
             padding: 15px;
@@ -210,7 +188,6 @@
             flex-shrink: 0;
             background-color: #ffffff;
         }
-
         .pos-cart-items-wrapper {
             flex-grow: 1;
             overflow-y: auto;
@@ -220,21 +197,18 @@
             gap: 10px;
             background-color: #f8fafc;
         }
-
         .pos-crm-panel {
             padding: 12px 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
         .pos-summary-panel {
             padding: 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
         .pos-line-price {
             display: flex;
             justify-content: space-between;
@@ -242,7 +216,6 @@
             color: var(--text-muted);
             margin-bottom: 6px;
         }
-
         .pos-total-row {
             display: flex;
             justify-content: space-between;
@@ -254,7 +227,6 @@
             margin-top: 10px;
             margin-bottom: 15px;
         }
-
         .btn-primary-teapos {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
             border: none !important;
@@ -265,12 +237,10 @@
             cursor: pointer !important;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
         }
-
         .btn-primary-teapos:hover {
             transform: translateY(-1px) !important;
             box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
         }
-
         .pos-cash-suggest-btn {
             background: #ffffff;
             border: 1px solid #cbd5e1;
@@ -282,44 +252,32 @@
             cursor: pointer;
             flex-grow: 1;
         }
-
         .pos-cash-suggest-btn:hover {
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary);
         }
-
-        /* Fixed Bottom Nav for Mobile Tab Toggling - Hidden on Desktop */
+        /* Mobile View Switch Toggles */
         .pos-mobile-nav {
             display: none !important;
         }
-
-        /* =========================================================================
-           RESPONSIVE MEDIA QUERIES FOR TABLET & MOBILE DEVICES
-        ========================================================================= */
         @media (max-width: 991.98px) {
             .pos-wrapper {
                 height: 100vh;
                 overflow: hidden;
             }
-
             .pos-main-container {
                 flex-direction: column;
-                height: calc(100vh - 115px); /* Leave room for header (60px) and mobile nav (55px) */
+                height: calc(100vh - 115px);
                 position: relative;
             }
-
-            /* Toggle visibility of columns dynamically via CSS Class */
             .pos-main-container:not(.cart-active) .pos-checkout-sidebar {
                 display: none !important;
             }
-
             .pos-main-container.cart-active .pos-category-sidebar,
             .pos-main-container.cart-active .pos-menu-area {
                 display: none !important;
             }
-
-            /* Category Sidebar horizontal on Mobile */
             .pos-category-sidebar {
                 width: 100% !important;
                 height: 65px !important;
@@ -330,13 +288,11 @@
                 border-right: none !important;
                 border-bottom: 1px solid var(--border-color) !important;
                 flex-shrink: 0 !important;
-                scrollbar-width: none; /* Firefox hide */
+                scrollbar-width: none;
             }
-
             .pos-category-sidebar::-webkit-scrollbar {
-                display: none; /* Safari/Chrome hide */
+                display: none;
             }
-
             .pos-category-btn {
                 display: inline-flex !important;
                 flex-direction: row !important;
@@ -351,47 +307,37 @@
                 border-bottom: 3px solid transparent !important;
                 gap: 6px !important;
             }
-
             .pos-category-btn.active {
                 border-left: none !important;
                 border-bottom: 3px solid var(--primary) !important;
                 background-color: var(--primary-light) !important;
             }
-
             .pos-menu-area {
                 padding: 12px !important;
                 height: calc(100% - 65px) !important;
             }
-
             .pos-checkout-sidebar {
                 width: 100% !important;
                 border-left: none !important;
                 height: 100% !important;
             }
-
             .pos-grid {
                 grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
                 gap: 12px !important;
             }
-
             .pos-product-card {
                 padding: 10px !important;
             }
-
             .pos-product-img {
                 height: 80px !important;
             }
-
             .pos-card-name {
                 font-size: 11px !important;
                 height: 32px !important;
             }
-
             .pos-card-price {
                 font-size: 11px !important;
             }
-
-            /* Responsive Mobile Bottom Navigation Bar */
             .pos-mobile-nav {
                 display: flex !important;
                 position: fixed;
@@ -404,7 +350,6 @@
                 z-index: 1030;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
             }
-
             .pos-mobile-nav-btn {
                 flex: 1;
                 display: flex;
@@ -420,16 +365,12 @@
                 transition: all 0.2s ease;
                 position: relative;
             }
-
             .pos-mobile-nav-btn.active {
                 color: var(--primary);
             }
-
             .pos-mobile-nav-btn i {
                 font-size: 18px;
             }
-
-            /* Mobile badge count */
             .mobile-cart-badge {
                 position: absolute;
                 top: 5px;
@@ -445,7 +386,6 @@
     </style>
 </head>
 <body>
-
 <div class="pos-wrapper">
     <!-- HEADER TOÀN NĂNG -->
     <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px; flex-shrink: 0; z-index: 1040;">
@@ -463,7 +403,6 @@
                     </a>
                 </div>
             </div>
-
             <div class="d-flex align-items-center gap-3 text-white ms-auto">
                 <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
                     <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -474,12 +413,10 @@
                         <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posPasswordModal"><i class="bi bi-key-fill me-2 text-warning"></i>Đổi mật khẩu</a></li>
                     </ul>
                 </div>
-
                 <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
                     <i class="bi bi-calendar3 text-success me-1"></i>
                     <span id="posCurrentClock">--:--:--</span>
                 </span>
-
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                     <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
                 </a>
@@ -489,10 +426,8 @@
             </div>
         </div>
     </nav>
-
     <!-- THÂN CHÍNH POS -->
     <div class="pos-main-container" id="posMainContainer">
-
         <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
         <div class="pos-category-sidebar">
             <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
@@ -506,7 +441,6 @@
                 </button>
             </c:forEach>
         </div>
-
         <!-- CỘT 2: LƯỚI SẢN PHẨM -->
         <div class="pos-menu-area">
             <div class="pos-menu-header">
@@ -520,7 +454,6 @@
                     <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
                 </div>
             </div>
-
             <div class="pos-product-container">
                 <div class="pos-grid" id="posProductGrid">
                     <c:forEach var="sp" items="${products}">
@@ -551,7 +484,6 @@
                 </div>
             </div>
         </div>
-
         <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN -->
         <div class="pos-checkout-sidebar">
             <div class="pos-checkout-header">
@@ -560,14 +492,12 @@
                     <i class="bi bi-trash3-fill"></i> Hủy đơn
                 </button>
             </div>
-
             <div class="pos-cart-items-wrapper" id="posCartItems">
                 <div class="text-center text-muted py-5 my-5">
                     <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
                     <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
                 </div>
             </div>
-
             <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
@@ -581,7 +511,6 @@
                     </div>
                     <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
                 </div>
-
                 <div id="crmLoyaltyArea" class="mt-2" style="display: none !important;">
                     <div class="d-flex gap-1.5 mb-1">
                         <button type="button" class="btn btn-xs btn-outline-success fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="showVoucherSelectionModal()"><i class="bi bi-ticket-perforated-fill"></i> HỘP VOUCHER VIP</button>
@@ -592,7 +521,6 @@
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
-
             <!-- TỔNG HỢP TIỀN BÁO CÁO -->
             <div class="pos-summary-panel">
                 <div class="pos-line-price">
@@ -615,7 +543,6 @@
                     <span>TỔNG THỰC THU:</span>
                     <span class="text-success" id="totalPayablePrice">0 đ</span>
                 </div>
-
                 <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
                 <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
@@ -634,8 +561,7 @@
                         <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
                     </div>
                 </div>
-
-                <!-- PHÂN HỆ KHAI BÁO PHƯƠNG THỨC THANH TOÁN (RESTORED RADIO BUTTONS) -->
+                <!-- PHƯƠNG THỨC THANH TOÁN -->
                 <div class="mb-3 text-start">
                     <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
                     <div class="btn-group w-100" role="group">
@@ -649,7 +575,6 @@
                         </label>
                     </div>
                 </div>
-
                 <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
@@ -664,13 +589,11 @@
                     <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                     <div id="posFormItemsContainer"></div>
                 </form>
-
                 <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                     <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
                 </button>
             </div>
         </div>
-
     </div>
 
     <!-- Fixed Responsive Bottom Nav for Mobile Tab Switching -->
@@ -699,7 +622,7 @@
             <div class="modal-body p-4 text-start bg-light">
                 <div class="mb-3">
                     <label class="form-label text-muted small fw-bold">Họ và tên nhân viên</label>
-                    <input type="text" id="profile_hoTen" class="form-control" value="<c:out value="${sessionScope.user.hoTen}"/>" required>
+                    <input type="text" id="profile_hoTen" class="form-control" value="<c:out value='${sessionScope.user.hoTen}'/>" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label text-muted small fw-bold">Số điện thoại liên hệ</label>
@@ -711,7 +634,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label text-muted small fw-bold">Tên đăng nhập hệ thống</label>
-                    <input type="text" class="form-control bg-light text-muted" value="<c:out value="${sessionScope.user.tenDangNhap}"/>" readonly>
+                    <input type="text" class="form-control bg-light text-muted" value="<c:out value='${sessionScope.user.tenDangNhap}'/>" readonly>
                 </div>
             </div>
             <div class="modal-footer bg-light border-top p-2.5">
@@ -846,18 +769,21 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    // Đồng hồ thời gian thực tại quầy thu ngân
+    // Đồng hồ thời gian thực tại quầy thu ngân (Khóa cứng 24 giờ HH:mm:ss và Ngày dd/MM/yyyy)
     function updatePOSClock() {
         const el = document.getElementById("posCurrentClock");
         if (el) {
             const now = new Date();
-            el.innerText = now.toTimeString().split(' ')[0] + " | " + now.toLocaleDateString('vi-VN');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const dateStr = now.toLocaleDateString('vi-VN');
+            el.innerText = hours + ":" + minutes + ":" + seconds + " | " + dateStr;
         }
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
 
-    // Ràng buộc số điện thoại
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
@@ -865,7 +791,6 @@
         }
     }
 
-    // Bộ lọc danh mục đồ uống tại quầy
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
         if (maDm === 'all') {
@@ -886,7 +811,6 @@
         }
     }
 
-    // Bộ lọc tag (NEW, HOT, ALL)
     function filterBadge(tag) {
         document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
         const activeBtn = document.getElementById('f_' + tag);
@@ -907,7 +831,6 @@
         });
     }
 
-    // Tra cứu nhanh sản phẩm bằng từ khóa gõ
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
@@ -922,7 +845,6 @@
         });
     }
 
-    // Mobile responsive tab switcher
     function switchPosTab(tabName) {
         const container = document.getElementById('posMainContainer');
         const menuBtn = document.getElementById('mobileTabMenuBtn');
@@ -938,14 +860,12 @@
         }
     }
 
-    // Lắng nghe các tham số trả về sau khi redirect từ Servlet
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         const orderId = urlParams.get('orderId');
         const maPt = urlParams.get('maPt');
         const payable = urlParams.get('payable');
-
         if (msg === 'createsuccess' && orderId) {
             if (maPt === '2') {
                 showPosQrCodeModal(orderId, payable);
@@ -956,7 +876,6 @@
     });
 </script>
 
-<!-- Metadata cấu hình sản phẩm động được chèn đồng bộ -->
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {
@@ -976,7 +895,6 @@
         };
     </script>
 </c:forEach>
-
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 </body>
 </html>
