@@ -4,7 +4,6 @@ import model.entity.*;
 import service.*;
 import service.impl.*;
 import config.DBConnect;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +34,16 @@ public class PortalCheckoutController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
+        // Anti-Browser Cache
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        // Generate Idempotency Token
+        String checkoutToken = UUID.randomUUID().toString();
+        session.setAttribute("checkoutToken", checkoutToken);
+        request.setAttribute("checkoutToken", checkoutToken);
 
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         // Lấy thông tin tươi mới nhất từ Database để cập nhật ví điểm Loyalty CRM
@@ -75,6 +85,19 @@ public class PortalCheckoutController extends HttpServlet {
             return;
         }
 
+        // 1. Chốt chặn bảo mật Idempotency Token chống Double Checkout / Spam nút Back
+        String sessionToken = (String) session.getAttribute("checkoutToken");
+        String paramToken = request.getParameter("checkoutToken");
+
+        if (sessionToken == null || paramToken == null || !sessionToken.equals(paramToken)) {
+            LOGGER.log(Level.WARNING, "⚠️ Phát hiện hành vi Double Checkout hoặc Spam nút Back của trình duyệt! Hủy giao dịch. không thanh toán được");
+            response.sendRedirect(request.getContextPath() + "/cart?msg=double_checkout_detected");
+            return;
+        }
+
+        // Hủy Token ngay lập tức trước khi xử lý nghiệp vụ để khóa luồng chống trùng lặp
+        session.removeAttribute("checkoutToken");
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         try {
             int tongTienHang = Integer.parseInt(request.getParameter("tongTienHang"));
@@ -85,11 +108,27 @@ public class PortalCheckoutController extends HttpServlet {
             int tongPhaiTra = Integer.parseInt(request.getParameter("tongPhaiTra"));
             int maPt = Integer.parseInt(request.getParameter("maPt"));
             String ghiChuDon = request.getParameter("ghiChuDon");
-            String henLayRaw = request.getParameter("thoiGianHenLay"); // Chỉ nhận "15:30" (Giờ lấy trong ngày)
+            String henLayRaw = request.getParameter("thoiGianHenLay"); // Nhận mốc giờ từ select 24h
 
             if (henLayRaw == null || henLayRaw.trim().isEmpty()) {
                 request.setAttribute("error", "Bắt buộc phải hẹn giờ đến cửa hàng nhận nước!");
                 doGet(request, response);
+                return;
+            }
+
+            // Khống chế giỏ hàng trống khi Spam thanh toán
+            GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
+            List<ChiTietDonHang> orderItems = new ArrayList<>();
+            if (gh != null && gh.getChiTietGioHangList() != null) {
+                for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
+                    if (item.isChonMua()) {
+                        orderItems.add(mapCartToOrderDetail(item));
+                    }
+                }
+            }
+
+            if (orderItems.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/cart?msg=empty_selection");
                 return;
             }
 
@@ -107,7 +146,7 @@ public class PortalCheckoutController extends HttpServlet {
                 return;
             }
 
-            // CẢI TIẾN: Gộp Giờ gõ từ Client ("15:30") với Ngày hôm nay (Today) thành mốc Timestamp đầy đủ
+            // Gộp Giờ gõ từ Client ("15:30") với Ngày hôm nay (Today) thành mốc Timestamp đầy đủ
             LocalDate today = LocalDate.now();
             String fullDateTimeStr = today.toString() + " " + henLayRaw.trim() + ":00";
             Timestamp thoiGianHenLay = Timestamp.valueOf(fullDateTimeStr);
@@ -131,17 +170,6 @@ public class PortalCheckoutController extends HttpServlet {
             dh.setGhiChuDon(ghiChuDon);
             dh.setTrangThaiThanhToan(0); // 0: Chưa thanh toán
             dh.setTrangThaiDon(0);       // 0: Chờ duyệt/Chờ xác nhận
-
-            // Ánh xạ chi tiết giỏ hàng sang chi tiết đơn hàng
-            GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
-            List<ChiTietDonHang> orderItems = new ArrayList<>();
-            if (gh != null && gh.getChiTietGioHangList() != null) {
-                for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
-                    if (item.isChonMua()) {
-                        orderItems.add(mapCartToOrderDetail(item));
-                    }
-                }
-            }
 
             // Đặt đơn hàng online an toàn trong một Transaction duy nhất
             boolean placed = donHangService.placeOrderOnline(dh, orderItems);

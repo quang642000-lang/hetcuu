@@ -36,7 +36,7 @@
 <body class="bg-light">
 <jsp:include page="/views/layout/header_portal.jsp" />
 <div class="container py-5">
-    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cart3 text-success me-2"></i>GIỎ HÀNG CỦA BẠN</h3>
+    <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-cart3 text-success me-2"></i>TIẾN HÀNH THANH TOÁN</h3>
     <form action="${pageContext.request.contextPath}/checkout/place" method="POST" id="checkoutForm">
         <!-- Các trường dữ liệu ẩn gửi về Controller để chốt DB -->
         <input type="hidden" name="tongTienHang" id="param_tongTienHang" value="${tongTienHang}">
@@ -45,12 +45,16 @@
         <input type="hidden" name="diemSuDung" id="param_diemSuDung" value="0">
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
+
+        <!-- CHỐT CHẶN BẢO MẬT: Bơm Idempotency Token chống Spam nút Back/Double Checkout -->
+        <input type="hidden" name="checkoutToken" value="${checkoutToken}">
+
         <div class="row g-4">
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
                 <!-- 1. HẸN GIỜ LẤY NƯỚC (DÙNG DROPDOWN 24H) -->
                 <div class="card checkout-card p-4 shadow-sm mb-4">
-                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC</h5>
+                    <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-clock-fill text-danger me-2"></i>RÀNG BUỘC HẸN GIỜ LẤY NƯỚC (24H)</h5>
                     <p class="small text-muted mb-3">Vui lòng chọn thời gian bạn đến cửa hàng nhận nước (Yêu cầu tối thiểu cách 15 phút so với hiện tại để Barista kịp pha chế chuẩn vị. Cửa hàng mở cửa từ 07:00 đến 22:30 hàng ngày).</p>
                     <div class="mb-3 text-start">
                         <label for="thoiGianHenLay" class="form-label fw-bold small text-dark">Thời gian đến lấy nước (24H Format) <span class="text-danger">*</span></label>
@@ -187,6 +191,7 @@
     </form>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
+
 <script>
     const userMaxPointsAvailable = ${not empty sessionScope.customer.diemTichLuy ? sessionScope.customer.diemTichLuy : 0};
     const rawBillTotal = ${tongTienHang};
@@ -196,8 +201,7 @@
         if (selectTime) {
             selectTime.innerHTML = "";
             const now = new Date();
-
-            // Mốc tối thiểu khả dụng: Hiện tại + 16 phút (dung sai an toàn vượt màng lọc server)
+            // Mốc tối thiểu khả dụng: Hiện tại + 16 phút (dung sai an toàn vượt màng lọc server mượt mà)
             const startLimit = new Date(now.getTime() + 16 * 60 * 1000);
 
             // Cửa hàng đóng cửa ngưng nhận đơn lúc 22:30
@@ -211,26 +215,28 @@
                 selectTime.appendChild(opt);
                 selectTime.disabled = true;
             } else {
-                // Làm tròn phút lên bội số của 5 để giao diện cực kỳ gọn gàng chuyên nghiệp
-                let currentStep = new Date(startLimit.getTime());
-                const rem = currentStep.getMinutes() % 5;
-                if (rem !== 0) {
-                    currentStep.setMinutes(currentStep.getMinutes() + (5 - rem));
+                // Nạp các mốc 24H cách nhau 5 phút
+                let current = new Date(startLimit.getTime());
+                // Làm tròn số phút lên bội số của 5 tiếp theo để giao diện gọn gàng
+                let minDiff = current.getMinutes() % 5;
+                if (minDiff > 0) {
+                    current.setMinutes(current.getMinutes() + (5 - minDiff));
                 }
-                currentStep.setSeconds(0, 0);
+                current.setSeconds(0);
+                current.setMilliseconds(0);
 
-                // Generate các mốc giờ 24h cách nhau 5 phút
-                while (currentStep.getTime() <= endLimit.getTime()) {
-                    const hr = String(currentStep.getHours()).padStart(2, '0');
-                    const mn = String(currentStep.getMinutes()).padStart(2, '0');
-                    const timeStr = hr + ":" + mn;
-
+                while (current.getTime() <= endLimit.getTime()) {
                     const opt = document.createElement("option");
+                    const hours = String(current.getHours()).padStart(2, '0');
+                    const minutes = String(current.getMinutes()).padStart(2, '0');
+                    const timeStr = hours + ":" + minutes;
+
                     opt.value = timeStr;
                     opt.textContent = timeStr + " (Hôm nay)";
                     selectTime.appendChild(opt);
 
-                    currentStep.setMinutes(currentStep.getMinutes() + 5);
+                    // Kích tăng 5 phút tiếp theo
+                    current.setMinutes(current.getMinutes() + 5);
                 }
             }
         }
@@ -247,6 +253,7 @@
                 const type = parseInt(selectedOpt.dataset.type);
                 const value = parseInt(selectedOpt.dataset.value);
                 const maxVal = parseInt(selectedOpt.dataset.max);
+
                 if (type === 1) {
                     voucherDiscount = value;
                 } else if (type === 2) {
@@ -262,6 +269,7 @@
             calculateRealtimeBill();
         }
     }
+
     function calculateRedeemPointsRealtime() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         if (inputPoints) {
@@ -275,18 +283,22 @@
         }
         calculateRealtimeBill();
     }
+
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;
         let pointsDiscount = 0;
+
         const select = document.getElementById("selectVoucher");
         const selectedOpt = select ? select.options[select.selectedIndex] : null;
+
         if (selectedOpt && selectedOpt.value !== "") {
             const code = selectedOpt.value;
             const type = parseInt(selectedOpt.dataset.type);
             const value = parseInt(selectedOpt.dataset.value);
             const maxVal = parseInt(selectedOpt.dataset.max);
             const minVal = parseInt(selectedOpt.dataset.min);
+
             if (rawSum < minVal) {
                 Swal.fire({
                     icon: 'warning',
@@ -297,6 +309,7 @@
                 calculateRealtimeBill();
                 return;
             }
+
             if (type === 1) {
                 voucherDiscount = value;
             } else if (type === 2) {
@@ -314,30 +327,35 @@
             document.getElementById("param_tienGiamGia").value = 0;
             document.getElementById("display_discount").innerText = '-0 đ';
         }
+
         const inputPoints = document.getElementById("inputRedeemPoints");
         let pointsToUse = parseInt(inputPoints.value) || 0;
         pointsDiscount = pointsToUse * 1000;
+
         const limitPrePoints = rawSum - voucherDiscount;
         if (pointsDiscount > limitPrePoints) {
             pointsDiscount = Math.floor(limitPrePoints / 1000) * 1000;
             pointsToUse = pointsDiscount / 1000;
             inputPoints.value = pointsToUse > 0 ? pointsToUse : "";
         }
+
         if (pointsToUse > 0) {
-            document.getElementById("displayPointsRow").style.display = 'flex';
+            document.getElementById("displayPointsRow").style.setProperty('display', 'flex', 'important');
             document.getElementById("txtPointsRedeemed").innerText = pointsToUse;
             document.getElementById("display_pointsDiscount").innerText = '-' + pointsDiscount.toLocaleString('vi-VN') + ' đ';
             document.getElementById("param_diemSuDung").value = pointsToUse;
             document.getElementById("param_tienTruDiem").value = pointsDiscount;
         } else {
-            document.getElementById("displayPointsRow").style.display = 'none';
+            document.getElementById("displayPointsRow").style.setProperty('display', 'none', 'important');
             document.getElementById("param_diemSuDung").value = 0;
             document.getElementById("param_tienTruDiem").value = 0;
         }
+
         let billBeforeTax = rawSum - voucherDiscount - pointsDiscount;
         if (billBeforeTax < 0) billBeforeTax = 0;
         let vatPrice = Math.round(billBeforeTax * 0.08);
         let finalPayable = billBeforeTax + vatPrice;
+
         document.getElementById("display_vat").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
         document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN') + ' đ';
         document.getElementById("param_tongPhaiTra").value = finalPayable;
