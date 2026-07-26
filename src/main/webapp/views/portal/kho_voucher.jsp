@@ -24,33 +24,35 @@
     </style>
 </head>
 <body class="bg-light">
-
 <jsp:include page="/views/layout/header_portal.jsp" />
-
 <div class="container py-5">
     <div class="row g-4">
         <!-- Sidebar Menu Trái -->
         <jsp:include page="/views/portal/profile-sidebar.jsp" />
-
         <!-- Cột Phải: Kho Voucher -->
         <div class="col-12 col-md-9">
             <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px;">
                 <h4 class="fw-bold mb-4 text-dark"><i class="bi bi-ticket-perforated-fill text-success me-2"></i>KHO VOUCHER CỦA BẠN</h4>
-
                 <div class="row g-3">
                     <c:choose>
                         <c:when test="${not empty vouchers}">
                             <c:forEach var="v" items="${vouchers}">
                                 <div class="col-12 col-md-6">
                                     <div class="voucher-card p-4 d-flex justify-content-between align-items-center">
-                                        <div>
+                                        <div class="text-start">
                                             <span class="badge bg-dark text-white fw-bold mb-2" style="letter-spacing: 0.5px;">${v.maCode}</span>
                                             <h6 class="fw-bold text-success mb-1"><c:out value="${v.tenKm}"/></h6>
                                             <small class="text-muted d-block" style="font-size: 11px;">Hạn sử dụng: <fmt:formatDate value="${v.ngayKetThuc}" pattern="dd/MM/yyyy"/></small>
                                             <small class="text-muted d-block" style="font-size: 11px;">Đơn tối thiểu: <fmt:formatNumber value="${v.donToiThieu}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</small>
+                                            <!-- THÔNG TIN SỐ LƯỢT ĐƯỢC DÙNG VÀ SỐ LƯỢT CÒN LẠI CHI TIẾT CỦA CÁ NHÂN KHÁCH HÀNG -->
+                                            <div class="mt-2 pt-2 border-top border-secondary border-opacity-10 small text-dark">
+                                                <div style="font-size: 11px;"><i class="bi bi-clock-history"></i> Lượt cá nhân tối đa: <strong class="text-success">${v.soLuotDungCaNhan == 0 ? "Vô hạn" : v.soLuotDungCaNhan += " Lần"}</strong></div>
+                                                <div style="font-size: 11px;"><i class="bi bi-check-circle"></i> Đã sử dụng: <strong class="text-danger">${v.soLuotDaDungCaNhan} Lần</strong></div>
+                                                <div style="font-size: 11px;"><i class="bi bi-arrow-right-circle"></i> Lượt còn lại: <strong class="text-primary">${v.soLuotDungCaNhan == 0 ? "Vô hạn" : (v.soLuotDungCaNhan - v.soLuotDaDungCaNhan) += " Lần"}</strong></div>
+                                            </div>
                                         </div>
-                                        <div class="text-end">
-                                            <button class="btn btn-sm btn-success fw-bold px-3 rounded-pill" onclick="copyVoucherCode('${v.maCode}')">SAO CHÉP MÃ</button>
+                                        <div class="text-end ms-3">
+                                            <button class="btn btn-sm btn-success fw-bold px-3 rounded-pill" onclick="copyVoucherCode('${v.maCode}')">SAO CHÉP</button>
                                         </div>
                                     </div>
                                 </div>
@@ -68,9 +70,7 @@
         </div>
     </div>
 </div>
-
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 <script>
     function copyVoucherCode(code) {
         navigator.clipboard.writeText(code).then(() => {

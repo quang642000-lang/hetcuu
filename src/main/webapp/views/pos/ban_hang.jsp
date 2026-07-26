@@ -7,7 +7,6 @@
     <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Thư viện CSS Gốc -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
@@ -16,43 +15,33 @@
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
-        /* CSS KHÓA CỨNG GIAO DIỆN CHUẨN DOANH NGHIỆP - TRÁNH VỠ KHUNG */
         :root {
             --primary: #10b981;
             --primary-dark: #059669;
             --primary-light: #ecfdf5;
-            --bg-main: #f8fafc;
-            --border-color: #e2e8f0;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius-md: 8px;
+            --radius-sm: 4px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-
-        html, body {
-            height: 100vh !important;
-            overflow: hidden !important;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        body {
             background-color: var(--bg-main);
         }
-
         .pos-wrapper {
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
-
         .pos-main-container {
             display: flex;
             height: calc(100vh - 60px);
             overflow: hidden;
             flex-grow: 1;
         }
-
-        /* SIDEBAR DANH MỤC TRÁI */
         .pos-category-sidebar {
             width: 110px;
             background-color: #ffffff;
@@ -62,7 +51,6 @@
             overflow-y: auto;
             flex-shrink: 0;
         }
-
         .pos-category-btn {
             width: 100%;
             padding: 15px 8px;
@@ -79,19 +67,15 @@
             transition: all 0.2s ease;
             gap: 4px;
         }
-
         .pos-category-btn:hover {
             color: var(--primary);
             background-color: #f8fafc;
         }
-
         .pos-category-btn.active {
             color: var(--primary);
             background-color: var(--primary-light);
             border-left-color: var(--primary);
         }
-
-        /* LƯỚI SẢN PHẨM Ở GIỮA */
         .pos-menu-area {
             flex-grow: 1;
             padding: 20px;
@@ -100,7 +84,6 @@
             flex-direction: column;
             gap: 16px;
         }
-
         .pos-menu-header {
             display: flex;
             justify-content: space-between;
@@ -108,13 +91,11 @@
             gap: 16px;
             flex-wrap: wrap;
         }
-
         .pos-search-wrapper {
             position: relative;
             flex-grow: 1;
             max-width: 400px;
         }
-
         .pos-search-icon {
             position: absolute;
             left: 12px;
@@ -122,37 +103,20 @@
             transform: translateY(-50%);
             color: var(--text-muted);
         }
-
         .pos-search-input {
             width: 100%;
-            padding: 10px 12px 10px 38px;
-            border-radius: 20px;
+            padding: 8px 12px 8px 36px;
             border: 1px solid var(--border-color);
-            background-color: #ffffff;
-            font-size: 13.5px;
+            border-radius: 20px;
             outline: none;
-            transition: all 0.2s;
+            font-size: 13px;
+            background-color: #ffffff;
         }
-
-        .pos-search-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-        }
-
-        .pos-product-container {
-            flex-grow: 1;
-        }
-
         .pos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 16px;
         }
-
-        .pos-card-wrapper {
-            position: relative;
-        }
-
         .pos-product-card {
             background-color: #ffffff;
             border: 1px solid var(--border-color);
@@ -167,13 +131,11 @@
             display: flex;
             flex-direction: column;
         }
-
         .pos-product-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-md);
             border-color: var(--primary);
         }
-
         .pos-product-img {
             width: 100%;
             height: 100px;
@@ -181,7 +143,6 @@
             border-radius: var(--radius-sm);
             margin-bottom: 8px;
         }
-
         .pos-card-name {
             font-size: 13px;
             font-weight: 700;
@@ -193,15 +154,12 @@
             -webkit-box-orient: vertical;
             margin-bottom: 4px;
         }
-
         .pos-card-price {
             font-size: 13px;
             font-weight: 800;
             color: var(--primary);
             margin-top: auto;
         }
-
-        /* GIỎ HÀNG BÊN PHẢI */
         .pos-checkout-sidebar {
             width: 390px;
             background-color: #ffffff;
@@ -211,7 +169,6 @@
             flex-shrink: 0;
             box-shadow: -2px 0 10px rgba(0, 0, 0, 0.02);
         }
-
         .pos-checkout-header {
             height: 60px;
             padding: 15px;
@@ -222,7 +179,6 @@
             flex-shrink: 0;
             background-color: #ffffff;
         }
-
         .pos-cart-items-wrapper {
             flex-grow: 1;
             overflow-y: auto;
@@ -232,23 +188,18 @@
             gap: 10px;
             background-color: #f8fafc;
         }
-
-        /* CRM & LOYALTY */
         .pos-crm-panel {
             padding: 12px 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
-        /* SUMMARY & THANH TOÁN */
         .pos-summary-panel {
             padding: 15px;
             border-top: 1px solid var(--border-color);
             background-color: #ffffff;
             flex-shrink: 0;
         }
-
         .pos-line-price {
             display: flex;
             justify-content: space-between;
@@ -256,7 +207,6 @@
             color: var(--text-muted);
             margin-bottom: 6px;
         }
-
         .pos-total-row {
             display: flex;
             justify-content: space-between;
@@ -268,7 +218,6 @@
             margin-top: 10px;
             margin-bottom: 12px;
         }
-
         .pos-cash-suggest-btn {
             background-color: #f1f5f9;
             border: 1px solid #cbd5e1;
@@ -280,23 +229,14 @@
             flex: 1;
             transition: all 0.15s;
         }
-
         .pos-cash-suggest-btn:hover {
             background-color: #e2e8f0;
             color: #0f172a;
         }
-
-        .pos-mobile-nav {
-            display: none !important;
-        }
-
-        /* CHUNG */
         .active-filter {
             background-color: #f1f5f9 !important;
             border: 1px solid #cbd5e1 !important;
         }
-
-        /* CSS HÓA ĐƠN IN NHIỆT */
         .receipt-container {
             font-family: 'Courier New', Courier, monospace;
             font-size: 12px;
@@ -308,7 +248,6 @@
 </head>
 <body>
 <div class="pos-wrapper">
-    <!-- HEADER TOÀN NĂNG -->
     <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px; flex-shrink: 0; z-index: 1040;">
         <div class="container-fluid d-flex align-items-center">
             <div class="d-flex align-items-center gap-3">
@@ -335,9 +274,9 @@
                     </ul>
                 </div>
                 <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-                    <i class="bi bi-calendar3 text-success me-1"></i>
-                    <span id="posCurrentClock">--:--:--</span>
-                </span>
+<i class="bi bi-calendar3 text-success me-1"></i>
+<span id="posCurrentClock">--:--:--</span>
+</span>
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                     <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
                 </a>
@@ -348,9 +287,7 @@
         </div>
     </nav>
 
-    <!-- THÂN CHÍNH POS -->
     <div class="pos-main-container" id="posMainContainer">
-        <!-- CỘT 1: SIDEBAR PHÂN LOẠI DANH MỤC TRÁI -->
         <div class="pos-category-sidebar">
             <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
                 <i class="bi bi-grid-fill fs-4 mb-1"></i>
@@ -364,7 +301,6 @@
             </c:forEach>
         </div>
 
-        <!-- CỘT 2: LƯỚI SẢN PHẨM -->
         <div class="pos-menu-area">
             <div class="pos-menu-header">
                 <div class="pos-search-wrapper">
@@ -408,7 +344,6 @@
             </div>
         </div>
 
-        <!-- CỘT 3: SƯỜN GIỎ HÀNG CHỐT THANH TOÁN -->
         <div class="pos-checkout-sidebar">
             <div class="pos-checkout-header">
                 <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
@@ -416,7 +351,6 @@
                     <i class="bi bi-trash3-fill"></i> Hủy đơn
                 </button>
             </div>
-
             <div class="pos-cart-items-wrapper" id="posCartItems">
                 <div class="text-center text-muted py-5 my-5">
                     <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
@@ -424,7 +358,6 @@
                 </div>
             </div>
 
-            <!-- CRM ĐỐI SOÁT HỘI VIÊN -->
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
                     <input type="text" id="customerPhoneSearch" class="form-control form-control-sm" placeholder="Nhập SĐT tìm hội viên CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
@@ -437,19 +370,22 @@
                     </div>
                     <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
                 </div>
-                <div id="crmLoyaltyArea" class="mt-2" style="display: none !important;">
+                <div id="crmLoyaltyArea" class="mt-2 text-start" style="display: none !important;">
                     <div class="d-flex gap-1.5 mb-1">
-                        <button type="button" class="btn btn-xs btn-outline-success fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="showVoucherSelectionModal()"><i class="bi bi-ticket-perforated-fill"></i> HỘP VOUCHER VIP</button>
-                        <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM</button>
+                        <!-- VỮA BẢO MẬT: ĐÃ LOẠI BỎ HOÀN TOÀN NÚT "HỘP VOUCHER VIP" ĐỂ TRÁNH THU NGÂN XEM TRỘM VOUCHER CỦA KHÁCH -->
+                        <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM TÍCH LŨY</button>
                     </div>
                 </div>
-                <div id="posAddCustomerArea" class="mt-2" style="display: none !important;">
+                <div id="posAddCustomerArea" class="mt-2 text-start" style="display: none !important;">
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
 
-            <!-- TỔNG HỢP TIỀN BÁO CÁO -->
             <div class="pos-summary-panel">
+                <div class="d-flex gap-1.5 mb-3">
+                    <input type="text" id="manualVoucherInput" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã Voucher..." style="height: 32px; letter-spacing:0.5px;">
+                    <button type="button" class="btn btn-sm btn-dark fw-bold" style="height: 32px; font-size:11px;" onclick="applyManualVoucherCode()">ÁP MÃ</button>
+                </div>
                 <div class="pos-line-price">
                     <span>Tổng tiền gốc (Kèm Toppings):</span>
                     <strong id="totalRawPrice">0 đ</strong>
@@ -471,7 +407,6 @@
                     <span class="text-success" id="totalPayablePrice">0 đ</span>
                 </div>
 
-                <!-- BỘ TÍNH TIỀN MẶT THỐI LẠI TRỰC QUAN -->
                 <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
                         <small class="fw-bold text-muted small"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
@@ -490,7 +425,6 @@
                     </div>
                 </div>
 
-                <!-- PHƯƠNG THỨC THANH TOÁN -->
                 <div class="mb-3 text-start">
                     <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
                     <div class="btn-group w-100" role="group">
@@ -505,7 +439,6 @@
                     </div>
                 </div>
 
-                <!-- FORM ĐỒNG BỘ POST LÊN SERVER -->
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
                     <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
@@ -519,7 +452,6 @@
                     <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
                     <div id="posFormItemsContainer"></div>
                 </form>
-
                 <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                     <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
                 </button>
@@ -528,7 +460,6 @@
     </div>
 </div>
 
-<!-- ==================== MODALS PHỤ TRỢ (PROFILE & PASSWORD) ==================== -->
 <!-- PROFILE MODAL -->
 <div class="modal fade" id="posProfileModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
@@ -593,7 +524,7 @@
     </div>
 </div>
 
-<!-- ==================== MODAL IN HÓA ĐƠN NHIỆT PREMIUM COURIER ==================== -->
+<!-- RECEIPT MODAL -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 340px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
@@ -614,7 +545,6 @@
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
                 <div id="billItemsContainer" style="font-size: 10.5px;"></div>
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-
                 <div class="d-flex justify-content-between" style="font-size: 10px; margin-bottom: 2px;">
                     <span>Tổng tiền nước gốc:</span>
                     <strong id="billRawPrice"></strong>
@@ -636,8 +566,6 @@
                     <span>CẦN THANH TOÁN:</span>
                     <span id="billFinalPayable"></span>
                 </div>
-
-                <!-- Bổ sung tiền khách đưa, tiền thối lại chuẩn thực tế -->
                 <div class="d-flex justify-content-between text-muted" id="billCashGivenRow" style="font-size: 10px; margin-bottom: 2px; display: none;">
                     <span>Tiền mặt khách đưa:</span>
                     <span id="billCashGiven" class="fw-bold text-dark"></span>
@@ -646,7 +574,6 @@
                     <span>Tiền thối lại:</span>
                     <span id="billCashRefund" class="fw-bold text-success"></span>
                 </div>
-
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
                 <div class="text-center mt-3" style="font-size: 9px; color: #444; text-align: center;">
                     Cảm ơn quý khách hàng và hẹn gặp lại!<br><i>Powered by CodeDevSquad</i>
@@ -660,7 +587,7 @@
     </div>
 </div>
 
-<!-- ==================== MODAL THANH TOÁN QR ĐỘNG SEPAY ==================== -->
+<!-- VIETQR MODAL -->
 <div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -673,12 +600,10 @@
                 <p class="text-muted small mb-3">Mã đơn: <span class="fw-bold text-dark font-monospace" id="posQrCodeDisplay"></span></p>
                 <div class="bg-light p-3 rounded-4 d-inline-block mb-3 position-relative border" style="border-radius: 12px !important;">
                     <img id="posQrImage" src="" alt="VietQR Payment Code" class="img-fluid" style="max-width: 200px; height: 200px; object-fit: contain;">
-                    <!-- Success Overlay -->
                     <div id="posQrSuccessOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
                         <h6 class="text-success mt-2 fw-bold mb-0">Đã Khớp Số Dư!</h6>
                     </div>
-                    <!-- Expired Overlay -->
                     <div id="posQrExpiredOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
                         <i class="bi bi-x-circle-fill text-danger" style="font-size: 3.5rem;"></i>
                         <h6 class="text-danger mt-2 fw-bold mb-0">Mã Đã Hết Hạn</h6>
@@ -703,7 +628,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
-    // ĐỒNG HỒ KHÓA CỨNG 24H CHUẨN CHÂU ÂU (HH:mm:ss)
     function updatePOSClock() {
         const el = document.getElementById("posCurrentClock");
         if (el) {
@@ -717,14 +641,12 @@
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
-
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
             searchCustomerCRM();
         }
     }
-
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
         if (maDm === 'all') {
@@ -744,7 +666,6 @@
             });
         }
     }
-
     function filterBadge(tag) {
         document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
         const activeBtn = document.getElementById('f_' + tag);
@@ -764,7 +685,6 @@
             }
         });
     }
-
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
@@ -778,7 +698,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -794,7 +713,6 @@
         }
     });
 </script>
-
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {

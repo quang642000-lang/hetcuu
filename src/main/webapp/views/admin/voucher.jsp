@@ -32,6 +32,8 @@
 <c:set var="hinhAnhUrl" value="" />
 <c:set var="moTaDieuKien" value="" />
 <c:set var="soLuotDungCaNhan" value="0" />
+<c:set var="hangApDung" value="1" />
+<c:set var="loaiVoucher" value="1" />
 <c:set var="formattedStart" value=""/>
 <c:set var="formattedEnd" value=""/>
 <c:if test="${not empty voucher}">
@@ -48,6 +50,8 @@
     <c:set var="hinhAnhUrl" value="${voucher.hinhAnhUrl}" />
     <c:set var="moTaDieuKien" value="${voucher.moTaDieuKien}" />
     <c:set var="soLuotDungCaNhan" value="${voucher.soLuotDungCaNhan}" />
+    <c:set var="hangApDung" value="${voucher.hangApDung}" />
+    <c:set var="loaiVoucher" value="${voucher.loaiVoucher}" />
     <c:if test="${not empty voucher.ngayBatDau}">
         <c:set var="formattedStart" value="${voucher.ngayBatDau.toString().substring(0, 10)}T${voucher.ngayBatDau.toString().substring(11, 16)}"/>
     </c:if>
@@ -73,11 +77,11 @@
                         </h4>
                         <form action="${pageContext.request.contextPath}/admin/voucher" method="POST">
                             <input type="hidden" name="action" value="${not empty voucher ? 'edit' : 'create'}">
+                            <input type="hidden" name="maKm" id="maKm" value="${maKm}">
                             <div class="row g-3 text-start">
                                 <div class="col-12 col-md-4">
-                                    <label for="maKm" class="form-label fw-bold small">Mã Khuyến Mãi (Tự động sinh)</label>
-                                    <input type="text" class="form-control form-control-teapos bg-light" id="maKm" name="maKm"
-                                           value="${not empty voucher ? maKm : 'KMxxxxx (Hệ thống tự sinh)'}" readonly style="font-weight: bold;">
+                                    <label class="form-label fw-bold small">Mã Khuyến Mãi (Tự động sinh)</label>
+                                    <input type="text" class="form-control form-control-teapos bg-light" value="${not empty voucher ? maKm : 'KMxxxxx (Hệ thống tự sinh)'}" readonly style="font-weight: bold;">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="maCode" class="form-label fw-bold small">Mã CODE áp dụng <span class="text-danger">*</span></label>
@@ -87,7 +91,23 @@
                                 <div class="col-12 col-md-4">
                                     <label for="tenKm" class="form-label fw-bold small">Tên Chiến Dịch Khuyến Mãi <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-teapos" id="tenKm" name="tenKm"
-                                           value="${tenKm}" placeholder="Ví dụ: Tri ân khách hàng mới..." required autocomplete="off">
+                                           value="${tenKm}" placeholder="Ví dụ: Tri ân khách hàng..." required autocomplete="off">
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label for="loaiVoucher" class="form-label fw-bold small">Loại Khuyến Mãi</label>
+                                    <select name="loaiVoucher" id="loaiVoucher" class="form-select form-control-teapos" onchange="toggleVoucherScopeUI()">
+                                        <option value="1" ${loaiVoucher == 1 ? 'selected' : ''}>Hội viên CRM theo Hạng</option>
+                                        <option value="2" ${loaiVoucher == 2 ? 'selected' : ''}>Voucher Giấy công khai (Không cần CRM)</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-3" id="hangApDungGroup">
+                                    <label for="hangApDung" class="form-label fw-bold small">Hạng tối thiểu áp dụng</label>
+                                    <select name="hangApDung" id="hangApDung" class="form-select form-control-teapos">
+                                        <option value="1" ${hangApDung == 1 ? 'selected' : ''}>Hạng Đồng trở lên</option>
+                                        <option value="2" ${hangApDung == 2 ? 'selected' : ''}>Hạng Bạc trở lên</option>
+                                        <option value="3" ${hangApDung == 3 ? 'selected' : ''}>Hạng Vàng trở lên</option>
+                                        <option value="4" ${hangApDung == 4 ? 'selected' : ''}>Hạng VIP / Kim Cương</option>
+                                    </select>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="loaiGiam" class="form-label fw-bold small">Hình thức giảm giá</label>
@@ -122,29 +142,23 @@
                                            value="${formattedEnd}" required>
                                 </div>
                                 <div class="col-12 col-md-3">
-                                    <label for="soLuong" class="form-label fw-bold small">Số lượng phát hành <span class="text-danger">*</span></label>
+                                    <label for="soLuong" class="form-label fw-bold small">Quỹ số lượng cài đặt <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control form-control-teapos text-end" id="soLuong" name="soLuong"
-                                           value="${soLuong}" min="0" required>
+                                           value="${soLuong}" min="1" required>
                                 </div>
-                                <div class="col-12 col-md-3">
-                                    <label for="isPublic" class="form-label fw-bold small">Phạm vi áp dụng</label>
-                                    <select name="isPublic" id="isPublic" class="form-select form-control-teapos">
-                                        <option value="1" ${isPublic == 'true' || isPublic == true ? 'selected' : ''}>Mã công khai (Mọi thành viên)</option>
-                                        <option value="0" ${isPublic == 'false' || isPublic == false ? 'selected' : ''}>Mã riêng tư (VIP 👑)</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-3">
-                                    <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
-                                    <select name="trangThai" id="trangThai" class="form-select form-control-teapos">
-                                        <option value="1" ${trangThai == 'true' || trangThai == true ? 'selected' : ''}>Đang kích hoạt (Khai hỏa)</option>
-                                        <option value="0" ${trangThai == 'false' || trangThai == false ? 'selected' : ''}>Ngừng kích hoạt (Tạm tắt)</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-3">
+                                <div class="col-12 col-md-3" id="soLuotDungCaNhanGroup">
                                     <label for="soLuotDungCaNhan" class="form-label fw-bold small">Giới hạn / Cá nhân <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control form-control-teapos text-end" id="soLuotDungCaNhan" name="soLuotDungCaNhan"
                                            value="${soLuotDungCaNhan}" min="0" placeholder="0 nếu không giới hạn..." required>
                                 </div>
+                                <div class="col-12 col-md-3">
+                                    <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
+                                    <select name="trangThai" id="trangThai" class="form-select form-control-teapos">
+                                        <option value="1" ${trangThai == 'true' || trangThai == true ? 'selected' : ''}>Đang hoạt động</option>
+                                        <option value="0" ${trangThai == 'false' || trangThai == false ? 'selected' : ''}>Ngừng chạy</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" name="isPublic" value="1">
                                 <div class="col-12">
                                     <label for="hinhAnhUrl" class="form-label fw-bold small">Ảnh minh họa (URL)</label>
                                     <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl"
@@ -152,7 +166,7 @@
                                 </div>
                                 <div class="col-12">
                                     <label for="moTaDieuKien" class="form-label fw-bold small">Mô tả điều kiện áp dụng chi tiết</label>
-                                    <textarea name="moTaDieuKien" id="moTaDieuKien" class="form-control" rows="2" placeholder="Ví dụ: Chỉ áp dụng cho ly size L vàng, hóa đơn tối thiểu 50k...">${moTaDieuKien}</textarea>
+                                    <textarea name="moTaDieuKien" id="moTaDieuKien" class="form-control" rows="2" placeholder="Ví dụ: Chỉ áp dụng cho hóa đơn tối thiểu 50k...">${moTaDieuKien}</textarea>
                                 </div>
                                 <div class="col-12 d-flex justify-content-end gap-2 border-top pt-4 mt-4">
                                     <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-secondary-teapos px-4 py-2.5 fw-bold">HUỶ BỎ</a>
@@ -166,8 +180,8 @@
                     <c:otherwise>
                         <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                             <div>
-                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-ticket-perforated-fill me-2"></i>QUẢN LÝ KHUYẾN MÃI - VOUCHER</h3>
-                                <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá, kiểm soát bật/tắt (Tạm ngưng) và ràng buộc hóa đơn</p>
+                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-ticket-perforated-fill me-2"></i>QUẢN LÝ VOUCHER</h3>
+                                <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá, kiểm soát bật/tắt và quản trị số lượng chốt đơn thực tế</p>
                             </div>
                             <a href="${pageContext.request.contextPath}/admin/voucher?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold">
                                 <i class="bi bi-plus-circle-fill"></i> Tạo Mới Voucher KM
@@ -182,10 +196,11 @@
                                     <th class="text-start">Tên Chương Trình</th>
                                     <th>Hình Thức Giảm</th>
                                     <th>Hạn Sử Dụng</th>
-                                    <th>Số Lượng</th>
-                                    <th>Phạm Vi</th>
-                                    <th>Giới Hạn</th>
-                                    <th>Trạng Thế</th>
+                                    <th>Số Lượng (Đã dùng/Cài đặt)</th>
+                                    <th>Phân loại</th>
+                                    <th>Hạng áp dụng</th>
+                                    <th>Giới hạn cá nhân</th>
+                                    <th>Trạng Thái</th>
                                     <th class="text-end" style="width: 250px;">Hành Động</th>
                                 </tr>
                                 </thead>
@@ -195,7 +210,7 @@
                                         <c:forEach var="item" items="${vouchers}">
                                             <tr class="text-center voucher-row">
                                                 <td><strong>${item.maKm}</strong></td>
-                                                <td><span class="badge bg-dark text-white fw-bold px-3 py-1.5 fs-6" style="letter-spacing: 1px;"><c:out value="${item.maCode}"/></span></td>
+                                                <td><span class="badge bg-dark text-white fw-bold px-3 py-1.5 fs-6" style="letter-spacing: 0.5px;"><c:out value="${item.maCode}"/></span></td>
                                                 <td class="text-start">
                                                     <div class="fw-bold text-dark"><c:out value="${item.tenKm}"/></div>
                                                     <small class="text-muted d-block text-truncate" style="max-width: 250px;"><c:out value="${item.moTaDieuKien}"/></small>
@@ -215,49 +230,50 @@
                                                     Từ: <fmt:formatDate value="${item.ngayBatDau}" pattern="dd/MM HH:mm"/> <br>
                                                     Đến: <fmt:formatDate value="${item.ngayKetThuc}" pattern="dd/MM HH:mm"/>
                                                 </td>
-                                                <td class="fw-bold text-dark">${item.soLuong} mã</td>
+                                                <td class="fw-bold text-dark"><span class="text-success">${item.soLuongDaDung}</span> / ${item.soLuong}</td>
                                                 <td>
-<span class="badge ${item['public'] ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'} border px-2.5 py-1.5">
-        ${item['public'] ? 'CÔNG KHAI' : 'HẠNG VIP 👑'}
+<span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
+        ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
 </span>
                                                 </td>
                                                 <td>
-<span class="badge bg-secondary text-white px-2.5 py-1.5" style="border-radius: 6px;">
-        ${item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' Lần'}
+                                                    <c:choose>
+                                                        <c:when test="${item.loaiVoucher == 2}"><span class="text-muted small">Mọi đối tượng</span></c:when>
+                                                        <c:when test="${item.hangApDung == 1}"><span class="badge bg-secondary">ĐỒNG trở lên</span></c:when>
+                                                        <c:when test="${item.hangApDung == 2}"><span class="badge bg-light text-dark border">BẠC trở lên</span></c:when>
+                                                        <c:when test="${item.hangApDung == 3}"><span class="badge bg-warning text-dark">VÀNG trở lên 👑</span></c:when>
+                                                        <c:when test="${item.hangApDung == 4}"><span class="badge bg-info text-white">VIP 💎</span></c:when>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+<span class="badge bg-light text-dark border px-2.5 py-1.5">
+        ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
 </span>
                                                 </td>
                                                 <td>
-<span class="badge ${item['trangThai'] ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-        ${item['trangThai'] ? 'Đang chạy' : 'Ngừng chạy'}
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
 </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
-                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-outline-primary fw-semibold px-2">
-                                                            Sửa
-                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-outline-primary fw-semibold px-2">Sửa</a>
                                                         <c:choose>
-                                                            <c:when test="${item['trangThai']}">
-                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-outline-warning fw-semibold px-2">
-                                                                    Tạm ngưng
-                                                                </a>
+                                                            <c:when test="${item.trangThai}">
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-outline-warning fw-semibold px-2">Tạm ngưng</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-outline-success fw-semibold px-2">
-                                                                    Kích hoạt
-                                                                </a>
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-outline-success fw-semibold px-2">Kích hoạt</a>
                                                             </c:otherwise>
                                                         </c:choose>
-                                                        <button class="btn btn-sm btn-outline-danger px-2" onclick="confirmDeleteVoucher('${item.maKm}')">
-                                                            Xóa
-                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger px-2" onclick="confirmDeleteVoucher('${item.maKm}')">Xóa</button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
-                                        <tr><td colspan="10" class="text-center py-5 text-muted">Hệ thống chưa tạo mã khuyến mãi nào!</td></tr>
+                                        <tr><td colspan="11" class="text-center py-5 text-muted">Hệ thống chưa tạo mã khuyến mãi nào!</td></tr>
                                     </c:otherwise>
                                 </c:choose>
                                 </tbody>
@@ -266,7 +282,7 @@
                         <div class="pagination-container" id="paginationBlock" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
-                                <ul class="pagination pagination-sm mb-0" id="paginationButtons"></ul>
+                                <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                             </nav>
                         </div>
                     </c:otherwise>
@@ -278,6 +294,21 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
+    function toggleVoucherScopeUI() {
+        const loaiVoucher = document.getElementById("loaiVoucher").value;
+        const hangApDungGroup = document.getElementById("hangApDungGroup");
+        const soLuotDungCaNhanGroup = document.getElementById("soLuotDungCaNhanGroup");
+        if (loaiVoucher === "2") {
+            if (hangApDungGroup) hangApDungGroup.style.setProperty('display', 'none', 'important');
+            if (soLuotDungCaNhanGroup) soLuotDungCaNhanGroup.style.setProperty('display', 'none', 'important');
+        } else {
+            if (hangApDungGroup) hangApDungGroup.style.setProperty('display', 'block', 'important');
+            if (soLuotDungCaNhanGroup) soLuotDungCaNhanGroup.style.setProperty('display', 'block', 'important');
+        }
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleVoucherScopeUI();
+    });
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
             title: 'Hủy/Xóa bỏ Voucher này?',
@@ -328,7 +359,7 @@
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (i === page ? "active" : "");
-            li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
+            li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
             buttonsContainer.appendChild(li);
         }
         const nextLi = document.createElement("li");

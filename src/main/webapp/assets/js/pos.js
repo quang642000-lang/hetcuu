@@ -26,7 +26,6 @@ function resetVoucherAndPoints() {
     const sumDiscRow = document.getElementById("summaryDiscountRow");
     const sumPtsRow = document.getElementById("summaryPointsRow");
     const manualVoucherEl = document.getElementById("manualVoucherInput");
-
     if (maKmEl) maKmEl.value = "";
     if (valGiamEl) valGiamEl.value = "0";
     if (dsuDungEl) dsuDungEl.value = "0";
@@ -103,8 +102,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     const rawOptions = JSON.parse(decodeURIComponent(encodedOptions));
     let html = '';
     html += '<div id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '" class="text-start p-2">';
-
-    // 1. CHỌN SIZE
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">1. CHỌN KÍCH CỠ LY NƯỚC (SIZE)</label>';
     html += '    <div class="row g-2">';
@@ -124,8 +121,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     }
     html += '    </div>';
     html += '  </div>';
-
-    // 2. MỨC ĐÁ
     if (rawOptions.choPhepDoiDa) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">2. MỨC ĐỘ ĐÁ LẠNH</label>';
@@ -138,8 +133,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
-
-    // 3. MỨC ĐƯỜNG
     if (rawOptions.choPhepDoiDuong) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">3. MỨC ĐỘ ĐƯỜNG NGỌT</label>';
@@ -152,8 +145,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
-
-    // 4. TOPPINGS
     if (rawOptions.choPhepTopping && rawOptions.allToppings && rawOptions.allToppings.length > 0) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING DAI GIÒN SẦN SẬT</label>';
@@ -180,14 +171,10 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    <span class="text-muted small fw-semibold"><i class="bi bi-info-circle text-warning"></i> Sản phẩm này không áp dụng Topping!</span>';
         html += '  </div>';
     }
-
-    // 5. GHI CHÚ
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
     html += '    <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
     html += '  </div>';
-
-    // THÀNH TIỀN
     html += '  <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">';
     html += '    <div>';
     html += '      <small class="text-muted d-block" style="font-size: 11px;">Thành tiền ly đơn:</small>';
@@ -198,7 +185,6 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '    </button>';
     html += '  </div>';
     html += '</div>';
-
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
@@ -223,7 +209,6 @@ function addCustomizedToCart() {
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
     const ice = iceEl ? iceEl.value : '100% Đá';
     const note = document.getElementById('popup_note').value.trim() || 'Normal';
-
     let toppings = [];
     document.querySelectorAll('.topping-check:checked').forEach(chk => {
         let tpPrice = parseInt(chk.dataset.price) || 0;
@@ -237,7 +222,6 @@ function addCustomizedToCart() {
             giaTp: tpPrice
         });
     });
-
     let duplicateItem = posCart.find(item =>
         item.maSp === maSp &&
         item.maSize === maSize &&
@@ -246,7 +230,6 @@ function addCustomizedToCart() {
         item.ghiChuMon === note &&
         isSameToppingsList(item.toppings, toppings)
     );
-
     if (duplicateItem) {
         duplicateItem.soLuong += 1;
     } else {
@@ -281,7 +264,6 @@ function renderPosCart() {
     const container = document.getElementById('posCartItems');
     if (!container) return;
     container.innerHTML = '';
-
     if (posCart.length === 0) {
         container.innerHTML = '<div class="text-center text-muted py-5 my-5">' +
             '  <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>' +
@@ -292,7 +274,6 @@ function renderPosCart() {
         if (mobileBadge) mobileBadge.innerText = "0";
         return;
     }
-
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingsPrice = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
@@ -325,7 +306,6 @@ function renderPosCart() {
             '</div>';
         container.insertAdjacentHTML('beforeend', cardHtml);
     });
-
     recalculatePOSBill(tongTienHang);
     const mobileBadge = document.getElementById("mobileCartCount");
     if (mobileBadge) {
@@ -409,7 +389,6 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="email" class="form-control" id="reg_email" placeholder="example@gmail.com..." required>';
     html += '  </div>';
     html += '</div>';
-
     Swal.fire({
         title: 'ĐĂNG KÝ HỘI VIÊN NHANH',
         html: html,
@@ -461,7 +440,6 @@ function applyManualVoucherCode() {
     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
     if (totalRaw === 0) return;
     const maKh = document.getElementById("submit_maKh").value;
-
     fetch(getContextPath() + '/pos/apply-voucher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -488,60 +466,7 @@ function applyManualVoucherCode() {
 }
 
 function showVoucherSelectionModal() {
-    if (!customerInfo) return;
-    if (posCart.length === 0) return;
-    if (!customerInfo.vouchers || customerInfo.vouchers.length === 0) {
-        Swal.fire({ icon: 'info', title: 'Ví voucher rỗng', text: 'Hội viên hiện chưa có Voucher VIP khả dụng!', confirmButtonColor: '#10b981' });
-        return;
-    }
-    let selectHtml = '<select id="posVoucherSelector" class="form-select mb-2"><option value="">-- Bỏ áp dụng Voucher --</option>';
-    customerInfo.vouchers.forEach(v => {
-        let txtType = v.loaiGiam === 1 ? formatVND(v.giaTriGiam) : v.giaTriGiam + "%";
-        selectHtml += '<option value="' + v.maCode + '">' + v.maCode + ' (Giảm ' + txtType + ' | Đơn từ ' + formatVND(v.donToiThieu) + ')</option>';
-    });
-    selectHtml += '</select>';
-
-    Swal.fire({
-        title: 'HỘP THƯ VOUCHER THÀNH VIÊN',
-        html: selectHtml,
-        showCancelButton: true,
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Đồng ý áp dụng',
-        cancelButtonText: 'Hủy bỏ'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const code = document.getElementById("posVoucherSelector").value;
-            if (code) {
-                const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
-                fetch(getContextPath() + '/pos/apply-voucher', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ code: code, maKh: customerInfo.maKh, tongTienHang: totalRaw.toString() })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'SUCCESS') {
-                            appliedVoucher = {
-                                maKm: data.maKm,
-                                maCode: data.maCode,
-                                tenKm: data.tenKm,
-                                loaiGiam: data.loaiGiam,
-                                giaTriGiam: data.giaTriGiam,
-                                giamToiDa: data.giamToiDa,
-                                donToiThieu: data.donToiThieu
-                            };
-                            recalculatePOSBill(totalRaw);
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
-                        }
-                    });
-            } else {
-                appliedVoucher = null;
-                recalculatePOSBill(parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')));
-            }
-        }
-    });
+    Swal.fire({ icon: 'warning', title: 'Bảo mật nghiêm ngặt', text: 'Vì lý do bảo mật, nhân sự thu ngân không được phép xem kho Voucher của khách. Khách hàng vui lòng tự đọc mã Voucher hiển thị trên Portal di động của mình để áp dụng!', confirmButtonColor: '#10b981' });
 }
 
 function applyPointsDiscount() {
@@ -596,7 +521,6 @@ function recalculatePOSBill(tongTienHang) {
             document.getElementById("submit_tienGiamGia").value = "0";
         }
     }
-
     let pointsDiscount = appliedPoints * 1000;
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
@@ -612,12 +536,10 @@ function recalculatePOSBill(tongTienHang) {
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
-
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
-
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
@@ -632,7 +554,6 @@ function calculateChangeRefund() {
     let refund = khachDua - phaiTra;
     let txtCashRefundEl = document.getElementById('txtCashRefund');
     if (!txtCashRefundEl) return;
-
     if (refund < 0) {
         txtCashRefundEl.innerText = 'Khách đưa thiếu';
         txtCashRefundEl.className = 'text-danger fw-bold';
@@ -661,7 +582,6 @@ function changePaymentMethod(maPt) {
     const qrRadio = document.getElementById('pt_qr');
     if (maPt === 1 && cashRadio) cashRadio.checked = true;
     if (maPt === 2 && qrRadio) qrRadio.checked = true;
-
     if (maPt === 2) {
         if (cashSection) cashSection.style.setProperty('display', 'none', 'important');
     } else {
@@ -675,14 +595,11 @@ function showPosQrCodeModal(orderId, payable) {
     document.getElementById("posQrAmount").innerText = formatVND(parseInt(payable));
     document.getElementById("posQrCodeDisplay").innerText = orderId;
     document.getElementById("posQrImage").src = `https://img.vietqr.io/image/TPB-0346406405-compact2.png?amount=${payable}&addInfo=${orderId}`;
-
     let qrModalEl = document.getElementById("posQrModal");
     let qrModalInstance = new bootstrap.Modal(qrModalEl);
     qrModalInstance.show();
-
     let leftTime = 120;
     document.getElementById("posQrCountdownText").innerText = leftTime;
-
     clearInterval(posQrCountdownInterval);
     posQrCountdownInterval = setInterval(() => {
         leftTime--;
@@ -694,7 +611,6 @@ function showPosQrCodeModal(orderId, payable) {
             document.getElementById("posQrLoadingStatus").style.setProperty("display", "none", "important");
         }
     }, 1000);
-
     clearInterval(posQrPollInterval);
     posQrPollInterval = setInterval(() => {
         if (!isPosQrActive) return;
@@ -755,43 +671,27 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
-
     fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'SUCCESS') {
                 document.getElementById("billMaDh").innerText = data.maDh;
-
-                // Format Ngày giờ: HH:mm:ss  dd/MM/yyyy
-                let formattedTime = data.thoiGianTao;
-                if (formattedTime && formattedTime.length >= 19) {
-                    let datePart = formattedTime.substring(0, 10); // "yyyy-MM-dd"
-                    let timePart = formattedTime.substring(11, 19); // "HH:mm:ss"
-                    let parts = datePart.split("-");
-                    if (parts.length === 3) {
-                        formattedTime = timePart + "  " + parts[2] + "/" + parts[1] + "/" + parts[0];
-                    }
-                }
-                document.getElementById("billThoiGian").innerText = formattedTime;
+                document.getElementById("billThoiGian").innerText = data.thoiGianTao;
                 document.getElementById("billTenKh").innerText = data.tenKhachHang ? data.tenKhachHang : 'Khách lẻ vãng lai';
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                 if (parseInt(data.tienGiamGia) > 0) {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'flex', 'important');
                 } else {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'none', 'important');
                 }
-
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
-
-                // Tính toán Thuế VAT 8% và hiển thị
                 let rawSum = parseInt(data.tongTienHang) || 0;
                 let disc = parseInt(data.tienGiamGia) || 0;
                 let ptsDisc = parseInt(data.tienTruDiem) || 0;
@@ -800,8 +700,6 @@ function loadAndShowPrintReceipt(orderId) {
                 let vatPrice = Math.round(billBeforeTax * 0.08);
                 document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-
-                // Phục hồi Tiền khách đưa từ localStorage (bẫy mượt không trượt phát nào)
                 let cashGiven = parseInt(localStorage.getItem('last_cash_given_' + orderId)) || 0;
                 if (cashGiven > 0) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'flex', 'important');
@@ -817,7 +715,6 @@ function loadAndShowPrintReceipt(orderId) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'none', 'important');
                     document.getElementById("billCashRefundRow").style.setProperty('display', 'none', 'important');
                 }
-
                 container.innerHTML = '';
                 data.items.forEach(item => {
                     let html = '<div class="mb-2 border-bottom pb-1 text-start">';
@@ -836,7 +733,6 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.insertAdjacentHTML('beforeend', html);
                 });
-
                 if (typeof bootstrap !== 'undefined') {
                     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                     printModal.show();
@@ -957,14 +853,12 @@ function submitPOSOrderTransaction() {
     } else {
         localStorage.removeItem('temp_last_cash_given');
     }
-
     const container = document.getElementById('posFormItemsContainer');
     if (!container) {
         showToast('error', 'Lỗi cấu trúc trang: Không tìm thấy posFormItemsContainer!');
         return;
     }
     container.innerHTML = '';
-
     posCart.forEach(item => {
         container.innerHTML += '<input type="hidden" name="item_maSp[]" value="' + item.maSp + '">';
         container.innerHTML += '<input type="hidden" name="item_maSize[]" value="' + item.maSize + '">';
@@ -976,7 +870,6 @@ function submitPOSOrderTransaction() {
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
     });
-
     Swal.fire({
         title: 'Chốt giao dịch quầy POS',
         text: 'Xác nhận xuất hóa đơn tài chính và tiến hành giao dịch?',
