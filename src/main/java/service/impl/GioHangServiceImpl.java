@@ -6,7 +6,6 @@ import model.entity.ChiTietToppingGioHang;
 import repository.IGioHangRepository;
 import repository.impl.GioHangRepoImpl;
 import service.IGioHangService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,37 +42,55 @@ public class GioHangServiceImpl implements IGioHangService {
         return gh;
     }
 
-    // NORMALIZE ICE (Ice default is 100% Đá, handle nulls and empty strings)
+    // NORMALIZE ICE (Quy chuẩn hóa 100% Đá, 70% Đá, 50% Đá, 0% Đá đồng bộ POS và Portal)
     private String normalizeIce(String da) {
         if (da == null) return "100% Đá";
         String d = da.trim().toLowerCase();
-        if (d.isEmpty() || d.equals("100%") || d.contains("normal") || d.contains("mặc định") || d.contains("100% đá") || d.contains("100% da")) {
+        if (d.isEmpty() || d.contains("100") || d.contains("normal") || d.contains("mặc định") || d.contains("đá thường")) {
             return "100% Đá";
+        }
+        if (d.contains("70") || d.contains("ít đá") || d.contains("it da")) {
+            return "70% Đá";
+        }
+        if (d.contains("50") || d.contains("vừa") || d.contains("vua")) {
+            return "50% Đá";
+        }
+        if (d.contains("0") || d.contains("không") || d.contains("khong")) {
+            return "0% Đá";
         }
         return da.trim();
     }
 
-    // NORMALIZE SUGAR (Sugar default is 100% Đường, handle nulls and empty strings)
+    // NORMALIZE SUGAR (Quy chuẩn hóa 100% Đường, 70% Đường, 50% Đường, 0% Đường đồng bộ POS và Portal)
     private String normalizeSugar(String duong) {
         if (duong == null) return "100% Đường";
         String d = duong.trim().toLowerCase();
-        if (d.isEmpty() || d.equals("100%") || d.contains("normal") || d.contains("mặc định") || d.contains("100% đường") || d.contains("100% duong")) {
+        if (d.isEmpty() || d.contains("100") || d.contains("normal") || d.contains("mặc định") || d.contains("ngọt thường")) {
             return "100% Đường";
+        }
+        if (d.contains("70") || d.contains("ít ngọt") || d.contains("it ngot")) {
+            return "70% Đường";
+        }
+        if (d.contains("50") || d.contains("vừa") || d.contains("vua")) {
+            return "50% Đường";
+        }
+        if (d.contains("0") || d.contains("không") || d.contains("khong")) {
+            return "0% Đường";
         }
         return duong.trim();
     }
 
-    // NORMALIZE NOTE (Handle nulls, default notes, "normal")
+    // NORMALIZE NOTE
     private String normalizeNote(String note) {
         if (note == null) return "";
         String n = note.trim().toLowerCase();
-        if (n.isEmpty() || n.equals("normal") || n.equals("mặc định") || n.equals("không có") || n.equals("none")) {
+        if (n.isEmpty() || n.equals("normal") || n.equals("mặc định") || n.equals("không có") || n.equals("none") || n.equals("quick add")) {
             return "";
         }
         return note.trim();
     }
 
-    // MATCH TOPPINGS REAL-TIME (Robust Map-based exact comparison)
+    // MATCH TOPPINGS (So sánh danh sách Topping chính xác từng loại và số lượng)
     private boolean areToppingsEqual(List<ChiTietToppingGioHang> listA, List<ChiTietToppingGioHang> listB) {
         Map<String, Integer> mapA = new HashMap<>();
         if (listA != null) {
@@ -83,7 +100,6 @@ public class GioHangServiceImpl implements IGioHangService {
                 }
             }
         }
-
         Map<String, Integer> mapB = new HashMap<>();
         if (listB != null) {
             for (ChiTietToppingGioHang t : listB) {
@@ -92,7 +108,6 @@ public class GioHangServiceImpl implements IGioHangService {
                 }
             }
         }
-
         return mapA.equals(mapB);
     }
 
@@ -105,18 +120,16 @@ public class GioHangServiceImpl implements IGioHangService {
         }
         if (gh == null) return false;
 
-        // Normalizing incoming parameters
+        // Quy chuẩn hóa đầu vào
         String normDa = normalizeIce(da);
         String normDuong = normalizeSugar(duong);
         String normNote = normalizeNote(note);
 
-        // Fetching existing items in the cart
+        // Quét tìm sản phẩm giống hệt trong giỏ hàng
         List<ChiTietGioHang> existingDetails = gioHangRepository.getChiTietGioHang(gh.getMaGh());
         ChiTietGioHang targetItem = null;
-
         for (ChiTietGioHang item : existingDetails) {
             if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize) {
-                // Normalizing database values for precise matching
                 String itemDa = normalizeIce(item.getMucDa());
                 String itemDuong = normalizeSugar(item.getMucDuong());
                 String itemNote = normalizeNote(item.getGhiChuMon());
@@ -125,7 +138,7 @@ public class GioHangServiceImpl implements IGioHangService {
                         itemDuong.equalsIgnoreCase(normDuong) &&
                         itemNote.equalsIgnoreCase(normNote)) {
 
-                    // Compare toppings of existing item
+                    // So khớp Toppings ăn kèm
                     List<ChiTietToppingGioHang> existingToppings = gioHangRepository.getToppingByChiTiet(item.getMaCtgh());
                     if (areToppingsEqual(existingToppings, toppings)) {
                         targetItem = item;
@@ -136,14 +149,14 @@ public class GioHangServiceImpl implements IGioHangService {
         }
 
         if (targetItem != null) {
-            // MATCH FOUND! GỘP MÓN: Increment existing item's quantity
+            // Khớp 100%: Thực hiện gộp món, cộng dồn số lượng đặt
             targetItem.setSoLuong(targetItem.getSoLuong() + qty);
             targetItem.setMucDa(normDa);
             targetItem.setMucDuong(normDuong);
             targetItem.setGhiChuMon(normNote);
             return gioHangRepository.addOrUpdateChiTiet(targetItem);
         } else {
-            // NO MATCH FOUND! Insert new unique item line
+            // Không khớp: Tạo một dòng sản phẩm pha chế riêng biệt
             ChiTietGioHang newItem = new ChiTietGioHang();
             newItem.setMaGh(gh.getMaGh());
             newItem.setMaSp(maSp);
@@ -166,8 +179,6 @@ public class GioHangServiceImpl implements IGioHangService {
         ChiTietGioHang detail = new ChiTietGioHang();
         detail.setMaCtgh(maCtgh);
         detail.setSoLuong(qty);
-        // Fetch original item to preserve other values on basic update
-        // (addOrUpdateChiTiet is robust and updates what is provided)
         return gioHangRepository.addOrUpdateChiTiet(detail);
     }
 

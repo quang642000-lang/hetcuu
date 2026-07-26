@@ -43,25 +43,6 @@
             align-items: center;
             justify-content: center;
             border-radius: 50% !important;
-            padding: 0 !important;
-            font-size: 14px;
-        }
-        .custom-checkbox {
-            width: 20px;
-            height: 20px;
-            border-color: #cbd5e1;
-            cursor: pointer;
-        }
-        .custom-checkbox:checked {
-            background-color: #10b981;
-            border-color: #10b981;
-        }
-        .sticky-summary {
-            top: 80px;
-            border-radius: 16px;
-            border: none;
-            background: #ffffff;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
     </style>
 </head>
@@ -77,7 +58,6 @@
                     <c:when test="${not empty cart.chiTietGioHangList}">
                         <div class="d-flex flex-column gap-3">
                             <c:forEach var="item" items="${cart.chiTietGioHangList}">
-                                <!-- Tính tổng giá toppings của ly trà sữa hiện tại -->
                                 <c:set var="toppingSum" value="0"/>
                                 <c:forEach var="tp" items="${item.toppingGioHangList}">
                                     <c:set var="toppingSum" value="${toppingSum + (tp.giaTp * tp.soLuongTp)}"/>
@@ -85,7 +65,6 @@
                                 <c:set var="itemUnitTotal" value="${item.giaBan + toppingSum}"/>
                                 <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
 
-                                <!-- KHUNG SẢN PHẨM ĐẤU NỐI JS ĐỘNG CHO PHÉP TÍNH TOÁN REALTIME KHÔNG RELOAD -->
                                 <div class="cart-item-row d-flex align-items-center gap-3"
                                      id="cart_row_${item.maCtgh}"
                                      data-ctgh="${item.maCtgh}"
@@ -128,14 +107,14 @@
                                             <div class="ps-1 mt-1 small text-success d-flex flex-wrap gap-1 align-items-center" style="font-size: 11px;">
                                                 <i class="bi bi-patch-plus"></i> Toppings:
                                                 <c:forEach var="tp" items="${item.toppingGioHangList}" varStatus="loop">
-                                                        <span class="text-success fw-bold">
-                                                            <c:out value="${not empty tp.tenTp ? tp.tenTp : 'Topping #' += tp.maTp}"/> (x${tp.soLuongTp})
-                                                        </span>${!loop.last ? ',' : ''}
+                                                    <span class="text-success fw-bold">
+                                                        <c:out value="${not empty tp.tenTp ? tp.tenTp : 'Topping #' += tp.maTp}"/> (x${tp.soLuongTp})
+                                                    </span>${!loop.last ? ',' : ''}
                                                 </c:forEach>
                                             </div>
                                         </c:if>
                                         <!-- Ghi chú riêng -->
-                                        <c:if test="${not empty item.ghiChuMon && item.ghiChuMon ne 'Quick Add' && item.ghiChuMon ne 'Normal'}">
+                                        <c:if test="${not empty item.ghiChuMon && item.ghiChuMon ne 'Quick Add' && item.ghiChuMon ne 'Normal' && item.ghiChuMon ne ''}">
                                             <small class="text-danger d-block mt-1" style="font-size: 11px; font-style: italic;">
                                                 <i class="bi bi-pencil-fill"></i> Ghi chú: <c:out value="${item.ghiChuMon}"/>
                                             </small>
@@ -221,16 +200,15 @@
 <jsp:include page="/views/layout/footer_portal.jsp" />
 
 <script>
-    // HÀM ĐỊNH DẠNG TIỀN VNĐ CHO ĐỒNG BỘ JS REALTIME
+    // Định dạng tiền tệ VNĐ
     function formatVND(amount) {
         return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
     }
 
-    // THUẬT TOÁN TÍNH TOÁN TIỀN REALTIME HOÀN TOÀN TRÊN CLIENT (Chống lag và reload trang đột ngột)
+    // Tính toán tiền mặt trực quan cực nhanh bên Client-side (Zero Page Reload!)
     function recalculatePortalCartTotals() {
         let subtotal = 0;
         const rows = document.querySelectorAll('.cart-item-row');
-
         rows.forEach(row => {
             const maCtgh = row.dataset.ctgh;
             const unitPrice = parseInt(row.dataset.unitPrice) || 0;
@@ -238,14 +216,14 @@
             const qty = parseInt(qtySpan.innerText) || 0;
             const checkbox = document.getElementById('chk_' + maCtgh);
 
-            // Cập nhật giá chốt dòng nước
+            // Tính thành tiền dòng
             const lineTotal = unitPrice * qty;
             const lineTotalEl = document.getElementById('line_total_' + maCtgh);
             if (lineTotalEl) {
                 lineTotalEl.innerText = formatVND(lineTotal);
             }
 
-            // Nếu được chọn mua, cộng dồn vào tổng hóa đơn
+            // Cộng dồn nếu được chọn mua
             if (checkbox && checkbox.checked) {
                 subtotal += lineTotal;
             }
@@ -254,7 +232,6 @@
         const vat = Math.round(subtotal * 0.08);
         const total = subtotal + vat;
 
-        // Cập nhật lên dải hiển thị tóm tắt thanh toán
         const subtotalEl = document.getElementById('subtotalCart');
         const vatEl = document.getElementById('vatCart');
         const totalEl = document.getElementById('finalPayableCart');
@@ -264,7 +241,7 @@
         if (vatEl) vatEl.innerText = formatVND(vat);
         if (totalEl) totalEl.innerText = formatVND(total);
 
-        // Khóa/Mở khóa nút chốt đơn dựa trên dữ liệu thật
+        // Khóa/Mở khóa nút đặt hàng linh động
         if (checkoutBtn) {
             if (subtotal <= 0) {
                 checkoutBtn.setAttribute('href', 'javascript:void(0)');
@@ -280,24 +257,22 @@
         }
     }
 
-    // AJAX CẬP NHẬT TĂNG GIẢM SỐ LƯỢNG KHÔNG REBOOT TRANG (Buttery Smooth!)
+    // Đồng bộ tăng giảm số lượng ngầm
     function updateCartQtyRealtime(maCtgh, delta) {
         const qtySpan = document.getElementById('qty_' + maCtgh);
         if (!qtySpan) return;
-
         let currentQty = parseInt(qtySpan.innerText) || 1;
         let newQty = currentQty + delta;
-
         if (newQty < 1) {
             confirmDeleteCartItem(maCtgh);
             return;
         }
 
-        // ĐỔI HIỂN THỊ TỨC THÌ (Instant UI Update)
+        // Cập nhật giao diện tức thì
         qtySpan.innerText = newQty;
         recalculatePortalCartTotals();
 
-        // Đồng bộ ngầm lên Server
+        // Gửi AJAX đồng bộ ngầm lên Server
         fetch('${pageContext.request.contextPath}/cart/update?maCtgh=' + maCtgh + '&soLuong=' + newQty, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -311,7 +286,6 @@
             })
             .then(data => {
                 if (data.trim() !== 'SUCCESS') {
-                    // Nếu lỗi ngầm, rollback lại số lượng và báo động đỏ
                     qtySpan.innerText = currentQty;
                     recalculatePortalCartTotals();
                     showToast('error', 'Không thể đồng bộ số lượng lên máy chủ!');
@@ -324,17 +298,14 @@
             });
     }
 
-    // AJAX THAY ĐỔI TRẠNG THÁI TICK CHỌN MUA SILENT (Chạy mượt sần sật)
+    // Đồng bộ lựa chọn mua ngầm
     function toggleCartSelectionRealtime(maCtgh) {
         const checkbox = document.getElementById('chk_' + maCtgh);
         if (!checkbox) return;
 
-        // Tính toán lại tổng tiền tức thì
         recalculatePortalCartTotals();
-
         const isChecked = checkbox.checked ? '1' : '0';
 
-        // Đồng bộ ngầm lên Server
         fetch('${pageContext.request.contextPath}/cart/toggle-select?maCtgh=' + maCtgh + '&chon=' + isChecked, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -348,7 +319,6 @@
             })
             .then(data => {
                 if (data.trim() !== 'SUCCESS') {
-                    // Rollback nếu sập máy chủ
                     checkbox.checked = !checkbox.checked;
                     recalculatePortalCartTotals();
                     showToast('error', 'Đồng bộ danh sách thanh toán thất bại!');
@@ -361,7 +331,7 @@
             });
     }
 
-    // SWEETALERT2: Xóa món trong giỏ hàng cực đẹp
+    // Hủy món
     function confirmDeleteCartItem(maCtgh) {
         Swal.fire({
             title: 'Gỡ món khỏi giỏ hàng?',
@@ -379,11 +349,8 @@
         });
     }
 
-    // KÍCH HOẠT LẦN ĐẦU TIÊN KHI NẠP TRANG
     document.addEventListener("DOMContentLoaded", function() {
         recalculatePortalCartTotals();
-
-        // Nạp thông điệp nếu có
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'deletesuccess') showToast('success', 'Đã gỡ cốc nước thành công!');

@@ -5,14 +5,12 @@ import model.entity.DonHang;
 import model.entity.ChiTietDonHang;
 import model.entity.ChiTietTopping;
 import repository.IDonHangRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
-
     private DonHangRepoImpl() {}
 
     public static synchronized DonHangRepoImpl getInstance() {
@@ -65,33 +63,111 @@ public class DonHangRepoImpl implements IDonHangRepository {
 
     @Override
     public boolean add(DonHang entity) {
-        String sql = "INSERT INTO DON_HANG (ma_dh, ma_kh, ma_nv, ma_pt, ma_km, loai_don_hang, thoi_gian_hen_lay, " +
+        String sqlOrder = "INSERT INTO DON_HANG (ma_dh, ma_kh, ma_nv, ma_pt, ma_km, loai_don_hang, thoi_gian_hen_lay, " +
                 "tong_tien_hang, tien_giam_gia, diem_su_dung, tien_tru_diem, tong_phai_tra, ghi_chu_don, " +
                 "ly_do_huy, trang_thai_thanh_toan, trang_thai_don, thoi_gian_tao) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, entity.getMaDh());
-            setStringOrNull(ps, 2, entity.getMaKh());
-            setStringOrNull(ps, 3, entity.getMaNv());
-            ps.setInt(4, entity.getMaPt());
-            setStringOrNull(ps, 5, entity.getMaKm());
-            ps.setInt(6, entity.getLoaiDonHang());
-            ps.setTimestamp(7, entity.getThoiGianHenLay());
-            ps.setInt(8, entity.getTongTienHang());
-            ps.setInt(9, entity.getTienGiamGia());
-            ps.setInt(10, entity.getDiemSuDung());
-            ps.setInt(11, entity.getTienTruDiem());
-            ps.setInt(12, entity.getTongPhaiTra());
-            ps.setString(13, entity.getGhiChuDon());
-            ps.setString(14, entity.getLyDoHuy());
-            ps.setInt(15, entity.getTrangThaiThanhToan());
-            ps.setInt(16, entity.getTrangThaiDon());
-            ps.setTimestamp(17, entity.getThoiGianTao() != null ? entity.getThoiGianTao() : new Timestamp(System.currentTimeMillis()));
-            return ps.executeUpdate() > 0;
+
+        String sqlDetail = "INSERT INTO CHI_TIET_DON_HANG (ma_dh, ma_sp, ma_size, so_luong, gia_chot, muc_da, muc_duong, ghi_chu_mon) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sqlTopping = "INSERT INTO CHI_TIET_TOPPING (ma_ctdh, ma_tp, so_luong, gia_chot_tp) " +
+                "VALUES (?, ?, ?, ?)";
+
+        Connection conn = null;
+        PreparedStatement psOrder = null;
+        PreparedStatement psDetail = null;
+        PreparedStatement psTopping = null;
+        ResultSet rsKeys = null;
+
+        try {
+            conn = DBConnect.getConnection();
+            conn.setAutoCommit(false); // Begin ACID Transaction
+
+            // 1. Thêm đơn hàng chính
+            psOrder = conn.prepareStatement(sqlOrder);
+            psOrder.setString(1, entity.getMaDh());
+            setStringOrNull(psOrder, 2, entity.getMaKh());
+            setStringOrNull(psOrder, 3, entity.getMaNv());
+            psOrder.setInt(4, entity.getMaPt());
+            setStringOrNull(psOrder, 5, entity.getMaKm());
+            psOrder.setInt(6, entity.getLoaiDonHang());
+            psOrder.setTimestamp(7, entity.getThoiGianHenLay());
+            psOrder.setInt(8, entity.getTongTienHang());
+            psOrder.setInt(9, entity.getTienGiamGia());
+            psOrder.setInt(10, entity.getDiemSuDung());
+            psOrder.setInt(11, entity.getTienTruDiem());
+            psOrder.setInt(12, entity.getTongPhaiTra());
+            psOrder.setString(13, entity.getGhiChuDon());
+            psOrder.setString(14, entity.getLyDoHuy());
+            psOrder.setInt(15, entity.getTrangThaiThanhToan());
+            psOrder.setInt(16, entity.getTrangThaiDon());
+            psOrder.setTimestamp(17, entity.getThoiGianTao() != null ? entity.getThoiGianTao() : new Timestamp(System.currentTimeMillis()));
+
+            int affected = psOrder.executeUpdate();
+            if (affected <= 0) {
+                conn.rollback();
+                return false;
+            }
+
+            // 2. Thêm các món chi tiết của đơn hàng (ChiTietDonHang & ChiTietTopping)
+            if (entity.getChiTietDonHangList() != null && !entity.getChiTietDonHangList().isEmpty()) {
+                psDetail = conn.prepareStatement(sqlDetail, Statement.RETURN_GENERATED_KEYS);
+                psTopping = conn.prepareStatement(sqlTopping);
+
+                for (ChiTietDonHang item : entity.getChiTietDonHangList()) {
+                    psDetail.setString(1, entity.getMaDh());
+                    psDetail.setString(2, item.getMaSp());
+                    psDetail.setInt(3, item.getMaSize());
+                    psDetail.setInt(4, item.getSoLuong());
+                    psDetail.setInt(5, item.getGiaChot());
+                    psDetail.setString(6, item.getMucDa() != null ? item.getMucDa() : "100% Đá");
+                    psDetail.setString(7, item.getMucDuong() != null ? item.getMucDuong() : "100% Đường");
+                    psDetail.setString(8, item.getGhiChuMon() != null ? item.getGhiChuMon() : "");
+
+                    psDetail.executeUpdate();
+                    rsKeys = psDetail.getGeneratedKeys();
+                    long generatedCtdhId = 0;
+                    if (rsKeys.next()) {
+                        generatedCtdhId = rsKeys.getLong(1);
+                        item.setMaCtdh(generatedCtdhId);
+                    }
+                    rsKeys.close();
+                    rsKeys = null;
+
+                    // 3. Thêm danh sách Toppings ăn kèm của ly nước này
+                    if (item.getToppingsList() != null && !item.getToppingsList().isEmpty() && generatedCtdhId > 0) {
+                        for (ChiTietTopping tp : item.getToppingsList()) {
+                            psTopping.setLong(1, generatedCtdhId);
+                            psTopping.setString(2, tp.getMaTp());
+                            psTopping.setInt(3, tp.getSoLuong());
+                            psTopping.setInt(4, tp.getGiaChotTp());
+                            psTopping.addBatch();
+                        }
+                        psTopping.executeBatch();
+                        psTopping.clearBatch();
+                    }
+                }
+            }
+
+            conn.commit(); // Thành công rực rỡ! Commit giao dịch.
+            return true;
         } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+            }
             e.printStackTrace();
             return false;
+        } finally {
+            try {
+                if (rsKeys != null) rsKeys.close();
+                if (psOrder != null) psOrder.close();
+                if (psDetail != null) psDetail.close();
+                if (psTopping != null) psTopping.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -104,7 +180,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             setStringOrNull(ps, 1, entity.getMaKh());
-            setStringOrNull(ps, 2, entity.getMaNv()); // THÀNH CÔNG DẬP TẮT LỖI KHÓA NGOẠI MA_NV!
+            setStringOrNull(ps, 2, entity.getMaNv());
             ps.setInt(3, entity.getMaPt());
             setStringOrNull(ps, 4, entity.getMaKm());
             ps.setInt(5, entity.getLoaiDonHang());
@@ -274,12 +350,14 @@ public class DonHangRepoImpl implements IDonHangRepository {
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 long val = rs.getLong(1);
-                return "DH" + String.format("%05d", val);
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+                String dateStr = sdf.format(new java.util.Date());
+                return "TEA-" + dateStr + "-" + String.format("%06d", val);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "DH" + System.currentTimeMillis();
+        return "TEA-" + System.currentTimeMillis();
     }
 
     private DonHang mapResultSetToDonHang(ResultSet rs) throws SQLException {
