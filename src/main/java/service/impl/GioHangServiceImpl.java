@@ -3,12 +3,13 @@ package service.impl;
 import model.entity.GioHang;
 import model.entity.ChiTietGioHang;
 import model.entity.ChiTietToppingGioHang;
-import model.entity.SanPhamKichCo;
 import repository.IGioHangRepository;
 import repository.impl.GioHangRepoImpl;
 import service.IGioHangService;
-import service.ISanPhamService;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GioHangServiceImpl implements IGioHangService {
     private static GioHangServiceImpl instance;
@@ -42,101 +43,132 @@ public class GioHangServiceImpl implements IGioHangService {
         return gh;
     }
 
-    @Override
-    public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int soLuong,
-                                       String mucDa, String mucDuong, String ghiChuMon,
-                                       List<ChiTietToppingGioHang> toppings) {
-        ISanPhamService sanPhamService = SanPhamServiceImpl.getInstance();
-        List<SanPhamKichCo> availableSizes = sanPhamService.getSizesBySanPham(maSp);
-        boolean sizeExists = false;
-        for (SanPhamKichCo spkc : availableSizes) {
-            if (spkc.getMaSize() == maSize) {
-                sizeExists = true;
-                break;
+    // NORMALIZE ICE (Ice default is 100% Đá, handle nulls and empty strings)
+    private String normalizeIce(String da) {
+        if (da == null) return "100% Đá";
+        String d = da.trim().toLowerCase();
+        if (d.isEmpty() || d.equals("100%") || d.contains("normal") || d.contains("mặc định") || d.contains("100% đá") || d.contains("100% da")) {
+            return "100% Đá";
+        }
+        return da.trim();
+    }
+
+    // NORMALIZE SUGAR (Sugar default is 100% Đường, handle nulls and empty strings)
+    private String normalizeSugar(String duong) {
+        if (duong == null) return "100% Đường";
+        String d = duong.trim().toLowerCase();
+        if (d.isEmpty() || d.equals("100%") || d.contains("normal") || d.contains("mặc định") || d.contains("100% đường") || d.contains("100% duong")) {
+            return "100% Đường";
+        }
+        return duong.trim();
+    }
+
+    // NORMALIZE NOTE (Handle nulls, default notes, "normal")
+    private String normalizeNote(String note) {
+        if (note == null) return "";
+        String n = note.trim().toLowerCase();
+        if (n.isEmpty() || n.equals("normal") || n.equals("mặc định") || n.equals("không có") || n.equals("none")) {
+            return "";
+        }
+        return note.trim();
+    }
+
+    // MATCH TOPPINGS REAL-TIME (Robust Map-based exact comparison)
+    private boolean areToppingsEqual(List<ChiTietToppingGioHang> listA, List<ChiTietToppingGioHang> listB) {
+        Map<String, Integer> mapA = new HashMap<>();
+        if (listA != null) {
+            for (ChiTietToppingGioHang t : listA) {
+                if (t.getMaTp() != null && !t.getMaTp().trim().isEmpty() && t.getSoLuongTp() > 0) {
+                    mapA.put(t.getMaTp().trim(), t.getSoLuongTp());
+                }
             }
         }
-        if (!sizeExists && !availableSizes.isEmpty()) {
-            maSize = availableSizes.get(0).getMaSize();
+
+        Map<String, Integer> mapB = new HashMap<>();
+        if (listB != null) {
+            for (ChiTietToppingGioHang t : listB) {
+                if (t.getMaTp() != null && !t.getMaTp().trim().isEmpty() && t.getSoLuongTp() > 0) {
+                    mapB.put(t.getMaTp().trim(), t.getSoLuongTp());
+                }
+            }
         }
 
-        GioHang gh = getGioHangComplete(maKh);
+        return mapA.equals(mapB);
+    }
+
+    @Override
+    public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int qty, String da, String duong, String note, List<ChiTietToppingGioHang> toppings) {
+        GioHang gh = gioHangRepository.getByKhachHang(maKh);
+        if (gh == null) {
+            gioHangRepository.createGioHang(maKh);
+            gh = gioHangRepository.getByKhachHang(maKh);
+        }
         if (gh == null) return false;
 
+        // Normalizing incoming parameters
+        String normDa = normalizeIce(da);
+        String normDuong = normalizeSugar(duong);
+        String normNote = normalizeNote(note);
+
+        // Fetching existing items in the cart
+        List<ChiTietGioHang> existingDetails = gioHangRepository.getChiTietGioHang(gh.getMaGh());
         ChiTietGioHang targetItem = null;
-        List<ChiTietGioHang> currentItems = gh.getChiTietGioHangList();
-        for (ChiTietGioHang item : currentItems) {
-            if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize
-                    && equalsString(item.getMucDa(), mucDa)
-                    && equalsString(item.getMucDuong(), mucDuong)
-                    && equalsString(item.getGhiChuMon(), ghiChuMon)) {
-                if (isSameToppings(item.getToppingGioHangList(), toppings)) {
-                    targetItem = item;
-                    break;
+
+        for (ChiTietGioHang item : existingDetails) {
+            if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize) {
+                // Normalizing database values for precise matching
+                String itemDa = normalizeIce(item.getMucDa());
+                String itemDuong = normalizeSugar(item.getMucDuong());
+                String itemNote = normalizeNote(item.getGhiChuMon());
+
+                if (itemDa.equalsIgnoreCase(normDa) &&
+                        itemDuong.equalsIgnoreCase(normDuong) &&
+                        itemNote.equalsIgnoreCase(normNote)) {
+
+                    // Compare toppings of existing item
+                    List<ChiTietToppingGioHang> existingToppings = gioHangRepository.getToppingByChiTiet(item.getMaCtgh());
+                    if (areToppingsEqual(existingToppings, toppings)) {
+                        targetItem = item;
+                        break;
+                    }
                 }
             }
         }
 
         if (targetItem != null) {
-            targetItem.setSoLuong(targetItem.getSoLuong() + soLuong);
+            // MATCH FOUND! GỘP MÓN: Increment existing item's quantity
+            targetItem.setSoLuong(targetItem.getSoLuong() + qty);
+            targetItem.setMucDa(normDa);
+            targetItem.setMucDuong(normDuong);
+            targetItem.setGhiChuMon(normNote);
             return gioHangRepository.addOrUpdateChiTiet(targetItem);
         } else {
+            // NO MATCH FOUND! Insert new unique item line
             ChiTietGioHang newItem = new ChiTietGioHang();
             newItem.setMaGh(gh.getMaGh());
             newItem.setMaSp(maSp);
             newItem.setMaSize(maSize);
-            newItem.setSoLuong(soLuong);
-            newItem.setMucDa(mucDa);
-            newItem.setMucDuong(mucDuong);
-            newItem.setGhiChuMon(ghiChuMon);
+            newItem.setSoLuong(qty);
+            newItem.setMucDa(normDa);
+            newItem.setMucDuong(normDuong);
+            newItem.setGhiChuMon(normNote);
             newItem.setChonMua(true);
-
-            boolean isAdded = gioHangRepository.addOrUpdateChiTiet(newItem);
-            if (isAdded && toppings != null && !toppings.isEmpty()) {
-                for (ChiTietToppingGioHang tp : toppings) {
-                    gioHangRepository.addToppingToGioHang(newItem.getMaCtgh(), tp.getMaTp(), tp.getSoLuongTp());
-                }
-            }
-            return isAdded;
+            newItem.setToppingGioHangList(toppings);
+            return gioHangRepository.addOrUpdateChiTiet(newItem);
         }
-    }
-
-    private boolean equalsString(String s1, String s2) {
-        if (s1 == null && s2 == null) return true;
-        if (s1 == null || s2 == null) return false;
-        return s1.trim().equalsIgnoreCase(s2.trim());
-    }
-
-    private boolean isSameToppings(List<ChiTietToppingGioHang> list1, List<ChiTietToppingGioHang> list2) {
-        int size1 = (list1 == null) ? 0 : list1.size();
-        int size2 = (list2 == null) ? 0 : list2.size();
-        if (size1 != size2) return false;
-        if (size1 == 0) return true;
-
-        for (ChiTietToppingGioHang tp1 : list1) {
-            boolean found = false;
-            for (ChiTietToppingGioHang tp2 : list2) {
-                // SỬA: so sánh chuỗi maTp bằng .equals()
-                if (tp1.getMaTp() != null && tp1.getMaTp().equals(tp2.getMaTp())
-                        && tp1.getSoLuongTp() == tp2.getSoLuongTp()) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) return false;
-        }
-        return true;
     }
 
     @Override
-    public boolean updateSoLuongChiTiet(long maCtgh, int soLuongMoi) {
-        if (soLuongMoi <= 0) {
-            return deleteChiTietGioHang(maCtgh);
+    public boolean updateSoLuongChiTiet(long maCtgh, int qty) {
+        if (qty <= 0) {
+            return gioHangRepository.deleteChiTiet(maCtgh);
         }
-        ChiTietGioHang chiTiet = new ChiTietGioHang();
-        chiTiet.setMaCtgh(maCtgh);
-        chiTiet.setSoLuong(soLuongMoi);
-        chiTiet.setChonMua(true);
-        return gioHangRepository.addOrUpdateChiTiet(chiTiet);
+        ChiTietGioHang detail = new ChiTietGioHang();
+        detail.setMaCtgh(maCtgh);
+        detail.setSoLuong(qty);
+        // Fetch original item to preserve other values on basic update
+        // (addOrUpdateChiTiet is robust and updates what is provided)
+        return gioHangRepository.addOrUpdateChiTiet(detail);
     }
 
     @Override
