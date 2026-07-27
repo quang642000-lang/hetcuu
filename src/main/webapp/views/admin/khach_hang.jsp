@@ -97,15 +97,15 @@
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 fs-6 mb-3" style="border-radius: 50px;">
-                        👑 Hạng:
-                        <c:choose>
-                            <c:when test="${maHang == 1}">ĐỒNG</c:when>
-                            <c:when test="${maHang == 2}">BẠC</c:when>
-                            <c:when test="${maHang == 3}">VÀNG 👑</c:when>
-                            <c:when test="${maHang == 4}">VIP 💎</c:when>
-                            <c:otherwise>MỚI</c:otherwise>
-                        </c:choose>
-                    </span>
+👑 Hạng:
+<c:choose>
+    <c:when test="${maHang == 1}">ĐỒNG</c:when>
+    <c:when test="${maHang == 2}">BẠC</c:when>
+    <c:when test="${maHang == 3}">VÀNG 👑</c:when>
+    <c:when test="${maHang == 4}">VIP 💎</c:when>
+    <c:otherwise>MỚI</c:otherwise>
+</c:choose>
+</span>
                                 <div class="bg-light rounded p-3 text-start">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Mã thành viên:</span>
@@ -225,9 +225,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-                                                            <span class="badge bg-light text-dark border">
-                                                                    ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-                                                            </span>
+<span class="badge bg-light text-dark border">
+        ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+</span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -388,9 +388,9 @@
                                                 </td>
                                                 <td class="fw-bold text-success font-monospace">${item.diemTichLuy} Điểm</td>
                                                 <td>
-                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                    ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
-                                            </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
+</span>
                                                 </td>
                                                 <td class="text-end">
                                                     <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-outline-success fw-bold px-2.5">
@@ -409,11 +409,11 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- CRM PHÂN TRANG CLIENT SIDE ĐỒNG BỘ HOÀN TOÀN -->
-                        <div class="pagination-container" id="crmPaginationWrapper" style="display: none;">
-                            <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 của 10 dòng khách hàng</span>
+                        <!-- CRM PHÂN TRANG CLIENT SIDE ĐỒNG BỘ HOÀN TOÀN GIỐNG SAN_PHAM.JSP -->
+                        <div class="pagination-container" id="paginationWrapper" style="display: none;">
+                            <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng khách hàng</span>
                             <nav>
-                                <ul class="pagination pagination-sm mb-0 justify-content-end" id="crmPaginationButtons"></ul>
+                                <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                             </nav>
                         </div>
                     </div>
@@ -422,7 +422,6 @@
         </div>
     </div>
 </div>
-
 <!-- POPUP CHI TIẾT HÓA ĐƠN -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -483,7 +482,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -515,13 +513,11 @@
                     } else {
                         document.getElementById("billPointsRow").style.display = 'none';
                     }
-                    // Thuế VAT 8%
                     let billBeforeTax = data.tongTienHang - data.tienGiamGia - data.tienTruDiem;
                     if (billBeforeTax < 0) billBeforeTax = 0;
                     let vatPrice = Math.round(billBeforeTax * 0.08);
                     document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-
                     let container = document.getElementById("billItemsContainer");
                     container.innerHTML = '';
                     data.items.forEach(item => {
@@ -560,24 +556,20 @@
         document.body.innerHTML = originalContent;
         location.reload();
     }
-
     // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CRM KHÁCH HÀNG (MAIN LIST)
+    // PHÂN TRANG VÀ BỘ LỌC CRM KHÁCH HÀNG (MAIN LIST) - ĐỒNG BỘ 100% VỚI SAN_PHAM.JSP
     // ==========================================
     let currentCrmPage = 1;
     const ROWS_PER_PAGE_CRM = 10;
     let filteredCrmRows = [];
-
     function filterAndPaginateCustomers() {
         const searchInput = document.getElementById("customerSearchInput");
+        if (!searchInput) return; // Không nằm ở trang danh sách
         const filterRank = document.getElementById("filterRank");
         const filterStatus = document.getElementById("filterStatus");
-        if (!searchInput) return; // Không nằm ở trang danh sách
-
         const searchVal = searchInput.value.trim().toLowerCase();
         const rankVal = filterRank.value;
         const statusVal = filterStatus.value;
-
         const allRows = Array.from(document.querySelectorAll("#customerTableBody .customer-row"));
         filteredCrmRows = allRows.filter(row => {
             const name = row.dataset.name.toLowerCase();
@@ -586,100 +578,88 @@
             const id = row.dataset.id.toLowerCase();
             const rank = row.dataset.rank;
             const status = row.dataset.status;
-
             const matchSearch = name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal) || id.includes(searchVal);
             const matchRank = rankVal === "" || rank === rankVal;
             const matchStatus = statusVal === "" || status === statusVal;
-
             return matchSearch && matchRank && matchStatus;
         });
-
         currentCrmPage = 1;
         renderCrmTableRows();
     }
-
     function renderCrmTableRows() {
         const allRows = document.querySelectorAll("#customerTableBody .customer-row");
         allRows.forEach(row => row.style.display = "none");
-
         const startIdx = (currentCrmPage - 1) * ROWS_PER_PAGE_CRM;
         const endIdx = startIdx + ROWS_PER_PAGE_CRM;
         const pageRows = filteredCrmRows.slice(startIdx, endIdx);
-
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
         updateCrmPaginationControls();
     }
-
     function updateCrmPaginationControls() {
         const totalRows = filteredCrmRows.length;
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
-        const infoEl = document.getElementById("crmPaginationInfo");
-        const btnContainer = document.getElementById("crmPaginationButtons");
+        const infoEl = document.getElementById("paginationInfo");
+        const btnContainer = document.getElementById("paginationButtons");
         if (!infoEl || !btnContainer) return;
-
         const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
         const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng khách hàng';
-
         btnContainer.innerHTML = "";
-        if (totalPages <= 1) {
-            document.getElementById("crmPaginationWrapper").style.setProperty('display', 'none', 'important');
-            return;
+        const wrapper = document.getElementById("paginationWrapper");
+        if (wrapper) {
+            if (totalPages <= 1) {
+                wrapper.style.setProperty('display', 'none', 'important');
+                return;
+            }
+            wrapper.style.setProperty('display', 'flex', 'important');
         }
-        document.getElementById("crmPaginationWrapper").style.setProperty('display', 'flex', 'important');
-
-        // Nút Trước
+// Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentCrmPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
-        // Trang số
+// Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentCrmPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentCrmPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Nút Sau
+// Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentCrmPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changeCrmPage(page) {
         const totalPages = Math.ceil(filteredCrmRows.length / ROWS_PER_PAGE_CRM) || 1;
         if (page < 1 || page > totalPages) return;
         currentCrmPage = page;
         renderCrmTableRows();
     }
-
     function resetCustomerFilters() {
         document.getElementById("customerSearchInput").value = "";
         document.getElementById("filterRank").selectedIndex = 0;
         document.getElementById("filterStatus").selectedIndex = 0;
         filterAndPaginateCustomers();
     }
-
     // ==========================================
     // PHÂN TRANG PHỤ CHO LỊCH SỬ ĐƠN CON (TAB VIEW DETAILED)
     // ==========================================
     let currentSubPage = 1;
     const ROWS_PER_PAGE_SUB = 5; // Khóa cứng 5 dòng lịch sử mua hàng con
     let subOrderRows = [];
-
     function initOrderPagination() {
-        const orderRows = document.querySelectorAll("#customerOrdersTable tbody .order-sub-row");
+        const orderTable = document.getElementById("customerOrdersTable");
+        if (!orderTable) return; // Bảo vệ an toàn tránh lỗi crash JS khi không ở màn hình chi tiết
+        const orderRows = orderTable.querySelectorAll("tbody .order-sub-row");
         subOrderRows = Array.from(orderRows);
         currentSubPage = 1;
         renderSubOrderRows();
     }
-
     function renderSubOrderRows() {
         subOrderRows.forEach(row => row.style.display = "none");
         const startIdx = (currentSubPage - 1) * ROWS_PER_PAGE_SUB;
@@ -688,56 +668,55 @@
         pageRows.forEach(row => row.style.display = "table-row");
         updateSubPaginationControls();
     }
-
     function updateSubPaginationControls() {
         const totalRows = subOrderRows.length;
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_SUB) || 1;
         const infoEl = document.getElementById("orderSubPaginationInfo");
         const btnContainer = document.getElementById("orderSubPaginationButtons");
         if (!infoEl || !btnContainer) return;
-
         const start = totalRows > 0 ? (currentSubPage - 1) * ROWS_PER_PAGE_SUB + 1 : 0;
         const end = Math.min(currentSubPage * ROWS_PER_PAGE_SUB, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' trong tổng số ' + totalRows + ' hóa đơn đặt';
-
         btnContainer.innerHTML = "";
-        if (totalPages <= 1) {
-            document.getElementById("orderSubPaginationBlock").style.setProperty('display', 'none', 'important');
-            return;
+        const subBlock = document.getElementById("orderSubPaginationBlock");
+        if (subBlock) {
+            if (totalPages <= 1) {
+                subBlock.style.setProperty('display', 'none', 'important');
+                return;
+            }
+            subBlock.style.setProperty('display', 'flex', 'important');
         }
-        document.getElementById("orderSubPaginationBlock").style.setProperty('display', 'flex', 'important');
-
-        // Nút Trước
+// Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentSubPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeSubPage(' + (currentSubPage - 1) + ')">&laquo;</a>';
         btnContainer.appendChild(prevLi);
-
-        // Trang số
+// Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentSubPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentSubPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeSubPage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Nút Sau
+// Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentSubPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeSubPage(' + (currentSubPage + 1) + ')">&raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changeSubPage(page) {
         const totalPages = Math.ceil(subOrderRows.length / ROWS_PER_PAGE_SUB) || 1;
         if (page < 1 || page > totalPages) return;
         currentSubPage = page;
         renderSubOrderRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
-        filterAndPaginateCustomers();
-        initOrderPagination();
+        const isDetailView = ${not empty requestScope.customer ? 'true' : 'false'};
+        if (isDetailView) {
+            initOrderPagination();
+        } else {
+            filterAndPaginateCustomers();
+        }
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật hồ sơ khách hàng thành công!');

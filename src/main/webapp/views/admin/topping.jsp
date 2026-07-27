@@ -9,13 +9,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- NẠP THƯ VIỆN SWEETALERT2 PHỤC VỤ NÚT XÓA HOẠT ĐỘNG HOÀN HẢO -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -25,19 +46,27 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="text-start">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
+                    <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-egg-fried me-2"></i>QUẢN LÝ TOPPING</h3>
                         <p class="text-muted small mb-0">Thiết lập đơn giá, định lượng và quản lý trạng thái cung cấp topping ăn kèm đồ uống tại quầy</p>
                     </div>
-                    <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateToppingModal()">
-                        <i class="bi bi-plus-circle-fill"></i> Thêm Topping Mới
-                    </button>
+                    <div class="d-flex gap-2 align-items-end">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                            <input type="text" id="toppingSearchInput" class="form-control" placeholder="Tìm tên topping..." onkeyup="filterAndPaginateToppings()">
+                        </div>
+                        <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateToppingModal()">
+                            <i class="bi bi-plus-circle-fill"></i> Thêm Topping Mới
+                        </button>
+                    </div>
                 </div>
+
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="toppingTable">
                         <thead>
                         <tr class="text-center">
+                            <th style="width: 80px;">STT</th>
                             <th style="width: 120px;">Mã TP</th>
                             <th style="width: 100px;" class="text-center">Hình Ảnh</th>
                             <th class="text-start">Tên Topping Ăn Kèm</th>
@@ -45,15 +74,18 @@
                             <th class="text-center">Đơn Giá</th>
                             <th class="text-center">Sắp Xếp</th>
                             <th class="text-center">Trạng Thái</th>
-                            <th class="text-end" style="width: 250px;">Hành Động</th>
+                            <th style="width: 250px;" class="text-end">Hành Động</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="toppingTableBody">
                         <c:choose>
                             <c:when test="${not empty toppings}">
-                                <c:forEach var="item" items="${toppings}">
-                                    <tr class="topping-row text-center">
-                                        <td><strong>${item.maTp}</strong></td>
+                                <c:forEach var="item" items="${toppings}" varStatus="loop">
+                                    <tr class="topping-row text-center"
+                                        data-id="${item.maTp}"
+                                        data-name="<c:out value="${item.tenTp}"/>">
+                                        <td class="row-stt"><strong>${loop.index + 1}</strong></td>
+                                        <td><code class="fw-bold text-dark">${item.maTp}</code></td>
                                         <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
@@ -73,9 +105,9 @@
                                         </td>
                                         <td class="text-center"><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td class="text-center">
-                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                    ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
-                                            </span>
+                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                        ${item.trangThai ? 'Còn hàng' : 'Tạm hết'}
+                                                </span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-2 align-items-center">
@@ -103,18 +135,21 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr><td colspan="8" class="text-center py-5 text-muted">Chưa ghi nhận Topping nào!</td></tr>
+                                <tr><td colspan="9" class="text-center py-5 text-muted">Chưa ghi nhận Topping nào!</td></tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
                     </table>
                 </div>
-                <div class="pagination-container" id="adminPaginationArea">
-                    <span class="small text-muted" id="paginatedInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
+
+                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <div class="pagination-container" id="paginationWrapper" style="display: none;">
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav aria-label="Table pagination">
-                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls"></ul>
+                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
@@ -149,7 +184,7 @@
                         <label class="form-label fw-bold small text-muted d-block">Hình ảnh minh họa Topping</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="imgTab" role="tablist">
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="file-tab" data-bs-toggle="tab" data-bs-target="#filePanel" onclick="switchToppingUploadType('file')">TẢI TỪ MÁY TÍNH</button>
+                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="file-tab" data-bs-toggle="tab" data-bs-target="#filePanel" onclick="switchToppingUploadType('file')">TẢI TỪ MÁY TINH</button>
                             </li>
                             <li class="nav-item flex-fill text-center">
                                 <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="url-tab" data-bs-toggle="tab" data-bs-target="#urlPanel" onclick="switchToppingUploadType('url')">DÁN ĐƯỜNG DẪN URL</button>
@@ -267,50 +302,97 @@
         });
     }
 
+    // ==========================================
+    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
+    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
+    let filteredRows = [];
 
-    function paginateAdminTable() {
-        const rows = Array.from(document.querySelectorAll("#toppingTable tbody .topping-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        rows.forEach((row, idx) => {
-            if (idx >= startIndex && idx < endIndex) {
-                row.style.display = "table-row";
-            } else {
-                row.style.display = "none";
-            }
+    function filterAndPaginateToppings() {
+        const searchInput = document.getElementById("toppingSearchInput");
+        if (!searchInput) return;
+        const searchVal = searchInput.value.trim().toLowerCase();
+
+        const allRows = Array.from(document.querySelectorAll("#toppingTableBody .topping-row"));
+        filteredRows = allRows.filter(row => {
+            const id = row.dataset.id.toLowerCase();
+            const name = row.dataset.name.toLowerCase();
+            return id.includes(searchVal) || name.includes(searchVal);
         });
-        const infoEl = document.getElementById("paginatedInfo");
-        if (infoEl) {
-            infoEl.innerText = (totalRecords > 0 ? (startIndex + 1) : 0) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-        }
-        const controls = document.getElementById("paginatedControls");
-        if (!controls) return;
-        controls.innerHTML = "";
-        const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
-        controls.appendChild(prevLi);
-        for (let i = 1; i <= totalPages; i++) {
-            const pageLi = document.createElement("li");
-            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
-            controls.appendChild(pageLi);
-        }
-        const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
-        controls.appendChild(nextLi);
+
+        currentPage = 1;
+        renderTableRows();
     }
 
-    function changeAdminPage(newPage) {
-        currentPage = newPage;
-        paginateAdminTable();
+    function renderTableRows() {
+        const allRows = document.querySelectorAll("#toppingTableBody .topping-row");
+        allRows.forEach(row => row.style.display = "none");
+
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        const pageRows = filteredRows.slice(startIdx, endIdx);
+        pageRows.forEach((row, idx) => {
+            row.style.display = "table-row";
+            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
+        });
+
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+        const infoEl = document.getElementById("paginationInfo");
+        const btnContainer = document.getElementById("paginationButtons");
+        const wrapper = document.getElementById("paginationWrapper");
+
+        if (!infoEl || !btnContainer || !wrapper) return;
+
+        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(currentPage * pageSize, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng Topping';
+
+        btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            wrapper.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        wrapper.style.setProperty('display', 'flex', 'important');
+
+        // Nút Trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
+        btnContainer.appendChild(prevLi);
+
+        // Trang số
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (currentPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
+            btnContainer.appendChild(li);
+        }
+
+        // Nút Sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
+        btnContainer.appendChild(nextLi);
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTableRows();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -327,7 +409,7 @@
             });
         }
         if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa cứng vĩnh viễn Topping khỏi CSDL!');
-        paginateAdminTable();
+        filterAndPaginateToppings();
     });
 </script>
 </body>

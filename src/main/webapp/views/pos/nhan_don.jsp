@@ -15,23 +15,27 @@
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
     <style>
         :root {
-            --pos-bg: #f8fafc;
-            --pos-panel-bg: #ffffff;
-            --pos-primary: #10b981;
-            --pos-primary-dark: #059669;
-            --pos-secondary: #0f172a;
-            --pos-border: #e2e8f0;
-            --pos-active-light: #ecfdf5;
-            --pos-text-main: #1e293b;
-            --pos-text-muted: #64748b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.08);
         }
-        html, body {
+
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
             height: 100vh;
             overflow: hidden;
-            background-color: var(--pos-bg);
-            color: var(--pos-text-main);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
+
         .nhandon-layout {
             height: calc(100vh - 60px);
             overflow-y: auto;
@@ -39,37 +43,83 @@
             display: flex;
             flex-direction: column;
         }
+
         .order-card {
-            border-radius: 12px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
             transition: all 0.25s ease;
-            border: 1px solid var(--pos-border);
             height: 100%;
             display: flex;
             flex-direction: column;
+            box-shadow: var(--shadow-sm);
         }
+
         .order-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.08);
-            border-color: var(--pos-primary);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
         }
+
         .orders-grid-wrapper {
             flex-grow: 1;
         }
+
+        /* Đồng bộ tuyệt đối kiểu dáng phân trang với san_pham.jsp & khach_hang.jsp */
         .pagination-container {
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
             padding: 16px 20px !important;
             background-color: #ffffff !important;
-            border-radius: 12px !important;
-            border: 1px solid var(--pos-border) !important;
+            border-radius: var(--radius-lg) !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: var(--shadow-sm) !important;
             margin-top: 20px !important;
             margin-bottom: 10px !important;
         }
+
+        /* Thống nhất kiểu dáng nút chuyển trang số màu xanh ngọc lục bảo */
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        .pagination .page-link {
+            color: var(--primary) !important;
+            border-color: var(--border-color) !important;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            background-color: var(--primary-light) !important;
+            border-color: var(--primary) !important;
+        }
+
+        .btn-status-active {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-status-inactive {
+            background-color: #ffffff !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-muted) !important;
+            transition: all 0.2s ease;
+        }
+
+        .btn-status-inactive:hover {
+            background-color: #f1f5f9 !important;
+            color: var(--text-main) !important;
+        }
     </style>
 </head>
-<body class="bg-light">
-<!-- HEADER CHỈ HUY NHẬN ĐƠN ĐỒNG BỘ HOÀN TOÀN VỚI QUẦY POS -->
+<body>
+
+<!-- HEADER ĐỒNG BỘ TOÀN DIỆN VỚI QUẦY POS -->
 <nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 100;">
     <div class="container-fluid">
         <div class="d-flex align-items-center gap-3">
@@ -88,12 +138,12 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-3">
-<span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
-🔴 LIVE POLLING (5S/LẦN)
-</span>
-            <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline text-white">
-<i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-</span>
+            <span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
+                🔴 LIVE POLLING (5S/LẦN)
+            </span>
+            <span class="small fw-semibold border-end pr-3 border-secondary d-none d-md-inline text-white">
+                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+            </span>
             <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
                 <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
             </a>
@@ -105,70 +155,92 @@
 </nav>
 
 <div class="nhandon-layout">
-    <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN & TÌM KIẾM NHANH -->
-    <div class="card card-teapos p-3 mb-4 border-0 shadow-sm text-start" style="border-radius: 12px; background-color: #ffffff;">
+    <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN & TÌM KIẾM NHANH & LỌC NGÀY -->
+    <div class="card card-teapos p-4 mb-4 border-0 shadow-sm text-start" style="border-radius: 12px; background-color: #ffffff;">
         <div class="row g-3 align-items-center">
-            <div class="col-12 col-xl-8">
+            <!-- 1. Màng lọc Tab trạng thái đơn hàng -->
+            <div class="col-12 col-xl-7">
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn ${currentStatus == 0 ? 'btn-warning text-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-clock-history"></i> Chờ Xác Nhận
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 0 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-clock-history me-1"></i>Chờ Xác Nhận
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn ${currentStatus == 1 ? 'btn-info text-white' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-check2-all"></i> Đã Xác Nhận
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 1 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-check2-all me-1"></i>Đã Xác Nhận
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn ${currentStatus == 2 ? 'btn-primary' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-cup-straw"></i> Đang Pha Chế
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 2 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-cup-straw me-1"></i>Đang Pha Chế
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn ${currentStatus == 3 ? 'btn-success' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-box2-heart"></i> Sẵn Sàng Chờ Lấy
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 3 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-box2-heart me-1"></i>Chờ Lấy Hàng
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn ${currentStatus == 4 ? 'btn-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-check-circle-fill"></i> Đã Hoàn Thành
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 4 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-check-circle-fill me-1"></i>Đã Hoàn Thành
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn ${currentStatus == 5 ? 'btn-danger' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                        <i class="bi bi-x-circle-fill"></i> Đơn Hủy Bỏ
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 5 ? 'btn-status-active' : 'btn-status-inactive'}">
+                        <i class="bi bi-x-circle-fill me-1"></i>Đã Hủy Bỏ
                     </a>
                 </div>
             </div>
-            <div class="col-12 col-xl-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="orderSearchInput" class="form-control bg-light border-start-0" placeholder="Nhập mã đơn, số điện thoại..." onkeyup="filterAndPaginateOnlineOrders()">
+
+            <!-- 2. Ô tìm kiếm nhanh và Ô lọc chọn ngày -->
+            <div class="col-12 col-xl-5">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="orderSearchInput" class="form-control bg-light border-start-0 py-2" placeholder="Mã đơn, SĐT..." onkeyup="filterAndPaginateOnlineOrders()">
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <input type="date" id="orderDateInput" class="form-control form-control-sm bg-light py-2 fw-semibold text-dark" style="border-radius: var(--radius-md);" onchange="filterAndPaginateOnlineOrders()">
+                    </div>
+                    <div class="col-2">
+                        <button type="button" class="btn btn-sm btn-secondary-teapos w-100 py-2 fw-bold" onclick="resetOnlineFilters()"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- DANH SÁCH ĐƠN HÀNG TRỰC TUYẾN -->
+    <!-- DANH SÁCH ĐƠN HÀNG TRỰC TUYẾN CARD-GRID -->
     <div class="orders-grid-wrapper">
         <div class="row g-4" id="ordersGrid">
             <c:choose>
                 <c:when test="${not empty onlineOrders}">
                     <c:forEach var="order" items="${onlineOrders}">
-                        <div class="col-12 col-md-6 col-lg-4 order-card-col" data-madh="${order.maDh}" data-makh="${order.maKh}">
-                            <div class="card order-card shadow-sm p-4 bg-white">
+                        <!-- Nâng cấp bọc lót dynamic attributes cho màng lọc Javascript kiểm toán -->
+                        <div class="col-12 col-md-6 col-lg-4 order-card-col"
+                             data-madh="${order.maDh}"
+                             data-makh="${order.maKh}"
+                             data-sdt="${order.maKh}"
+                             data-date="<fmt:formatDate value="${order.thoiGianTao}" pattern="yyyy-MM-dd"/>">
+                            <div class="card order-card shadow-sm p-4 text-start">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div class="text-start">
                                         <h5 class="fw-bold mb-0 text-success">${order.maDh}</h5>
                                         <small class="text-muted">Đặt lúc: <fmt:formatDate value="${order.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></small>
                                     </div>
-                                    <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white">
+                                    <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white rounded-pill px-2.5 py-1" style="font-size:11px;">
                                             ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
                                     </span>
                                 </div>
+
                                 <!-- Mốc giờ Click & Collect hẹn lấy nước -->
-                                <div class="p-2 bg-light rounded text-dark small mb-3 border border-dashed border-success text-start">
+                                <div class="p-2.5 bg-light rounded text-dark small mb-3 border border-dashed border-success text-start">
                                     <i class="bi bi-alarm-fill text-danger me-1"></i> HẸN ĐẾN QUẦY LẤY:
                                     <strong><fmt:formatDate value="${order.thoiGianHenLay}" pattern="HH:mm (dd/MM)"/></strong>
                                 </div>
+
                                 <div class="mb-3 text-start">
                                     <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
                                     <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách lẻ vãng lai'}"/></strong>
                                 </div>
-                                <!-- BỔ SUNG: NÚT XEM CHI TIẾT ĐƠN HÀNG ĐỂ NHÂN VIÊN BIẾT MÓN ĂN & TOPPINGS -->
+
+                                <!-- NÚT XEM CHI TIẾT MÓN ĂN PHA CHẾ -->
                                 <button type="button" class="btn btn-sm btn-outline-success w-100 fw-bold py-2 mb-3 shadow-sm" onclick="showOnlineOrderDetail('${order.maDh}')">
                                     <i class="bi bi-receipt-cutoff me-1"></i> XEM CHI TIẾT MÓN & TOPPING
                                 </button>
+
                                 <!-- Khối tính dồn tiền -->
                                 <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2 text-start">
                                     <div>
@@ -177,9 +249,10 @@
                                     </div>
                                     <div class="text-end">
                                         <small class="text-muted d-block" style="font-size: 11px;">Hình thức đặt</small>
-                                        <span class="badge bg-dark text-white fw-bold">CLICK & COLLECT</span>
+                                        <span class="badge bg-dark text-white fw-bold" style="border-radius: 4px;">CLICK & COLLECT</span>
                                     </div>
                                 </div>
+
                                 <!-- Trục điều phối trạng thái -->
                                 <form action="${pageContext.request.contextPath}/pos/nhandon" method="POST" id="formUpdate_${order.maDh}">
                                     <input type="hidden" name="maDh" value="${order.maDh}">
@@ -224,7 +297,7 @@
                 </c:when>
                 <c:otherwise>
                     <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                        <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-50"></i>
                         Không có đơn hàng online nào thuộc trạng thái lọc hiện hành!
                     </div>
                 </c:otherwise>
@@ -232,9 +305,9 @@
         </div>
     </div>
 
-    <!-- PAGINATION WRAPPER -->
+    <!-- PAGINATION WRAPPER ĐỒNG BỘ 100% VỚI KHACH_HANG.JSP & SAN_PHAM.JSP -->
     <div class="pagination-container" id="ordersPaginationBlock" style="display: none;">
-        <span class="small text-muted" id="ordersPaginationInfo">Trang 1 / 1</span>
+        <span class="small text-muted" id="ordersPaginationInfo">Hiển thị từ 1 đến 6 dòng trên tổng số 6 đơn hàng</span>
         <nav>
             <ul class="pagination pagination-sm mb-0 justify-content-end" id="ordersPaginationButtons"></ul>
         </nav>
@@ -258,10 +331,10 @@
                     <div>Số điện thoại: <strong id="modalSdt"></strong></div>
                     <div class="mt-1">Dặn dò của khách: <em id="modalGhiChu" class="text-muted fw-bold"></em></div>
                 </div>
-                <div style="border-bottom: 1.5px dashed #333; margin: 10px 0;"></div>
+                <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
                 <!-- Danh sách món nước uống + Topping + Định lượng -->
                 <div id="modalItemsContainer"></div>
-                <div style="border-bottom: 1.5px dashed #333; margin: 10px 0;"></div>
+                <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
                 <div class="small">
                     <div class="d-flex justify-content-between mb-1">
                         <span>Tổng tiền hàng gốc:</span>
@@ -295,6 +368,7 @@
         document.getElementById("statusField_" + maDh).value = targetStatus;
         document.getElementById("formUpdate_" + maDh).submit();
     }
+
     function cancelOnlineOrder(maDh) {
         Swal.fire({
             title: 'Từ chối đơn hàng?',
@@ -320,10 +394,12 @@
             }
         });
     }
+
     // Hàm lấy Context Path tự động
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
+
     // Hàm mở Modal đối soát bóc tách chi tiết món ăn + topping dành riêng cho nhân viên
     const onlineDetailModal = new bootstrap.Modal(document.getElementById('onlineOrderDetailModal'));
     function showOnlineOrderDetail(maDh) {
@@ -347,7 +423,7 @@
                     } else {
                         document.getElementById("modalPointsRow").style.setProperty('display', 'none', 'important');
                     }
-                    document.getElementById("modalFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN) + ' đ';
+                    document.getElementById("modalFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
                     let container = document.getElementById("modalItemsContainer");
                     container.innerHTML = '';
                     data.items.forEach(item => {
@@ -371,7 +447,7 @@
                             });
                             html += '  </div>';
                         }
-                        html += '</div>';
+                        html += '  </div>';
                         container.innerHTML += html;
                     });
                 } else {
@@ -386,38 +462,57 @@
             });
     }
 
-    // 3. PHÂN TRANG CARD-BASED & BỘ LỌC TÌM KIẾM ONLINE ĐƠN HÀNG (CLIENT SIDE)
+    // ==========================================
+    // PHÂN TRANG CARD-BASED & BỘ LỌC TÌM KIẾM ONLINE ĐƠN HÀNG (CLIENT SIDE)
+    // Đồng bộ hoàn mỹ kiểu hiển thị với san_pham.jsp & khach_hang.jsp
+    // ==========================================
     let currentPage = 1;
-    const pageSize = 6; // Hiển thị tối đa 6 thẻ đơn hàng một trang cho gọn gàng dễ lấy nước
+    const pageSize = 6; // Khóa cứng hiển thị 6 đơn hàng / trang cho ngăn nắp
     let filteredOrdersList = [];
+
     function filterAndPaginateOnlineOrders() {
         const searchKeyword = document.getElementById("orderSearchInput").value.trim().toLowerCase();
+        const dateKeyword = document.getElementById("orderDateInput").value; // Format: YYYY-MM-DD or ""
+
         const allCards = Array.from(document.querySelectorAll("#ordersGrid .order-card-col"));
         filteredOrdersList = allCards.filter(card => {
             const maDh = card.dataset.madh.toLowerCase();
             const maKh = card.dataset.makh ? card.dataset.makh.toLowerCase() : "";
-            return maDh.includes(searchKeyword) || maKh.includes(searchKeyword);
+            const cardDate = card.dataset.date; // Format: YYYY-MM-DD
+
+            const matchSearch = maDh.includes(searchKeyword) || maKh.includes(searchKeyword);
+            const matchDate = dateKeyword === "" || cardDate === dateKeyword;
+
+            return matchSearch && matchDate;
         });
+
         currentPage = 1;
         renderOnlineOrders();
     }
+
     function renderOnlineOrders() {
         const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
+
         const totalRows = filteredOrdersList.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
+
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
+
         const pageCards = filteredOrdersList.slice(startIdx, endIdx);
         pageCards.forEach(card => card.style.setProperty('display', 'block', 'important'));
-// Update pagination label
+
+        // Cập nhật thông số dải đếm dòng
         const infoEl = document.getElementById("ordersPaginationInfo");
         if (infoEl) {
-            infoEl.innerText = `Hiển thị từ ${totalRows > 0 ? (startIdx + 1) : 0} đến ${endIdx} trong tổng số ${totalRows} đơn hàng`;
+            infoEl.innerText = 'Hiển thị từ ' + (totalRows > 0 ? (startIdx + 1) : 0) + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRows + ' đơn đặt online';
         }
-// Render buttons
+
+        // Vẽ dải nút bấm trang số đồng dạng tăm tắp
         const buttonsContainer = document.getElementById("ordersPaginationButtons");
         if (buttonsContainer) {
             buttonsContainer.innerHTML = "";
@@ -426,32 +521,45 @@
                 return;
             }
             document.getElementById("ordersPaginationBlock").style.setProperty('display', 'flex', 'important');
+
+            // Nút Trước
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-            prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage - 1) + ')">&laquo;</a>';
+            prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage - 1) + ')">&laquo;</a>';
             buttonsContainer.appendChild(prevLi);
+
+            // Các phím trang số màu Emerald sặc sỡ
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement("li");
                 li.className = "page-item " + (currentPage === i ? "active" : "");
                 li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeOrdersPage(' + i + ')">' + i + '</a>';
                 buttonsContainer.appendChild(li);
             }
+
+            // Nút Sau
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-            nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage + 1) + ')">&raquo;</a>';
+            nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage + 1) + ')">&raquo;</a>';
             buttonsContainer.appendChild(nextLi);
         }
     }
+
     function changeOrdersPage(newPage) {
         currentPage = newPage;
         renderOnlineOrders();
+    }
+
+    function resetOnlineFilters() {
+        document.getElementById("orderSearchInput").value = "";
+        document.getElementById("orderDateInput").value = "";
+        filterAndPaginateOnlineOrders();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
         filterAndPaginateOnlineOrders();
     });
 
-    // Ajax live polling every 5s
+    // Ajax live polling rà soát đơn online mới 5 giây/lần
     setInterval(function() {
         fetch('${pageContext.request.contextPath}/pos/nhandon?action=checkPollingCount&status=' + ${currentStatus})
             .then(res => res.text())

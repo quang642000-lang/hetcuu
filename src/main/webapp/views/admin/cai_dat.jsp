@@ -10,18 +10,35 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
-            <div class="row g-4">
+            <div class="row g-4 text-start">
                 <div class="col-12 col-md-7">
-                    <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px;">
+                    <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
                         <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
                             <i class="bi bi-person-circle text-success"></i> Thông tin hồ sơ cá nhân
                         </h5>
@@ -41,7 +58,7 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label text-muted small fw-semibold">Tên đăng nhập hệ thống</label>
-                                <input type="text" name="tenDangNhap" class="form-control form-control-teapos bg-light" value="<c:out value="${adminProfile.tenDangNhap}"/>" readonly>
+                                <input type="text" name="tenDangNhap" class="form-control form-control-teapos bg-light text-muted" value="<c:out value="${adminProfile.tenDangNhap}"/>" readonly>
                             </div>
                             <button type="submit" class="btn btn-primary-teapos px-4 fw-bold">
                                 <i class="bi bi-check-circle-fill me-1"></i> Cập nhật hồ sơ
@@ -49,9 +66,8 @@
                         </form>
                     </div>
                 </div>
-
                 <div class="col-12 col-md-5">
-                    <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px;">
+                    <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
                         <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
                             <i class="bi bi-shield-lock-fill text-danger"></i> Đổi mật khẩu đăng nhập
                         </h5>
@@ -79,7 +95,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -88,11 +103,9 @@
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu hồ sơ thành công!');
         if (msg === 'passwordsuccess') showToast('success', 'Đổi mật khẩu thành công!');
-
         <c:if test="${not empty errorPassword}">
         Swal.fire({ icon: 'warning', title: 'Thất bại', text: '${errorPassword}', confirmButtonColor: '#2e7d32' });
         </c:if>
-
         document.getElementById("formPassword").addEventListener("submit", function(e) {
             const newPass = document.getElementById("newPassword").value;
             const confirm = document.getElementById("confirmPassword").value;

@@ -12,6 +12,31 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .pagination-container {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 16px 20px !important;
+            background-color: #ffffff !important;
+            border-top: 1px solid var(--border-color) !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -20,14 +45,20 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-grid-1x2-fill me-2"></i>QUẢN LÝ DANH MỤC</h3>
                         <p class="text-muted small mb-0">Thiết lập nhóm phân loại đồ uống cho Menu bán hàng POS tại quầy và Website Portal đặt online</p>
                     </div>
-                    <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateModal()">
-                        <i class="bi bi-plus-circle-fill"></i> Thêm Danh Mục Mới
-                    </button>
+                    <div class="d-flex gap-2 align-items-end">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                            <input type="text" id="categorySearchInput" class="form-control" placeholder="Tìm tên danh mục..." onkeyup="filterAndPaginateCategories()">
+                        </div>
+                        <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateModal()">
+                            <i class="bi bi-plus-circle-fill"></i> Thêm Danh Mục
+                        </button>
+                    </div>
                 </div>
 
                 <c:if test="${not empty error}">
@@ -37,8 +68,8 @@
                     </div>
                 </c:if>
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="categoryTable">
+                <div class="table-responsive admin-table-container">
+                    <table class="table table-hover align-middle admin-table" id="categoryTable">
                         <thead>
                         <tr class="table-light text-center">
                             <th style="width: 80px;">STT</th>
@@ -47,24 +78,28 @@
                             <th class="text-start">Tên danh mục trà sữa</th>
                             <th style="width: 150px;">Thứ tự hiển thị</th>
                             <th style="width: 180px;">Trạng thái</th>
-                            <th style="width: 200px;">Thao tác</th>
+                            <th style="width: 200px;" class="text-end">Thao tác</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="categoryTableBody">
                         <c:choose>
                             <c:when test="${not empty categories}">
                                 <c:forEach var="item" items="${categories}" varStatus="loop">
-                                    <tr class="category-row text-center" data-id="${item.maDm}" data-name="${item.tenDm}">
-                                        <td><strong>${loop.index + 1}</strong></td>
+                                    <tr class="category-row text-center"
+                                        data-id="${item.maDm}"
+                                        data-name="<c:out value='${item.tenDm}'/>"
+                                        data-sort="${item.thuTuHienThi}"
+                                        data-status="${item.trangThai ? 1 : 0}">
+                                        <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                         <td><code class="fw-bold text-dark">${item.maDm}</code></td>
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
-                                                    <img src="${item.hinhAnh}" class="rounded border" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <img src="${item.hinhAnh}" class="rounded border" style="width: 44px; height: 44px; object-fit: cover;">
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded border mx-auto" style="width: 50px; height: 50px;">
-                                                        <i class="bi bi-image fs-4"></i>
+                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded border mx-auto" style="width: 44px; height: 44px;">
+                                                        <i class="bi bi-image fs-5"></i>
                                                     </div>
                                                 </c:otherwise>
                                             </c:choose>
@@ -78,16 +113,16 @@
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5">
-                                                <button class="btn btn-sm btn-outline-primary fw-semibold px-2.5"
+                                                <button class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maDm}"
-                                                        data-name="${item.tenDm}"
+                                                        data-name="<c:out value='${item.tenDm}'/>"
                                                         data-img="${item.hinhAnh}"
                                                         data-sort="${item.thuTuHienThi}"
                                                         data-status="${item.trangThai ? 1 : 0}"
                                                         onclick="handleEditDanhMucClick(this)">
                                                     <i class="bi bi-pencil-square"></i> Sửa
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger fw-semibold px-2.5"
+                                                <button class="btn btn-sm btn-action-delete"
                                                         onclick="confirmDeleteDanhMuc('${item.maDm}')">
                                                     <i class="bi bi-trash3-fill"></i> Xóa
                                                 </button>
@@ -104,12 +139,14 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="adminPaginationArea">
-                    <div class="small text-muted" id="adminPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</div>
+                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <div class="pagination-container" id="paginationWrapper" style="display: none;">
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng dữ liệu</span>
                     <nav>
-                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="adminPaginationButtons"></ul>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
@@ -135,10 +172,10 @@
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
                         <ul class="nav nav-pills mb-2 bg-light p-1 rounded-pill" id="catImgTab" role="tablist">
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel" onclick="switchCatUploadType('file')">TẢI TỪ MÁY TÍNH</button>
+                                <button type="button" class="nav-link active rounded-pill py-1 fs-12 w-100" id="cat-file-tab" data-bs-toggle="tab" data-bs-target="#catFilePanel" onclick="switchCatUploadType('file')">TẢI TỪ MÁY</button>
                             </li>
                             <li class="nav-item flex-fill text-center">
-                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel" onclick="switchCatUploadType('url')">DÁN ĐƯỜNG DẪN URL</button>
+                                <button type="button" class="nav-link rounded-pill py-1 fs-12 w-100" id="cat-url-tab" data-bs-toggle="tab" data-bs-target="#catUrlPanel" onclick="switchCatUploadType('url')">DÁN LINK URL</button>
                             </li>
                         </ul>
                         <input type="hidden" name="uploadType" id="uploadType" value="file">
@@ -250,63 +287,97 @@
         });
     }
 
-    // CẤU HÌNH PHÂN TRANG CLIENT SIDE THÔNG MINH CHO ADMIN DANH MỤC
+    // ==========================================
+    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
+    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
+    let filteredRows = [];
 
-    function paginateAdminTable() {
-        const rows = Array.from(document.querySelectorAll("#categoryTable tbody .category-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
+    function filterAndPaginateCategories() {
+        const searchInput = document.getElementById("categorySearchInput");
+        if (!searchInput) return;
+        const searchVal = searchInput.value.trim().toLowerCase();
 
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-
-        rows.forEach((row, index) => {
-            const start = (currentPage - 1) * pageSize;
-            const end = start + pageSize;
-            if (index >= start && index < end) {
-                row.style.display = "table-row";
-            } else {
-                row.style.display = "none";
-            }
+        const allRows = Array.from(document.querySelectorAll("#categoryTableBody .category-row"));
+        filteredRows = allRows.filter(row => {
+            const id = row.dataset.id.toLowerCase();
+            const name = row.dataset.name.toLowerCase();
+            return id.includes(searchVal) || name.includes(searchVal);
         });
 
-        const info = document.getElementById("adminPaginationInfo");
-        const startIdx = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-        const endIdx = Math.min(currentPage * pageSize, totalRecords);
-        info.innerText = 'Hiển thị từ ' + startIdx + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRecords + ' dòng dữ liệu';
-
-        const controls = document.getElementById("adminPaginationButtons");
-        controls.innerHTML = "";
-
-        if (totalPages <= 1) {
-            document.getElementById("adminPaginationArea").style.display = "none";
-            return;
-        }
-        document.getElementById("adminPaginationArea").style.display = "flex";
-
-        const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage - 1) + ')">&laquo;</button>';
-        controls.appendChild(prevLi);
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageLi = document.createElement("li");
-            pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-            pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changeAdminPage(' + i + ')">' + i + '</button>';
-            controls.appendChild(pageLi);
-        }
-
-        const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changeAdminPage(' + (currentPage + 1) + ')">&raquo;</button>';
-        controls.appendChild(nextLi);
+        currentPage = 1;
+        renderTableRows();
     }
 
-    function changeAdminPage(newPage) {
-        currentPage = newPage;
-        paginateAdminTable();
+    function renderTableRows() {
+        const allRows = document.querySelectorAll("#categoryTableBody .category-row");
+        allRows.forEach(row => row.style.display = "none");
+
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        const pageRows = filteredRows.slice(startIdx, endIdx);
+        pageRows.forEach((row, idx) => {
+            row.style.display = "table-row";
+            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
+        });
+
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+        const infoEl = document.getElementById("paginationInfo");
+        const btnContainer = document.getElementById("paginationButtons");
+        const wrapper = document.getElementById("paginationWrapper");
+
+        if (!infoEl || !btnContainer || !wrapper) return;
+
+        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(currentPage * pageSize, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng danh mục';
+
+        btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            wrapper.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        wrapper.style.setProperty('display', 'flex', 'important');
+
+        // Nút Trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
+        btnContainer.appendChild(prevLi);
+
+        // Trang số
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (currentPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
+            btnContainer.appendChild(li);
+        }
+
+        // Nút Sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
+        btnContainer.appendChild(nextLi);
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTableRows();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -323,7 +394,7 @@
                 confirmButtonColor: '#10b981'
             });
         }
-        paginateAdminTable();
+        filterAndPaginateCategories();
     });
 </script>
 </body>

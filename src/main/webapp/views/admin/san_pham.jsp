@@ -14,9 +14,44 @@
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        .filter-wrapper { background-color: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: var(--shadow-sm); }
-        .product-img-circle { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--primary); box-shadow: var(--shadow-sm); }
-        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .filter-wrapper {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .product-img-circle {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -31,10 +66,11 @@
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-cup-straw me-2"></i>Quản Lý Sản Phẩm</h3>
                         <p class="text-muted small mb-0">Quản lý vòng đời đồ uống, các tùy biến pha chế và cấu hình biến thể kích cỡ bán</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/admin/sanpham?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2">
+                    <a href="${pageContext.request.contextPath}/admin/sanpham?action=create" class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold">
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
+
                 <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM -->
                 <div class="filter-wrapper mb-4">
                     <div class="row g-3 text-start">
@@ -80,6 +116,7 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="productTable">
@@ -94,7 +131,7 @@
                             <th class="text-end" style="width: 110px;">Giá S</th>
                             <th class="text-end" style="width: 110px;">Giá L</th>
                             <th style="width: 140px;">Trạng Thái</th>
-                            <th style="width: 250px;">Thao Tác</th>
+                            <th style="width: 250px;" class="text-end">Thao Tác</th>
                         </tr>
                         </thead>
                         <tbody id="productTableBody">
@@ -133,8 +170,8 @@
                                                     <img src="${item.hinhAnh}" class="product-img-circle shadow-sm" alt="Pic">
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded-circle border mx-auto" style="width: 44px; height: 44px;">
-                                                        <i class="bi bi-cup-straw fs-5"></i>
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 44px; height: 44px;">
+                                                        <i class="bi bi-cup-straw fs-2 text-muted"></i>
                                                     </div>
                                                 </c:otherwise>
                                             </c:choose>
@@ -167,13 +204,12 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                    ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                            </span>
+                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+                                                </span>
                                         </td>
-                                        <td>
-                                            <!-- BỘ BA NÚT THAO TÁC ĐỒNG BỘ: SỬA, TRẠNG THÁI (BẬT/TẮT), XÓA -->
-                                            <div class="d-flex justify-content-center gap-1.5 align-items-center">
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1.5 align-items-center">
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit" title="Cập nhật thông tin">
                                                     <i class="bi bi-pencil-square"></i> Sửa
                                                 </a>
@@ -201,17 +237,20 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Pagination block -->
-                <div class="pagination-container" id="paginationWrapper">
+                <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -225,6 +264,7 @@
         const statusVal = document.getElementById("filterStatus").value;
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
+
         const allRows = Array.from(document.querySelectorAll("#productTableBody .product-row"));
         filteredRows = allRows.filter(row => {
             const maSp = row.dataset.masp.toLowerCase();
@@ -233,13 +273,16 @@
             const isNew = row.dataset.isnew;
             const isHot = row.dataset.ishot;
             const status = row.dataset.trangthai;
+
             let matchSearch = maSp.includes(searchVal) || tenSp.includes(searchVal);
             let matchCat = catVal === "" || maDm === catVal;
             let matchStatus = statusVal === "" || status === statusVal;
             let matchNew = newVal === "" || isNew === newVal;
             let matchHot = hotVal === "" || isHot === hotVal;
+
             return matchSearch && matchCat && matchStatus && matchNew && matchHot;
         });
+
         currentPage = 1;
         renderTableRows();
     }
@@ -247,13 +290,22 @@
     function renderTableRows() {
         const allRows = document.querySelectorAll("#productTableBody .product-row");
         allRows.forEach(row => row.style.display = "none");
+
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
         const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
-        const endIdx = startIdx + ROWS_PER_PAGE;
+        const endIdx = Math.min(startIdx + ROWS_PER_PAGE, totalRows);
+
         const pageRows = filteredRows.slice(startIdx, endIdx);
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
+
         updatePaginationControls();
     }
 
@@ -262,23 +314,39 @@
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
+        const wrapper = document.getElementById("paginationWrapper");
+
+        if (!infoEl || !btnContainer || !wrapper) return;
+
         const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
         const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
-        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng dữ liệu';
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng sản phẩm';
+
         btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            wrapper.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        wrapper.style.setProperty('display', 'flex', 'important');
+
+        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
+        prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
+
+        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="#" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
+
+        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
+        nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
 

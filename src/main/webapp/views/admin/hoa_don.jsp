@@ -9,10 +9,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
-        /* CSS cho bộ Phân trang Client-side mượt mà */
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
         .pagination-container {
             display: flex;
             justify-content: space-between;
@@ -30,7 +46,7 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                     <div>
                         <h3 class="fw-bold mb-1" style="color: var(--primary-color);">LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
                         <p class="text-muted small mb-0">Quản lý vòng đời hóa đơn, tra soát mốc doanh thu, lọc nhân viên xử lý và in hóa đơn tại quầy</p>
@@ -45,7 +61,6 @@
                             <option value="4" ${statusFilter eq '4' ? 'selected' : ''}>Hoàn thành</option>
                             <option value="5" ${statusFilter eq '5' ? 'selected' : ''}>Đã hủy</option>
                         </select>
-                        <!-- NÂNG CẤP: Lọc theo nhân viên có dấu mượt mà -->
                         <select id="filterNhanVien" class="form-select form-select-sm" style="max-width: 200px;" onchange="filterOrdersRealtime()">
                             <option value="">Tất cả nhân viên đảm nhiệm</option>
                             <option value="SYSTEM">Hệ thống tự động / Chưa nhận đơn</option>
@@ -56,27 +71,30 @@
                         <button type="submit" class="btn btn-sm btn-primary-teapos px-3"><i class="bi bi-funnel"></i> Lọc đơn</button>
                     </form>
                 </div>
+
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="ordersTable">
+                    <table class="table table-hover align-middle admin-table" id="ordersTable">
                         <thead>
                         <tr class="table-light text-center">
+                            <th style="width: 60px;">STT</th>
                             <th>Mã hoá đơn</th>
                             <th>Mã Khách</th>
                             <th>Thời gian</th>
                             <th class="text-end">Tiền gốc</th>
                             <th class="text-end">Khấu trừ KM</th>
                             <th class="text-end">Thành tiền</th>
-                            <th class="text-center">Thanh Toản</th>
+                            <th class="text-center">Thanh Toán</th>
                             <th class="text-center">Trạng Thái Đơn</th>
                             <th class="text-center">Nhân viên đảm nhiệm</th>
-                            <th class="text-end">Thao tác</th>
+                            <th class="text-end" style="width: 150px;">Thao tác</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="ordersTableBody">
                         <c:choose>
                             <c:when test="${not empty orders}">
-                                <c:forEach var="item" items="${orders}">
+                                <c:forEach var="item" items="${orders}" varStatus="loop">
                                     <tr class="order-row text-center" data-manv="${not empty item.maNv ? item.maNv : 'SYSTEM'}">
+                                        <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                         <td><strong>${item.maDh}</strong></td>
                                         <td>
                                             <c:choose>
@@ -91,9 +109,9 @@
                                         <td class="text-end text-danger">-<fmt:formatNumber value="${item.tienGiamGia + item.tienTruDiem}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-end text-success fw-bold"><fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center">
-                                            <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
-                                                    ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
-                                            </span>
+                                                <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2.5 py-1">
+                                                        ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
+                                                </span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -108,7 +126,6 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.maNv}">
-                                                    <%-- ĐỒNG BỘ: Duyệt tìm để hiển thị Tên thật của nhân sự thay vì mã ID NVxxxx gây khó hiểu --%>
                                                     <c:set var="matchedStaffName" value="${item.maNv}" />
                                                     <c:forEach var="nv" items="${employees}">
                                                         <c:if test="${nv.maNv eq item.maNv}">
@@ -131,19 +148,21 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr><td colspan="10" class="text-center py-5 text-muted">Chưa ghi nhận hóa đơn nào!</td></tr>
+                                <tr><td colspan="11" class="text-center py-5 text-muted">Chưa ghi nhận hóa đơn nào!</td></tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
                     </table>
                 </div>
-                <!-- Bộ phân trang Client-side điều khiển mượt mà -->
-                <div class="pagination-container" id="paginationBlock" style="display: none;">
+
+                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 đơn hàng</span>
                     <nav>
-                        <ul class="pagination pagination-sm mb-0" id="paginationButtons"></ul>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
@@ -157,7 +176,7 @@
                 <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1 text-success"></i> HOÁ ĐƠN THANH TOÁN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 bg-light" id="billPrintArea">
+            <div class="modal-body p-4 bg-white text-dark text-start" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4;">
                 <div class="text-center mb-3">
                     <h5 class="fw-bold mb-0">TEA POS SYSTEM</h5>
                     <small class="text-muted">123 Đường Trà Sữa, Phường 10, Gò Vấp</small> <br>
@@ -172,7 +191,6 @@
                     <div>Thu ngân: <strong id="billTenNv"></strong></div>
                 </div>
                 <hr class="border-secondary border-dashed my-2">
-                <!-- Container hiển thị sản phẩm, chống hiển thị cache bằng hiệu ứng loading -->
                 <div id="billItemsContainer" class="small"></div>
                 <hr class="border-secondary border-dashed my-2">
                 <div class="small">
@@ -180,7 +198,7 @@
                         <span>Tổng tiền hàng & Topping:</span>
                         <strong id="billRawPrice"></strong>
                     </div>
-                    <div class="d-flex justify-content-between text-danger">
+                    <div class="d-flex justify-content-between text-danger" id="billDiscountRow">
                         <span>Voucher giảm giá:</span>
                         <strong id="billDiscount"></strong>
                     </div>
@@ -211,7 +229,6 @@
     const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
 
     function showReceiptDetail(maDh) {
-        // Chống lỗi lưu cache hóa đơn cũ của trình duyệt
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
         fetch('${pageContext.request.contextPath}/admin/hoadon?action=detailJson&id=' + maDh)
             .then(res => res.json())
@@ -223,14 +240,18 @@
                     document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+                    if (data.tienGiamGia > 0) {
+                        document.getElementById("billDiscountRow").style.setProperty('display', 'flex', 'important');
+                    } else {
+                        document.getElementById("billDiscountRow").style.setProperty('display', 'none', 'important');
+                    }
                     if (data.diemSuDung > 0) {
-                        document.getElementById("billPointsRow").style.display = 'flex';
+                        document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                         document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                     } else {
-                        document.getElementById("billPointsRow").style.display = 'none';
+                        document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                     }
                     document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-
                     let container = document.getElementById("billItemsContainer");
                     container.innerHTML = '';
                     data.items.forEach(item => {
@@ -270,83 +291,105 @@
         location.reload();
     }
 
-    // BỘ PHÂN TRANG & BỘ LỌC CLIENT-SIDE REALTIME MƯỢT MÀ
+    // ==========================================
+    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
+    // ==========================================
     let currentPage = 1;
-    const rowsPerPage = 10;
+    const pageSize = 10;
     let filteredRows = [];
-
-    function initPagination() {
-        const allRows = document.querySelectorAll("#ordersTable tbody .order-row");
-        filteredRows = Array.from(allRows);
-        showPage(1);
-    }
 
     function filterOrdersRealtime() {
         const selectedNv = document.getElementById("filterNhanVien").value;
-        const allRows = document.querySelectorAll("#ordersTable tbody .order-row");
+        const allRows = document.querySelectorAll("#ordersTableBody .order-row");
         filteredRows = [];
+
         allRows.forEach(row => {
             const rowNv = row.getAttribute("data-manv");
             if (selectedNv === "" || rowNv === selectedNv) {
                 filteredRows.push(row);
-                row.style.display = "table-row";
             } else {
                 row.style.display = "none";
             }
         });
-        showPage(1);
+        currentPage = 1;
+        renderTableRows();
     }
 
-    function showPage(page) {
-        currentPage = page;
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
+    function renderTableRows() {
+        const allRows = document.querySelectorAll("#ordersTableBody .order-row");
+        allRows.forEach(row => row.style.display = "none");
 
-        // Ẩn tất cả dòng trước
-        document.querySelectorAll("#ordersTable tbody .order-row").forEach(row => {
-            row.style.display = "none";
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        const pageRows = filteredRows.slice(startIdx, endIdx);
+        pageRows.forEach((row, idx) => {
+            row.style.display = "table-row";
+            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
 
-        if (totalRows === 0) {
-            document.getElementById("paginationBlock").style.display = "none";
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+        const infoEl = document.getElementById("paginationInfo");
+        const btnContainer = document.getElementById("paginationButtons");
+        const wrapper = document.getElementById("paginationWrapper");
+
+        if (!infoEl || !btnContainer || !wrapper) return;
+
+        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(currentPage * pageSize, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' hóa đơn';
+
+        btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
-
-        document.getElementById("paginationBlock").style.display = "flex";
-        const start = (page - 1) * rowsPerPage;
-        const end = Math.min(start + rowsPerPage, totalRows);
-        for (let i = start; i < end; i++) {
-            filteredRows[i].style.display = "table-row";
-        }
-        document.getElementById("paginationInfo").innerText = "Hiển thị từ " + (start + 1) + " đến " + end + " của " + totalRows + " đơn hàng";
-
-        // Vẽ lại các nút phân trang
-        const buttonsContainer = document.getElementById("paginationButtons");
-        buttonsContainer.innerHTML = "";
+        wrapper.style.setProperty('display', 'flex', 'important');
 
         // Nút Trước
         const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (page === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page - 1) + ')">&laquo;</a>';
-        buttonsContainer.appendChild(prevLi);
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
+        btnContainer.appendChild(prevLi);
 
-        // Các trang số
+        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
-            li.className = "page-item " + (i === page ? "active" : "");
-            li.innerHTML = '<a class="page-link ' + (i === page ? "bg-success border-success" : "text-success") + '" href="javascript:void(0)" onclick="showPage(' + i + ')">' + i + '</a>';
-            buttonsContainer.appendChild(li);
+            li.className = "page-item " + (currentPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
+            btnContainer.appendChild(li);
         }
 
         // Nút Sau
         const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (page === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="showPage(' + (page + 1) + ')">&raquo;</a>';
-        buttonsContainer.appendChild(nextLi);
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
+        btnContainer.appendChild(nextLi);
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTableRows();
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        initPagination();
+        const allRows = document.querySelectorAll("#ordersTableBody .order-row");
+        filteredRows = Array.from(allRows);
+        renderTableRows();
+
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật trạng thái đơn hàng thành công!');

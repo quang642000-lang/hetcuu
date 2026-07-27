@@ -9,8 +9,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .pagination-container {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 16px 20px !important;
+            background-color: #ffffff !important;
+            border-top: 1px solid var(--border-color) !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -18,37 +45,45 @@
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4 admin-page-container">
-            <div class="card card-teapos p-4 shadow-sm border-0" style="background-color: #ffffff;">
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <div class="card card-teapos p-4 shadow-sm border-0" style="background-color: #ffffff; border-radius: 12px;">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3 text-start">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-person-badge-fill me-2"></i>HỒ SƠ NHÂN VIÊN</h3>
                         <p class="text-muted small mb-0">Thiết lập tài khoản làm việc, phân chia quyền truy cập POS và kiểm soát trạng thái nhân viên</p>
                     </div>
-                    <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateEmployeeModal()">
-                        <i class="bi bi-person-plus-fill"></i> Thêm Nhân Viên Mới
-                    </button>
+                    <div class="d-flex gap-2 align-items-end">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                            <input type="text" id="employeeSearchInput" class="form-control" placeholder="Tìm tên hoặc mã nhân viên..." onkeyup="filterAndPaginateEmployees()">
+                        </div>
+                        <button class="btn btn-primary-teapos d-flex align-items-center gap-2 fw-bold" onclick="openCreateEmployeeModal()">
+                            <i class="bi bi-person-plus-fill"></i> Thêm Nhân Viên Mới
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-responsive admin-table-container">
                     <table class="table admin-table align-middle" id="employeeTable">
                         <thead>
                         <tr class="text-center">
-                            <th style="width: 60px;">STT</th>
-                            <th style="width: 100px;">Mã NV</th>
+                            <th style="width: 80px;">STT</th>
+                            <th style="width: 120px;">Mã NV</th>
                             <th class="text-start">Họ và tên nhân sự</th>
                             <th>Số điện thoại</th>
                             <th>Email</th>
                             <th>Tên đăng nhập</th>
                             <th class="text-center" style="width: 150px;">Vai trò</th>
-                            <th class="text-center" style="width: 150px;">Trạng Trạng</th>
-                            <th style="width: 250px;">Thao Tác</th>
+                            <th class="text-center" style="width: 150px;">Trạng Thái</th>
+                            <th style="width: 250px;" class="text-end">Thao Tác</th>
                         </tr>
                         </thead>
                         <tbody id="employeeTableBody">
                         <c:choose>
                             <c:when test="${not empty employees}">
                                 <c:forEach var="item" items="${employees}" varStatus="loop">
-                                    <tr class="employee-row text-center">
+                                    <tr class="employee-row text-center"
+                                        data-id="${item.maNv}"
+                                        data-name="<c:out value='${item.hoTen}'/>">
                                         <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                         <td><code class="fw-bold text-dark">${item.maNv}</code></td>
                                         <td class="text-start"><strong><c:out value="${item.hoTen}"/></strong></td>
@@ -56,31 +91,30 @@
                                         <td>${item.email}</td>
                                         <td><code><c:out value="${item.tenDangNhap}"/></code></td>
                                         <td class="text-center">
-                                            <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
-                                                    ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
-                                            </span>
+                                                <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
+                                                        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
+                                                </span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} border px-2.5 py-1">
-                                                    ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
-                                            </span>
+                                                <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} border px-2.5 py-1">
+                                                        ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
+                                                </span>
                                         </td>
-                                        <td>
-                                            <div class="d-flex justify-content-center gap-1.5">
-                                                <!-- ĐỔI TRẠNG THÁI KHÓA CA / MỞ CA TOGGLE ĐỘNG -->
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1.5">
                                                 <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
-                                                   class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'}">
+                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}">
                                                         ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                <button type="button" class="btn btn-sm btn-action-info"
                                                         data-id="${item.maNv}"
-                                                        data-name="${item.hoTen}"
+                                                        data-name="<c:out value='${item.hoTen}'/>"
                                                         onclick="handleResetPasswordClick(this)">
                                                     Reset
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-outline-success"
+                                                <button type="button" class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maNv}"
-                                                        data-name="${item.hoTen}"
+                                                        data-name="<c:out value='${item.hoTen}'/>"
                                                         data-phone="${item.soDienThoai}"
                                                         data-email="${item.email}"
                                                         data-user="${item.tenDangNhap}"
@@ -89,7 +123,7 @@
                                                         onclick="handleEditEmployeeClick(this)">
                                                     Sửa
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteEmployee('${item.maNv}')">
+                                                <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteEmployee('${item.maNv}')">
                                                     Xóa
                                                 </button>
                                             </div>
@@ -105,13 +139,14 @@
                     </table>
                 </div>
 
-                <!-- PHÂN TRANG NHÂN VIÊN CLIENT SIDE -->
-                <div class="pagination-container" id="empPaginationWrapper">
-                    <span class="small text-muted" id="empPaginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
+                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <div class="pagination-container" id="paginationWrapper" style="display: none;">
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
-                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="empPaginationButtons"></ul>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
+
             </div>
         </div>
     </div>
@@ -207,62 +242,98 @@
 <script>
     const empModal = new bootstrap.Modal(document.getElementById('employeeFormModal'));
     const passModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-    const ROWS_PER_PAGE_EMP = 10;
-    let currentEmpPage = 1;
-    let empRows = [];
 
-    function paginateEmployees() {
-        empRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
-        renderEmpRows();
+    // ==========================================
+    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
+    // ==========================================
+    let currentPage = 1;
+    const pageSize = 10;
+    let filteredRows = [];
+
+    function filterAndPaginateEmployees() {
+        const searchInput = document.getElementById("employeeSearchInput");
+        if (!searchInput) return;
+        const searchVal = searchInput.value.trim().toLowerCase();
+
+        const allRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
+        filteredRows = allRows.filter(row => {
+            const id = row.dataset.id.toLowerCase();
+            const name = row.dataset.name.toLowerCase();
+            return id.includes(searchVal) || name.includes(searchVal);
+        });
+
+        currentPage = 1;
+        renderTableRows();
     }
 
-    function renderEmpRows() {
-        empRows.forEach(row => row.style.display = "none");
-        const startIdx = (currentEmpPage - 1) * ROWS_PER_PAGE_EMP;
-        const endIdx = startIdx + ROWS_PER_PAGE_EMP;
-        const pageRows = empRows.slice(startIdx, endIdx);
+    function renderTableRows() {
+        const allRows = document.querySelectorAll("#employeeTableBody .employee-row");
+        allRows.forEach(row => row.style.display = "none");
+
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        const pageRows = filteredRows.slice(startIdx, endIdx);
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-        updateEmpPaginationControls();
+
+        updatePaginationControls();
     }
 
-    function updateEmpPaginationControls() {
-        const totalRows = empRows.length;
-        const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_EMP) || 1;
-        const infoEl = document.getElementById("empPaginationInfo");
-        const btnContainer = document.getElementById("empPaginationButtons");
-        if (!infoEl || !btnContainer) return;
+    function updatePaginationControls() {
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+        const infoEl = document.getElementById("paginationInfo");
+        const btnContainer = document.getElementById("paginationButtons");
+        const wrapper = document.getElementById("paginationWrapper");
 
-        const start = totalRows > 0 ? (currentEmpPage - 1) * ROWS_PER_PAGE_EMP + 1 : 0;
-        const end = Math.min(currentEmpPage * ROWS_PER_PAGE_EMP, totalRows);
-        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng';
+        if (!infoEl || !btnContainer || !wrapper) return;
+
+        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(currentPage * pageSize, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhân viên';
+
         btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            wrapper.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        wrapper.style.setProperty('display', 'flex', 'important');
 
+        // Nút Trước
         const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (currentEmpPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link" href="#" onclick="changeEmpPage(' + (currentEmpPage - 1) + ')"><i class="bi bi-chevron-left"></i></a>';
+        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
+        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
-            li.className = "page-item " + (currentEmpPage === i ? "active" : "");
-            li.innerHTML = '<a class="page-link" href="#" onclick="changeEmpPage(' + i + ')">' + i + '</a>';
+            li.className = "page-item " + (currentPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
 
+        // Nút Sau
         const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (currentEmpPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link" href="#" onclick="changeEmpPage(' + (currentEmpPage + 1) + ')"><i class="bi bi-chevron-right"></i></a>';
+        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
 
-    function changeEmpPage(page) {
-        const totalPages = Math.ceil(empRows.length / ROWS_PER_PAGE_EMP) || 1;
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
-        currentEmpPage = page;
-        renderEmpRows();
+        currentPage = page;
+        renderTableRows();
     }
 
     function openCreateEmployeeModal() {
@@ -324,7 +395,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        paginateEmployees();
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'createsuccess') showToast('success', 'Thêm mới tài khoản nhân viên thành công!');
@@ -338,6 +408,7 @@
             });
         }
         if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa cứng vĩnh viễn nhân viên khỏi CSDL!');
+        filterAndPaginateEmployees();
     });
 </script>
 </body>
