@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -36,6 +36,35 @@
             height: calc(100vh - 60px);
             overflow-y: auto;
             padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .order-card {
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            border: 1px solid var(--pos-border);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.08);
+            border-color: var(--pos-primary);
+        }
+        .orders-grid-wrapper {
+            flex-grow: 1;
+        }
+        .pagination-container {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 16px 20px !important;
+            background-color: #ffffff !important;
+            border-radius: 12px !important;
+            border: 1px solid var(--pos-border) !important;
+            margin-top: 20px !important;
+            margin-bottom: 10px !important;
         }
     </style>
 </head>
@@ -76,121 +105,139 @@
 </nav>
 
 <div class="nhandon-layout">
-    <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN -->
-    <div class="card card-teapos p-3 mb-4 border-0 shadow-sm" style="border-radius: 12px;">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn ${currentStatus == 0 ? 'btn-warning text-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-clock-history"></i> Chờ Xác Nhận
-            </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn ${currentStatus == 1 ? 'btn-info text-white' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-check2-all"></i> Đã Xác Nhận
-            </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn ${currentStatus == 2 ? 'btn-primary' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-cup-straw"></i> Đang Pha Chế
-            </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn ${currentStatus == 3 ? 'btn-success' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-box2-heart"></i> Sẵn Sàng Chờ Lấy
-            </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn ${currentStatus == 4 ? 'btn-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-check-circle-fill"></i> Đã Hoàn Thành
-            </a>
-            <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn ${currentStatus == 5 ? 'btn-danger' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
-                <i class="bi bi-x-circle-fill"></i> Đơn Hủy Bỏ
-            </a>
+    <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN & TÌM KIẾM NHANH -->
+    <div class="card card-teapos p-3 mb-4 border-0 shadow-sm text-start" style="border-radius: 12px; background-color: #ffffff;">
+        <div class="row g-3 align-items-center">
+            <div class="col-12 col-xl-8">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn ${currentStatus == 0 ? 'btn-warning text-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-clock-history"></i> Chờ Xác Nhận
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn ${currentStatus == 1 ? 'btn-info text-white' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-check2-all"></i> Đã Xác Nhận
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn ${currentStatus == 2 ? 'btn-primary' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-cup-straw"></i> Đang Pha Chế
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn ${currentStatus == 3 ? 'btn-success' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-box2-heart"></i> Sẵn Sàng Chờ Lấy
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn ${currentStatus == 4 ? 'btn-dark' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-check-circle-fill"></i> Đã Hoàn Thành
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn ${currentStatus == 5 ? 'btn-danger' : 'btn-light border'} fw-bold btn-sm rounded-pill px-3">
+                        <i class="bi bi-x-circle-fill"></i> Đơn Hủy Bỏ
+                    </a>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="orderSearchInput" class="form-control bg-light border-start-0" placeholder="Nhập mã đơn, số điện thoại..." onkeyup="filterAndPaginateOnlineOrders()">
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- DANH SÁCH ĐƠN HÀNG TRỰC TUYẾN -->
-    <div class="row g-4">
-        <c:choose>
-            <c:when test="${not empty onlineOrders}">
-                <c:forEach var="order" items="${onlineOrders}">
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card card-teapos shadow-sm border p-4 bg-white" style="border-radius: 12px; transition: transform 0.2s ease;">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div>
-                                    <h5 class="fw-bold mb-0 text-success">${order.maDh}</h5>
-                                    <small class="text-muted">Đặt lúc: <fmt:formatDate value="${order.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></small>
+    <div class="orders-grid-wrapper">
+        <div class="row g-4" id="ordersGrid">
+            <c:choose>
+                <c:when test="${not empty onlineOrders}">
+                    <c:forEach var="order" items="${onlineOrders}">
+                        <div class="col-12 col-md-6 col-lg-4 order-card-col" data-madh="${order.maDh}" data-makh="${order.maKh}">
+                            <div class="card order-card shadow-sm p-4 bg-white">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="text-start">
+                                        <h5 class="fw-bold mb-0 text-success">${order.maDh}</h5>
+                                        <small class="text-muted">Đặt lúc: <fmt:formatDate value="${order.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></small>
+                                    </div>
+                                    <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white">
+                                            ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
+                                    </span>
                                 </div>
-                                <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white">
-                                        ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
-                                </span>
-                            </div>
-                            <!-- Mốc giờ Click & Collect hẹn lấy nước -->
-                            <div class="p-2 bg-light rounded text-dark small mb-3 border border-dashed border-success">
-                                <i class="bi bi-alarm-fill text-danger me-1"></i> HẸN ĐẾN QUẦY LẤY:
-                                <strong><fmt:formatDate value="${order.thoiGianHenLay}" pattern="HH:mm (dd/MM)"/></strong>
-                            </div>
-                            <div class="mb-3">
-                                <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
-                                <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách vãng lai lẻ'}"/></strong>
-                            </div>
-
-                            <!-- BỔ SUNG: NÚT XEM CHI TIẾT ĐƠN HÀNG ĐỂ NHÂN VIÊN BIẾT MÓN ĂN & TOPPINGS -->
-                            <button type="button" class="btn btn-sm btn-outline-success w-100 fw-bold py-2 mb-3 shadow-sm" onclick="showOnlineOrderDetail('${order.maDh}')">
-                                <i class="bi bi-receipt-cutoff me-1"></i> XEM CHI TIẾT MÓN & TOPPING
-                            </button>
-
-                            <!-- Khối tính dồn tiền -->
-                            <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2">
-                                <div>
-                                    <small class="text-muted d-block" style="font-size: 11px;">Giá trị thu</small>
-                                    <strong class="text-danger fs-5"><fmt:formatNumber value="${order.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</strong>
+                                <!-- Mốc giờ Click & Collect hẹn lấy nước -->
+                                <div class="p-2 bg-light rounded text-dark small mb-3 border border-dashed border-success text-start">
+                                    <i class="bi bi-alarm-fill text-danger me-1"></i> HẸN ĐẾN QUẦY LẤY:
+                                    <strong><fmt:formatDate value="${order.thoiGianHenLay}" pattern="HH:mm (dd/MM)"/></strong>
                                 </div>
-                                <div class="text-end">
-                                    <small class="text-muted d-block" style="font-size: 11px;">Hình thức đặt</small>
-                                    <span class="badge bg-dark text-white fw-bold">CLICK & COLLECT</span>
+                                <div class="mb-3 text-start">
+                                    <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
+                                    <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách lẻ vãng lai'}"/></strong>
                                 </div>
+                                <!-- BỔ SUNG: NÚT XEM CHI TIẾT ĐƠN HÀNG ĐỂ NHÂN VIÊN BIẾT MÓN ĂN & TOPPINGS -->
+                                <button type="button" class="btn btn-sm btn-outline-success w-100 fw-bold py-2 mb-3 shadow-sm" onclick="showOnlineOrderDetail('${order.maDh}')">
+                                    <i class="bi bi-receipt-cutoff me-1"></i> XEM CHI TIẾT MÓN & TOPPING
+                                </button>
+                                <!-- Khối tính dồn tiền -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2 text-start">
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size: 11px;">Giá trị thu</small>
+                                        <strong class="text-danger fs-5"><fmt:formatNumber value="${order.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</strong>
+                                    </div>
+                                    <div class="text-end">
+                                        <small class="text-muted d-block" style="font-size: 11px;">Hình thức đặt</small>
+                                        <span class="badge bg-dark text-white fw-bold">CLICK & COLLECT</span>
+                                    </div>
+                                </div>
+                                <!-- Trục điều phối trạng thái -->
+                                <form action="${pageContext.request.contextPath}/pos/nhandon" method="POST" id="formUpdate_${order.maDh}">
+                                    <input type="hidden" name="maDh" value="${order.maDh}">
+                                    <input type="hidden" name="trangThaiMoi" id="statusField_${order.maDh}">
+                                    <input type="hidden" name="lyDoHuy" id="cancelReason_${order.maDh}">
+                                    <div class="row g-2">
+                                        <c:choose>
+                                            <c:when test="${order.trangThaiDon == 0}">
+                                                <div class="col-6">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" onclick="cancelOnlineOrder('${order.maDh}')">HỦY ĐƠN</button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 1)">XÁC NHẬN</button>
+                                                </div>
+                                            </c:when>
+                                            <c:when test="${order.trangThaiDon == 1}">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-sm btn-primary w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 2)">BẮT ĐẦU PHA CHẾ</button>
+                                                </div>
+                                            </c:when>
+                                            <c:when test="${order.trangThaiDon == 2}">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 3)">BÁO LÊN KỆ CHỜ LẤY</button>
+                                                </div>
+                                            </c:when>
+                                            <c:when test="${order.trangThaiDon == 3}">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-sm btn-dark w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 4)">GIAO NƯỚC (HOÀN THÀNH)</button>
+                                                </div>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="col-12 text-center text-muted small py-2 bg-light rounded border">
+                                                    Giao dịch đã đóng (Locked)
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </form>
                             </div>
-                            <!-- Trục điều phối trạng thái -->
-                            <form action="${pageContext.request.contextPath}/pos/nhandon" method="POST" id="formUpdate_${order.maDh}">
-                                <input type="hidden" name="maDh" value="${order.maDh}">
-                                <input type="hidden" name="trangThaiMoi" id="statusField_${order.maDh}">
-                                <input type="hidden" name="lyDoHuy" id="cancelReason_${order.maDh}">
-                                <div class="row g-2">
-                                    <c:choose>
-                                        <c:when test="${order.trangThaiDon == 0}">
-                                            <div class="col-6">
-                                                <button type="button" class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" onclick="cancelOnlineOrder('${order.maDh}')">HỦY ĐƠN</button>
-                                            </div>
-                                            <div class="col-6">
-                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 1)">XÁC NHẬN</button>
-                                            </div>
-                                        </c:when>
-                                        <c:when test="${order.trangThaiDon == 1}">
-                                            <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-primary w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 2)">BẮT ĐẦU PHA CHẾ</button>
-                                            </div>
-                                        </c:when>
-                                        <c:when test="${order.trangThaiDon == 2}">
-                                            <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 3)">BÁO LÊN KỆ CHỜ LẤY</button>
-                                            </div>
-                                        </c:when>
-                                        <c:when test="${order.trangThaiDon == 3}">
-                                            <div class="col-12">
-                                                <button type="button" class="btn btn-sm btn-dark w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 4)">GIAO NƯỚC (HOÀN THÀNH)</button>
-                                            </div>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <div class="col-12 text-center text-muted small py-2 bg-light rounded border">
-                                                Giao dịch đã đóng (Locked)
-                                            </div>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                            </form>
                         </div>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                        Không có đơn hàng online nào thuộc trạng thái lọc hiện hành!
                     </div>
-                </c:forEach>
-            </c:when>
-            <c:otherwise>
-                <div class="col-12 text-center py-5 text-muted">
-                    <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
-                    Không có đơn hàng online nào thuộc trạng thái lọc hiện hành!
-                </div>
-            </c:otherwise>
-        </c:choose>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </div>
+
+    <!-- PAGINATION WRAPPER -->
+    <div class="pagination-container" id="ordersPaginationBlock" style="display: none;">
+        <span class="small text-muted" id="ordersPaginationInfo">Trang 1 / 1</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-end" id="ordersPaginationButtons"></ul>
+        </nav>
     </div>
 </div>
 
@@ -248,7 +295,6 @@
         document.getElementById("statusField_" + maDh).value = targetStatus;
         document.getElementById("formUpdate_" + maDh).submit();
     }
-
     function cancelOnlineOrder(maDh) {
         Swal.fire({
             title: 'Từ chối đơn hàng?',
@@ -274,18 +320,15 @@
             }
         });
     }
-
     // Hàm lấy Context Path tự động
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
-
     // Hàm mở Modal đối soát bóc tách chi tiết món ăn + topping dành riêng cho nhân viên
     const onlineDetailModal = new bootstrap.Modal(document.getElementById('onlineOrderDetailModal'));
     function showOnlineOrderDetail(maDh) {
         document.getElementById("modalItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết đơn...</p></div>';
         onlineDetailModal.show();
-
         fetch(getContextPath() + '/pos/bill-detail?id=' + maDh)
             .then(res => res.json())
             .then(data => {
@@ -296,7 +339,6 @@
                     document.getElementById("modalKhachHang").innerText = data.tenKhachHang;
                     document.getElementById("modalSdt").innerText = data.sdtKhachHang;
                     document.getElementById("modalGhiChu").innerText = data.ghiChuDon ? data.ghiChuDon : "Không có";
-
                     document.getElementById("modalRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("modalDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
                     if (data.diemSuDung > 0) {
@@ -305,8 +347,7 @@
                     } else {
                         document.getElementById("modalPointsRow").style.setProperty('display', 'none', 'important');
                     }
-                    document.getElementById("modalFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-
+                    document.getElementById("modalFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN) + ' đ';
                     let container = document.getElementById("modalItemsContainer");
                     container.innerHTML = '';
                     data.items.forEach(item => {
@@ -344,6 +385,71 @@
                 onlineDetailModal.hide();
             });
     }
+
+    // 3. PHÂN TRANG CARD-BASED & BỘ LỌC TÌM KIẾM ONLINE ĐƠN HÀNG (CLIENT SIDE)
+    let currentPage = 1;
+    const pageSize = 6; // Hiển thị tối đa 6 thẻ đơn hàng một trang cho gọn gàng dễ lấy nước
+    let filteredOrdersList = [];
+    function filterAndPaginateOnlineOrders() {
+        const searchKeyword = document.getElementById("orderSearchInput").value.trim().toLowerCase();
+        const allCards = Array.from(document.querySelectorAll("#ordersGrid .order-card-col"));
+        filteredOrdersList = allCards.filter(card => {
+            const maDh = card.dataset.madh.toLowerCase();
+            const maKh = card.dataset.makh ? card.dataset.makh.toLowerCase() : "";
+            return maDh.includes(searchKeyword) || maKh.includes(searchKeyword);
+        });
+        currentPage = 1;
+        renderOnlineOrders();
+    }
+    function renderOnlineOrders() {
+        const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
+        allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
+        const totalRows = filteredOrdersList.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+        const pageCards = filteredOrdersList.slice(startIdx, endIdx);
+        pageCards.forEach(card => card.style.setProperty('display', 'block', 'important'));
+// Update pagination label
+        const infoEl = document.getElementById("ordersPaginationInfo");
+        if (infoEl) {
+            infoEl.innerText = `Hiển thị từ ${totalRows > 0 ? (startIdx + 1) : 0} đến ${endIdx} trong tổng số ${totalRows} đơn hàng`;
+        }
+// Render buttons
+        const buttonsContainer = document.getElementById("ordersPaginationButtons");
+        if (buttonsContainer) {
+            buttonsContainer.innerHTML = "";
+            if (totalPages <= 1) {
+                document.getElementById("ordersPaginationBlock").style.setProperty('display', 'none', 'important');
+                return;
+            }
+            document.getElementById("ordersPaginationBlock").style.setProperty('display', 'flex', 'important');
+            const prevLi = document.createElement("li");
+            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
+            prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage - 1) + ')">&laquo;</a>';
+            buttonsContainer.appendChild(prevLi);
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = "page-item " + (currentPage === i ? "active" : "");
+                li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeOrdersPage(' + i + ')">' + i + '</a>';
+                buttonsContainer.appendChild(li);
+            }
+            const nextLi = document.createElement("li");
+            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
+            nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage + 1) + ')">&raquo;</a>';
+            buttonsContainer.appendChild(nextLi);
+        }
+    }
+    function changeOrdersPage(newPage) {
+        currentPage = newPage;
+        renderOnlineOrders();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        filterAndPaginateOnlineOrders();
+    });
 
     // Ajax live polling every 5s
     setInterval(function() {

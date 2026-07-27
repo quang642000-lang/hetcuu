@@ -39,20 +39,21 @@
             background-color: #ffffff !important;
             border-bottom: 1px solid var(--border-color) !important;
             padding: 20px !important;
-            border-top-left-radius: var(--radius-md) !important;
-            border-top-right-radius: var(--radius-md) !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
         }
         .badge-login {
-            background-color: #eff6ff !important;
-            color: #2563eb !important;
-            border: 1px solid #bfdbfe !important;
+            background-color: #f0f9ff !important;
+            color: #0284c7 !important;
+            border: 1px solid #bae6fd !important;
             font-weight: 700 !important;
             padding: 5px 12px !important;
             border-radius: 50px !important;
             font-size: 11px !important;
         }
         .badge-logout {
-            background-color: #f1f5f9 !important;
+            background-color: #f8fafc !important;
             color: #475569 !important;
             border: 1px solid #cbd5e1 !important;
             font-weight: 700 !important;
@@ -145,14 +146,9 @@
 </head>
 <body>
 <div class="admin-wrapper">
-    <!-- SIDEBAR -->
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
-
-    <!-- MAIN CONTENT AREA -->
     <div class="admin-content">
-        <!-- HEADER -->
         <jsp:include page="/views/layout/header_admin.jsp" />
-
         <div class="p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="text-start">
@@ -165,7 +161,6 @@
                     </button>
                 </div>
             </div>
-
             <!-- SEARCH & FILTERS PANEL -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
                 <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET">
@@ -174,38 +169,38 @@
                             <label class="form-label text-muted small fw-bold">Tìm kiếm tổng hợp</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                                <input type="text" name="search" class="form-control bg-light border-start-0 text-slate-800" placeholder="Mã nhân viên, nội dung..." value="<c:out value='${param.search}'/>">
+                                <input type="text" name="search" class="form-control bg-light border-start-0 text-slate-800" placeholder="Mã nhân viên, nội dung..." value="<c:out value='${paramSearch}'/>">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Hành động</label>
                             <select name="action" class="form-select bg-light">
                                 <option value="">-- Tất cả --</option>
-                                <option value="LOGIN" ${param.action == 'LOGIN' ? 'selected' : ''}>LOGIN (Đăng nhập)</option>
-                                <option value="LOGOUT" ${param.action == 'LOGOUT' ? 'selected' : ''}>LOGOUT (Đăng xuất)</option>
-                                <option value="INSERT" ${param.action == 'INSERT' ? 'selected' : ''}>INSERT (Thêm mới)</option>
-                                <option value="UPDATE" ${param.action == 'UPDATE' ? 'selected' : ''}>UPDATE (Chỉnh sửa)</option>
-                                <option value="DELETE" ${param.action == 'DELETE' ? 'selected' : ''}>DELETE (Xóa dữ liệu)</option>
+                                <option value="LOGIN" ${paramAction == 'LOGIN' ? 'selected' : ''}>LOGIN (Đăng nhập)</option>
+                                <option value="LOGOUT" ${paramAction == 'LOGOUT' ? 'selected' : ''}>LOGOUT (Đăng xuất)</option>
+                                <option value="INSERT" ${paramAction == 'INSERT' ? 'selected' : ''}>INSERT (Thêm mới)</option>
+                                <option value="UPDATE" ${paramAction == 'UPDATE' ? 'selected' : ''}>UPDATE (Chỉnh sửa)</option>
+                                <option value="DELETE" ${paramAction == 'DELETE' ? 'selected' : ''}>DELETE (Xóa dữ liệu)</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Bảng tác động</label>
                             <select name="tableName" class="form-select bg-light">
                                 <option value="">-- Tất cả --</option>
-                                <option value="SAN_PHAM" ${param.tableName == 'SAN_PHAM' ? 'selected' : ''}>Sản phẩm (SAN_PHAM)</option>
-                                <option value="TOPPING" ${param.tableName == 'TOPPING' ? 'selected' : ''}>Món ăn kèm (TOPPING)</option>
-                                <option value="DAN_MUC" ${param.tableName == 'DAN_MUC' ? 'selected' : ''}>Danh mục (DAN_MUC)</option>
-                                <option value="NHAN_VIEN" ${param.tableName == 'NHAN_VIEN' ? 'selected' : ''}>Nhân viên (NHAN_VIEN)</option>
-                                <option value="CHUONG_TRINH_KHUYEN_MAI" ${param.tableName == 'CHUONG_TRINH_KHUYEN_MAI' ? 'selected' : ''}>Voucher (KHUYEN_MAI)</option>
+                                <option value="SAN_PHAM" ${paramTableName == 'SAN_PHAM' ? 'selected' : ''}>Sản phẩm (SAN_PHAM)</option>
+                                <option value="TOPPING" ${paramTableName == 'TOPPING' ? 'selected' : ''}>Món ăn kèm (TOPPING)</option>
+                                <option value="DAN_MUC" ${paramTableName == 'DAN_MUC' ? 'selected' : ''}>Danh mục (DAN_MUC)</option>
+                                <option value="NHAN_VIEN" ${paramTableName == 'NHAN_VIEN' ? 'selected' : ''}>Nhân viên (NHAN_VIEN)</option>
+                                <option value="CHUONG_TRINH_KHUYEN_MAI" ${paramTableName == 'CHUONG_TRINH_KHUYEN_MAI' ? 'selected' : ''}>Voucher (KHUYEN_MAI)</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Từ ngày</label>
-                            <input type="date" name="startDate" class="form-control bg-light" value="${param.startDate}">
+                            <input type="date" name="startDate" class="form-control bg-light" value="${paramStartDate}">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Đến ngày</label>
-                            <input type="date" name="endDate" class="form-control bg-light" value="${param.endDate}">
+                            <input type="date" name="endDate" class="form-control bg-light" value="${paramEndDate}">
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
                             <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3">
@@ -215,14 +210,13 @@
                     </div>
                 </form>
             </div>
-
             <!-- AUDIT TRAIL DATA CARD -->
             <div class="audit-card">
-                <div class="audit-header d-flex justify-content-between align-items-center">
+                <div class="audit-header">
                     <strong class="text-dark fs-5 text-uppercase"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
                     <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;" id="matchCountBadge">
-                        Đang tải...
-                    </span>
+Đang tải...
+</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-audit mb-0" id="auditLogTable">
@@ -252,16 +246,16 @@
                                                     <i class="bi bi-person-badge text-success"></i>
                                                 </div>
                                                 <div>
-                                                        <span class="d-block fw-bold text-dark" style="font-size: 13px;">
-                                                            <c:choose>
-                                                                <c:when test="${not empty log.maNv}">
-                                                                    <c:out value="${log.maNv}"/>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <span class="text-primary font-monospace" style="font-size: 11px;">SYSTEM / PORTAL</span>
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </span>
+<span class="d-block fw-bold text-dark" style="font-size: 13px;">
+<c:choose>
+    <c:when test="${not empty log.maNv}">
+        <c:out value="${log.maNv}"/>
+    </c:when>
+    <c:otherwise>
+        <span class="text-primary font-monospace" style="font-size: 11px;">SYSTEM / PORTAL</span>
+    </c:otherwise>
+</c:choose>
+</span>
                                                     <small class="text-muted" style="font-size: 11px;">
                                                         <c:out value="${log.hoTenNhanVien}"/>
                                                     </small>
@@ -334,9 +328,8 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- PAGINATION BAR -->
-                <div class="pagination-container bg-white rounded-bottom-4" id="paginationArea">
+                <div class="pagination-container bg-white rounded-bottom-4" id="paginationArea" style="display: none;">
                     <span class="small text-muted font-monospace" id="paginationInfo">Trang 1 / 1</span>
                     <nav aria-label="Page navigation">
                         <ul class="pagination pagination-sm m-0" id="paginationButtons">
@@ -348,88 +341,72 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // PHÂN TRANG VÀ ĐỐI SOÁT ĐỘNG PHÍA CLIENT-SIDE REALTIME MƯỢT MÀ
     let currentPage = 1;
     const pageSize = 10;
     let filteredRows = [];
-
     function initClientPagination() {
         const allRows = Array.from(document.querySelectorAll("#auditLogTable tbody .audit-log-row"));
-        filteredRows = allRows; // Đã lọc ở Backend, Client gánh phân trang và render
-
-        // Cập nhật số lượng huy hiệu tìm thấy
+        filteredRows = allRows; // Backend sends correctly filtered logs, Client handles pagination display
+// Update count badge
         const badge = document.getElementById("matchCountBadge");
         if (badge) {
             badge.innerText = `Tìm thấy ${filteredRows.length} mốc biến động`;
         }
-
         renderPage(1);
     }
-
     function renderPage(page) {
         currentPage = page;
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
-        // Ẩn tất cả các dòng
+// Hide all
         const allRows = document.querySelectorAll("#auditLogTable tbody .audit-log-row");
         allRows.forEach(row => row.style.display = "none");
-
-        // Hiển thị dải phân trang chỉ định
+// Show for current page
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         for (let i = startIdx; i < endIdx; i++) {
             if (filteredRows[i]) {
                 filteredRows[i].style.display = "table-row";
             }
         }
-
-        // Cập nhật dòng thông tin phân trang
+// Update info label
         const info = document.getElementById("paginationInfo");
         if (info) {
             info.innerText = `Hiển thị từ ${totalRows > 0 ? (startIdx + 1) : 0} đến ${endIdx} trong tổng số ${totalRows} dòng nhật ký`;
         }
-
-        // Vẽ bộ phím điều hướng phân trang
+// Render buttons
         const buttonsContainer = document.getElementById("paginationButtons");
         if (buttonsContainer) {
             buttonsContainer.innerHTML = "";
-
             if (totalPages <= 1) {
                 document.getElementById("paginationArea").style.setProperty('display', 'none', 'important');
                 return;
             }
             document.getElementById("paginationArea").style.setProperty('display', 'flex', 'important');
-
-            // Nút TRƯỚC (Prev)
+// PREVIOUS button
             const prevLi = document.createElement("li");
             prevLi.className = `page-item ${currentPage == 1 ? 'disabled' : ''}`;
             prevLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage - 1})">&laquo; Trước</a>`;
             buttonsContainer.appendChild(prevLi);
-
-            // Các trang số
+// Number buttons
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement("li");
                 li.className = `page-item ${currentPage == i ? 'active' : ''}`;
                 li.innerHTML = `<a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="javascript:void(0)" onclick="renderPage(${i})">${i}</a>`;
                 buttonsContainer.appendChild(li);
             }
-
-            // Nút SAU (Next)
+// NEXT button
             const nextLi = document.createElement("li");
             nextLi.className = `page-item ${currentPage == totalPages ? 'disabled' : ''}`;
             nextLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage + 1})">Sau &raquo;</a>`;
             buttonsContainer.appendChild(nextLi);
         }
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         initClientPagination();
     });
