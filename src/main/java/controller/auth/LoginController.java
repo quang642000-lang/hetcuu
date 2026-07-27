@@ -9,6 +9,8 @@ import service.IGioHangService;
 import service.impl.KhachHangServiceImpl;
 import service.impl.NhanVienServiceImpl;
 import service.impl.GioHangServiceImpl;
+import repository.impl.NhatKyRepoImpl;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,15 +29,29 @@ public class LoginController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
+
         // Nghiệp vụ Đăng xuất
         if (uri.endsWith("/logout")) {
             if (session != null) {
+                NhanVien nv = (NhanVien) session.getAttribute("user");
+                if (nv != null) {
+                    // GHI NHẬN NHẬT KÝ ĐĂNG XUẤT CỦA NHÂN VIÊN
+                    NhatKyRepoImpl.recordActivity(
+                            nv.getMaNv(),
+                            "LOGOUT",
+                            "NHAN_VIEN",
+                            nv.getMaNv(),
+                            "Đăng nhập",
+                            "Nhân viên đăng xuất rời hệ thống",
+                            request.getRemoteAddr()
+                    );
+                }
                 session.invalidate();
             }
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        // Điều phối hiển thị trang đăng nhập khớp 100% tên tệp tin JSP thực tế
+
         if (uri.endsWith("/customer/login")) {
             request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
         } else {
@@ -47,24 +63,24 @@ public class LoginController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(true);
+
         if (uri.endsWith("/customer/login")) {
-            // ĐĂNG NHẬP KHÁCH HÀNG CRM
+            // ĐĂNG NHẬP KHÁCH HÀNG CRM (Không ghi nhận nhật ký của khách hàng để tránh dư thừa dữ liệu)
             String username = request.getParameter("username");
             String password = request.getParameter("password");
+
             if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
                 request.setAttribute("error", "Email/Số điện thoại và mật khẩu không được trống.");
                 request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
                 return;
             }
+
             KhachHang kh = khachHangService.loginCustomer(username, password);
             if (kh != null) {
                 session.setAttribute("customer", kh);
-
-                // CẢI TIẾN CHỐNG TRỄ GIỎ HÀNG (0 MÓN LÚC ĐẦU): Nạp số lượng giỏ hàng tức thời khi đăng nhập thành công
                 GioHang gh = gioHangService.getGioHangComplete(kh.getMaKh());
                 int cartCount = (gh != null && gh.getChiTietGioHangList() != null) ? gh.getChiTietGioHangList().size() : 0;
                 session.setAttribute("customerCartCount", cartCount);
-
                 response.sendRedirect(request.getContextPath() + "/home");
             } else {
                 request.setAttribute("error", "Tài khoản, mật khẩu không chính xác hoặc chưa được kích hoạt OTP.");
@@ -76,20 +92,35 @@ public class LoginController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             String ipAddress = request.getRemoteAddr();
+
             if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
                 request.setAttribute("error", "Tên đăng nhập và mật khẩu không được trống.");
                 request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
                 return;
             }
+
             if (nhanVienService.isAccountLocked(username)) {
                 long remainTime = nhanVienService.getRemainingLockTime(username);
                 request.setAttribute("error", "Tài khoản bị tạm khóa. Vui lòng thử lại sau " + remainTime + " giây.");
                 request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
                 return;
             }
+
             NhanVien nv = nhanVienService.loginNhanVien(username, password, ipAddress);
             if (nv != null) {
                 session.setAttribute("user", nv);
+
+                // GHI NHẬN NHẬT KÝ ĐĂNG NHẬP THÀNH CÔNG CỦA NHÂN VIÊN
+                NhatKyRepoImpl.recordActivity(
+                        nv.getMaNv(),
+                        "LOGIN",
+                        "NHAN_VIEN",
+                        nv.getMaNv(),
+                        null,
+                        "Nhân viên '" + nv.getHoTen() + "' đăng nhập hệ thống thành công.",
+                        ipAddress
+                );
+
                 if (nv.getMaVt() == 1) {
                     response.sendRedirect(request.getContextPath() + "/admin/dashboard");
                 } else {

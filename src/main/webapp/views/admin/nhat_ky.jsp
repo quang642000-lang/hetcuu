@@ -4,181 +4,159 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS Admin - Nhật Ký Hoạt Động & Kiểm Toán</title>
+    <title>TEA POS - Nhật Ký Hoạt Động & Kiểm Toán</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
         :root {
             --primary: #10b981;
             --primary-dark: #059669;
             --primary-light: #ecfdf5;
-            --slate-700: #334155;
-            --slate-800: #1e293b;
-            --slate-900: #0f172a;
+            --bg-main: #f1f5f9;
             --border-color: #cbd5e1;
-            --radius-md: 10px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
         }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: var(--slate-900);
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
         }
-
-        /* Sidebar Styling for cohesion */
-        .admin-sidebar {
-            background-color: var(--slate-800);
-            min-height: 100vh;
-            color: #ffffff;
-        }
-
-        /* Card Customization */
         .audit-card {
-            border: 1px solid #e2e8f0;
-            border-radius: var(--radius-md);
-            background: #ffffff;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 24px;
+            border: 1px solid var(--border-color) !important;
+            border-radius: var(--radius-md) !important;
+            background: #ffffff !important;
+            box-shadow: var(--shadow-sm) !important;
+            margin-bottom: 24px !important;
         }
-
         .audit-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 16px 20px;
-            border-top-left-radius: var(--radius-md);
-            border-top-right-radius: var(--radius-md);
+            background-color: #ffffff !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: 20px !important;
+            border-top-left-radius: var(--radius-md) !important;
+            border-top-right-radius: var(--radius-md) !important;
         }
-
-        /* Stylized Badges for Action Types */
         .badge-login {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background-color: #eff6ff !important;
+            color: #2563eb !important;
+            border: 1px solid #bfdbfe !important;
+            font-weight: 700 !important;
+            padding: 5px 12px !important;
+            border-radius: 50px !important;
+            font-size: 11px !important;
         }
-
         .badge-logout {
-            background-color: #f1f5f9;
-            color: #64748b;
-            border: 1px solid #cbd5e1;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
+            border: 1px solid #cbd5e1 !important;
+            font-weight: 700 !important;
+            padding: 5px 12px !important;
+            border-radius: 50px !important;
+            font-size: 11px !important;
         }
-
         .badge-insert {
-            background-color: #f0fdf4;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background-color: #f0fdf4 !important;
+            color: #16a34a !important;
+            border: 1px solid #bbf7d0 !important;
+            font-weight: 700 !important;
+            padding: 5px 12px !important;
+            border-radius: 50px !important;
+            font-size: 11px !important;
         }
-
         .badge-update {
-            background-color: #fffbeb;
-            color: #d97706;
-            border: 1px solid #fde68a;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background-color: #fffbeb !important;
+            color: #d97706 !important;
+            border: 1px solid #fde68a !important;
+            font-weight: 700 !important;
+            padding: 5px 12px !important;
+            border-radius: 50px !important;
+            font-size: 11px !important;
         }
-
         .badge-delete {
-            background-color: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fca5a5;
-            font-weight: 700;
-            padding: 5px 10px;
-            border-radius: 6px;
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fca5a5 !important;
+            font-weight: 700 !important;
+            padding: 5px 12px !important;
+            border-radius: 50px !important;
+            font-size: 11px !important;
         }
-
-        /* Table Design */
         .table-audit th {
-            background-color: #f8fafc;
-            color: var(--slate-700);
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 12px 16px;
-            border-bottom: 2px solid #e2e8f0;
+            background-color: #f8fafc !important;
+            color: var(--text-muted) !important;
+            font-weight: 700 !important;
+            font-size: 11.5px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 14px 16px !important;
+            border-bottom: 2px solid var(--border-color) !important;
         }
-
         .table-audit td {
-            padding: 14px 16px;
-            vertical-align: middle;
-            font-size: 13px;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 14px 16px !important;
+            vertical-align: middle !important;
+            font-size: 13.5px !important;
+            border-bottom: 1px solid var(--border-color) !important;
         }
-
-        /* Comparative JSON/Text viewer */
         .compare-box {
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 11.5px;
-            border-radius: 6px;
-            padding: 8px 12px;
-            max-height: 120px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            font-family: 'Consolas', 'Courier New', monospace !important;
+            font-size: 11.5px !important;
+            border-radius: 6px !important;
+            padding: 10px 14px !important;
+            max-height: 120px !important;
+            overflow-y: auto !important;
+            white-space: pre-wrap !important;
+            word-break: break-all !important;
+            background-color: #f8fafc !important;
+            border: 1px solid var(--border-color) !important;
         }
-
         .compare-old {
-            border-left: 3px solid #f59e0b;
-            color: #475569;
+            border-left: 3px solid #f59e0b !important;
+            color: #64748b !important;
         }
-
         .compare-new {
-            border-left: 3px solid #10b981;
-            color: #0f172a;
+            border-left: 3px solid #10b981 !important;
+            color: #0f172a !important;
         }
-
         .primary-key-badge {
-            font-family: 'Consolas', monospace;
-            background-color: #f1f5f9;
-            color: #0f172a;
-            border: 1px solid #cbd5e1;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 11px;
+            font-family: 'Consolas', monospace !important;
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 3px 8px !important;
+            border-radius: 4px !important;
+            font-weight: bold !important;
+            font-size: 11px !important;
         }
-
-        /* Pagination & Layout */
         .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            border-top: 1px solid #f1f5f9;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 16px 20px !important;
+            border-top: 1px solid var(--border-color) !important;
+            background-color: #ffffff !important;
         }
     </style>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row">
-        <!-- SIDEBAR -->
-        <div class="col-md-3 col-lg-2 px-0 admin-sidebar d-none d-md-block">
-            <jsp:include page="/views/layout/sidebar_admin.jsp" />
-        </div>
+<div class="admin-wrapper">
+    <!-- SIDEBAR -->
+    <jsp:include page="/views/layout/sidebar_admin.jsp" />
 
-        <!-- MAIN CONTENT AREA -->
-        <div class="col-md-9 col-lg-10 px-md-4 py-4">
-            <!-- HEADER NAV -->
+    <!-- MAIN CONTENT AREA -->
+    <div class="admin-content">
+        <!-- HEADER -->
+        <jsp:include page="/views/layout/header_admin.jsp" />
+
+        <div class="p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h3 class="fw-bold text-slate-900 m-0"><i class="bi bi-shield-shaded text-success me-2"></i>Nhật Ký & Kiểm Toán</h3>
+                <div class="text-start">
+                    <h3 class="fw-bold text-success m-0"><i class="bi bi-shield-shaded text-success me-2"></i>Nhật Ký & Kiểm Toán</h3>
                     <p class="text-muted small mb-0">Hộp đen bảo mật ghi nhận toàn bộ hoạt động đăng nhập, sửa đổi dữ liệu hệ thống TEA POS.</p>
                 </div>
                 <div>
@@ -190,19 +168,19 @@
 
             <!-- SEARCH & FILTERS PANEL -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
-                <form action="${pageContext.request.contextPath}/admin/audit-log" method="GET">
-                    <div class="row g-3">
+                <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET">
+                    <div class="row g-3 text-start">
                         <div class="col-md-3">
                             <label class="form-label text-muted small fw-bold">Tìm kiếm tổng hợp</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                                <input type="text" name="search" class="form-control bg-light border-start-0 text-slate-800" placeholder="Mã đơn, sản phẩm, dữ liệu..." value="<c:out value='${param.search}'/>">
+                                <input type="text" name="search" class="form-control bg-light border-start-0 text-slate-800" placeholder="Mã nhân viên, nội dung..." value="<c:out value='${param.search}'/>">
                             </div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Hành động</label>
                             <select name="action" class="form-select bg-light">
-                                <option value="">-- Tất cả hành động --</option>
+                                <option value="">-- Tất cả --</option>
                                 <option value="LOGIN" ${param.action == 'LOGIN' ? 'selected' : ''}>LOGIN (Đăng nhập)</option>
                                 <option value="LOGOUT" ${param.action == 'LOGOUT' ? 'selected' : ''}>LOGOUT (Đăng xuất)</option>
                                 <option value="INSERT" ${param.action == 'INSERT' ? 'selected' : ''}>INSERT (Thêm mới)</option>
@@ -213,13 +191,11 @@
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Bảng tác động</label>
                             <select name="tableName" class="form-select bg-light">
-                                <option value="">-- Tất cả bảng --</option>
-                                <option value="DON_HANG" ${param.tableName == 'DON_HANG' ? 'selected' : ''}>Hóa đơn (DON_HANG)</option>
+                                <option value="">-- Tất cả --</option>
                                 <option value="SAN_PHAM" ${param.tableName == 'SAN_PHAM' ? 'selected' : ''}>Sản phẩm (SAN_PHAM)</option>
                                 <option value="TOPPING" ${param.tableName == 'TOPPING' ? 'selected' : ''}>Món ăn kèm (TOPPING)</option>
                                 <option value="DAN_MUC" ${param.tableName == 'DAN_MUC' ? 'selected' : ''}>Danh mục (DAN_MUC)</option>
                                 <option value="NHAN_VIEN" ${param.tableName == 'NHAN_VIEN' ? 'selected' : ''}>Nhân viên (NHAN_VIEN)</option>
-                                <option value="KHACH_HANG" ${param.tableName == 'KHACH_HANG' ? 'selected' : ''}>Khách hàng (KHACH_HANG)</option>
                                 <option value="CHUONG_TRINH_KHUYEN_MAI" ${param.tableName == 'CHUONG_TRINH_KHUYEN_MAI' ? 'selected' : ''}>Voucher (KHUYEN_MAI)</option>
                             </select>
                         </div>
@@ -243,40 +219,40 @@
             <!-- AUDIT TRAIL DATA CARD -->
             <div class="audit-card">
                 <div class="audit-header d-flex justify-content-between align-items-center">
-                    <strong class="text-slate-800 fs-5"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
-                    <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;">
-                        Tìm thấy ${logsList.size() != null ? logsList.size() : 0} mốc biến động
+                    <strong class="text-dark fs-5 text-uppercase"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
+                    <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;" id="matchCountBadge">
+                        Đang tải...
                     </span>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-audit mb-0">
+                    <table class="table table-audit mb-0" id="auditLogTable">
                         <thead>
-                        <tr>
-                            <th style="width: 50px;">ID</th>
-                            <th style="width: 150px;">Thời gian</th>
-                            <th style="width: 180px;">Nhân viên tác động</th>
+                        <tr class="text-center">
+                            <th style="width: 100px;">Mã Log</th>
+                            <th style="width: 170px;">Thời gian</th>
+                            <th style="width: 200px;" class="text-start">Nhân viên tác động</th>
                             <th style="width: 130px;">Hành động</th>
-                            <th style="width: 180px;">Vùng tác động</th>
-                            <th>Đối soát biến động dữ liệu</th>
-                            <th style="width: 110px;">Địa chỉ IP</th>
+                            <th style="width: 220px;" class="text-start">Vùng tác động</th>
+                            <th class="text-start">Đối soát biến động dữ liệu</th>
+                            <th style="width: 130px;">Địa chỉ IP</th>
                         </tr>
                         </thead>
                         <tbody>
                         <c:choose>
                             <c:when test="${not empty logsList}">
                                 <c:forEach var="log" items="${logsList}">
-                                    <tr>
-                                        <td class="font-monospace fw-bold text-muted">${log.maLog}</td>
-                                        <td class="font-monospace text-slate-800">
+                                    <tr class="audit-log-row text-center">
+                                        <td class="font-monospace fw-bold text-success">#${log.maLog}</td>
+                                        <td class="font-monospace text-dark">
                                             <fmt:formatDate value="${log.thoiGian}" pattern="HH:mm:ss  dd/MM/yyyy" />
                                         </td>
-                                        <td>
+                                        <td class="text-start">
                                             <div class="d-flex align-items-center">
                                                 <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
                                                     <i class="bi bi-person-badge text-success"></i>
                                                 </div>
-                                                <div class="text-start">
-                                                        <span class="d-block fw-bold text-slate-800">
+                                                <div>
+                                                        <span class="d-block fw-bold text-dark" style="font-size: 13px;">
                                                             <c:choose>
                                                                 <c:when test="${not empty log.maNv}">
                                                                     <c:out value="${log.maNv}"/>
@@ -287,14 +263,7 @@
                                                             </c:choose>
                                                         </span>
                                                     <small class="text-muted" style="font-size: 11px;">
-                                                        <c:choose>
-                                                            <c:when test="${not empty log.hoTenNhanVien}">
-                                                                <c:out value="${log.hoTenNhanVien}"/>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                Khách mua đặt online
-                                                            </c:otherwise>
-                                                        </c:choose>
+                                                        <c:out value="${log.hoTenNhanVien}"/>
                                                     </small>
                                                 </div>
                                             </div>
@@ -321,50 +290,26 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
-                                            <div class="text-start">
-                                                <strong class="d-block text-slate-800" style="font-size: 12px;"><c:out value="${log.bangTacDong}"/></strong>
-                                                <c:if test="${not empty log.recordTacDong}">
-                                                        <span class="primary-key-badge mt-1 d-inline-block">
-                                                            <i class="bi bi-key-fill text-warning me-0.5"></i> <c:out value="${log.recordTacDong}"/>
-                                                        </span>
-                                                </c:if>
+                                        <td class="text-start">
+                                            <div>
+                                                <strong class="d-block text-dark" style="font-size: 12px;"><c:out value="${log.bangTacDong}"/></strong>
                                             </div>
                                         </td>
-                                        <td>
-                                            <!-- ĐỐI SOÁT DỮ LIỆU CŨ VS MỚI -->
+                                        <td class="text-start">
                                             <div class="row g-2">
                                                 <!-- COLUMN CŨ -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
-                                                    <div class="compare-box compare-old">
-                                                        <c:choose>
-                                                            <c:when test="${not empty log.duLieuCu}">
-                                                                <c:out value="${log.duLieuCu}"/>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="text-muted font-monospace italic">[TRỐNG]</span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
+                                                    <div class="compare-box compare-old"><c:choose><c:when test="${not empty log.duLieuCu}"><c:out value="${log.duLieuCu}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
                                                 </div>
                                                 <!-- COLUMN MỚI -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU MỚI SAU BIẾN ĐỘNG:</div>
-                                                    <div class="compare-box compare-new">
-                                                        <c:choose>
-                                                            <c:when test="${not empty log.duLieuMoi}">
-                                                                <c:out value="${log.duLieuMoi}"/>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="text-muted font-monospace italic">[TRỐNG]</span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
+                                                    <div class="compare-box compare-new"><c:choose><c:when test="${not empty log.duLieuMoi}"><c:out value="${log.duLieuMoi}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="font-monospace text-slate-700">
+                                        <td class="font-monospace text-muted">
                                             <c:choose>
                                                 <c:when test="${not empty log.ipAddress}">
                                                     <c:out value="${log.ipAddress}"/>
@@ -391,17 +336,11 @@
                 </div>
 
                 <!-- PAGINATION BAR -->
-                <div class="pagination-container bg-white rounded-bottom-4">
-                    <span class="small text-muted font-monospace">Trang 1 / 1 (Đã tối ưu hóa tải dynamic siêu tốc)</span>
+                <div class="pagination-container bg-white rounded-bottom-4" id="paginationArea">
+                    <span class="small text-muted font-monospace" id="paginationInfo">Trang 1 / 1</span>
                     <nav aria-label="Page navigation">
-                        <ul class="pagination pagination-sm m-0">
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
-                            </li>
-                            <li class="page-item active"><a class="page-link bg-success border-success" href="#">1</a></li>
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#">Sau</a>
-                            </li>
+                        <ul class="pagination pagination-sm m-0" id="paginationButtons">
+                            <!-- JS will inject buttons dynamically -->
                         </ul>
                     </nav>
                 </div>
@@ -409,6 +348,91 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // PHÂN TRANG VÀ ĐỐI SOÁT ĐỘNG PHÍA CLIENT-SIDE REALTIME MƯỢT MÀ
+    let currentPage = 1;
+    const pageSize = 10;
+    let filteredRows = [];
+
+    function initClientPagination() {
+        const allRows = Array.from(document.querySelectorAll("#auditLogTable tbody .audit-log-row"));
+        filteredRows = allRows; // Đã lọc ở Backend, Client gánh phân trang và render
+
+        // Cập nhật số lượng huy hiệu tìm thấy
+        const badge = document.getElementById("matchCountBadge");
+        if (badge) {
+            badge.innerText = `Tìm thấy ${filteredRows.length} mốc biến động`;
+        }
+
+        renderPage(1);
+    }
+
+    function renderPage(page) {
+        currentPage = page;
+        const totalRows = filteredRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        // Ẩn tất cả các dòng
+        const allRows = document.querySelectorAll("#auditLogTable tbody .audit-log-row");
+        allRows.forEach(row => row.style.display = "none");
+
+        // Hiển thị dải phân trang chỉ định
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, totalRows);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            if (filteredRows[i]) {
+                filteredRows[i].style.display = "table-row";
+            }
+        }
+
+        // Cập nhật dòng thông tin phân trang
+        const info = document.getElementById("paginationInfo");
+        if (info) {
+            info.innerText = `Hiển thị từ ${totalRows > 0 ? (startIdx + 1) : 0} đến ${endIdx} trong tổng số ${totalRows} dòng nhật ký`;
+        }
+
+        // Vẽ bộ phím điều hướng phân trang
+        const buttonsContainer = document.getElementById("paginationButtons");
+        if (buttonsContainer) {
+            buttonsContainer.innerHTML = "";
+
+            if (totalPages <= 1) {
+                document.getElementById("paginationArea").style.setProperty('display', 'none', 'important');
+                return;
+            }
+            document.getElementById("paginationArea").style.setProperty('display', 'flex', 'important');
+
+            // Nút TRƯỚC (Prev)
+            const prevLi = document.createElement("li");
+            prevLi.className = `page-item ${currentPage == 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage - 1})">&laquo; Trước</a>`;
+            buttonsContainer.appendChild(prevLi);
+
+            // Các trang số
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${currentPage == i ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="javascript:void(0)" onclick="renderPage(${i})">${i}</a>`;
+                buttonsContainer.appendChild(li);
+            }
+
+            // Nút SAU (Next)
+            const nextLi = document.createElement("li");
+            nextLi.className = `page-item ${currentPage == totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage + 1})">Sau &raquo;</a>`;
+            buttonsContainer.appendChild(nextLi);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        initClientPagination();
+    });
+</script>
 </body>
 </html>

@@ -5,12 +5,14 @@ import model.entity.DonHang;
 import model.entity.ChiTietDonHang;
 import model.entity.ChiTietTopping;
 import repository.IDonHangRepository;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DonHangRepoImpl implements IDonHangRepository {
     private static DonHangRepoImpl instance;
+
     private DonHangRepoImpl() {}
 
     public static synchronized DonHangRepoImpl getInstance() {
@@ -67,10 +69,8 @@ public class DonHangRepoImpl implements IDonHangRepository {
                 "tong_tien_hang, tien_giam_gia, diem_su_dung, tien_tru_diem, tong_phai_tra, ghi_chu_don, " +
                 "ly_do_huy, trang_thai_thanh_toan, trang_thai_don, thoi_gian_tao) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
         String sqlDetail = "INSERT INTO CHI_TIET_DON_HANG (ma_dh, ma_sp, ma_size, so_luong, gia_chot, muc_da, muc_duong, ghi_chu_mon) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
         String sqlTopping = "INSERT INTO CHI_TIET_TOPPING (ma_ctdh, ma_tp, so_luong, gia_chot_tp) " +
                 "VALUES (?, ?, ?, ?)";
 
@@ -79,12 +79,11 @@ public class DonHangRepoImpl implements IDonHangRepository {
         PreparedStatement psDetail = null;
         PreparedStatement psTopping = null;
         ResultSet rsKeys = null;
-
         try {
             conn = DBConnect.getConnection();
             conn.setAutoCommit(false); // Begin ACID Transaction
 
-            // 1. Thêm đơn hàng chính
+            // 1. Ghi nhận hóa đơn chính
             psOrder = conn.prepareStatement(sqlOrder);
             psOrder.setString(1, entity.getMaDh());
             setStringOrNull(psOrder, 2, entity.getMaKh());
@@ -110,7 +109,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                 return false;
             }
 
-            // 2. Thêm các món chi tiết của đơn hàng (ChiTietDonHang & ChiTietTopping)
+            // 2. Thêm các món chi tiết của đơn hàng
             if (entity.getChiTietDonHangList() != null && !entity.getChiTietDonHangList().isEmpty()) {
                 psDetail = conn.prepareStatement(sqlDetail, Statement.RETURN_GENERATED_KEYS);
                 psTopping = conn.prepareStatement(sqlTopping);
@@ -124,8 +123,8 @@ public class DonHangRepoImpl implements IDonHangRepository {
                     psDetail.setString(6, item.getMucDa() != null ? item.getMucDa() : "100% Đá");
                     psDetail.setString(7, item.getMucDuong() != null ? item.getMucDuong() : "100% Đường");
                     psDetail.setString(8, item.getGhiChuMon() != null ? item.getGhiChuMon() : "");
-
                     psDetail.executeUpdate();
+
                     rsKeys = psDetail.getGeneratedKeys();
                     long generatedCtdhId = 0;
                     if (rsKeys.next()) {
@@ -135,7 +134,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                     rsKeys.close();
                     rsKeys = null;
 
-                    // 3. Thêm danh sách Toppings ăn kèm của ly nước này
+                    // 3. Thêm các Toppings của ly nước
                     if (item.getToppingsList() != null && !item.getToppingsList().isEmpty() && generatedCtdhId > 0) {
                         for (ChiTietTopping tp : item.getToppingsList()) {
                             psTopping.setLong(1, generatedCtdhId);
@@ -149,8 +148,7 @@ public class DonHangRepoImpl implements IDonHangRepository {
                     }
                 }
             }
-
-            conn.commit(); // Thành công rực rỡ! Commit giao dịch.
+            conn.commit(); // Giao dịch thành công
             return true;
         } catch (Exception e) {
             if (conn != null) {
@@ -342,22 +340,29 @@ public class DonHangRepoImpl implements IDonHangRepository {
         return list;
     }
 
+    // ĐỒNG BỘ MÃ TỰ SINH ĐƠN HÀNG RESET MỖI NGÀY SỬ DỤNG PHÉP TOÁN ĐỐI SOÁT MAX CHI TIẾT 5 SỐ CUỐI
     @Override
     public String generateNextMaDh() {
-        String sql = "SELECT NEXT VALUE FOR seq_DonHang";
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+        String dateStr = sdf.format(new java.util.Date());
+        String prefix = "TEA-" + dateStr + "-";
+
+        // Quét tìm mốc giá trị MAX của ngày hôm nay trực tiếp dưới CSDL
+        String sql = "SELECT ISNULL(MAX(CAST(RIGHT(ma_dh, 5) AS INT)), 0) + 1 FROM DON_HANG WHERE ma_dh LIKE ?";
         try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                long val = rs.getLong(1);
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
-                String dateStr = sdf.format(new java.util.Date());
-                return "TEA-" + dateStr + "-" + String.format("%06d", val);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, prefix + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int nextVal = rs.getInt(1);
+                    return prefix + String.format("%05d", nextVal); // Chuẩn hóa chính xác 5 số cuối reset mỗi ngày
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "TEA-" + System.currentTimeMillis();
+        // Fallback ngẫu nhiên an toàn trong trường hợp khẩn cấp
+        return prefix + String.format("%05d", (int)(Math.random() * 90000) + 10000);
     }
 
     private DonHang mapResultSetToDonHang(ResultSet rs) throws SQLException {
