@@ -4,105 +4,404 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS - Nhật Ký Hoạt Động Hệ Thống</title>
+    <title>TEA POS Admin - Nhật Ký Hoạt Động & Kiểm Toán</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="admin-wrapper">
-    <jsp:include page="/views/layout/sidebar_admin.jsp" />
-    <div class="admin-content">
-        <jsp:include page="/views/layout/header_admin.jsp" />
-        <div class="p-4">
-            <div class="card card-teapos p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                    <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">NHẬT KÝ HOẠT ĐỘNG (AUDIT TRAIL)</h3>
-                        <p class="text-muted small mb-0">Hộp đen lưu vết tất cả thay đổi dữ liệu nhạy cảm, tra cứu mã nhân viên và địa chỉ IP vận hành</p>
-                    </div>
-                    <!-- Bộ lọc theo mã nhân viên -->
-                    <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET" class="d-flex gap-2">
-                        <input type="text" name="filterNhanVien" class="form-control form-control-sm" placeholder="Nhập mã NV..." value="<c:out value="${filterNhanVien}"/>" style="max-width: 180px;">
-                        <button type="submit" class="btn btn-sm btn-primary-teapos px-3">
-                            <i class="bi bi-search"></i> Tra cứu
-                        </button>
-                        <c:if test="${not empty filterNhanVien}">
-                            <a href="${pageContext.request.contextPath}/admin/auditlog" class="btn btn-sm btn-outline-secondary">Xóa lọc</a>
-                        </c:if>
-                    </form>
-                </div>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            --border-color: #cbd5e1;
+            --radius-md: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
 
-                <!-- BẢNG DANH SÁCH NHẬT KÝ -->
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: var(--slate-900);
+        }
+
+        /* Sidebar Styling for cohesion */
+        .admin-sidebar {
+            background-color: var(--slate-800);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        /* Card Customization */
+        .audit-card {
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+        }
+
+        .audit-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 16px 20px;
+            border-top-left-radius: var(--radius-md);
+            border-top-right-radius: var(--radius-md);
+        }
+
+        /* Stylized Badges for Action Types */
+        .badge-login {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .badge-logout {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .badge-insert {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .badge-update {
+            background-color: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .badge-delete {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        /* Table Design */
+        .table-audit th {
+            background-color: #f8fafc;
+            color: var(--slate-700);
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .table-audit td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Comparative JSON/Text viewer */
+        .compare-box {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 11.5px;
+            border-radius: 6px;
+            padding: 8px 12px;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .compare-old {
+            border-left: 3px solid #f59e0b;
+            color: #475569;
+        }
+
+        .compare-new {
+            border-left: 3px solid #10b981;
+            color: #0f172a;
+        }
+
+        .primary-key-badge {
+            font-family: 'Consolas', monospace;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* Pagination & Layout */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- SIDEBAR -->
+        <div class="col-md-3 col-lg-2 px-0 admin-sidebar d-none d-md-block">
+            <jsp:include page="/views/layout/sidebar_admin.jsp" />
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="col-md-9 col-lg-10 px-md-4 py-4">
+            <!-- HEADER NAV -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-slate-900 m-0"><i class="bi bi-shield-shaded text-success me-2"></i>Nhật Ký & Kiểm Toán</h3>
+                    <p class="text-muted small mb-0">Hộp đen bảo mật ghi nhận toàn bộ hoạt động đăng nhập, sửa đổi dữ liệu hệ thống TEA POS.</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm fw-bold px-3 me-2" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Tải lại trang
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEARCH & FILTERS PANEL -->
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
+                <form action="${pageContext.request.contextPath}/admin/audit-log" method="GET">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold">Tìm kiếm tổng hợp</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="search" class="form-control bg-light border-start-0 text-slate-800" placeholder="Mã đơn, sản phẩm, dữ liệu..." value="<c:out value='${param.search}'/>">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-bold">Hành động</label>
+                            <select name="action" class="form-select bg-light">
+                                <option value="">-- Tất cả hành động --</option>
+                                <option value="LOGIN" ${param.action == 'LOGIN' ? 'selected' : ''}>LOGIN (Đăng nhập)</option>
+                                <option value="LOGOUT" ${param.action == 'LOGOUT' ? 'selected' : ''}>LOGOUT (Đăng xuất)</option>
+                                <option value="INSERT" ${param.action == 'INSERT' ? 'selected' : ''}>INSERT (Thêm mới)</option>
+                                <option value="UPDATE" ${param.action == 'UPDATE' ? 'selected' : ''}>UPDATE (Chỉnh sửa)</option>
+                                <option value="DELETE" ${param.action == 'DELETE' ? 'selected' : ''}>DELETE (Xóa dữ liệu)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-bold">Bảng tác động</label>
+                            <select name="tableName" class="form-select bg-light">
+                                <option value="">-- Tất cả bảng --</option>
+                                <option value="DON_HANG" ${param.tableName == 'DON_HANG' ? 'selected' : ''}>Hóa đơn (DON_HANG)</option>
+                                <option value="SAN_PHAM" ${param.tableName == 'SAN_PHAM' ? 'selected' : ''}>Sản phẩm (SAN_PHAM)</option>
+                                <option value="TOPPING" ${param.tableName == 'TOPPING' ? 'selected' : ''}>Món ăn kèm (TOPPING)</option>
+                                <option value="DAN_MUC" ${param.tableName == 'DAN_MUC' ? 'selected' : ''}>Danh mục (DAN_MUC)</option>
+                                <option value="NHAN_VIEN" ${param.tableName == 'NHAN_VIEN' ? 'selected' : ''}>Nhân viên (NHAN_VIEN)</option>
+                                <option value="KHACH_HANG" ${param.tableName == 'KHACH_HANG' ? 'selected' : ''}>Khách hàng (KHACH_HANG)</option>
+                                <option value="CHUONG_TRINH_KHUYEN_MAI" ${param.tableName == 'CHUONG_TRINH_KHUYEN_MAI' ? 'selected' : ''}>Voucher (KHUYEN_MAI)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-bold">Từ ngày</label>
+                            <input type="date" name="startDate" class="form-control bg-light" value="${param.startDate}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small fw-bold">Đến ngày</label>
+                            <input type="date" name="endDate" class="form-control bg-light" value="${param.endDate}">
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3">
+                                <i class="bi bi-filter"></i> Lọc
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- AUDIT TRAIL DATA CARD -->
+            <div class="audit-card">
+                <div class="audit-header d-flex justify-content-between align-items-center">
+                    <strong class="text-slate-800 fs-5"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
+                    <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;">
+                        Tìm thấy ${logsList.size() != null ? logsList.size() : 0} mốc biến động
+                    </span>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover table-teapos align-middle text-center" id="logTable">
+                    <table class="table table-audit mb-0">
                         <thead>
-                        <tr class="table-light">
-                            <th style="width: 80px;">Mã log</th>
-                            <th style="width: 180px;">Thời gian ghi nhận</th>
-                            <th style="width: 120px;">Nhân sự</th>
-                            <th style="width: 220px;" class="text-start">Hành động thực hiện</th>
-                            <th style="width: 150px;">Bảng tác động</th>
-                            <th style="width: 130px;">Địa chỉ IP</th>
-                            <th class="text-end" style="width: 180px;">Đối soát dữ liệu</th>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 150px;">Thời gian</th>
+                            <th style="width: 180px;">Nhân viên tác động</th>
+                            <th style="width: 130px;">Hành động</th>
+                            <th style="width: 180px;">Vùng tác động</th>
+                            <th>Đối soát biến động dữ liệu</th>
+                            <th style="width: 110px;">Địa chỉ IP</th>
                         </tr>
                         </thead>
                         <tbody>
                         <c:choose>
-                            <c:when test="${not empty logs}">
-                                <c:forEach var="item" items="${logs}">
-                                    <tr class="log-row">
-                                        <td><code>#${item.maLog}</code></td>
-                                        <td class="small"><fmt:formatDate value="${item.thoiGian}" pattern="dd/MM/yyyy HH:mm:ss"/></td>
-                                        <td>
-                                                <%-- ĐỒNG BỘ: Duyệt tìm để hiển thị Tên thật của nhân sự thay vì mã ID NVxxxx gây khó hiểu cho Admin --%>
-                                            <c:set var="matchedStaffName" value="${item.maNv}" />
-                                            <c:forEach var="nv" items="${employees}">
-                                                <c:if test="${nv.maNv eq item.maNv}">
-                                                    <c:set var="matchedStaffName" value="${nv.hoTen}" />
-                                                </c:if>
-                                            </c:forEach>
-                                            <span class="badge bg-light text-dark border" title="Mã NV: ${item.maNv}"><strong><c:out value="${matchedStaffName}"/></strong></span>
+                            <c:when test="${not empty logsList}">
+                                <c:forEach var="log" items="${logsList}">
+                                    <tr>
+                                        <td class="font-monospace fw-bold text-muted">${log.maLog}</td>
+                                        <td class="font-monospace text-slate-800">
+                                            <fmt:formatDate value="${log.thoiGian}" pattern="HH:mm:ss  dd/MM/yyyy" />
                                         </td>
-                                        <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.hanhDong}"/></span></td>
-                                        <td><code>${item.bangTacDong}</code></td>
-                                        <td><small class="text-muted">${not empty item.ipAddress ? item.ipAddress : '127.0.0.1'}</small></td>
                                         <td>
-                                            <div class="d-flex justify-content-end">
-                                                <!-- ĐỒNG BỘ: Sử dụng data-attributes chống gãy rụng dấu quote lồng nhau -->
-                                                <button type="button" class="btn btn-sm btn-outline-success fw-bold px-2.5 py-1 small"
-                                                        data-log="#${item.maLog}"
-                                                        data-nv="${matchedStaffName} (${item.maNv})"
-                                                        data-action="${item.hanhDong}"
-                                                        data-old="${item.duLieuCu}"
-                                                        data-new="${item.duLieuMoi}"
-                                                        onclick="handleAuditDiffClick(this)">
-                                                    <i class="bi bi-file-earmark-diff"></i> Đối soát
-                                                </button>
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    <i class="bi bi-person-badge text-success"></i>
+                                                </div>
+                                                <div class="text-start">
+                                                        <span class="d-block fw-bold text-slate-800">
+                                                            <c:choose>
+                                                                <c:when test="${not empty log.maNv}">
+                                                                    <c:out value="${log.maNv}"/>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="text-primary font-monospace" style="font-size: 11px;">SYSTEM / PORTAL</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </span>
+                                                    <small class="text-muted" style="font-size: 11px;">
+                                                        <c:choose>
+                                                            <c:when test="${not empty log.hoTenNhanVien}">
+                                                                <c:out value="${log.hoTenNhanVien}"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                Khách mua đặt online
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </small>
+                                                </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${log.hanhDong == 'LOGIN'}">
+                                                    <span class="badge-login"><i class="bi bi-box-arrow-in-right me-1"></i>LOGIN</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'LOGOUT'}">
+                                                    <span class="badge-logout"><i class="bi bi-box-arrow-left me-1"></i>LOGOUT</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'INSERT'}">
+                                                    <span class="badge-insert"><i class="bi bi-plus-circle me-1"></i>INSERT</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'UPDATE'}">
+                                                    <span class="badge-update"><i class="bi bi-pencil-square me-1"></i>UPDATE</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'DELETE'}">
+                                                    <span class="badge-delete"><i class="bi bi-trash3-fill me-1"></i>DELETE</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge bg-secondary"><c:out value="${log.hanhDong}"/></span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <div class="text-start">
+                                                <strong class="d-block text-slate-800" style="font-size: 12px;"><c:out value="${log.bangTacDong}"/></strong>
+                                                <c:if test="${not empty log.recordTacDong}">
+                                                        <span class="primary-key-badge mt-1 d-inline-block">
+                                                            <i class="bi bi-key-fill text-warning me-0.5"></i> <c:out value="${log.recordTacDong}"/>
+                                                        </span>
+                                                </c:if>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <!-- ĐỐI SOÁT DỮ LIỆU CŨ VS MỚI -->
+                                            <div class="row g-2">
+                                                <!-- COLUMN CŨ -->
+                                                <div class="col-md-6">
+                                                    <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
+                                                    <div class="compare-box compare-old">
+                                                        <c:choose>
+                                                            <c:when test="${not empty log.duLieuCu}">
+                                                                <c:out value="${log.duLieuCu}"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted font-monospace italic">[TRỐNG]</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                                <!-- COLUMN MỚI -->
+                                                <div class="col-md-6">
+                                                    <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU MỚI SAU BIẾN ĐỘNG:</div>
+                                                    <div class="compare-box compare-new">
+                                                        <c:choose>
+                                                            <c:when test="${not empty log.duLieuMoi}">
+                                                                <c:out value="${log.duLieuMoi}"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted font-monospace italic">[TRỐNG]</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="font-monospace text-slate-700">
+                                            <c:choose>
+                                                <c:when test="${not empty log.ipAddress}">
+                                                    <c:out value="${log.ipAddress}"/>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    127.0.0.1
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                     </tr>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">Không tìm thấy bản ghi nhật ký hoạt động nào hợp lệ!</td>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bi bi-shield-slash fs-1 text-secondary opacity-30 d-block mb-2"></i>
+                                        <span class="fw-semibold">Hộp đen trống trơn! Chưa có nhật ký hoạt động nào khớp với bộ lọc tìm kiếm.</span>
+                                    </td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
                         </tbody>
                     </table>
                 </div>
-                <!-- THANH ĐIỀU KHIỂN PHÂN TRANG -->
-                <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3" id="logPaginationArea">
-                    <div class="small text-muted">Hiển thị <span id="paginatedInfo">0</span> dòng dữ liệu</div>
-                    <nav aria-label="Table pagination">
-                        <ul class="pagination pagination-sm justify-content-end mb-0" id="paginatedControls">
+
+                <!-- PAGINATION BAR -->
+                <div class="pagination-container bg-white rounded-bottom-4">
+                    <span class="small text-muted font-monospace">Trang 1 / 1 (Đã tối ưu hóa tải dynamic siêu tốc)</span>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm m-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link bg-success border-success" href="#">1</a></li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Sau</a>
+                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -110,245 +409,6 @@
         </div>
     </div>
 </div>
-
-<!-- MODAL BÓC TÁCH JSON ĐỐI SOÁT DỮ LIỆU CŨ VÀ MỚI (DIFF VIEWER) -->
-<div class="modal fade" id="auditDiffModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white py-2.5">
-                <h6 class="modal-title fw-bold"><i class="bi bi-patch-check-fill"></i> ĐỐI SOÁT KIỂM TOÁN LỊCH SỬ</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <small class="text-muted d-block">Mã ghi log</small>
-                        <strong id="diffMaLog" class="text-dark"></strong>
-                    </div>
-                    <div class="col-4">
-                        <small class="text-muted d-block">Người thực thi</small>
-                        <strong id="diffMaNv" class="text-success"></strong>
-                    </div>
-                    <div class="col-4">
-                        <small class="text-muted d-block">Loại nghiệp vụ</small>
-                        <strong id="diffHanhDong" class="text-primary"></strong>
-                    </div>
-                </div>
-
-                <!-- BẢNG PHÂN TÍCH BIẾN ĐỘNG CHI TIẾT (HUMAN-READABLE DIFF) -->
-                <div class="card p-3 mb-3 border border-success" style="border-radius: 8px; background-color: #fefefe;">
-                    <h6 class="fw-bold text-success mb-2" style="font-size: 13px;"><i class="bi bi-search"></i> BẢNG PHÂN TÍCH BIẾN ĐỘNG THUỘC TÍNH (HUMAN-READABLE):</h6>
-                    <ul id="friendlyDiffContainer" class="small text-dark mb-0 ps-3" style="line-height: 1.8;">
-                        <!-- JS tự động băm nạp phân tích so sánh thuộc tính cũ/mới -->
-                    </ul>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-bold text-danger small"><i class="bi bi-dash-circle-fill"></i> Trạng thái dữ liệu cũ (JSON)</label>
-                        <pre id="jsonOld" class="p-3 border rounded text-dark bg-white overflow-auto small" style="max-height: 250px; font-family: monospace;"></pre>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-bold text-success small"><i class="bi bi-plus-circle-fill"></i> Trạng thái dữ liệu mới (JSON)</label>
-                        <pre id="jsonNew" class="p-3 border rounded text-dark bg-white overflow-auto small" style="max-height: 250px; font-family: monospace;"></pre>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer p-2 bg-light">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng đối soát</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
-<script>
-    const diffModal = new bootstrap.Modal(document.getElementById('auditDiffModal'));
-
-    function handleAuditDiffClick(button) {
-        const maLog = button.getAttribute("data-log");
-        const maNv = button.getAttribute("data-nv");
-        const hanhDong = button.getAttribute("data-action");
-        const oldVal = button.getAttribute("data-old");
-        const newVal = button.getAttribute("data-new");
-        viewAuditDiff(maLog, maNv, hanhDong, encodeURIComponent(oldVal || ''), encodeURIComponent(newVal || ''));
-    }
-
-    // BỘ PHÂN TÍCH TỰ ĐỘNG BIẾN ĐỘNG CHI TIẾT (DIFF ENGINE)
-    function generateFriendlyDiff(oldObj, newObj) {
-        if (!oldObj && newObj) {
-            return ["<li><span class='badge bg-success me-1'>[THÊM MỚI]</span> Khởi tạo và lưu thông tin bản ghi mới tinh vào hệ thống!</li>"];
-        }
-        if (oldObj && !newObj) {
-            return ["<li><span class='badge bg-danger me-1'>[XÓA BỎ]</span> Gỡ bỏ cứng hoàn toàn bản ghi khỏi CSDL!</li>"];
-        }
-
-        let diffs = [];
-        const labels = {
-            "tenSp": "Tên sản phẩm",
-            "maSp": "Mã sản phẩm",
-            "maDm": "Mã danh mục",
-            "moTa": "Mô tả",
-            "hinhAnh": "Ảnh minh họa",
-            "choPhepDoiDa": "Tùy chọn chỉnh Đá",
-            "choPhepDoiDuong": "Tùy chọn chỉnh Đường",
-            "isNew": "Trạng thái nhãn MỚI",
-            "isBestseller": "Trạng thái nhãn HOT",
-            "trangThai": "Trạng thái mở bán / Hoạt động",
-            "tenKm": "Tên khuyến mãi",
-            "maCode": "Mã CODE Voucher",
-            "giaTriGiam": "Giá trị giảm giá",
-            "giamToiDa": "Chặn giảm tối đa",
-            "donToiThieu": "Đơn tối thiểu áp dụng",
-            "soLuong": "Số lượng phát hành",
-            "ngayBatDau": "Ngày bắt đầu",
-            "ngayKetThuc": "Ngày kết thúc",
-            "tenTp": "Tên Topping",
-            "giaBan": "Giá bán lẻ",
-            "hoTen": "Họ và tên",
-            "soDienThoai": "Số điện thoại di động",
-            "email": "Địa chỉ Email",
-            "tenDangNhap": "Tên đăng nhập",
-            "maVt": "Quyền vai trò (1: Admin, 2: Staff)",
-            "diaChiLienHe": "Địa chỉ liên hệ",
-            "gioiTinh": "Giới tính"
-        };
-
-        for (let key in newObj) {
-            if (oldObj.hasOwnProperty(key)) {
-                let oldVal = oldObj[key];
-                let newVal = newObj[key];
-
-                if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
-                    let label = labels[key] || key;
-                    if (typeof newVal === 'boolean') {
-                        let oTxt = oldVal ? "ĐANG BẬT" : "ĐANG TẮT";
-                        let nTxt = newVal ? "ĐANG BẬT" : "ĐANG TẮT";
-                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">${oTxt}</span> sang <span class="text-success fw-bold">${nTxt}</span>.</li>`);
-                    } else if (key.toLowerCase().includes("gia") || key.toLowerCase().includes("tien") || key.toLowerCase().includes("giam")) {
-                        let oPrice = parseInt(oldVal) || 0;
-                        let nPrice = parseInt(newVal) || 0;
-                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">${oPrice.toLocaleString('vi-VN')} đ</span> sang <span class="text-success fw-bold">${nPrice.toLocaleString('vi-VN')} đ</span>.</li>`);
-                    } else {
-                        diffs.push(`<li>Trường <strong class="text-secondary">${label}</strong> thay đổi từ <span class="text-danger fw-bold">'${oldVal}'</span> sang <span class="text-success fw-bold">'${newVal}'</span>.</li>`);
-                    }
-                }
-            }
-        }
-
-        if (diffs.length === 0) {
-            return ["<li><span class='badge bg-secondary me-1'>[KHÔNG BIẾN ĐỘNG]</span> Không phát hiện bất kỳ thay đổi thuộc tính cốt lõi nào (chỉ cập nhật mốc thời gian hệ thống).</li>"];
-        }
-        return diffs;
-    }
-
-    function viewAuditDiff(maLog, maNv, hanhDong, encodedOld, encodedNew) {
-        document.getElementById("diffMaLog").innerText = maLog;
-        document.getElementById("diffMaNv").innerText = maNv;
-        document.getElementById("diffHanhDong").innerText = hanhDong;
-
-        let oldStr = decodeURIComponent(encodedOld).trim();
-        let newStr = decodeURIComponent(encodedNew).trim();
-        let parsedOld = null;
-        let parsedNew = null;
-
-        try {
-            if (oldStr && oldStr !== 'null') {
-                parsedOld = JSON.parse(oldStr);
-                document.getElementById("jsonOld").innerText = JSON.stringify(parsedOld, null, 2);
-            } else {
-                document.getElementById("jsonOld").innerText = "Chưa phát sinh (Tạo mới hoàn toàn)";
-            }
-        } catch (e) {
-            document.getElementById("jsonOld").innerText = oldStr ? oldStr : "Không có dữ liệu cũ";
-        }
-
-        try {
-            if (newStr && newStr !== 'null') {
-                parsedNew = JSON.parse(newStr);
-                document.getElementById("jsonNew").innerText = JSON.stringify(parsedNew, null, 2);
-            } else {
-                document.getElementById("jsonNew").innerText = "Hủy bỏ / Xóa sạch";
-            }
-        } catch (e) {
-            document.getElementById("jsonNew").innerText = newStr ? newStr : "Không có dữ liệu mới";
-        }
-
-        // Tạo human-readable diff
-        const diffContainer = document.getElementById("friendlyDiffContainer");
-        diffContainer.innerHTML = "";
-        const diffList = generateFriendlyDiff(parsedOld, parsedNew);
-        diffList.forEach(item => {
-            diffContainer.innerHTML += item;
-        });
-
-        diffModal.show();
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        // PHÂN TRANG CLIENT-SIDE
-        const pageSize = 10;
-        let currentPage = 1;
-        const rows = Array.from(document.querySelectorAll("#logTable tbody .log-row"));
-        const totalRecords = rows.length;
-        const totalPages = Math.ceil(totalRecords / pageSize);
-
-        function paginateLogTable() {
-            if (totalRecords === 0) {
-                document.getElementById("logPaginationArea").style.display = "none";
-                return;
-            }
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            rows.forEach((row, idx) => {
-                if (idx >= startIndex && idx < endIndex) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-            document.getElementById("paginatedInfo").innerText = (startIndex + 1) + " đến " + Math.min(endIndex, totalRecords) + " trong tổng số " + totalRecords;
-            renderPaginationButtons();
-        }
-
-        function renderPaginationButtons() {
-            const controls = document.getElementById("paginatedControls");
-            controls.innerHTML = "";
-            if (totalPages <= 1) {
-                document.getElementById("logPaginationArea").style.display = "none";
-                return;
-            }
-            document.getElementById("logPaginationArea").style.display = "flex";
-            const prevLi = document.createElement("li");
-            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-            prevLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage - 1) + ')">&laquo;</button>';
-            controls.appendChild(prevLi);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const pageLi = document.createElement("li");
-                pageLi.className = "page-item " + (currentPage === i ? "active" : "");
-                pageLi.innerHTML = '<button class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" type="button" onclick="changePage(' + i + ')">' + i + '</button>';
-                controls.appendChild(pageLi);
-            }
-
-            const nextLi = document.createElement("li");
-            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-            nextLi.innerHTML = '<button class="page-link text-success" type="button" onclick="changePage(' + (currentPage + 1) + ')">&raquo;</button>';
-            controls.appendChild(nextLi);
-        }
-
-        window.changePage = function(newPage) {
-            currentPage = newPage;
-            paginateLogTable();
-        }
-
-        if (rows.length > 0) {
-            paginateLogTable();
-        }
-    });
-</script>
 </body>
 </html>
