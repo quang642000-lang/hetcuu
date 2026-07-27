@@ -9,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
@@ -161,6 +160,7 @@
                     </button>
                 </div>
             </div>
+
             <!-- SEARCH & FILTERS PANEL -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
                 <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET">
@@ -184,7 +184,7 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label text-muted small fw-bold">Bảng tác động</label>
+                            <label class="form-label text-slate-500 small fw-bold">Bảng tác động</label>
                             <select name="tableName" class="form-select bg-light">
                                 <option value="">-- Tất cả --</option>
                                 <option value="SAN_PHAM" ${paramTableName == 'SAN_PHAM' ? 'selected' : ''}>Sản phẩm (SAN_PHAM)</option>
@@ -210,13 +210,14 @@
                     </div>
                 </form>
             </div>
+
             <!-- AUDIT TRAIL DATA CARD -->
             <div class="audit-card">
                 <div class="audit-header">
                     <strong class="text-dark fs-5 text-uppercase"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
                     <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;" id="matchCountBadge">
-Đang tải...
-</span>
+                Đang tải...
+            </span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-audit mb-0" id="auditLogTable">
@@ -246,16 +247,16 @@
                                                     <i class="bi bi-person-badge text-success"></i>
                                                 </div>
                                                 <div>
-<span class="d-block fw-bold text-dark" style="font-size: 13px;">
-<c:choose>
-    <c:when test="${not empty log.maNv}">
-        <c:out value="${log.maNv}"/>
-    </c:when>
-    <c:otherwise>
-        <span class="text-primary font-monospace" style="font-size: 11px;">SYSTEM / PORTAL</span>
-    </c:otherwise>
-</c:choose>
-</span>
+                                                <span class="d-block fw-bold text-dark" style="font-size: 13px;">
+                                                    <c:choose>
+                                                        <c:when test="${not empty log.maNv}">
+                                                            <c:out value="${log.maNv}"/>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-primary font-monospace" style="font-size: 11px;">SYSTEM / PORTAL</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </span>
                                                     <small class="text-muted" style="font-size: 11px;">
                                                         <c:out value="${log.hoTenNhanVien}"/>
                                                     </small>
@@ -328,13 +329,12 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- PAGINATION BAR -->
-                <div class="pagination-container bg-white rounded-bottom-4" id="paginationArea" style="display: none;">
-                    <span class="small text-muted font-monospace" id="paginationInfo">Trang 1 / 1</span>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination pagination-sm m-0" id="paginationButtons">
-                            <!-- JS will inject buttons dynamically -->
-                        </ul>
+
+                <!-- PAGINATION BAR - ĐỒNG BỘ 100% VỚI KHACH_HANG.JSP & SAN_PHAM.JSP -->
+                <div class="pagination-container" id="crmPaginationWrapper" style="display: none;">
+                    <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 của 10 dòng nhật ký</span>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="crmPaginationButtons"></ul>
                     </nav>
                 </div>
             </div>
@@ -343,70 +343,85 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // PHÂN TRANG VÀ ĐỐI SOÁT ĐỘNG PHÍA CLIENT-SIDE REALTIME MƯỢT MÀ
-    let currentPage = 1;
-    const pageSize = 10;
-    let filteredRows = [];
+    // PHÂN TRANG VÀ ĐỐI SOÁT ĐỘNG PHÍA CLIENT-SIDE REALTIME ĐỒNG BỘ 100%
+    let currentCrmPage = 1;
+    const ROWS_PER_PAGE_CRM = 10;
+    let filteredCrmRows = [];
+
     function initClientPagination() {
         const allRows = Array.from(document.querySelectorAll("#auditLogTable tbody .audit-log-row"));
-        filteredRows = allRows; // Backend sends correctly filtered logs, Client handles pagination display
-// Update count badge
+        filteredCrmRows = allRows; // Backend sends correctly filtered logs, Client handles pagination display
+
+        // Update count badge
         const badge = document.getElementById("matchCountBadge");
         if (badge) {
-            badge.innerText = `Tìm thấy ${filteredRows.length} mốc biến động`;
+            badge.innerText = `Tìm thấy ${filteredCrmRows.length} mốc biến động`;
         }
-        renderPage(1);
+
+        currentCrmPage = 1;
+        renderCrmTableRows();
     }
-    function renderPage(page) {
-        currentPage = page;
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-// Hide all
+
+    function renderCrmTableRows() {
         const allRows = document.querySelectorAll("#auditLogTable tbody .audit-log-row");
         allRows.forEach(row => row.style.display = "none");
-// Show for current page
-        const startIdx = (currentPage - 1) * pageSize;
-        const endIdx = Math.min(startIdx + pageSize, totalRows);
-        for (let i = startIdx; i < endIdx; i++) {
-            if (filteredRows[i]) {
-                filteredRows[i].style.display = "table-row";
-            }
-        }
-// Update info label
-        const info = document.getElementById("paginationInfo");
-        if (info) {
-            info.innerText = `Hiển thị từ ${totalRows > 0 ? (startIdx + 1) : 0} đến ${endIdx} trong tổng số ${totalRows} dòng nhật ký`;
-        }
-// Render buttons
-        const buttonsContainer = document.getElementById("paginationButtons");
-        if (buttonsContainer) {
-            buttonsContainer.innerHTML = "";
-            if (totalPages <= 1) {
-                document.getElementById("paginationArea").style.setProperty('display', 'none', 'important');
-                return;
-            }
-            document.getElementById("paginationArea").style.setProperty('display', 'flex', 'important');
-// PREVIOUS button
-            const prevLi = document.createElement("li");
-            prevLi.className = `page-item ${currentPage == 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage - 1})">&laquo; Trước</a>`;
-            buttonsContainer.appendChild(prevLi);
-// Number buttons
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement("li");
-                li.className = `page-item ${currentPage == i ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="javascript:void(0)" onclick="renderPage(${i})">${i}</a>`;
-                buttonsContainer.appendChild(li);
-            }
-// NEXT button
-            const nextLi = document.createElement("li");
-            nextLi.className = `page-item ${currentPage == totalPages ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link text-success" href="javascript:void(0)" onclick="renderPage(${currentPage + 1})">Sau &raquo;</a>`;
-            buttonsContainer.appendChild(nextLi);
-        }
+
+        const startIdx = (currentCrmPage - 1) * ROWS_PER_PAGE_CRM;
+        const endIdx = startIdx + ROWS_PER_PAGE_CRM;
+        const pageRows = filteredCrmRows.slice(startIdx, endIdx);
+
+        pageRows.forEach(row => {
+            row.style.display = "table-row";
+        });
+        updateCrmPaginationControls();
     }
+
+    function updateCrmPaginationControls() {
+        const totalRows = filteredCrmRows.length;
+        const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
+        const infoEl = document.getElementById("crmPaginationInfo");
+        const btnContainer = document.getElementById("crmPaginationButtons");
+        if (!infoEl || !btnContainer) return;
+
+        const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
+        const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhật ký';
+
+        btnContainer.innerHTML = "";
+        if (totalPages <= 1) {
+            document.getElementById("crmPaginationWrapper").style.setProperty('display', 'none', 'important');
+            return;
+        }
+        document.getElementById("crmPaginationWrapper").style.setProperty('display', 'flex', 'important');
+
+        // Nút Trước
+        const prevLi = document.createElement("li");
+        prevLi.className = "page-item " + (currentCrmPage === 1 ? "disabled" : "");
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')">&laquo; Trước</a>';
+        btnContainer.appendChild(prevLi);
+
+        // Trang số
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = "page-item " + (currentCrmPage === i ? "active" : "");
+            li.innerHTML = '<a class="page-link ' + (currentCrmPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
+            btnContainer.appendChild(li);
+        }
+
+        // Nút Sau
+        const nextLi = document.createElement("li");
+        nextLi.className = "page-item " + (currentCrmPage === totalPages ? "disabled" : "");
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')">Sau &raquo;</a>';
+        btnContainer.appendChild(nextLi);
+    }
+
+    function changeCrmPage(page) {
+        const totalPages = Math.ceil(filteredCrmRows.length / ROWS_PER_PAGE_CRM) || 1;
+        if (page < 1 || page > totalPages) return;
+        currentCrmPage = page;
+        renderCrmTableRows();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         initClientPagination();
     });

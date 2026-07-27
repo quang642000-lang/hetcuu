@@ -15,7 +15,6 @@
     <c:set var="diemTichLuy" value="0" />
     <c:set var="maHang" value="1" />
     <c:set var="trangThaiVal" value="true" />
-
     <c:if test="${not empty requestScope.customer}">
         <c:set var="maKh" value="${requestScope.customer.maKh}" />
         <c:set var="tenKh" value="${requestScope.customer.tenKh}" />
@@ -34,11 +33,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #ecfdf5;
+            --bg-main: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius-md: 8px;
+        }
         .filter-wrapper {
             background-color: #ffffff !important;
             border: 1px solid var(--border-color) !important;
@@ -75,7 +82,7 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <c:choose>
-                <%-- ==================== TRƯỜNG HỢP 1: HIỂN THỊ CHI TIẾT TABS KHÁCH HÀNG CRM ==================== --%>
+                <%-- ==================== TRƯỜNG HỢP 1: CHI TIẾT TABS KHÁCH HÀNG CRM ==================== --%>
                 <c:when test="${not empty requestScope.customer}">
                     <div class="mb-3 text-start">
                         <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1.5 fw-bold" style="border-radius: 6px;">
@@ -90,16 +97,15 @@
                                      class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 fs-6 mb-3" style="border-radius: 50px;">
-                                    👑 Hạng:
-                                    <c:choose>
-                                        <c:when test="${maHang == 1}">ĐỒNG</c:when>
-                                        <c:when test="${maHang == 2}">BẠC</c:when>
-                                        <c:when test="${maHang == 3}">VÀNG 👑</c:when>
-                                        <c:when test="${maHang == 4}">VIP 💎</c:when>
-                                        <c:otherwise>MỚI</c:otherwise>
-                                    </c:choose>
-                                </span>
-
+                        👑 Hạng:
+                        <c:choose>
+                            <c:when test="${maHang == 1}">ĐỒNG</c:when>
+                            <c:when test="${maHang == 2}">BẠC</c:when>
+                            <c:when test="${maHang == 3}">VÀNG 👑</c:when>
+                            <c:when test="${maHang == 4}">VIP 💎</c:when>
+                            <c:otherwise>MỚI</c:otherwise>
+                        </c:choose>
+                    </span>
                                 <div class="bg-light rounded p-3 text-start">
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted small">Mã thành viên:</span>
@@ -118,7 +124,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- Khối thông tin chi tiết Tabs bên phải -->
                         <div class="col-12 col-lg-8">
                             <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
@@ -134,9 +139,8 @@
                                         <button class="nav-link fw-bold text-success border-0 bg-transparent" id="vouchers-tab" data-bs-toggle="tab" data-bs-target="#vouchers" type="button" role="tab">Kho Voucher khả dụng</button>
                                     </li>
                                 </ul>
-
                                 <div class="tab-content text-start" id="crmDetailTabContent">
-                                    <!-- TAB 1: HOÀN THIỆN HỒ SƠ & CẬP NHẬT -->
+                                    <!-- TAB 1: HOÀN THIỆN HỒ SƠ -->
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
@@ -196,8 +200,7 @@
                                             </button>
                                         </form>
                                     </div>
-
-                                    <!-- TAB 2: LỊCH SỬ HÓA ĐƠN ĐỐI SOÁT & PHÂN TRANG CON -->
+                                    <!-- TAB 2: LỊCH SỬ HÓA ĐƠN -->
                                     <div class="tab-pane fade" id="orders" role="tabpanel">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle text-center" id="customerOrdersTable">
@@ -222,9 +225,9 @@
                                                                     <fmt:formatNumber value="${ord.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                                                 </td>
                                                                 <td>
-                                                                        <span class="badge bg-light text-dark border">
-                                                                                ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
-                                                                        </span>
+                                                            <span class="badge bg-light text-dark border">
+                                                                    ${ord.loaiDonHang == 1 ? 'Tại quầy' : (ord.loaiDonHang == 2 ? 'Mang đi' : 'Đặt online')}
+                                                            </span>
                                                                 </td>
                                                                 <td>
                                                                     <c:choose>
@@ -264,8 +267,7 @@
                                             </nav>
                                         </div>
                                     </div>
-
-                                    <!-- TAB 3: VOUCHER VIP KHẢ DỤNG KHÔNG HIỆN VOUCHER GIẤY -->
+                                    <!-- TAB 3: VOUCHER VIP KHẢ DỤNG -->
                                     <div class="tab-pane fade" id="vouchers" role="tabpanel">
                                         <div class="row g-3">
                                             <c:choose>
@@ -275,7 +277,7 @@
                                                             <div class="border rounded p-3 bg-light d-flex justify-content-between align-items-center" style="border-radius: 8px;">
                                                                 <div class="text-start">
                                                                     <span class="badge bg-dark text-white fw-bold mb-1">${v.maCode}</span>
-                                                                    <h6 class="fw-bold mb-1 text-success"><c:out value="${v.tenKm}"/></h6>
+                                                                    <h6 class="fw-bold text-success mb-1"><c:out value="${v.tenKm}"/></h6>
                                                                     <small class="text-muted d-block" style="font-size: 11px;">HSD: <fmt:formatDate value="${v.ngayKetThuc}" pattern="dd/MM/yyyy"/></small>
                                                                 </div>
                                                                 <div class="text-end">
@@ -298,8 +300,7 @@
                         </div>
                     </div>
                 </c:when>
-
-                <%-- ==================== TRƯỜNG HỢP 2: HIỂN THỊ DANH SÁCH KHÁCH HÀNG (LIST) ĐỒNG BỘ PHÂN TRANG & BỘ LỌC ==================== --%>
+                <%-- ==================== TRƯỜNG HỢP 2: HIỂN THỊ DANH SÁCH KHÁCH HÀNG (LIST) ĐỒNG BỘ PHÂN TRANG ==================== --%>
                 <c:otherwise>
                     <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
                         <div class="d-flex justify-content-between align-items-center mb-4 text-start">
@@ -308,8 +309,7 @@
                                 <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng Loyalty và phân hạng khách hàng</p>
                             </div>
                         </div>
-
-                        <!-- BỘ LỌC TÌM KIẾM KHÁCH HÀNG CRM ĐỒNG BỘ PHONG CÁCH SẢN PHẨM -->
+                        <!-- BỘ LỌC TÌM KIẾM KHÁCH HÀNG CRM -->
                         <div class="filter-wrapper mb-4 text-start">
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
@@ -339,7 +339,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- BẢNG DANH SÁCH HỘI VIÊN CRM -->
                         <div class="table-responsive admin-table-container">
                             <table class="table table-hover align-middle text-center admin-table" id="customerTable">
@@ -389,9 +388,9 @@
                                                 </td>
                                                 <td class="fw-bold text-success font-monospace">${item.diemTichLuy} Điểm</td>
                                                 <td>
-                                                        <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                                ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
-                                                        </span>
+                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                    ${item.trangThai ? 'Hoạt động' : 'Đã Khóa'}
+                                            </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-sm btn-outline-success fw-bold px-2.5">
@@ -410,7 +409,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <!-- CRM PHÂN TRANG CLIENT SIDE ĐỒNG BỘ HOÀN TOÀN -->
                         <div class="pagination-container" id="crmPaginationWrapper" style="display: none;">
                             <span class="small text-muted" id="crmPaginationInfo">Hiển thị từ 1 đến 10 của 10 dòng khách hàng</span>
@@ -425,7 +423,7 @@
     </div>
 </div>
 
-<!-- POPUP CHI TIẾT HÓA ĐƠN ĐỐI SOÁT CHUẨN THƯƠNG MẠI -->
+<!-- POPUP CHI TIẾT HÓA ĐƠN -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
@@ -490,7 +488,6 @@
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-
     function showReceiptDetail(maDh) {
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
         receiptModal.show();
@@ -507,7 +504,6 @@
                     document.getElementById("billLoaiDon").innerText = data.loaiDonHang ? data.loaiDonHang : 'Tại quầy';
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                     if (data.tienGiamGia > 0) {
                         document.getElementById("billDiscountRow").style.display = 'flex';
                     } else {
@@ -519,7 +515,6 @@
                     } else {
                         document.getElementById("billPointsRow").style.display = 'none';
                     }
-
                     // Thuế VAT 8%
                     let billBeforeTax = data.tongTienHang - data.tienGiamGia - data.tienTruDiem;
                     if (billBeforeTax < 0) billBeforeTax = 0;
@@ -557,7 +552,6 @@
                 receiptModal.hide();
             });
     }
-
     function printReceipt() {
         const printContent = document.getElementById("billPrintArea").innerHTML;
         const originalContent = document.body.innerHTML;
@@ -578,7 +572,6 @@
         const searchInput = document.getElementById("customerSearchInput");
         const filterRank = document.getElementById("filterRank");
         const filterStatus = document.getElementById("filterStatus");
-
         if (!searchInput) return; // Không nằm ở trang danh sách
 
         const searchVal = searchInput.value.trim().toLowerCase();
@@ -586,7 +579,6 @@
         const statusVal = filterStatus.value;
 
         const allRows = Array.from(document.querySelectorAll("#customerTableBody .customer-row"));
-
         filteredCrmRows = allRows.filter(row => {
             const name = row.dataset.name.toLowerCase();
             const phone = row.dataset.phone;
@@ -618,7 +610,6 @@
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
         updateCrmPaginationControls();
     }
 
@@ -627,13 +618,13 @@
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
         const infoEl = document.getElementById("crmPaginationInfo");
         const btnContainer = document.getElementById("crmPaginationButtons");
+        if (!infoEl || !btnContainer) return;
 
         const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
         const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng khách hàng';
-        btnContainer.innerHTML = "";
 
+        btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             document.getElementById("crmPaginationWrapper").style.setProperty('display', 'none', 'important');
             return;
@@ -691,13 +682,10 @@
 
     function renderSubOrderRows() {
         subOrderRows.forEach(row => row.style.display = "none");
-
         const startIdx = (currentSubPage - 1) * ROWS_PER_PAGE_SUB;
         const endIdx = startIdx + ROWS_PER_PAGE_SUB;
         const pageRows = subOrderRows.slice(startIdx, endIdx);
-
         pageRows.forEach(row => row.style.display = "table-row");
-
         updateSubPaginationControls();
     }
 
@@ -706,15 +694,13 @@
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_SUB) || 1;
         const infoEl = document.getElementById("orderSubPaginationInfo");
         const btnContainer = document.getElementById("orderSubPaginationButtons");
-
         if (!infoEl || !btnContainer) return;
 
         const start = totalRows > 0 ? (currentSubPage - 1) * ROWS_PER_PAGE_SUB + 1 : 0;
         const end = Math.min(currentSubPage * ROWS_PER_PAGE_SUB, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' trong tổng số ' + totalRows + ' hóa đơn đặt';
-        btnContainer.innerHTML = "";
 
+        btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             document.getElementById("orderSubPaginationBlock").style.setProperty('display', 'none', 'important');
             return;
@@ -752,7 +738,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         filterAndPaginateCustomers();
         initOrderPagination();
-
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') showToast('success', 'Cập nhật hồ sơ khách hàng thành công!');
