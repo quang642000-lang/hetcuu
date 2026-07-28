@@ -6,7 +6,6 @@ import service.*;
 import service.impl.*;
 import util.SecurityUtil;
 import util.WebUtil;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,6 +22,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - POINT OF SALE (POS) CASHIER CONTROLLER (v2)
+ * Synchronized with STRICT product-mother and size-variant status constraints.
+ * Invisible categories or disabled products are completely filtered out.
+ * =========================================================================
+ */
 @WebServlet(name = "BanHangPOSController", urlPatterns = {
         "/pos",
         "/pos/search-customer",
@@ -59,12 +65,36 @@ public class BanHangPOSController extends HttpServlet {
             performGetBillDetail(request, response);
             return;
         }
+
+        // LOAD MENU VỚI RÀNG BUỘC BẢO MẬT CHẶT CHẼ TRẠNG THÁI HOẠT ĐỘNG
         List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
-        List<SanPham> products = sanPhamService.getAllSanPham();
-        List<Topping> toppings = toppingService.getActiveTopping();
-        for (SanPham sp : products) {
-            sp.setSizesList(sanPhamService.getSizesBySanPham(sp.getMaSp()));
+        List<String> activeCatIds = new ArrayList<>();
+        if (categories != null) {
+            for (DanhMuc cat : categories) {
+                activeCatIds.add(cat.getMaDm());
+            }
         }
+
+        List<SanPham> rawProducts = sanPhamService.getAllSanPham();
+        List<SanPham> products = new ArrayList<>();
+        if (rawProducts != null) {
+            for (SanPham sp : rawProducts) {
+                // Rule 1: Danh mục của sản phẩm phải đang hoạt động
+                // Rule 2: Bản thân sản phẩm mẹ phải đang ở trạng thái hoạt động (trangThai = true)
+                if (sp.isTrangThai() && activeCatIds.contains(sp.getMaDm())) {
+                    List<SanPhamKichCo> activeSizes = sanPhamService.getSizesBySanPham(sp.getMaSp());
+                    // Rule 3: Sản phẩm bắt buộc phải có ít nhất một kích cỡ hoạt động
+                    if (activeSizes != null && !activeSizes.isEmpty()) {
+                        sp.setSizesList(activeSizes);
+                        products.add(sp);
+                    }
+                }
+            }
+        }
+
+        // Toppings phải đang hoạt động
+        List<Topping> toppings = toppingService.getActiveTopping();
+
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("toppings", toppings);
@@ -362,6 +392,7 @@ public class BanHangPOSController extends HttpServlet {
                     ctdh.setMaSp(itemMaSp[i]);
                     ctdh.setMaSize(WebUtil.parseIntSafe(itemMaSize != null && i < itemMaSize.length ? itemMaSize[i] : "1", 1));
                     ctdh.setSoLuong(WebUtil.parseIntSafe(itemSoLuong != null && i < itemSoLuong.length ? itemSoLuong[i] : "1", 1));
+
                     int priceChot = sanPhamService.getGiaKichCoSanPham(ctdh.getMaSp(), ctdh.getMaSize());
                     if (priceChot <= 0 && itemGiaChot != null && i < itemGiaChot.length) {
                         priceChot = WebUtil.parseIntSafe(itemGiaChot[i], 0);
@@ -389,6 +420,7 @@ public class BanHangPOSController extends HttpServlet {
                     items.add(ctdh);
                 }
             }
+
             boolean isCheckedOut = donHangService.checkoutPOS(dh, items, currentStaff.getMaNv());
             if (isCheckedOut) {
                 response.sendRedirect(request.getContextPath() + "/pos?msg=createsuccess&orderId=" + dh.getMaDh() + "&maPt=" + dh.getMaPt() + "&payable=" + dh.getTongPhaiTra());

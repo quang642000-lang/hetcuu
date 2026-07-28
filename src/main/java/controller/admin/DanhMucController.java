@@ -8,7 +8,6 @@ import service.impl.DanhMucServiceImpl;
 import util.JsonParserUtil;
 import util.UploadUtil;
 import util.WebUtil;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "DanhMucController", urlPatterns = {"/admin/danhmuc"})
+@WebServlet(name = "DanhMucControllerV3", urlPatterns = {"/admin/danhmuc"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
@@ -42,6 +41,9 @@ public class DanhMucController extends HttpServlet {
                 break;
             case "delete":
                 performDelete(request, response);
+                break;
+            case "toggle":
+                performToggle(request, response);
                 break;
             default:
                 showList(request, response);
@@ -76,11 +78,40 @@ public class DanhMucController extends HttpServlet {
         }
     }
 
+    private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String id = request.getParameter("id");
+        boolean status = "1".equals(request.getParameter("status"));
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
+        DanhMuc dm = danhMucService.getDanhMucById(id);
+        if (dm != null) {
+            String oldJson = JsonParserUtil.toJson(dm);
+            dm.setTrangThai(status);
+            boolean success = danhMucService.updateDanhMuc(dm);
+            if (success) {
+                NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
+                        actorNv,
+                        status ? "KÍCH_HOẠT_DANH_MỤC" : "TẠM_NGƯNG_DANH_MỤC",
+                        "DANH_MUC",
+                        oldJson,
+                        JsonParserUtil.toJson(dm),
+                        ip,
+                        null
+                ));
+                response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=updatesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=notfound");
+        }
+    }
+
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         String actorNv = WebUtil.getCurrentActor(request);
         String ip = WebUtil.getRemoteIP(request);
-
         if (id == null || id.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
             return;
@@ -117,21 +148,18 @@ public class DanhMucController extends HttpServlet {
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String actorNv = WebUtil.getCurrentActor(request);
         String ip = WebUtil.getRemoteIP(request);
-
         try {
             String tenDm = request.getParameter("tenDm");
             int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
-
             if ("file".equals(uploadType)) {
                 hinhAnh = UploadUtil.uploadFile(request, "hinhAnhFile");
                 if (hinhAnh == null) hinhAnh = "";
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
-
             DanhMuc dm = new DanhMuc(null, tenDm, hinhAnh, thuTu, trangThai);
             boolean success = danhMucService.createDanhMuc(dm);
             if (success) {
@@ -154,13 +182,11 @@ public class DanhMucController extends HttpServlet {
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String actorNv = WebUtil.getCurrentActor(request);
         String ip = WebUtil.getRemoteIP(request);
-
         try {
             String maDm = request.getParameter("maDm");
             String tenDm = request.getParameter("tenDm");
             int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
@@ -174,7 +200,6 @@ public class DanhMucController extends HttpServlet {
                     hinhAnh = url;
                 }
             }
-
             DanhMuc oldDm = danhMucService.getDanhMucById(maDm);
             String oldJson = JsonParserUtil.toJson(oldDm);
             DanhMuc dm = new DanhMuc(maDm, tenDm, hinhAnh, thuTu, trangThai);

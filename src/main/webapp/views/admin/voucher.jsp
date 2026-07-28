@@ -13,25 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-        }
-        body {
-            font-family: 'Inter', sans-serif !important;
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-        }
-        .form-card { border-radius: 12px; background: #ffffff; border: none; }
-        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background-color: #ffffff; border-top: 1px solid var(--border-color); }
-    </style>
 </head>
 <body class="bg-light">
 <c:set var="maKm" value="" />
@@ -74,6 +55,7 @@
         <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
     </c:if>
 </c:if>
+
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
@@ -95,18 +77,16 @@
                             <input type="hidden" name="maKm" id="maKm" value="${maKm}">
                             <div class="row g-3 text-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label fw-bold small">Mã Khuyến Mãi (Tự động sinh)</label>
+                                    <label class="form-label fw-bold small">Mã Khuyến Mãi (Tự sinh)</label>
                                     <input type="text" class="form-control form-control-teapos bg-light" value="${not empty voucher ? maKm : 'KMxxxxx (Hệ thống tự sinh)'}" readonly style="font-weight: bold;">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="maCode" class="form-label fw-bold small">Mã CODE áp dụng <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-teapos text-uppercase" id="maCode" name="maCode"
-                                           value="${maCode}" placeholder="Ví dụ: GIAM20K..." required autocomplete="off" style="font-weight: 700; letter-spacing: 0.5px;">
+                                    <input type="text" class="form-control form-control-teapos text-uppercase" id="maCode" name="maCode" value="${maCode}" placeholder="Ví dụ: GIAM20K..." required autocomplete="off" style="font-weight: 700; letter-spacing: 0.5px;">
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <label for="tenKm" class="form-label fw-bold small">Tên Chiến Dịch Khuyến Mãi <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control form-control-teapos" id="tenKm" name="tenKm"
-                                           value="${tenKm}" placeholder="Ví dụ: Tri ân khách hàng..." required autocomplete="off">
+                                    <input type="text" class="form-control form-control-teapos" id="tenKm" name="tenKm" value="${tenKm}" placeholder="Ví dụ: Tri ân khách hàng..." required autocomplete="off">
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="loaiVoucher" class="form-label fw-bold small">Loại Khuyến Mãi</label>
@@ -133,38 +113,31 @@
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="giaTriGiam" class="form-label fw-bold small">Giá trị giảm <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control form-control-teapos text-end fw-bold" id="giaTriGiam" name="giaTriGiam"
-                                           value="${giaTriGiam}" min="0" required>
+                                    <input type="number" class="form-control form-control-teapos text-end fw-bold" id="giaTriGiam" name="giaTriGiam" value="${giaTriGiam}" min="0" required>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="giamToiDa" class="form-label fw-bold small">Giảm tối đa (Phần trăm)</label>
-                                    <input type="number" class="form-control form-control-teapos text-end" id="giamToiDa" name="giamToiDa"
-                                           value="${giamToiDa}" min="0" placeholder="0 nếu không chặn...">
+                                    <input type="number" class="form-control form-control-teapos text-end" id="giamToiDa" name="giamToiDa" value="${giamToiDa}" min="0" placeholder="0 nếu không chặn...">
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="donToiThieu" class="form-label fw-bold small">Đơn tối thiểu áp dụng</label>
-                                    <input type="number" class="form-control form-control-teapos text-end" id="donToiThieu" name="donToiThieu"
-                                           value="${donToiThieu}" min="0">
+                                    <input type="number" class="form-control form-control-teapos text-end" id="donToiThieu" name="donToiThieu" value="${donToiThieu}" min="0">
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label for="ngayBatDau" class="form-label fw-bold small">Thời gian bắt đầu <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" class="form-control form-control-teapos" id="ngayBatDau" name="ngayBatDau"
-                                           value="${formattedStart}" required>
+                                    <input type="datetime-local" class="form-control form-control-teapos" id="ngayBatDau" name="ngayBatDau" value="${formattedStart}" required>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label for="ngayKetThuc" class="form-label fw-bold small">Thời gian kết thúc <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" class="form-control form-control-teapos" id="ngayKetThuc" name="ngayKetThuc"
-                                           value="${formattedEnd}" required>
+                                    <input type="datetime-local" class="form-control form-control-teapos" id="ngayKetThuc" name="ngayKetThuc" value="${formattedEnd}" required>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="soLuong" class="form-label fw-bold small">Quỹ số lượng cài đặt <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control form-control-teapos text-end" id="soLuong" name="soLuong"
-                                           value="${soLuong}" min="1" required>
+                                    <input type="number" class="form-control form-control-teapos text-end" id="soLuong" name="soLuong" value="${soLuong}" min="1" required>
                                 </div>
                                 <div class="col-12 col-md-3" id="soLuotDungCaNhanGroup">
                                     <label for="soLuotDungCaNhan" class="form-label fw-bold small">Giới hạn / Cá nhân <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control form-control-teapos text-end" id="soLuotDungCaNhan" name="soLuotDungCaNhan"
-                                           value="${soLuotDungCaNhan}" min="0" placeholder="0 nếu không giới hạn..." required>
+                                    <input type="number" class="form-control form-control-teapos text-end" id="soLuotDungCaNhan" name="soLuotDungCaNhan" value="${soLuotDungCaNhan}" min="0" placeholder="0 nếu không giới hạn..." required>
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <label for="trangThai" class="form-label fw-bold small">Trạng thái phát hành</label>
@@ -176,8 +149,7 @@
                                 <input type="hidden" name="isPublic" value="1">
                                 <div class="col-12">
                                     <label for="hinhAnhUrl" class="form-label fw-bold small">Ảnh minh họa (URL)</label>
-                                    <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl"
-                                           value="${hinhAnhUrl}" placeholder="https://image-url...">
+                                    <input type="text" class="form-control form-control-teapos" id="hinhAnhUrl" name="hinhAnhUrl" value="${hinhAnhUrl}" placeholder="https://image-url...">
                                 </div>
                                 <div class="col-12">
                                     <label for="moTaDieuKien" class="form-label fw-bold small">Mô tả điều kiện áp dụng chi tiết</label>
@@ -231,15 +203,12 @@
                                 <c:choose>
                                     <c:when test="${not empty vouchers}">
                                         <c:forEach var="item" items="${vouchers}" varStatus="loop">
-                                            <tr class="text-center voucher-row"
-                                                data-id="${item.maKm}"
-                                                data-code="<c:out value='${item.maCode}'/>"
-                                                data-name="<c:out value='${item.tenKm}'/>">
+                                            <tr class="text-center voucher-row" data-id="${item.maKm}" data-code="<c:out value='${item.maCode}'/>" data-name="<c:out value='${item.tenKm}'/>">
                                                 <td class="row-stt"><strong>${loop.index + 1}</strong></td>
-                                                <td><strong>${item.maKm}</strong></td>
-                                                <td><span class="badge bg-dark text-white fw-bold px-3 py-1.5 fs-6" style="letter-spacing: 0.5px;"><c:out value="${item.maCode}"/></span></td>
+                                                <td><code class="fw-bold text-dark">${item.maKm}</code></td>
+                                                <td><span class="badge bg-dark text-white fw-bold px-2.5 py-1.5" style="letter-spacing: 0.5px; font-size:11px;">${item.maCode}</span></td>
                                                 <td class="text-start">
-                                                    <div class="fw-bold text-dark"><c:out value="${item.tenKm}"/></div>
+                                                    <strong class="text-dark"><c:out value="${item.tenKm}"/></strong> <br>
                                                     <small class="text-muted d-block text-truncate" style="max-width: 250px;"><c:out value="${item.moTaDieuKien}"/></small>
                                                 </td>
                                                 <td>
@@ -259,9 +228,9 @@
                                                 </td>
                                                 <td class="fw-bold text-dark"><span class="text-success">${item.soLuongDaDung}</span> / ${item.soLuong}</td>
                                                 <td>
-                                                        <span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
-                                                                ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
-                                                        </span>
+                                                            <span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
+                                                                    ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
+                                                            </span>
                                                 </td>
                                                 <td>
                                                     <c:choose>
@@ -273,27 +242,32 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                        <span class="badge bg-light text-dark border px-2.5 py-1.5">
-                                                                ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
-                                                        </span>
+                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5">
+                                                                    ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
+                                                            </span>
                                                 </td>
                                                 <td>
-                                                        <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                                ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
-                                                        </span>
+                                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                                    ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
+                                                            </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
-                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-action-edit">Sửa</a>
+                                                        <!-- NÚT SỬA ĐỒNG BỘ ICON -->
+                                                        <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-action-edit" title="Sửa"><i class="bi bi-pencil-square me-1"></i> Sửa</a>
+
+                                                        <!-- NÚT BẬT TẮT ĐỒNG BỘ ICON -->
                                                         <c:choose>
                                                             <c:when test="${item.trangThai}">
-                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-action-warning">Tạm ngưng</a>
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-action-warning" title="Tạm ngưng"><i class="bi bi-toggle2-off me-1"></i> Ẩn</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-action-edit">Kích hoạt</a>
+                                                                <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-action-edit" title="Kích hoạt"><i class="bi bi-toggle2-on me-1"></i> Bật</a>
                                                             </c:otherwise>
                                                         </c:choose>
-                                                        <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteVoucher('${item.maKm}')">Xóa</button>
+
+                                                        <!-- NÚT XÓA ĐỒNG BỘ ICON -->
+                                                        <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteVoucher('${item.maKm}')" title="Xóa"><i class="bi bi-trash3-fill me-1"></i> Xóa</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -307,7 +281,6 @@
                             </table>
                         </div>
 
-                        <!-- PHÂN TRANG ĐỒNG BỘ -->
                         <div class="pagination-container" id="paginationWrapper" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
@@ -353,9 +326,6 @@
         });
     }
 
-    // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
-    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
     let filteredRows = [];
@@ -364,14 +334,12 @@
         const searchInput = document.getElementById("voucherSearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-
         const allRows = Array.from(document.querySelectorAll("#voucherTableBody .voucher-row"));
         filteredRows = allRows.filter(row => {
             const code = row.dataset.code.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return code.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
@@ -379,38 +347,23 @@
     function renderTableRows() {
         const allRows = document.querySelectorAll("#voucherTableBody .voucher-row");
         allRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach((row, idx) => {
-            row.style.display = "table-row";
-            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
-        });
+        pageRows.forEach(row => row.style.display = "table-row");
 
-        updatePaginationControls();
-    }
-
-    function updatePaginationControls() {
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
 
-        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-        const end = Math.min(currentPage * pageSize, totalRows);
+        const start = totalRows > 0 ? startIdx + 1 : 0;
+        const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng Voucher';
-
         btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
@@ -418,13 +371,11 @@
         }
         wrapper.style.setProperty('display', 'flex', 'important');
 
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
@@ -432,7 +383,6 @@
             btnContainer.appendChild(li);
         }
 
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';

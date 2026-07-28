@@ -28,6 +28,12 @@ import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - CLIENT PORTAL PRODUCT CONTROLLER (v2)
+ * Synchronized with STRICT product-mother and active category status constraints.
+ * =========================================================================
+ */
 @WebServlet(name = "PortalProductController", urlPatterns = {"/products", "/product/detail"})
 public class PortalProductController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(PortalProductController.class.getName());
@@ -51,7 +57,6 @@ public class PortalProductController extends HttpServlet {
         String keyword = request.getParameter("search");
         String filter = request.getParameter("filter");
         String sort = request.getParameter("sort");
-
         List<SanPham> products;
         try {
             if (keyword != null && !keyword.trim().isEmpty()) {
@@ -70,10 +75,27 @@ public class PortalProductController extends HttpServlet {
                 products = new ArrayList<>();
             }
 
-            for (SanPham sp : products) {
-                List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(sp.getMaSp());
-                sp.setSizesList(sizes);
+            // LOAD DANH MỤC ĐANG HOẠT ĐỘNG
+            List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
+            List<String> activeCatIds = new ArrayList<>();
+            if (categories != null) {
+                for (DanhMuc cat : categories) {
+                    activeCatIds.add(cat.getMaDm());
+                }
             }
+
+            // MÀNG LỌC ĐỐI SOÁT KIỂM TOÁN: CHỈ HIỂN THỊ CÁC SẢN PHẨM HOẠT ĐỘNG TRÊN DANH MỤC HOẠT ĐỘNG KÈM THEO SIZE
+            List<SanPham> activeProducts = new ArrayList<>();
+            for (SanPham sp : products) {
+                if (sp.isTrangThai() && activeCatIds.contains(sp.getMaDm())) {
+                    List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(sp.getMaSp());
+                    if (sizes != null && !sizes.isEmpty()) {
+                        sp.setSizesList(sizes);
+                        activeProducts.add(sp);
+                    }
+                }
+            }
+            products = activeProducts;
 
             if (sort != null && !sort.trim().isEmpty()) {
                 if ("price_asc".equals(sort)) {
@@ -103,21 +125,17 @@ public class PortalProductController extends HttpServlet {
                     page = 1;
                 }
             }
-
             int totalProducts = products.size();
             int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
             if (page > totalPages && totalPages > 0) {
                 page = totalPages;
             }
-
             int startIdx = (page - 1) * pageSize;
             int endIdx = Math.min(startIdx + pageSize, totalProducts);
             List<SanPham> paginatedProducts = new ArrayList<>();
             if (startIdx < totalProducts) {
                 paginatedProducts = products.subList(startIdx, endIdx);
             }
-
-            List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
 
             request.setAttribute("products", paginatedProducts);
             request.setAttribute("categories", categories);
@@ -128,7 +146,6 @@ public class PortalProductController extends HttpServlet {
             request.setAttribute("currentPage", page);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalProducts", totalProducts);
-
             request.getRequestDispatcher("/views/portal/danh_sach_san_pham.jsp").forward(request, response);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi tải danh sách sản phẩm ngoài trang Portal", e);
@@ -153,8 +170,22 @@ public class PortalProductController extends HttpServlet {
         String id = request.getParameter("id");
         try {
             SanPham sp = sanPhamService.getSanPhamById(id);
-            if (sp != null) {
+            // CHỐT CHẶN BẢO MẬT HỆ THỐNG: Nếu sản phẩm mẹ bị tắt bán, lập tức chặn đứng, không cho load detail
+            if (sp != null && sp.isTrangThai()) {
+                // Kiểm tra xem Danh mục mẹ của nó có đang hoạt động hay không
+                DanhMuc dm = danhMucService.getDanhMucById(sp.getMaDm());
+                if (dm == null || !dm.isTrangThai()) {
+                    response.sendRedirect(request.getContextPath() + "/products?msg=notactive");
+                    return;
+                }
+
                 List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(id);
+                // Sản phẩm bắt buộc phải có kích cỡ hoạt động
+                if (sizes == null || sizes.isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/products?msg=notactive");
+                    return;
+                }
+
                 List<Topping> toppings = toppingService.getActiveTopping();
                 request.setAttribute("product", sp);
                 request.setAttribute("sizes", sizes);
@@ -191,10 +222,5 @@ public class PortalProductController extends HttpServlet {
             LOGGER.log(Level.SEVERE, "Lỗi truy xuất thông tin chi tiết của sản phẩm mã: " + id, e);
             response.sendRedirect(request.getContextPath() + "/products?msg=error");
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
     }
 }

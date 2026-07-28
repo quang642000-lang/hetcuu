@@ -12,31 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-        }
-        body {
-            font-family: 'Inter', sans-serif !important;
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-        }
-        .pagination-container {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 16px 20px !important;
-            background-color: #ffffff !important;
-            border-top: 1px solid var(--border-color) !important;
-        }
-    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -78,7 +53,7 @@
                             <th class="text-start">Tên danh mục trà sữa</th>
                             <th style="width: 150px;">Thứ tự hiển thị</th>
                             <th style="width: 180px;">Trạng thái</th>
-                            <th style="width: 200px;" class="text-end">Thao tác</th>
+                            <th style="width: 250px;" class="text-end">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody id="categoryTableBody">
@@ -107,12 +82,21 @@
                                         <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
                                         <td><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td>
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-                                                </span>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                            ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+                                                    </span>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-flex justify-content-end gap-1.5">
+                                            <div class="d-flex justify-content-end gap-1.5 align-items-center">
+                                                <!-- NÚT BẬT/TẮT TRẠNG THÁI NHANH ĐỒNG BỘ -->
+                                                <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}"
+                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}"
+                                                   title="${item.trangThai ? 'Tạm ngưng hoạt động' : 'Kích hoạt hoạt động'}">
+                                                    <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i>
+                                                        ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
+                                                </a>
+
+                                                <!-- NÚT SỬA ĐỒNG BỘ ICON -->
                                                 <button class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maDm}"
                                                         data-name="<c:out value='${item.tenDm}'/>"
@@ -120,11 +104,13 @@
                                                         data-sort="${item.thuTuHienThi}"
                                                         data-status="${item.trangThai ? 1 : 0}"
                                                         onclick="handleEditDanhMucClick(this)">
-                                                    <i class="bi bi-pencil-square"></i> Sửa
+                                                    <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </button>
+
+                                                <!-- NÚT XÓA ĐỒNG BỘ ICON -->
                                                 <button class="btn btn-sm btn-action-delete"
                                                         onclick="confirmDeleteDanhMuc('${item.maDm}')">
-                                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                                    <i class="bi bi-trash3-fill me-1"></i> Xóa
                                                 </button>
                                             </div>
                                         </td>
@@ -139,19 +125,18 @@
                     </table>
                 </div>
 
-                <!-- PHÂN TRANG ĐỒNG BỘ -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng dữ liệu</span>
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
+<!-- MODAL FORM -->
 <div class="modal fade" id="danhMucFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 12px;">
@@ -166,7 +151,7 @@
                 <div class="modal-body p-4 text-start">
                     <div class="mb-3">
                         <label for="tenDm" class="form-label fw-bold small">Tên nhóm danh mục <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off" placeholder="Ví dụ: Trà trái cây...">
+                        <input type="text" class="form-control form-control-teapos" id="tenDm" name="tenDm" required autocomplete="off" placeholder="Ví dụ: Trà sữa...">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-dark d-block">Hình ảnh danh mục</label>
@@ -287,9 +272,6 @@
         });
     }
 
-    // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
-    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
     let filteredRows = [];
@@ -298,14 +280,12 @@
         const searchInput = document.getElementById("categorySearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-
         const allRows = Array.from(document.querySelectorAll("#categoryTableBody .category-row"));
         filteredRows = allRows.filter(row => {
             const id = row.dataset.id.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
@@ -313,38 +293,23 @@
     function renderTableRows() {
         const allRows = document.querySelectorAll("#categoryTableBody .category-row");
         allRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach((row, idx) => {
-            row.style.display = "table-row";
-            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
-        });
+        pageRows.forEach(row => row.style.display = "table-row");
 
-        updatePaginationControls();
-    }
-
-    function updatePaginationControls() {
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
 
-        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-        const end = Math.min(currentPage * pageSize, totalRows);
+        const start = totalRows > 0 ? startIdx + 1 : 0;
+        const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng danh mục';
-
         btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
@@ -352,13 +317,11 @@
         }
         wrapper.style.setProperty('display', 'flex', 'important');
 
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
@@ -366,7 +329,6 @@
             btnContainer.appendChild(li);
         }
 
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';

@@ -18,43 +18,6 @@
             --primary: #10b981;
             --primary-hover: #059669;
             --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-        }
-        body {
-            font-family: 'Inter', sans-serif !important;
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-            overflow: hidden !important;
-        }
-        .filter-wrapper {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-        .product-img-circle {
-            width: 44px !important;
-            height: 44px !important;
-            min-width: 44px !important;
-            min-height: 44px !important;
-            object-fit: cover !important;
-            border-radius: 50% !important;
-            border: 2px solid var(--primary) !important;
-            box-shadow: var(--shadow-sm) !important;
-            display: inline-block !important;
-        }
-        .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background-color: #ffffff;
-            border-top: 1px solid var(--border-color);
         }
     </style>
 </head>
@@ -74,7 +37,8 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-                <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM -->
+
+                <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM (ĐỒNG BỘ FILTER WRAPPER) -->
                 <div class="filter-wrapper mb-4">
                     <div class="row g-3 text-start">
                         <div class="col-12 col-md-3">
@@ -119,6 +83,7 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="productTable">
@@ -126,7 +91,7 @@
                         <tr class="text-center">
                             <th style="width: 60px;">STT</th>
                             <th style="width: 120px;">Mã Đồ Uống</th>
-                            <th style="width: 80px;">Hình Ảnh</th>
+                            <th style="width: 100px;">Hình Ảnh</th>
                             <th class="text-start">Tên Sản Phẩm</th>
                             <th class="text-start" style="width: 150px;">Danh Mục</th>
                             <th style="width: 150px;">Kích Cỡ Có Sẵn</th>
@@ -170,18 +135,20 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
+                                                    <!-- VÁ TRIỆT ĐỂ LỖI BUNG ẢNH - KHÓA CỨNG KÍCH THƯỚC TRONG INLINE STYLE -->
                                                     <img src="${item.hinhAnh}" class="product-img-circle shadow-sm" style="width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; object-fit: cover !important; border-radius: 50% !important; border: 2px solid #10b981 !important;" alt="Pic">
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 44px; height: 44px; border: 2px solid #cbd5e1; border-radius: 50%;">
-                                                        <i class="bi bi-cup-straw fs-5 text-muted"></i>
+                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded-circle border mx-auto shadow-sm" style="width: 44px; height: 44px; border: 2px solid #10b981;">
+                                                        <i class="bi bi-image fs-6"></i>
                                                     </div>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
                                         <td class="text-start">
-                                            <div class="fw-bold text-dark"><c:out value="${item.tenSp}"/></div>
-                                            <small class="text-muted d-block text-truncate" style="max-width: 240px;"><c:out value="${item.moTa}"/></small>
+                                            <strong class="text-dark"><c:out value="${item.tenSp}"/></strong>
+                                            <c:if test="${item.isNew}"><span class="badge bg-warning text-dark ms-1" style="font-size: 9px;">NEW ✨</span></c:if>
+                                            <c:if test="${item.isBestseller}"><span class="badge bg-danger text-white ms-1" style="font-size: 9px;">HOT 🔥</span></c:if>
                                         </td>
                                         <td class="text-start text-dark fw-medium">
                                             <c:forEach var="cat" items="${categories}">
@@ -193,10 +160,10 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty activeSizes}">
-                                                    <span class="badge bg-light text-success border border-success fw-bold px-2.5 py-1.5" style="font-size: 11px;">${activeSizes}</span>
+                                                    <span class="badge bg-light text-success border border-success fw-bold px-2.5 py-1.5" style="font-size: 11px;">Size ${activeSizes}</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="badge bg-light text-danger border border-danger small">TẠM DỪNG BÁN</span>
+                                                    <span class="badge bg-light text-danger border border-danger small px-2.5 py-1.5">TẠM DỪNG BÁN</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
@@ -210,21 +177,24 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                    ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                            </span>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                            ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+                                                    </span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5 align-items-center">
+                                                <!-- NÚT SỬA ĐỒNG BỘ ICON -->
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=edit&id=${item.maSp}" class="btn btn-sm btn-action-edit" title="Cập nhật thông tin">
-                                                    <i class="bi bi-pencil-square"></i> Sửa
+                                                    <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </a>
+                                                <!-- NÚT BẬT TẮT ĐỒNG BỘ ICON -->
                                                 <a href="${pageContext.request.contextPath}/admin/sanpham?action=toggle&id=${item.maSp}&status=${item.trangThai ? 0 : 1}"
                                                    class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}" title="Thay đổi trạng thái bán">
                                                     <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
                                                 </a>
-                                                <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteSanPham('${item.maSp}')" title="Xóa món ăn">
-                                                    <i class="bi bi-trash3-fill"></i> Xóa
+                                                <!-- NÚT XÓA ĐỒNG BỘ ICON -->
+                                                <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteSanPham('${item.maSp}')" title="Xóa món uống">
+                                                    <i class="bi bi-trash3-fill me-1"></i> Xóa
                                                 </button>
                                             </div>
                                         </td>
@@ -243,7 +213,8 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- Pagination block -->
+
+                <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
@@ -254,6 +225,7 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -267,9 +239,7 @@
         const statusVal = document.getElementById("filterStatus").value;
         const newVal = document.getElementById("filterNew").value;
         const hotVal = document.getElementById("filterHot").value;
-
         const allRows = Array.from(document.querySelectorAll("#productTableBody .product-row"));
-
         filteredRows = allRows.filter(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -277,16 +247,13 @@
             const isNew = row.dataset.isnew;
             const isHot = row.dataset.ishot;
             const status = row.dataset.trangthai;
-
             let matchSearch = maSp.includes(searchVal) || tenSp.includes(searchVal);
             let matchCat = catVal === "" || maDm === catVal;
             let matchStatus = statusVal === "" || status === statusVal;
             let matchNew = newVal === "" || isNew === newVal;
             let matchHot = hotVal === "" || isHot === hotVal;
-
             return matchSearch && matchCat && matchStatus && matchNew && matchHot;
         });
-
         currentPage = 1;
         renderTableRows();
     }
@@ -294,64 +261,45 @@
     function renderTableRows() {
         const allRows = document.querySelectorAll("#productTableBody .product-row");
         allRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * ROWS_PER_PAGE;
         const endIdx = Math.min(startIdx + ROWS_PER_PAGE, totalRows);
-
         const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach((row, idx) => {
-            row.style.display = "table-row";
-            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
-        });
+        pageRows.forEach(row => row.style.display = "table-row");
 
-        updatePaginationControls();
-    }
-
-    function updatePaginationControls() {
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
 
-        const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
-        const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
-
+        const start = totalRows > 0 ? startIdx + 1 : 0;
+        const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng sản phẩm';
         btnContainer.innerHTML = "";
-
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
 
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
+        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
-            li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="#" onclick="changePage(' + i + ')">' + i + '</a>';
+            li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
 
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link text-success" href="#" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
+        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
 

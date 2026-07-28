@@ -13,31 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-        }
-        body {
-            font-family: 'Inter', sans-serif !important;
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-        }
-        .pagination-container {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 16px 20px !important;
-            background-color: #ffffff !important;
-            border-top: 1px solid var(--border-color) !important;
-        }
-    </style>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -74,16 +49,14 @@
                             <th>Tên đăng nhập</th>
                             <th class="text-center" style="width: 150px;">Vai trò</th>
                             <th class="text-center" style="width: 150px;">Trạng Thái</th>
-                            <th style="width: 250px;" class="text-end">Thao Tác</th>
+                            <th style="width: 320px;" class="text-end">Thao Tác</th>
                         </tr>
                         </thead>
                         <tbody id="employeeTableBody">
                         <c:choose>
                             <c:when test="${not empty employees}">
                                 <c:forEach var="item" items="${employees}" varStatus="loop">
-                                    <tr class="employee-row text-center"
-                                        data-id="${item.maNv}"
-                                        data-name="<c:out value='${item.hoTen}'/>">
+                                    <tr class="employee-row text-center" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>">
                                         <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                         <td><code class="fw-bold text-dark">${item.maNv}</code></td>
                                         <td class="text-start"><strong><c:out value="${item.hoTen}"/></strong></td>
@@ -91,27 +64,30 @@
                                         <td>${item.email}</td>
                                         <td><code><c:out value="${item.tenDangNhap}"/></code></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
-                                                        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
-                                                </span>
+                                                    <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
+                                                            ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
+                                                    </span>
                                         </td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success' : 'bg-danger'} border px-2.5 py-1">
-                                                        ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
-                                                </span>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-2.5 py-1">
+                                                            ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
+                                                    </span>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-flex justify-content-end gap-1.5">
+                                            <div class="d-flex justify-content-end gap-1.5 align-items-center">
+                                                <!-- NÚT BẬT/TẮT NHANH CÓ BIỂU TƯỢNG -->
                                                 <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
-                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}">
-                                                        ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
+                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}"
+                                                   title="${item.trangThai ? 'Khóa ca' : 'Mở ca'}">
+                                                    <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
                                                 </a>
+                                                <!-- NÚT RESET MẬT KHẨU CÓ BIỂU TƯỢNG -->
                                                 <button type="button" class="btn btn-sm btn-action-info"
-                                                        data-id="${item.maNv}"
-                                                        data-name="<c:out value='${item.hoTen}'/>"
+                                                        data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>"
                                                         onclick="handleResetPasswordClick(this)">
-                                                    Reset
+                                                    <i class="bi bi-key-fill me-1"></i> Reset
                                                 </button>
+                                                <!-- NÚT SỬA ĐỒNG BỘ ICON -->
                                                 <button type="button" class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maNv}"
                                                         data-name="<c:out value='${item.hoTen}'/>"
@@ -121,10 +97,11 @@
                                                         data-role="${item.maVt}"
                                                         data-status="${item.trangThai ? 1 : 0}"
                                                         onclick="handleEditEmployeeClick(this)">
-                                                    Sửa
+                                                    <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </button>
+                                                <!-- NÚT XÓA ĐỒNG BỘ ICON -->
                                                 <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteEmployee('${item.maNv}')">
-                                                    Xóa
+                                                    <i class="bi bi-trash3-fill me-1"></i> Xóa
                                                 </button>
                                             </div>
                                         </td>
@@ -139,20 +116,18 @@
                     </table>
                 </div>
 
-                <!-- PHÂN TRANG ĐỒNG BỘ -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL TOÀN NĂNG THÊM MỚI / CẬP NHẬT -->
+<!-- MODAL FORM -->
 <div class="modal fade" id="employeeFormModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -243,9 +218,6 @@
     const empModal = new bootstrap.Modal(document.getElementById('employeeFormModal'));
     const passModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
 
-    // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
-    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
     let filteredRows = [];
@@ -254,14 +226,12 @@
         const searchInput = document.getElementById("employeeSearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-
         const allRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
         filteredRows = allRows.filter(row => {
             const id = row.dataset.id.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
@@ -269,38 +239,23 @@
     function renderTableRows() {
         const allRows = document.querySelectorAll("#employeeTableBody .employee-row");
         allRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach((row, idx) => {
-            row.style.display = "table-row";
-            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
-        });
+        pageRows.forEach(row => row.style.display = "table-row");
 
-        updatePaginationControls();
-    }
-
-    function updatePaginationControls() {
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
 
-        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-        const end = Math.min(currentPage * pageSize, totalRows);
+        const start = totalRows > 0 ? startIdx + 1 : 0;
+        const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhân viên';
-
         btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
@@ -308,13 +263,11 @@
         }
         wrapper.style.setProperty('display', 'flex', 'important');
 
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
@@ -322,7 +275,6 @@
             btnContainer.appendChild(li);
         }
 
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
