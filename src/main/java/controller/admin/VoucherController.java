@@ -196,28 +196,24 @@ public class VoucherController extends HttpServlet {
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
-
         int soLuotDungCaNhan = 0;
         try {
             soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
         } catch (NumberFormatException e) {
             soLuotDungCaNhan = 0;
         }
-
         int hangApDung = 1;
         try {
             hangApDung = Integer.parseInt(request.getParameter("hangApDung"));
         } catch (NumberFormatException e) {
             hangApDung = 1;
         }
-
         int loaiVoucher = 1;
         try {
             loaiVoucher = Integer.parseInt(request.getParameter("loaiVoucher"));
         } catch (NumberFormatException e) {
             loaiVoucher = 1;
         }
-
         KhuyenMai km = new KhuyenMai(null, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai, soLuotDungCaNhan, hangApDung, loaiVoucher);
         if (ngayKetThuc.before(ngayBatDau)) {
             request.setAttribute("voucher", km);
@@ -262,21 +258,18 @@ public class VoucherController extends HttpServlet {
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
-
         int soLuotDungCaNhan = 0;
         try {
             soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
         } catch (NumberFormatException e) {
             soLuotDungCaNhan = 0;
         }
-
         int hangApDung = 1;
         try {
             hangApDung = Integer.parseInt(request.getParameter("hangApDung"));
         } catch (NumberFormatException e) {
             hangApDung = 1;
         }
-
         int loaiVoucher = 1;
         try {
             loaiVoucher = Integer.parseInt(request.getParameter("loaiVoucher"));
@@ -289,6 +282,64 @@ public class VoucherController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=notfound");
             return;
         }
+
+        // =====================================================================
+        // CHỐT CHẶN BẢO MẬT & ĐỐI SOÁT KIỂM TOÁN HIGH-CONCURRENCY CHUYÊN NGHIỆP
+        // =====================================================================
+        int soLuongDaDung = 0;
+        int maxLượtDungCaNhanThucTe = 0;
+
+        String queryDaDung = "SELECT COUNT(*) FROM DON_HANG WHERE ma_km = ? AND trang_thai_don != 5";
+        String queryMaxCaNhan = "SELECT ISNULL(MAX(usages), 0) FROM (SELECT COUNT(*) AS usages FROM DON_HANG WHERE ma_km = ? AND trang_thai_don != 5 GROUP BY ma_kh) AS temp";
+
+        try (Connection conn = DBConnect.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(queryDaDung)) {
+                ps.setString(1, maKm);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        soLuongDaDung = rs.getInt(1);
+                    }
+                }
+            }
+            try (PreparedStatement ps2 = conn.prepareStatement(queryMaxCaNhan)) {
+                ps2.setString(1, maKm);
+                try (ResultSet rs2 = ps2.executeQuery()) {
+                    if (rs2.next()) {
+                        maxLượtDungCaNhanThucTe = rs2.getInt(1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 1. Kiểm tra Ngày hợp lệ
+        if (ngayKetThuc.before(ngayBatDau)) {
+            request.setAttribute("voucher", km);
+            request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
+            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            return;
+        }
+
+        // 2. Chặn hạ số lượng quỹ Voucher nhỏ hơn số lượng đã phát ra thực tế
+        if (soLuong < soLuongDaDung) {
+            request.setAttribute("voucher", km);
+            request.setAttribute("error", "Lỗi phi logic: Tổng quỹ phát hành mới (" + soLuong + ") không được nhỏ hơn số lượng Voucher đã được sử dụng thực tế trong quá khứ (" + soLuongDaDung + " lượt)!");
+            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            return;
+        }
+
+        // 3. Chặn hạ giới hạn cá nhân nhỏ hơn số lượt sử dụng thực tế nhiều nhất của một khách hàng
+        if (loaiVoucher == 1 && soLuotDungCaNhan > 0 && soLuotDungCaNhan < maxLượtDungCaNhanThucTe) {
+            request.setAttribute("voucher", km);
+            request.setAttribute("error", "Lỗi phi logic: Giới hạn cá nhân mới (" + soLuotDungCaNhan + " lượt/khách) không được nhỏ hơn số lượt sử dụng thực tế nhiều nhất của một khách hàng trong hệ thống (" + maxLượtDungCaNhanThucTe + " lượt của khách VIP)!");
+            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
+            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
+            return;
+        }
+
         String oldJson = JsonParserUtil.toJson(km);
         km.setTenKm(tenKm);
         km.setMaCode(maCode);
@@ -307,13 +358,6 @@ public class VoucherController extends HttpServlet {
         km.setHangApDung(hangApDung);
         km.setLoaiVoucher(loaiVoucher);
 
-        if (ngayKetThuc.before(ngayBatDau)) {
-            request.setAttribute("voucher", km);
-            request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
-            request.setAttribute("formTitle", "CẬP NHẬT MÃ KHUYẾN MÃI");
-            request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
-            return;
-        }
         boolean success = khuyenMaiService.updateKhuyenMai(km);
         if (success) {
             HttpSession session = request.getSession(false);
