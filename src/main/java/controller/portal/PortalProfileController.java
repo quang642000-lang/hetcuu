@@ -5,7 +5,6 @@ import model.entity.KhachHang;
 import model.entity.KhuyenMai;
 import service.IDonHangService;
 import service.IKhachHangService;
-import service.IKhuyenMaiService;
 import service.impl.DonHangServiceImpl;
 import service.impl.KhachHangServiceImpl;
 import service.impl.KhuyenMaiServiceImpl;
@@ -26,13 +25,13 @@ import java.util.List;
         "/profile/update",
         "/profile/change-password",
         "/portal/order/detail",
-        "/portal/order/cancel",
-        "/portal/order/payment-qr" // ADDED FOR PORTAL SEPAY QR FLOW
+        "/portal/order/payment-qr",
+        "/portal/order/cancel"
 })
 public class PortalProfileController extends HttpServlet {
     private final IKhachHangService khachHangService = KhachHangServiceImpl.getInstance();
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
-    private final IKhuyenMaiService khuyenMaiService = KhuyenMaiServiceImpl.getInstance();
+    private final KhuyenMaiServiceImpl khuyenMaiService = (KhuyenMaiServiceImpl) KhuyenMaiServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -41,13 +40,11 @@ public class PortalProfileController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
         session.setAttribute("customer", freshCustomer);
         String uri = request.getRequestURI();
 
-        // 1. NGHIỆP VỤ: XEM CHI TIẾT ĐƠN HÀNG
         if (uri.contains("/portal/order/detail")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -60,7 +57,6 @@ public class PortalProfileController extends HttpServlet {
             return;
         }
 
-        // 2. NGHIỆP VỤ: TRANG QUÉT MÃ QR THANH TOÁN SEPAY
         if (uri.contains("/portal/order/payment-qr")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -73,7 +69,6 @@ public class PortalProfileController extends HttpServlet {
             return;
         }
 
-        // 3. NGHIỆP VỤ: KHÁCH HÀNG CHỦ ĐỘNG HỦY ĐƠN ONLINE
         if (uri.contains("/portal/order/cancel")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -95,8 +90,13 @@ public class PortalProfileController extends HttpServlet {
             request.setAttribute("orders", myOrders);
             request.getRequestDispatcher("/views/portal/theo_doi_don.jsp").forward(request, response);
         } else if (uri.endsWith("/profile/vouchers")) {
+            // Lấy danh sách voucher KHẢ DỤNG của khách hàng
             List<KhuyenMai> myVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(100000, freshCustomer.getMaKh());
+            // Lấy danh sách voucher LỊCH SỬ (Đã dùng hoặc hết hạn) của khách hàng
+            List<KhuyenMai> historyVouchers = khuyenMaiService.getVouchersDaDungVaHetHanForKhachHang(freshCustomer.getMaKh());
+
             request.setAttribute("vouchers", myVouchers);
+            request.setAttribute("historyVouchers", historyVouchers);
             request.getRequestDispatcher("/views/portal/kho_voucher.jsp").forward(request, response);
         } else {
             request.setAttribute("customerProfile", freshCustomer);
@@ -149,7 +149,6 @@ public class PortalProfileController extends HttpServlet {
         String oldPassword = request.getParameter("oldPassword");
         String newPassword = request.getParameter("newPassword");
         String confirm = request.getParameter("confirmPassword");
-
         if (newPassword == null || !newPassword.equals(confirm)) {
             request.setAttribute("errorPassword", "Xác nhận mật khẩu mới không đúng!");
             doGet(request, response);

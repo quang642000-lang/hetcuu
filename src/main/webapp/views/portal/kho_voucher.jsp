@@ -11,12 +11,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #ecfdf5;
+            --border-color: #cbd5e1;
+            --bg-main: #f1f5f9;
+        }
         .voucher-card {
             border: 1px dashed #10b981;
             border-radius: 12px;
             background-color: white;
             transition: all 0.2s ease;
-            position: relative; /* Bắt buộc để đặt badge nổi ở góc phải */
+            position: relative;
             overflow: hidden;
         }
         .voucher-card:hover {
@@ -26,7 +33,8 @@
         .voucher-used-up {
             border: 1px solid #cbd5e1 !important;
             background-color: #f8fafc !important;
-            opacity: 0.75;
+            opacity: 0.65;
+            filter: grayscale(85%);
         }
         .badge-multiplier {
             position: absolute;
@@ -45,11 +53,23 @@
             background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
         }
         .progress-voucher {
-            height: 6px;
+            height: 8px;
             border-radius: 5px;
             background-color: #e2e8f0;
             margin-top: 8px;
             margin-bottom: 4px;
+        }
+        .nav-tabs-teapos .nav-link {
+            font-weight: 700;
+            color: #64748b;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            padding: 10px 20px;
+        }
+        .nav-tabs-teapos .nav-link.active {
+            color: var(--primary) !important;
+            border-bottom: 3px solid var(--primary) !important;
         }
     </style>
 </head>
@@ -59,85 +79,140 @@
     <div class="row g-4">
         <!-- Sidebar Menu Trái -->
         <jsp:include page="/views/portal/profile-sidebar.jsp" />
+
         <!-- Cột Phải: Kho Voucher -->
         <div class="col-12 col-md-9">
-            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px;">
-                <h4 class="fw-bold mb-4 text-dark"><i class="bi bi-ticket-perforated-fill text-success me-2"></i>KHO VOUCHER CỦA BẠN</h4>
-                <div class="row g-3">
-                    <c:choose>
-                        <c:when test="${not empty vouchers}">
-                            <c:forEach var="v" items="${vouchers}">
-                                <c:set var="isUsedUp" value="${v.soLuotDungCaNhan > 0 && v.soLuotDaDungCaNhan >= v.soLuotDungCaNhan}" />
-                                <div class="col-12 col-md-6">
-                                    <div class="voucher-card p-4 d-flex justify-content-between align-items-center ${isUsedUp ? 'voucher-used-up' : ''}">
+            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px; background-color: #ffffff;">
+                <h4 class="fw-bold mb-4 text-dark text-start"><i class="bi bi-ticket-perforated-fill text-success me-2"></i>KHO VOUCHER CỦA BẠN</h4>
 
-                                        <!-- 1. BADGE GÓC PHẢI NHÂN DIỆN xN LƯỢT SỬ DỤNG CÒN LẠI -->
-                                        <c:if test="${v.soLuotDungCaNhan > 0}">
-                                            <div class="badge-multiplier ${isUsedUp ? 'badge-multiplier-zero' : ''}">
-                                                <c:choose>
-                                                    <c:when test="${isUsedUp}">Hết lượt</c:when>
-                                                    <c:otherwise>x${v.soLuotDungCaNhan - v.soLuotDaDungCaNhan}</c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                        </c:if>
+                <!-- HỆ TAB CHUYỂN ĐỔI: KHẢ DỤNG vs LỊCH SỬ -->
+                <ul class="nav nav-tabs nav-tabs-teapos mb-4 border-bottom text-start" id="voucherTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="available-tab" data-bs-toggle="tab" data-bs-target="#availablePanel" type="button" role="tab">VOUCHER KHẢ DỤNG</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#historyPanel" type="button" role="tab">LỊCH SỬ VOUCHER</button>
+                    </li>
+                </ul>
 
-                                        <div class="text-start flex-grow-1">
-                                            <span class="badge bg-dark text-white fw-bold mb-2" style="letter-spacing: 0.5px;">${v.maCode}</span>
-                                            <h6 class="fw-bold text-success mb-1"><c:out value="${v.tenKm}"/></h6>
-                                            <small class="text-muted d-block" style="font-size: 11px;">Hạn sử dụng: <fmt:formatDate value="${v.ngayKetThuc}" pattern="dd/MM/yyyy"/></small>
-                                            <small class="text-muted d-block" style="font-size: 11px;">Đơn tối thiểu: <fmt:formatNumber value="${v.donToiThieu}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</small>
-
-                                            <!-- ĐỐI SOÁT LƯỢT CÁ NHÂN -->
-                                            <div class="mt-2 pt-2 border-top border-secondary border-opacity-10 small text-dark">
-                                                <div style="font-size: 11px;"><i class="bi bi-clock-history"></i> Lượt tối đa / Khách: <strong class="text-success">${v.soLuotDungCaNhan == 0 ? "Vô hạn" : v.soLuotDungCaNhan += " Lần"}</strong></div>
-                                                <div style="font-size: 11px;"><i class="bi bi-check-circle"></i> Đã sử dụng: <strong class="text-danger">${v.soLuotDaDungCaNhan} Lần</strong></div>
-                                            </div>
-
-                                            <!-- 2. THANH SỐ LƯỢNG VOUCHER CÒN LẠI TRONG TOÀN HỆ THỐNG (URGENCY) -->
-                                            <c:if test="${v.soLuong > 0 && v.soLuong < 99999}">
-                                                <c:set var="globalPct" value="${(v.soLuongDaDung * 100) / v.soLuong}" />
-                                                <c:set var="globalLeft" value="${v.soLuong - v.soLuongDaDung}" />
-                                                <div class="mt-2 pt-2 border-top border-secondary border-opacity-10">
-                                                    <div class="d-flex justify-content-between text-muted" style="font-size: 10px;">
-                                                        <span>Tiến trình sử dụng trong hệ thống:</span>
-                                                        <span class="fw-bold ${globalLeft < 20 ? 'text-danger' : 'text-success'}">
-                Còn ${globalLeft} / ${v.soLuong} lượt
-            </span>
+                <div class="tab-content" id="voucherTabContent">
+                    <!-- PANEL 1: VOUCHER KHẢ DỤNG -->
+                    <div class="tab-pane fade show active" id="availablePanel" role="tabpanel">
+                        <div class="row g-3">
+                            <c:choose>
+                                <c:when test="${not empty vouchers}">
+                                    <c:forEach var="v" items="${vouchers}">
+                                        <div class="col-12 col-md-6">
+                                            <div class="voucher-card p-4 d-flex justify-content-between align-items-center bg-white shadow-sm">
+                                                <!-- MULTIPLIER BADGE GÓC PHẢI -->
+                                                <c:if test="${v.soLuotDungCaNhan > 0}">
+                                                    <div class="badge-multiplier">
+                                                        x${v.soLuotDungCaNhan - v.soLuotDaDungCaNhan}
                                                     </div>
-                                                    <div class="progress progress-voucher">
-                                                        <div class="progress-bar ${globalLeft < 20 ? 'bg-danger' : 'bg-success'} progress-bar-striped progress-bar-animated"
-                                                             role="progressbar"
-                                                             style="width: ${globalPct > 100 ? 100 : globalPct}%"></div>
-                                                    </div>
-                                                    <c:if test="${globalLeft <= 15 && globalLeft > 0}">
-                                                        <div class="text-danger fw-bold" style="font-size: 9px; line-height: 1.2;"><i class="bi bi-exclamation-triangle-fill"></i> Sắp hết! Hãy mua ngay kẻo lỡ ưu đãi!</div>
+                                                </c:if>
+
+                                                <div class="text-start flex-grow-1">
+                                                    <span class="badge bg-dark text-white fw-bold mb-2" style="letter-spacing: 0.5px;">${v.maCode}</span>
+                                                    <h6 class="fw-bold text-success mb-1"><c:out value="${v.tenKm}"/></h6>
+                                                    <small class="text-muted d-block" style="font-size: 11px;">Hạn sử dụng: <fmt:formatDate value="${v.ngayKetThuc}" pattern="dd/MM/yyyy"/></small>
+                                                    <small class="text-muted d-block" style="font-size: 11px;">Đơn tối thiểu: <fmt:formatNumber value="${v.donToiThieu}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</small>
+
+                                                    <!-- ĐỒNG BỘ THANH TIẾN TRÌNH ĐẦY DẦN (REVERSED PROGRESS BAR) -->
+                                                    <c:if test="${v.soLuong > 0 && v.soLuong < 99999}">
+                                                        <!-- Tỷ lệ đầy dần = (Đã sử dụng * 100 / Tổng số lượng quỹ) -->
+                                                        <c:set var="usedPct" value="${(v.soLuongDaDung * 100) / v.soLuong}" />
+                                                        <c:set var="globalLeft" value="${v.soLuong - v.soLuongDaDung}" />
+
+                                                        <div class="mt-3 pt-2 border-top border-secondary border-opacity-10">
+                                                            <div class="d-flex justify-content-between text-muted" style="font-size: 10px;">
+                                                                <span>Tiến độ chương trình trong hệ thống:</span>
+                                                                <span class="fw-bold text-success">Đã phát hành <fmt:formatNumber value="${usedPct}" maxFractionDigits="0"/>%</span>
+                                                            </div>
+                                                            <div class="progress progress-voucher">
+                                                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+                                                                     role="progressbar"
+                                                                     style="width: ${usedPct > 100 ? 100 : usedPct}%"></div>
+                                                            </div>
+                                                            <c:if test="${globalLeft <= 15 && globalLeft > 0}">
+                                                                <div class="text-danger fw-bold mt-1" style="font-size: 9px; line-height: 1.2; animation: pulse 1.5s infinite;"><i class="bi bi-exclamation-triangle-fill"></i> Sắp hết! Hãy đặt nước ngay kẻo lỡ ưu đãi!</div>
+                                                            </c:if>
+                                                        </div>
                                                     </c:if>
                                                 </div>
-                                            </c:if>
-
-                                        </div>
-                                        <div class="text-end ms-3 flex-shrink-0">
-                                            <c:choose>
-                                                <c:when test="${isUsedUp}">
-                                                    <button class="btn btn-sm btn-secondary fw-bold px-3 rounded-pill" disabled style="opacity: 0.5;">HẾT LƯỢT</button>
-                                                </c:when>
-                                                <c:otherwise>
+                                                <div class="text-end ms-3 flex-shrink-0">
                                                     <button class="btn btn-sm btn-success fw-bold px-3 rounded-pill" onclick="copyVoucherCode('${v.maCode}')">SAO CHÉP</button>
-                                                </c:otherwise>
-                                            </c:choose>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="col-12 text-center py-5 text-muted">
+                                        <i class="bi bi-ticket fs-1 d-block mb-2 text-success opacity-50"></i>
+                                        Không có Voucher nào khả dụng cho hạng thẻ hiện tại của bạn!
                                     </div>
-                                </div>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="col-12 text-center py-5 text-muted">
-                                <i class="bi bi-ticket fs-1 d-block mb-2"></i>
-                                Không có Voucher nào khả dụng cho hạng thẻ hiện tại của bạn!
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <!-- PANEL 2: LỊCH SỬ VOUCHER (ĐÃ DÙNG/HẾT HẠN) -->
+                    <div class="tab-pane fade" id="historyPanel" role="tabpanel">
+                        <div class="row g-3">
+                            <c:choose>
+                                <c:when test="${not empty historyVouchers}">
+                                    <c:forEach var="v" items="${historyVouchers}">
+                                        <c:set var="usages" value="${v.soLuotDaDungCaNhan}" />
+                                        <c:set var="isUsedUp" value="${v.soLuotDungCaNhan > 0 && usages >= v.soLuotDungCaNhan}" />
+                                        <c:set var="globalLeft" value="${v.soLuong - v.soLuongDaDung}" />
+                                        <c:set var="isSoldOut" value="${v.soLuong > 0 && globalLeft <= 0}" />
+
+                                        <div class="col-12 col-md-6">
+                                            <div class="voucher-card p-4 d-flex justify-content-between align-items-center voucher-used-up shadow-sm">
+                                                <!-- MULTIPLIER BADGE ĐỎ / HẾT LƯỢT -->
+                                                <c:if test="${v.soLuotDungCaNhan > 0}">
+                                                    <div class="badge-multiplier badge-multiplier-zero">
+                                                        <c:choose>
+                                                            <c:when test="${isUsedUp}">Đã dùng hết</c:when>
+                                                            <c:otherwise>Hết hạn</c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </c:if>
+
+                                                <div class="text-start flex-grow-1">
+                                                    <span class="badge bg-secondary text-white fw-bold mb-2" style="letter-spacing: 0.5px;">${v.maCode}</span>
+                                                    <h6 class="fw-bold text-muted mb-1"><c:out value="${v.tenKm}"/></h6>
+                                                    <small class="text-muted d-block" style="font-size: 11px;">Hạn sử dụng: <fmt:formatDate value="${v.ngayKetThuc}" pattern="dd/MM/yyyy"/></small>
+                                                    <small class="text-muted d-block" style="font-size: 11px;">Đơn tối thiểu: <fmt:formatNumber value="${v.donToiThieu}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</small>
+                                                </div>
+                                                <div class="text-end ms-3 flex-shrink-0">
+                                                    <c:choose>
+                                                        <c:when test="${isUsedUp}">
+                                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2.5 py-1.5" style="font-size: 10px;">ĐÃ DÙNG HẾT</span>
+                                                        </c:when>
+                                                        <c:when test="${isSoldOut}">
+                                                            <span class="badge bg-dark bg-opacity-10 text-dark border border-secondary px-2.5 py-1.5" style="font-size: 10px;">HẾT QUỸ PHÁT HÀNH</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2.5 py-1.5" style="font-size: 10px;">ĐÃ HẾT HẠN</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="col-12 text-center py-5 text-muted">
+                                        <i class="bi bi-clock-history fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                        Bạn chưa từng sử dụng Voucher nào trong lịch sử đặt hàng.
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>

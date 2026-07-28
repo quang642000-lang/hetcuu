@@ -37,15 +37,16 @@
         .audit-header {
             background-color: #ffffff !important;
             border-bottom: 1px solid var(--border-color) !important;
-            padding: 20px !important;
+            padding: 16px 20px !important;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
+            border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
         }
         .badge-login {
-            background-color: #f0f9ff !important;
-            color: #0284c7 !important;
-            border: 1px solid #bae6fd !important;
+            background-color: #ecfdf5 !important;
+            color: #047857 !important;
+            border: 1px solid #a7f3d0 !important;
             font-weight: 700 !important;
             padding: 5px 12px !important;
             border-radius: 50px !important;
@@ -153,7 +154,8 @@
 
             <!-- SEARCH & FILTERS PANEL -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
-                <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET">
+                <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET" id="filterForm">
+                    <input type="hidden" name="page" id="pageField" value="${currentPage}">
                     <div class="row g-3 text-start">
                         <div class="col-md-3">
                             <label class="form-label text-muted small fw-bold">Tìm kiếm tổng hợp</label>
@@ -164,7 +166,7 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label text-muted small fw-bold">Hành động</label>
-                            <select name="action" class="form-select bg-light">
+                            <select name="actionFilter" class="form-select bg-light">
                                 <option value="">-- Tất cả --</option>
                                 <option value="LOGIN" ${paramAction == 'LOGIN' ? 'selected' : ''}>LOGIN (Đăng nhập)</option>
                                 <option value="LOGOUT" ${paramAction == 'LOGOUT' ? 'selected' : ''}>LOGOUT (Đăng xuất)</option>
@@ -193,7 +195,7 @@
                             <input type="date" name="endDate" class="form-control bg-light" value="${paramEndDate}">
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
-                            <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3">
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2 rounded-3" onclick="document.getElementById('pageField').value='1'">
                                 <i class="bi bi-filter"></i> Lọc
                             </button>
                         </div>
@@ -204,9 +206,9 @@
             <!-- AUDIT TRAIL DATA CARD -->
             <div class="audit-card">
                 <div class="audit-header">
-                    <strong class="text-dark fs-5 text-uppercase"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán</strong>
+                    <strong class="text-dark fs-5 text-uppercase"><i class="bi bi-list-stars text-success me-1"></i>Lịch sử kiểm toán (Server-side)</strong>
                     <span class="badge bg-light text-dark border px-3 py-1.5 fw-bold" style="border-radius: 20px;" id="matchCountBadge">
-                        Đang tải...
+                        Tìm thấy ${totalLogs} mốc biến động
                     </span>
                 </div>
                 <div class="table-responsive">
@@ -219,7 +221,7 @@
                             <th style="width: 130px;">Hành động</th>
                             <th style="width: 220px;" class="text-start">Vùng tác động</th>
                             <th class="text-start">Đối soát biến động dữ liệu</th>
-                            <th style="width: 130px;">Địa chỉ IP</th>
+                            <th style="width: 130px;">IP Address</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -233,9 +235,6 @@
                                         </td>
                                         <td class="text-start">
                                             <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                                    <i class="bi bi-person-badge text-success"></i>
-                                                </div>
                                                 <div>
                                                         <span class="d-block fw-bold text-dark" style="font-size: 13px;">
                                                             <c:choose>
@@ -299,9 +298,7 @@
                                                 <c:when test="${not empty log.ipAddress}">
                                                     <c:out value="${log.ipAddress}"/>
                                                 </c:when>
-                                                <c:otherwise>
-                                                    127.0.0.1
-                                                </c:otherwise>
+                                                <c:otherwise>127.0.0.1</c:otherwise>
                                             </c:choose>
                                         </td>
                                     </tr>
@@ -320,108 +317,44 @@
                     </table>
                 </div>
 
-                <!-- PAGINATION BAR - ĐỒNG BỘ 100% VỚI KHACH_HANG.JSP & SAN_PHAM.JSP -->
-                <div class="pagination-container" id="paginationWrapper" style="display: none;">
-                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng nhật ký</span>
-                    <nav>
-                        <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
-                    </nav>
-                </div>
+                <!-- SERVER-SIDE PAGINATION CONTROLS -->
+                <c:if test="${totalPages > 1}">
+                    <div class="pagination-container" id="paginationWrapper">
+                        <span class="small text-muted" id="paginationInfo">
+                            Hiển thị từ ${(currentPage - 1) * pageSize + 1} đến ${currentPage * pageSize > totalLogs ? totalLogs : currentPage * pageSize} trên tổng số ${totalLogs} dòng nhật ký
+                        </span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons">
+                                <!-- Nút Trước -->
+                                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage - 1})">&laquo; Trước</a>
+                                </li>
+                                <!-- Danh sách trang số -->
+                                <c:forEach var="i" begin="1" end="${totalPages}">
+                                    <c:if test="${i >= currentPage - 2 && i <= currentPage + 2}">
+                                        <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                            <a class="page-link ${currentPage == i ? 'bg-success border-success text-white' : 'text-success'}" href="javascript:void(0)" onclick="changePage(${i})">${i}</a>
+                                        </li>
+                                    </c:if>
+                                </c:forEach>
+                                <!-- Nút Sau -->
+                                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage + 1})">Sau &raquo;</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </c:if>
             </div>
         </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // PHÂN TRANG VÀ ĐỐI SOÁT ĐỘNG PHÍA CLIENT-SIDE REALTIME ĐỒNG BỘ 100%
-    let currentPage = 1;
-    const pageSize = 10;
-    let filteredRows = [];
-
-    function initClientPagination() {
-        const allRows = Array.from(document.querySelectorAll("#auditLogTable tbody .audit-log-row"));
-        filteredRows = allRows;
-
-        const badge = document.getElementById("matchCountBadge");
-        if (badge) {
-            badge.innerText = `Tìm thấy ${filteredRows.length} mốc biến động`;
-        }
-        currentPage = 1;
-        renderTableRows();
-    }
-
-    function renderTableRows() {
-        const allRows = document.querySelectorAll("#auditLogTable tbody .audit-log-row");
-        allRows.forEach(row => row.style.display = "none");
-
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-
-        const startIdx = (currentPage - 1) * pageSize;
-        const endIdx = Math.min(startIdx + pageSize, totalRows);
-
-        const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach(row => {
-            row.style.display = "table-row";
-        });
-
-        updatePaginationControls();
-    }
-
-    function updatePaginationControls() {
-        const totalRows = filteredRows.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
-        const infoEl = document.getElementById("paginationInfo");
-        const btnContainer = document.getElementById("paginationButtons");
-        const wrapper = document.getElementById("paginationWrapper");
-
-        if (!infoEl || !btnContainer || !wrapper) return;
-
-        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
-        const end = Math.min(currentPage * pageSize, totalRows);
-        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhật ký';
-
-        btnContainer.innerHTML = "";
-        if (totalPages <= 1) {
-            wrapper.style.setProperty('display', 'none', 'important');
-            return;
-        }
-        wrapper.style.setProperty('display', 'flex', 'important');
-
-        // Nút Trước
-        const prevLi = document.createElement("li");
-        prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-        prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
-        btnContainer.appendChild(prevLi);
-
-        // Trang số
-        for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement("li");
-            li.className = "page-item " + (currentPage === i ? "active" : "");
-            li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
-            btnContainer.appendChild(li);
-        }
-
-        // Nút Sau
-        const nextLi = document.createElement("li");
-        nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-        nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
-        btnContainer.appendChild(nextLi);
-    }
-
     function changePage(page) {
-        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
-        if (page < 1 || page > totalPages) return;
-        currentPage = page;
-        renderTableRows();
+        document.getElementById('pageField').value = page;
+        document.getElementById('filterForm').submit();
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        initClientPagination();
-    });
 </script>
 </body>
 </html>

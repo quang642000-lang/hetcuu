@@ -5,7 +5,6 @@ import model.entity.NhatKyHoatDong;
 import repository.impl.NhatKyRepoImpl;
 import service.INhanVienService;
 import service.impl.NhanVienServiceImpl;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,38 +21,52 @@ public class AuditLogController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
         if ("view".equals(action)) {
             showLogDetail(request, response);
-        } else {
-            showLogList(request, response);
+            return;
         }
-    }
 
-    private void showLogList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Collect dynamic filter parameters
         String search = request.getParameter("search");
-        String filterAction = request.getParameter("action"); // Overriding list action with search action if specified
-        if ("list".equalsIgnoreCase(filterAction) || "view".equalsIgnoreCase(filterAction)) {
-            filterAction = ""; // Do not treat default route actions as search action types
-        }
+        String filterAction = request.getParameter("actionFilter");
+        if (filterAction == null) filterAction = request.getParameter("action"); // backup
+        if ("view".equals(filterAction)) filterAction = ""; // avoid conflict
 
         String tableName = request.getParameter("tableName");
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
 
-        List<NhatKyHoatDong> logs = nhatKyRepo.getFilteredLogs(search, filterAction, tableName, startDate, endDate);
+        // Handle Server-Side Pagination Parameter
+        int page = 1;
+        int pageSize = 10;
+        String pageStr = request.getParameter("page");
+        if (pageStr != null && !pageStr.trim().isEmpty()) {
+            try {
+                page = Integer.parseInt(pageStr.trim());
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+
+        // Gọi hàm phân trang Server-side cực kỳ nhanh gọn
+        List<NhatKyHoatDong> logs = nhatKyRepo.getFilteredLogsServerSide(search, filterAction, tableName, startDate, endDate, page, pageSize);
+        int totalLogs = nhatKyRepo.getFilteredLogsCount(search, filterAction, tableName, startDate, endDate);
+        int totalPages = (int) Math.ceil((double) totalLogs / pageSize);
+        if (totalPages <= 0) totalPages = 1;
 
         List<NhanVien> employees = nhanVienService.getAllNhanVien();
+
         request.setAttribute("employees", employees);
-
-        // Match both 'logs' and 'logsList' variables to prevent any JSP EL redundant mismatch
         request.setAttribute("logs", logs);
-        request.setAttribute("logsList", logs);
+        request.setAttribute("logsList", logs); // Đồng bộ cả 2 mốc biến tránh lỗi EL JSTL
 
-        // Preserve state of search inputs
+        // Cấu hình mốc phân trang gửi ra JSP
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalLogs", totalLogs);
+        request.setAttribute("pageSize", pageSize);
+
+        // Giữ lại trạng thái thanh công cụ tìm kiếm
         request.setAttribute("paramSearch", search);
         request.setAttribute("paramAction", filterAction);
         request.setAttribute("paramTableName", tableName);

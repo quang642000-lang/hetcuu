@@ -8,7 +8,6 @@ import repository.IKhachHangRepository;
 import repository.impl.KhuyenMaiRepoImpl;
 import repository.impl.KhachHangRepoImpl;
 import config.DBConnect;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
-
     private static KhuyenMaiServiceImpl instance;
     private final IKhuyenMaiRepository khuyenMaiRepository;
     private final IKhachHangRepository khachHangRepository;
@@ -50,7 +48,7 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         return khuyenMaiRepository.getByCode(code.trim().toUpperCase());
     }
 
-    // Both implementations to avoid any interface signature mismatches
+    @Override
     public List<KhuyenMai> getVouchersKhaDungForKhachHang(int tongDonHang, String maKh) {
         return getVouchersKhaDung(tongDonHang, maKh);
     }
@@ -62,6 +60,8 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         if (maKh == null || maKh.trim().isEmpty() || maKh.equalsIgnoreCase("null")) {
             for (KhuyenMai km : allVouchers) {
                 if (km.isPublic() && km.getLoaiVoucher() != 2) {
+                    // Set default usage values for anonymous users
+                    km.setSoLuotDaDungCaNhan(0);
                     result.add(km);
                 }
             }
@@ -72,26 +72,68 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         if (kh == null) {
             return result;
         }
-
         int rankKh = kh.getMaHang();
 
         for (KhuyenMai km : allVouchers) {
             if (km.getLoaiVoucher() == 2) {
-                continue;
+                continue; // Skip paper vouchers for digital wallet
+            }
+            if (rankKh < km.getHangApDung()) {
+                continue; // Skip if customer doesn't meet minimum rank requirement
             }
 
-            if (rankKh < km.getHangApDung()) {
-                continue;
-            }
+            int usages = getSoLuotDaDung(maKh, km.getMaKm());
+            km.setSoLuotDaDungCaNhan(usages); // Bind database actual usages to model
 
             if (km.getSoLuotDungCaNhan() > 0) {
-                int usages = getSoLuotDaDung(maKh, km.getMaKm());
                 if (usages >= km.getSoLuotDungCaNhan()) {
-                    continue;
+                    continue; // Skip if customer reached their limit
                 }
             }
 
+            // Check global voucher quota
+            if (km.getSoLuong() > 0 && km.getSoLuongDaDung() >= km.getSoLuong()) {
+                continue; // Skip if globally sold out
+            }
+
             result.add(km);
+        }
+        return result;
+    }
+
+    /**
+     * Lấy danh sách Voucher Đã dùng hoặc Hết hạn/Hết lượt toàn hệ thống để hiển thị Tab Lịch sử CRM
+     */
+    public List<KhuyenMai> getVouchersDaDungVaHetHanForKhachHang(String maKh) {
+        List<KhuyenMai> result = new ArrayList<>();
+        if (maKh == null || maKh.trim().isEmpty() || maKh.equalsIgnoreCase("null")) {
+            return result;
+        }
+
+        KhachHang kh = khachHangRepository.getById(maKh);
+        if (kh == null) return result;
+        int rankKh = kh.getMaHang();
+
+        // Kéo tất cả Voucher có trong hệ thống
+        List<KhuyenMai> allVouchers = khuyenMaiRepository.getAll();
+        java.util.Date now = new java.util.Date();
+
+        for (KhuyenMai km : allVouchers) {
+            if (km.getLoaiVoucher() == 2) continue; // Bỏ qua voucher giấy
+
+            int usages = getSoLuotDaDung(maKh, km.getMaKm());
+            km.setSoLuotDaDungCaNhan(usages);
+
+            boolean isExpired = now.after(km.getNgayKetThuc()) || !km.isTrangThai();
+            boolean isUsedUp = km.getSoLuotDungCaNhan() > 0 && usages >= km.getSoLuotDungCaNhan();
+            boolean isSoldOut = km.getSoLuong() > 0 && km.getSoLuongDaDung() >= km.getSoLuong();
+
+            // Nếu thuộc một trong các mốc không khả dụng nhưng đúng hạng thẻ liên kết thì đưa vào Tab lịch sử
+            if (isExpired || isUsedUp || isSoldOut) {
+                if (rankKh >= km.getHangApDung()) {
+                    result.add(km);
+                }
+            }
         }
         return result;
     }
@@ -101,29 +143,23 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         if (code == null || code.trim().isEmpty()) {
             return false;
         }
-
         KhuyenMai km = khuyenMaiRepository.getByCode(code.trim().toUpperCase());
         if (km == null || !km.isTrangThai()) {
             return false;
         }
-
         java.util.Date now = new java.util.Date();
         if (now.before(km.getNgayBatDau()) || now.after(km.getNgayKetThuc())) {
             return false;
         }
-
         if (tongDonHang < km.getDonToiThieu()) {
             return false;
         }
-
-        if (km.getSoLuong() <= 0) {
+        if (km.getSoLuong() > 0 && km.getSoLuongDaDung() >= km.getSoLuong()) {
             return false;
         }
-
         if (km.getLoaiVoucher() == 2) {
-            return true;
+            return true; // Giấy công khai qua nhanh
         }
-
         if (maKh == null || maKh.trim().isEmpty() || maKh.equalsIgnoreCase("null")) {
             if (!km.isPublic()) {
                 return false;
@@ -133,23 +169,19 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
             }
             return true;
         }
-
         KhachHang kh = khachHangRepository.getById(maKh);
         if (kh == null) {
             return false;
         }
-
         if (kh.getMaHang() < km.getHangApDung()) {
             return false;
         }
-
         if (km.getSoLuotDungCaNhan() > 0) {
             int usages = getSoLuotDaDung(maKh, km.getMaKm());
             if (usages >= km.getSoLuotDungCaNhan()) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -158,16 +190,13 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         if (code == null || code.trim().isEmpty()) {
             return 0;
         }
-
         KhuyenMai km = khuyenMaiRepository.getByCode(code.trim().toUpperCase());
         if (km == null || !km.isTrangThai()) {
             return 0;
         }
-
         if (tongDonHang < km.getDonToiThieu()) {
             return 0;
         }
-
         int discount = 0;
         if (km.getLoaiGiam() == 1) {
             discount = km.getGiaTriGiam();
@@ -177,11 +206,9 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
                 discount = km.getGiamToiDa();
             }
         }
-
         if (discount > tongDonHang) {
             discount = tongDonHang;
         }
-
         return discount;
     }
 
@@ -190,7 +217,6 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
                 maKm == null || maKm.trim().isEmpty()) {
             return 0;
         }
-
         String sql = "SELECT COUNT(*) FROM DON_HANG WHERE ma_kh = ? AND ma_km = ? AND trang_thai_don != 5";
         try (Connection conn = DBConnect.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -207,7 +233,6 @@ public class KhuyenMaiServiceImpl implements IKhuyenMaiService {
         return 0;
     }
 
-    // Implementing the required CRUD methods defined in IKhuyenMaiService
     @Override
     public boolean createKhuyenMai(KhuyenMai km) {
         return khuyenMaiRepository.add(km);
