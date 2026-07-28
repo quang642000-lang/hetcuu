@@ -6,23 +6,22 @@ import repository.impl.NhatKyRepoImpl;
 import service.IToppingService;
 import service.impl.ToppingServiceImpl;
 import config.DBConnect;
+import util.JsonParserUtil;
+import util.UploadUtil;
+import util.WebUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
-import util.JsonParserUtil;
 
 @WebServlet(name = "ToppingController", urlPatterns = {"/admin/topping"})
 @MultipartConfig(
@@ -52,7 +51,6 @@ public class ToppingController extends HttpServlet {
             case "toggle":
                 performToggle(request, response);
                 break;
-            case "list":
             default:
                 showList(request, response);
                 break;
@@ -84,13 +82,8 @@ public class ToppingController extends HttpServlet {
 
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
-
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
         boolean hasOrders = false;
         String checkSql = "SELECT COUNT(*) FROM CHI_TIET_TOPPING WHERE ma_tp = ?";
         try (Connection conn = DBConnect.getConnection();
@@ -128,7 +121,6 @@ public class ToppingController extends HttpServlet {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
             if (hardSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
                         actorNv, "HARD_DELETE_TOPPING", "TOPPING", "Mã TP: " + id, "Xóa hoàn toàn topping khỏi hệ thống (chưa từng giao dịch).", ip, null
@@ -158,22 +150,21 @@ public class ToppingController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String tenTp = request.getParameter("tenTp");
             String dinhLuong = request.getParameter("dinhLuong");
-            int giaBan = Integer.parseInt(request.getParameter("giaBan"));
-            int thuTu = Integer.parseInt(request.getParameter("thuTuHienThi"));
+            int giaBan = WebUtil.getIntParameter(request, "giaBan", 0);
+            int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
+
             if ("file".equals(uploadType)) {
-                hinhAnh = uploadFile(request, "hinhAnhFile");
+                hinhAnh = UploadUtil.uploadFile(request, "hinhAnhFile");
+                if (hinhAnh == null) hinhAnh = "";
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
@@ -198,23 +189,21 @@ public class ToppingController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String maTp = request.getParameter("maTp");
             String tenTp = request.getParameter("tenTp");
             String dinhLuong = request.getParameter("dinhLuong");
-            int giaBan = Integer.parseInt(request.getParameter("giaBan"));
-            int thuTu = Integer.parseInt(request.getParameter("thuTuHienThi"));
+            int giaBan = WebUtil.getIntParameter(request, "giaBan", 0);
+            int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
-                String newImg = uploadFile(request, "hinhAnhFile");
+                String newImg = UploadUtil.uploadFile(request, "hinhAnhFile");
                 if (newImg != null && !newImg.trim().isEmpty()) {
                     hinhAnh = newImg;
                 }
@@ -244,35 +233,5 @@ public class ToppingController extends HttpServlet {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/admin/topping?msg=error");
         }
-    }
-
-    private String uploadFile(HttpServletRequest request, String inputFieldName) {
-        try {
-            Part filePart = request.getPart(inputFieldName);
-            if (filePart == null || filePart.getSize() == 0) {
-                return null;
-            }
-            String fileName = filePart.getSubmittedFileName();
-            if (fileName == null || fileName.trim().isEmpty()) {
-                return null;
-            }
-            int dotIdx = fileName.lastIndexOf(".");
-            if (dotIdx == -1) {
-                return null;
-            }
-            String fileExt = fileName.substring(dotIdx);
-            String newFileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + fileExt;
-
-            String baseUploadPath = "C:\\teapos_uploads\\images";
-            File uploadDir = new File(baseUploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-            filePart.write(baseUploadPath + File.separator + newFileName);
-            return request.getContextPath() + "/assets/images/" + newFileName;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

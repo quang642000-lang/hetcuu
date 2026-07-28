@@ -5,24 +5,24 @@ import model.entity.NhatKyHoatDong;
 import repository.impl.NhatKyRepoImpl;
 import service.IDanhMucService;
 import service.impl.DanhMucServiceImpl;
+import util.JsonParserUtil;
+import util.UploadUtil;
+import util.WebUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import util.JsonParserUtil;
 
 @WebServlet(name = "DanhMucController", urlPatterns = {"/admin/danhmuc"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
-        maxRequestSize = 1024 * 1024 * 50   // 50MB
+        maxRequestSize = 1024 * 1024 * 50    // 50MB
 )
 public class DanhMucController extends HttpServlet {
     private final IDanhMucService danhMucService = DanhMucServiceImpl.getInstance();
@@ -78,12 +78,9 @@ public class DanhMucController extends HttpServlet {
 
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         if (id == null || id.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
             return;
@@ -118,30 +115,23 @@ public class DanhMucController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String tenDm = request.getParameter("tenDm");
-            String thuTuHienThiStr = request.getParameter("thuTuHienThi");
-            String trangThaiStr = request.getParameter("trangThai");
-            int thuTu = 0;
-            try {
-                thuTu = Integer.parseInt(thuTuHienThiStr);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-            boolean trangThai = "1".equals(trangThaiStr);
+            int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
+            boolean trangThai = "1".equals(request.getParameter("trangThai"));
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
+
             if ("file".equals(uploadType)) {
-                hinhAnh = uploadFile(request, "hinhAnhFile");
+                hinhAnh = UploadUtil.uploadFile(request, "hinhAnhFile");
+                if (hinhAnh == null) hinhAnh = "";
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
+
             DanhMuc dm = new DanhMuc(null, tenDm, hinhAnh, thuTu, trangThai);
             boolean success = danhMucService.createDanhMuc(dm);
             if (success) {
@@ -162,28 +152,19 @@ public class DanhMucController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String maDm = request.getParameter("maDm");
             String tenDm = request.getParameter("tenDm");
-            String thuTuHienThiStr = request.getParameter("thuTuHienThi");
-            String trangThaiStr = request.getParameter("trangThai");
-            int thuTu = 0;
-            try {
-                thuTu = Integer.parseInt(thuTuHienThiStr);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-            boolean trangThai = "1".equals(trangThaiStr);
+            int thuTu = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
+            boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
-                String uploaded = uploadFile(request, "hinhAnhFile");
+                String uploaded = UploadUtil.uploadFile(request, "hinhAnhFile");
                 if (uploaded != null && !uploaded.isEmpty()) {
                     hinhAnh = uploaded;
                 }
@@ -193,6 +174,7 @@ public class DanhMucController extends HttpServlet {
                     hinhAnh = url;
                 }
             }
+
             DanhMuc oldDm = danhMucService.getDanhMucById(maDm);
             String oldJson = JsonParserUtil.toJson(oldDm);
             DanhMuc dm = new DanhMuc(maDm, tenDm, hinhAnh, thuTu, trangThai);
@@ -212,31 +194,5 @@ public class DanhMucController extends HttpServlet {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/admin/danhmuc?msg=error");
         }
-    }
-
-    private String uploadFile(HttpServletRequest request, String inputFieldName) {
-        try {
-            Part filePart = request.getPart(inputFieldName);
-            if (filePart != null && filePart.getSize() > 0) {
-                String fileName = filePart.getSubmittedFileName();
-                String fileExt = "";
-                int dotIdx = fileName.lastIndexOf('.');
-                if (dotIdx > 0) {
-                    fileExt = fileName.substring(dotIdx);
-                }
-                String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-                String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
-                File uploadDir = new File(baseDir);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                File file = new File(uploadDir, newFileName);
-                filePart.write(file.getAbsolutePath());
-                return request.getContextPath() + "/assets/images/" + newFileName;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

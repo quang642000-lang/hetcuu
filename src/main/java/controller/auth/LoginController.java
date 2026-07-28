@@ -10,6 +10,7 @@ import service.impl.KhachHangServiceImpl;
 import service.impl.NhanVienServiceImpl;
 import service.impl.GioHangServiceImpl;
 import repository.impl.NhatKyRepoImpl;
+import util.WebUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -30,12 +31,10 @@ public class LoginController extends HttpServlet {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
 
-        // Nghiệp vụ Đăng xuất
         if (uri.endsWith("/logout")) {
             if (session != null) {
                 NhanVien nv = (NhanVien) session.getAttribute("user");
                 if (nv != null) {
-                    // GHI NHẬN NHẬT KÝ ĐĂNG XUẤT CỦA NHÂN VIÊN
                     NhatKyRepoImpl.recordActivity(
                             nv.getMaNv(),
                             "LOGOUT",
@@ -43,7 +42,7 @@ public class LoginController extends HttpServlet {
                             nv.getMaNv(),
                             "Đăng nhập",
                             "Nhân viên đăng xuất rời hệ thống",
-                            request.getRemoteAddr()
+                            WebUtil.getRemoteIP(request)
                     );
                 }
                 session.invalidate();
@@ -65,16 +64,13 @@ public class LoginController extends HttpServlet {
         HttpSession session = request.getSession(true);
 
         if (uri.endsWith("/customer/login")) {
-            // ĐĂNG NHẬP KHÁCH HÀNG CRM (Không ghi nhận nhật ký của khách hàng để tránh dư thừa dữ liệu)
             String username = request.getParameter("username");
             String password = request.getParameter("password");
-
             if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
                 request.setAttribute("error", "Email/Số điện thoại và mật khẩu không được trống.");
                 request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
                 return;
             }
-
             KhachHang kh = khachHangService.loginCustomer(username, password);
             if (kh != null) {
                 session.setAttribute("customer", kh);
@@ -88,17 +84,15 @@ public class LoginController extends HttpServlet {
                 request.getRequestDispatcher("/views/auth/login_customer.jsp").forward(request, response);
             }
         } else {
-            // ĐĂNG NHẬP NHÂN VIÊN STAFF / QUẢN LÝ ADMIN
             String username = request.getParameter("username");
             String password = request.getParameter("password");
-            String ipAddress = request.getRemoteAddr();
+            String ipAddress = WebUtil.getRemoteIP(request);
 
             if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
                 request.setAttribute("error", "Tên đăng nhập và mật khẩu không được trống.");
                 request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
                 return;
             }
-
             if (nhanVienService.isAccountLocked(username)) {
                 long remainTime = nhanVienService.getRemainingLockTime(username);
                 request.setAttribute("error", "Tài khoản bị tạm khóa. Vui lòng thử lại sau " + remainTime + " giây.");
@@ -109,8 +103,6 @@ public class LoginController extends HttpServlet {
             NhanVien nv = nhanVienService.loginNhanVien(username, password, ipAddress);
             if (nv != null) {
                 session.setAttribute("user", nv);
-
-                // GHI NHẬN NHẬT KÝ ĐĂNG NHẬP THÀNH CÔNG CỦA NHÂN VIÊN
                 NhatKyRepoImpl.recordActivity(
                         nv.getMaNv(),
                         "LOGIN",
@@ -120,7 +112,6 @@ public class LoginController extends HttpServlet {
                         "Nhân viên '" + nv.getHoTen() + "' đăng nhập hệ thống thành công.",
                         ipAddress
                 );
-
                 if (nv.getMaVt() == 1) {
                     response.sendRedirect(request.getContextPath() + "/admin/dashboard");
                 } else {

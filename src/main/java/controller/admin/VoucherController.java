@@ -8,19 +8,20 @@ import repository.impl.NhatKyRepoImpl;
 import service.IKhuyenMaiService;
 import service.impl.KhuyenMaiServiceImpl;
 import util.JsonParserUtil;
+import util.WebUtil;
+import config.DBConnect;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
-import config.DBConnect;
 
 @WebServlet(name = "VoucherController", urlPatterns = {"/admin/voucher"})
 public class VoucherController extends HttpServlet {
@@ -84,11 +85,7 @@ public class VoucherController extends HttpServlet {
             km.setTrangThai(status);
             boolean success = khuyenMaiService.updateKhuyenMai(km);
             if (success) {
-                HttpSession session = request.getSession(false);
-                String maNv = "SYSTEM";
-                if (session != null && session.getAttribute("user") != null) {
-                    maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-                }
+                String maNv = WebUtil.getCurrentActor(request);
                 String oldJson = "{\"maKm\":\"" + id + "\",\"trangThai\":" + oldStatus + "}";
                 String newJson = "{\"maKm\":\"" + id + "\",\"trangThai\":" + status + "}";
                 nhatKyRepository.addLog(new NhatKyHoatDong(
@@ -97,7 +94,7 @@ public class VoucherController extends HttpServlet {
                         "CHUONG_TRINH_KHUYEN_MAI",
                         oldJson,
                         newJson,
-                        request.getRemoteAddr(),
+                        WebUtil.getRemoteIP(request),
                         null
                 ));
                 response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=togglesuccess");
@@ -129,11 +126,9 @@ public class VoucherController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        HttpSession session = request.getSession(false);
-        String maNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
+        String maNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         if (hasOrders) {
             km.setTrangThai(false);
             khuyenMaiService.updateKhuyenMai(km);
@@ -143,7 +138,7 @@ public class VoucherController extends HttpServlet {
                     "CHUONG_TRINH_KHUYEN_MAI",
                     JsonParserUtil.toJson(km),
                     "{\"status\":\"SOFT_DELETED_DUE_TO_ORDERS\"}",
-                    request.getRemoteAddr(),
+                    ip,
                     null
             ));
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=softdeletesuccess");
@@ -159,12 +154,12 @@ public class VoucherController extends HttpServlet {
                         "CHUONG_TRINH_KHUYEN_MAI",
                         JsonParserUtil.toJson(km),
                         "{\"status\":\"HARD_DELETED_PERMANENTLY\"}",
-                        request.getRemoteAddr(),
+                        ip,
                         null
                 ));
                 response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=deletesuccess");
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
                 response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=deletefailed");
             }
         }
@@ -185,35 +180,21 @@ public class VoucherController extends HttpServlet {
         String maCode = request.getParameter("maCode");
         String moTa = request.getParameter("moTaDieuKien");
         String hinhAnh = request.getParameter("hinhAnhUrl");
-        int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
-        int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
-        int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
-        int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
-        int soLuong = Integer.parseInt(request.getParameter("soLuong"));
+        int loaiGiam = WebUtil.getIntParameter(request, "loaiGiam", 1);
+        int giaTriGiam = WebUtil.getIntParameter(request, "giaTriGiam", 0);
+        int giamToiDa = WebUtil.getIntParameter(request, "giamToiDa", 0);
+        int donToiThieu = WebUtil.getIntParameter(request, "donToiThieu", 0);
+        int soLuong = WebUtil.getIntParameter(request, "soLuong", 100);
         boolean isPublic = "1".equals(request.getParameter("isPublic"));
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
         String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
-        int soLuotDungCaNhan = 0;
-        try {
-            soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
-        } catch (NumberFormatException e) {
-            soLuotDungCaNhan = 0;
-        }
-        int hangApDung = 1;
-        try {
-            hangApDung = Integer.parseInt(request.getParameter("hangApDung"));
-        } catch (NumberFormatException e) {
-            hangApDung = 1;
-        }
-        int loaiVoucher = 1;
-        try {
-            loaiVoucher = Integer.parseInt(request.getParameter("loaiVoucher"));
-        } catch (NumberFormatException e) {
-            loaiVoucher = 1;
-        }
+        int soLuotDungCaNhan = WebUtil.getIntParameter(request, "soLuotDungCaNhan", 0);
+        int hangApDung = WebUtil.getIntParameter(request, "hangApDung", 1);
+        int loaiVoucher = WebUtil.getIntParameter(request, "loaiVoucher", 1);
+
         KhuyenMai km = new KhuyenMai(null, tenKm, maCode, moTa, hinhAnh, loaiGiam, giaTriGiam, giamToiDa, donToiThieu, isPublic, soLuong, ngayBatDau, ngayKetThuc, trangThai, soLuotDungCaNhan, hangApDung, loaiVoucher);
         if (ngayKetThuc.before(ngayBatDau)) {
             request.setAttribute("voucher", km);
@@ -224,13 +205,9 @@ public class VoucherController extends HttpServlet {
         }
         boolean success = khuyenMaiService.createKhuyenMai(km);
         if (success) {
-            HttpSession session = request.getSession(false);
-            String maNv = "SYSTEM";
-            if (session != null && session.getAttribute("user") != null) {
-                maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-            }
+            String maNv = WebUtil.getCurrentActor(request);
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv, "TẠO_VOUCHER_MỚI", "CHUONG_TRINH_KHUYEN_MAI", null, JsonParserUtil.toJson(km), request.getRemoteAddr(), null
+                    maNv, "TẠO_VOUCHER_MỚI", "CHUONG_TRINH_KHUYEN_MAI", null, JsonParserUtil.toJson(km), WebUtil.getRemoteIP(request), null
             ));
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=createsuccess");
         } else {
@@ -247,35 +224,20 @@ public class VoucherController extends HttpServlet {
         String maCode = request.getParameter("maCode");
         String moTa = request.getParameter("moTaDieuKien");
         String hinhAnh = request.getParameter("currentHinhAnh");
-        int loaiGiam = Integer.parseInt(request.getParameter("loaiGiam"));
-        int giaTriGiam = Integer.parseInt(request.getParameter("giaTriGiam"));
-        int giamToiDa = Integer.parseInt(request.getParameter("giamToiDa"));
-        int donToiThieu = Integer.parseInt(request.getParameter("donToiThieu"));
-        int soLuong = Integer.parseInt(request.getParameter("soLuong"));
+        int loaiGiam = WebUtil.getIntParameter(request, "loaiGiam", 1);
+        int giaTriGiam = WebUtil.getIntParameter(request, "giaTriGiam", 0);
+        int giamToiDa = WebUtil.getIntParameter(request, "giamToiDa", 0);
+        int donToiThieu = WebUtil.getIntParameter(request, "donToiThieu", 0);
+        int soLuong = WebUtil.getIntParameter(request, "soLuong", 100);
         boolean isPublic = "1".equals(request.getParameter("isPublic"));
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
         String ngayBdStr = request.getParameter("ngayBatDau").replace("T", " ") + ":00";
         String ngayKtStr = request.getParameter("ngayKetThuc").replace("T", " ") + ":00";
         Timestamp ngayBatDau = Timestamp.valueOf(ngayBdStr);
         Timestamp ngayKetThuc = Timestamp.valueOf(ngayKtStr);
-        int soLuotDungCaNhan = 0;
-        try {
-            soLuotDungCaNhan = Integer.parseInt(request.getParameter("soLuotDungCaNhan"));
-        } catch (NumberFormatException e) {
-            soLuotDungCaNhan = 0;
-        }
-        int hangApDung = 1;
-        try {
-            hangApDung = Integer.parseInt(request.getParameter("hangApDung"));
-        } catch (NumberFormatException e) {
-            hangApDung = 1;
-        }
-        int loaiVoucher = 1;
-        try {
-            loaiVoucher = Integer.parseInt(request.getParameter("loaiVoucher"));
-        } catch (NumberFormatException e) {
-            loaiVoucher = 1;
-        }
+        int soLuotDungCaNhan = WebUtil.getIntParameter(request, "soLuotDungCaNhan", 0);
+        int hangApDung = WebUtil.getIntParameter(request, "hangApDung", 1);
+        int loaiVoucher = WebUtil.getIntParameter(request, "loaiVoucher", 1);
 
         KhuyenMai km = khuyenMaiService.getKhuyenMaiById(maKm);
         if (km == null) {
@@ -283,15 +245,10 @@ public class VoucherController extends HttpServlet {
             return;
         }
 
-        // =====================================================================
-        // CHỐT CHẶN BẢO MẬT & ĐỐI SOÁT KIỂM TOÁN HIGH-CONCURRENCY CHUYÊN NGHIỆP
-        // =====================================================================
         int soLuongDaDung = 0;
         int maxLượtDungCaNhanThucTe = 0;
-
         String queryDaDung = "SELECT COUNT(*) FROM DON_HANG WHERE ma_km = ? AND trang_thai_don != 5";
         String queryMaxCaNhan = "SELECT ISNULL(MAX(usages), 0) FROM (SELECT COUNT(*) AS usages FROM DON_HANG WHERE ma_km = ? AND trang_thai_don != 5 GROUP BY ma_kh) AS temp";
-
         try (Connection conn = DBConnect.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(queryDaDung)) {
                 ps.setString(1, maKm);
@@ -313,7 +270,6 @@ public class VoucherController extends HttpServlet {
             e.printStackTrace();
         }
 
-        // 1. Kiểm tra Ngày hợp lệ
         if (ngayKetThuc.before(ngayBatDau)) {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi: Ngày kết thúc phải lớn hơn ngày bắt đầu khuyến mãi!");
@@ -321,8 +277,6 @@ public class VoucherController extends HttpServlet {
             request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
             return;
         }
-
-        // 2. Chặn hạ số lượng quỹ Voucher nhỏ hơn số lượng đã phát ra thực tế
         if (soLuong < soLuongDaDung) {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi phi logic: Tổng quỹ phát hành mới (" + soLuong + ") không được nhỏ hơn số lượng Voucher đã được sử dụng thực tế trong quá khứ (" + soLuongDaDung + " lượt)!");
@@ -330,8 +284,6 @@ public class VoucherController extends HttpServlet {
             request.getRequestDispatcher("/views/admin/voucher.jsp").forward(request, response);
             return;
         }
-
-        // 3. Chặn hạ giới hạn cá nhân nhỏ hơn số lượt sử dụng thực tế nhiều nhất của một khách hàng
         if (loaiVoucher == 1 && soLuotDungCaNhan > 0 && soLuotDungCaNhan < maxLượtDungCaNhanThucTe) {
             request.setAttribute("voucher", km);
             request.setAttribute("error", "Lỗi phi logic: Giới hạn cá nhân mới (" + soLuotDungCaNhan + " lượt/khách) không được nhỏ hơn số lượt sử dụng thực tế nhiều nhất của một khách hàng trong hệ thống (" + maxLượtDungCaNhanThucTe + " lượt của khách VIP)!");
@@ -360,13 +312,9 @@ public class VoucherController extends HttpServlet {
 
         boolean success = khuyenMaiService.updateKhuyenMai(km);
         if (success) {
-            HttpSession session = request.getSession(false);
-            String maNv = "SYSTEM";
-            if (session != null && session.getAttribute("user") != null) {
-                maNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-            }
+            String maNv = WebUtil.getCurrentActor(request);
             nhatKyRepository.addLog(new NhatKyHoatDong(
-                    maNv, "SỬA_THÔNG_TIN_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", oldJson, JsonParserUtil.toJson(km), request.getRemoteAddr(), null
+                    maNv, "SỬA_THÔNG_TIN_VOUCHER", "CHUONG_TRINH_KHUYEN_MAI", oldJson, JsonParserUtil.toJson(km), WebUtil.getRemoteIP(request), null
             ));
             response.sendRedirect(request.getContextPath() + "/admin/voucher?msg=updatesuccess");
         } else {

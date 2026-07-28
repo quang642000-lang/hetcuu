@@ -6,19 +6,20 @@ import repository.impl.NhatKyRepoImpl;
 import service.INhanVienService;
 import service.impl.NhanVienServiceImpl;
 import config.DBConnect;
+import util.JsonParserUtil;
+import util.WebUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import util.JsonParserUtil;
 
 @WebServlet(name = "NhanVienController", urlPatterns = {"/admin/nhanvien"})
 public class NhanVienController extends HttpServlet {
@@ -31,9 +32,6 @@ public class NhanVienController extends HttpServlet {
             action = "list";
         }
         switch (action) {
-            case "list":
-                showList(request, response);
-                break;
             case "create":
                 showCreateForm(request, response);
                 break;
@@ -77,14 +75,8 @@ public class NhanVienController extends HttpServlet {
 
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
-
-        // 1. Kiểm tra xem nhân viên đã dính bất kỳ hóa đơn nào trong DON_HANG chưa
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
         boolean hasOrders = false;
         String checkSql = "SELECT COUNT(*) FROM DON_HANG WHERE ma_nv = ?";
         try (Connection conn = DBConnect.getConnection();
@@ -98,8 +90,8 @@ public class NhanVienController extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         if (hasOrders) {
-            // Có hóa đơn -> Chỉ cho phép khóa tài khoản (Soft Delete)
             boolean softSuccess = nhanVienService.deleteNhanVien(id);
             if (softSuccess) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -110,7 +102,6 @@ public class NhanVienController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/nhanvien?msg=deletefailed");
             }
         } else {
-            // Chưa từng lập hóa đơn -> Cho phép xóa cứng vĩnh viễn
             boolean hardSuccess = false;
             String deleteSql = "DELETE FROM NHAN_VIEN WHERE ma_nv = ?";
             try (Connection conn = DBConnect.getConnection();
@@ -137,12 +128,9 @@ public class NhanVienController extends HttpServlet {
     private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         boolean status = "1".equals(request.getParameter("status"));
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         NhanVien nv = nhanVienService.getNhanVienById(id);
         if (nv != null) {
             String oldJson = JsonParserUtil.toJson(nv);
@@ -175,19 +163,17 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         String hoTen = request.getParameter("hoTen");
-        int maVt = Integer.parseInt(request.getParameter("maVt"));
+        int maVt = WebUtil.getIntParameter(request, "maVt", 2);
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
         String username = request.getParameter("tenDangNhap");
         String matKhau = request.getParameter("matKhau");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
         NhanVien nv = new NhanVien(null, maVt, hoTen, sdt, email, username, matKhau, trangThai, null, null);
         boolean success = nhanVienService.createNhanVien(nv);
         if (success) {
@@ -204,19 +190,17 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         String maNv = request.getParameter("maNv");
         String hoTen = request.getParameter("hoTen");
-        int maVt = Integer.parseInt(request.getParameter("maVt"));
+        int maVt = WebUtil.getIntParameter(request, "maVt", 2);
         String sdt = request.getParameter("soDienThoai");
         String email = request.getParameter("email");
         String username = request.getParameter("tenDangNhap");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
         NhanVien nv = nhanVienService.getNhanVienById(maNv);
         if (nv != null) {
             String oldJson = JsonParserUtil.toJson(nv);
@@ -226,6 +210,7 @@ public class NhanVienController extends HttpServlet {
             nv.setEmail(email);
             nv.setTenDangNhap(username);
             nv.setTrangThai(trangThai);
+
             boolean success = nhanVienService.updateNhanVien(nv);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -242,12 +227,9 @@ public class NhanVienController extends HttpServlet {
     }
 
     private void performResetPassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         String maNv = request.getParameter("maNv");
         String matKhauMoi = request.getParameter("matKhauMoi");
         NhanVien nv = nhanVienService.getNhanVienById(maNv);

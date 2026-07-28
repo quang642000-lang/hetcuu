@@ -11,16 +11,17 @@ import service.IKhuyenMaiService;
 import service.impl.KhachHangServiceImpl;
 import service.impl.DonHangServiceImpl;
 import service.impl.KhuyenMaiServiceImpl;
+import util.JsonParserUtil;
+import util.WebUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
-import util.JsonParserUtil;
 
 @WebServlet(name = "KhachHangController", urlPatterns = {"/admin/khachhang"})
 public class KhachHangController extends HttpServlet {
@@ -35,9 +36,6 @@ public class KhachHangController extends HttpServlet {
             action = "list";
         }
         switch (action) {
-            case "list":
-                showList(request, response);
-                break;
             case "view":
                 showDetailTabs(request, response);
                 break;
@@ -91,12 +89,9 @@ public class KhachHangController extends HttpServlet {
     }
 
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         String maKh = request.getParameter("maKh");
         String tenKh = request.getParameter("tenKh");
         String sdt = request.getParameter("soDienThoai");
@@ -105,6 +100,7 @@ public class KhachHangController extends HttpServlet {
         String gioiTinh = request.getParameter("gioiTinh");
         String diaChi = request.getParameter("diaChiLienHe");
         boolean trangThai = "1".equals(request.getParameter("trangThai"));
+
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
             String oldJson = JsonParserUtil.toJson(kh);

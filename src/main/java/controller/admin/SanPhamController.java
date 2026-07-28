@@ -1,4 +1,5 @@
 package controller.admin;
+
 import model.entity.DanhMuc;
 import model.entity.KichCo;
 import model.entity.SanPham;
@@ -12,15 +13,16 @@ import service.ISanPhamService;
 import service.impl.DanhMucServiceImpl;
 import service.impl.SanPhamServiceImpl;
 import config.DBConnect;
+import util.JsonParserUtil;
+import util.UploadUtil;
+import util.WebUtil;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,13 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import util.JsonParserUtil;
 
 @WebServlet(name = "SanPhamController", urlPatterns = {"/admin/sanpham"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
-        maxRequestSize = 1024 * 1024 * 50   // 50MB
+        maxRequestSize = 1024 * 1024 * 50    // 50MB
 )
 public class SanPhamController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(SanPhamController.class.getName());
@@ -57,11 +58,11 @@ public class SanPhamController extends HttpServlet {
             case "edit":
                 showEditForm(request, response);
                 break;
-            case "delete":
-                performDelete(request, response);
-                break;
             case "toggle":
                 performToggle(request, response);
+                break;
+            case "delete":
+                performDelete(request, response);
                 break;
             case "checkSizeOrder":
                 performCheckSizeOrder(request, response);
@@ -74,6 +75,7 @@ public class SanPhamController extends HttpServlet {
                 break;
         }
     }
+
     private void showList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<SanPham> list = sanPhamService.getAllSanPham();
         if (list != null) {
@@ -86,6 +88,7 @@ public class SanPhamController extends HttpServlet {
         request.setAttribute("categories", categories);
         request.getRequestDispatcher("/views/admin/san_pham.jsp").forward(request, response);
     }
+
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
         List<KichCo> sizes = kichCoRepository.getAll();
@@ -94,6 +97,7 @@ public class SanPhamController extends HttpServlet {
         request.setAttribute("formTitle", "THÊM SẢN PHẨM MỚI");
         request.getRequestDispatcher("/views/admin/sanpham-form.jsp").forward(request, response);
     }
+
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String id = request.getParameter("id");
         SanPham sp = sanPhamService.getSanPhamById(id);
@@ -134,6 +138,7 @@ public class SanPhamController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=notfound");
         }
     }
+
     private void performToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         boolean status = "1".equals(request.getParameter("status"));
@@ -144,18 +149,14 @@ public class SanPhamController extends HttpServlet {
             List<SanPhamKichCo> sizes = sanPhamService.getSizesBySanPham(id);
             boolean success = sanPhamService.updateSanPham(sp, sizes);
             if (success) {
-                HttpSession session = request.getSession(false);
-                String actorNv = "SYSTEM";
-                if (session != null && session.getAttribute("user") != null) {
-                    actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-                }
+                String actorNv = WebUtil.getCurrentActor(request);
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
                         actorNv,
                         status ? "BẬT_MỞ_BÁN_SẢN_PHẨM" : "TẮT_MỞ_BÁN_SẢN_PHẨM",
                         "SAN_PHAM",
                         oldJson,
                         JsonParserUtil.toJson(sp),
-                        request.getRemoteAddr(),
+                        WebUtil.getRemoteIP(request),
                         null
                 ));
                 response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=updatesuccess");
@@ -166,14 +167,11 @@ public class SanPhamController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=notfound");
         }
     }
+
     private void performDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
         boolean hasOrders = false;
         String checkSql = "SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ?";
         try (Connection conn = DBConnect.getConnection();
@@ -187,6 +185,7 @@ public class SanPhamController extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         if (hasOrders) {
             boolean softSuccess = sanPhamService.deleteSanPham(id);
             if (softSuccess) {
@@ -232,6 +231,7 @@ public class SanPhamController extends HttpServlet {
             }
         }
     }
+
     private void performCheckSizeOrder(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String maSp = request.getParameter("maSp");
@@ -264,6 +264,7 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi kiểm tra đơn!\"}");
         }
     }
+
     private void performDeleteSizeMasterAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String maSizeStr = request.getParameter("maSize");
@@ -284,6 +285,7 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Lỗi hệ thống khi xóa kích cỡ!\"}");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
@@ -295,6 +297,7 @@ public class SanPhamController extends HttpServlet {
             performAddSizeAjax(request, response);
         }
     }
+
     private void performAddSizeAjax(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String tenSize = request.getParameter("tenSize");
@@ -328,18 +331,16 @@ public class SanPhamController extends HttpServlet {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Sự cố hệ thống khi thêm nhanh kích cỡ!\"}");
         }
     }
+
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
             if (tenSp == null || tenSp.trim().isEmpty() || maDmStr == null || maDmStr.trim().isEmpty()) {
-                request.setAttribute("error", "Vui lòng nhập đầy đủ Tên sản phẩm và chọn Danh mục!");
+                request.setAttribute("error", "Vui lòng nhập đầy đủ Tên đồ uống và Nhóm danh mục!");
                 showCreateForm(request, response);
                 return;
             }
@@ -347,7 +348,8 @@ public class SanPhamController extends HttpServlet {
             String hinhAnh = "";
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
-                hinhAnh = uploadFile(request, "hinhAnhFile");
+                hinhAnh = UploadUtil.uploadFile(request, "hinhAnhFile");
+                if (hinhAnh == null) hinhAnh = "";
             } else {
                 hinhAnh = request.getParameter("hinhAnhUrl");
             }
@@ -356,7 +358,7 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-            boolean choPhepTopping = request.getParameter("choPhepTopping") != null; // NEW PARAM
+            boolean choPhepTopping = request.getParameter("choPhepTopping") != null;
 
             SanPham sp = new SanPham();
             sp.setTenSp(tenSp);
@@ -368,7 +370,7 @@ public class SanPhamController extends HttpServlet {
             sp.setIsNew(isNew);
             sp.setIsBestseller(isBestseller);
             sp.setTrangThai(trangThai);
-            sp.setChoPhepTopping(choPhepTopping); // SET NEW PARAM
+            sp.setChoPhepTopping(choPhepTopping);
 
             List<KichCo> allSizes = kichCoRepository.getAll();
             List<SanPhamKichCo> selectedSizes = new ArrayList<>();
@@ -412,13 +414,11 @@ public class SanPhamController extends HttpServlet {
             showCreateForm(request, response);
         }
     }
+
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        String actorNv = "SYSTEM";
-        if (session != null && session.getAttribute("user") != null) {
-            actorNv = ((model.entity.NhanVien) session.getAttribute("user")).getMaNv();
-        }
-        String ip = request.getRemoteAddr();
+        String actorNv = WebUtil.getCurrentActor(request);
+        String ip = WebUtil.getRemoteIP(request);
+
         try {
             String maSp = request.getParameter("maSp");
             String tenSp = request.getParameter("tenSp");
@@ -432,7 +432,7 @@ public class SanPhamController extends HttpServlet {
             String hinhAnh = request.getParameter("currentHinhAnh");
             String uploadType = request.getParameter("uploadType");
             if ("file".equals(uploadType)) {
-                String uploaded = uploadFile(request, "hinhAnhFile");
+                String uploaded = UploadUtil.uploadFile(request, "hinhAnhFile");
                 if (uploaded != null && !uploaded.isEmpty()) {
                     hinhAnh = uploaded;
                 }
@@ -447,7 +447,7 @@ public class SanPhamController extends HttpServlet {
             boolean isNew = request.getParameter("isNew") != null;
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
-            boolean choPhepTopping = request.getParameter("choPhepTopping") != null; // NEW PARAM
+            boolean choPhepTopping = request.getParameter("choPhepTopping") != null;
 
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
@@ -461,7 +461,7 @@ public class SanPhamController extends HttpServlet {
                 sp.setIsNew(isNew);
                 sp.setIsBestseller(isBestseller);
                 sp.setTrangThai(trangThai);
-                sp.setChoPhepTopping(choPhepTopping); // SET NEW PARAM
+                sp.setChoPhepTopping(choPhepTopping);
 
                 List<KichCo> allSizes = kichCoRepository.getAll();
                 List<SanPhamKichCo> selectedSizes = new ArrayList<>();
@@ -505,30 +505,5 @@ public class SanPhamController extends HttpServlet {
             request.setAttribute("error", "Lỗi xử lý nghiệp vụ cập nhật!");
             showEditForm(request, response);
         }
-    }
-    private String uploadFile(HttpServletRequest request, String inputFieldName) {
-        try {
-            Part filePart = request.getPart(inputFieldName);
-            if (filePart != null && filePart.getSize() > 0) {
-                String fileName = filePart.getSubmittedFileName();
-                String fileExt = "";
-                int dotIdx = fileName.lastIndexOf('.');
-                if (dotIdx > 0) {
-                    fileExt = fileName.substring(dotIdx);
-                }
-                String newFileName = System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + fileExt;
-                String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? "C:/teapos_uploads/images/" : "/var/teapos_uploads/images/";
-                File uploadDir = new File(baseDir);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                File file = new File(uploadDir, newFileName);
-                filePart.write(file.getAbsolutePath());
-                return request.getContextPath() + "/assets/images/" + newFileName;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }
