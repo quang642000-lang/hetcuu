@@ -10,7 +10,6 @@ import repository.impl.DonHangRepoImpl;
 import repository.impl.KhuyenMaiRepoImpl;
 import repository.impl.KhachHangRepoImpl;
 import service.IDonHangService;
-
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -67,7 +66,6 @@ public class DonHangServiceImpl implements IDonHangService {
     public boolean checkoutPOS(DonHang donHang, List<ChiTietDonHang> items, String maNv) {
         donHang.setMaNv(maNv);
         donHang.setChiTietDonHangList(items);
-
         // 1. Giảm số lượng Voucher khả dụng kèm đối soát tính hợp lệ
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
@@ -76,16 +74,13 @@ public class DonHangServiceImpl implements IDonHangService {
                 return false;
             }
         }
-
         // 2. Khấu trừ điểm CRM của khách hàng nếu áp dụng tiêu điểm
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
-
         boolean success = donHangRepository.add(donHang);
         if (success) {
             donHangRepository.updateTrangThaiDon(donHang.getMaDh(), donHang.getTrangThaiDon());
-
             // 3. TỰ ĐỘNG TÍCH LŨY ĐIỂM CRM CHO KHÁCH HÀNG THÀNH VIÊN (1 Điểm = 10.000 VNĐ chi tiêu thực tế)
             if (donHang.getMaKh() != null) {
                 int diemCong = donHang.getTongPhaiTra() / 10000;
@@ -105,7 +100,6 @@ public class DonHangServiceImpl implements IDonHangService {
         }
         donHang.setChiTietDonHangList(items);
         donHang.setTrangThaiDon(0);
-
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
             if (!voucherDecremented) {
@@ -113,11 +107,9 @@ public class DonHangServiceImpl implements IDonHangService {
                 return false;
             }
         }
-
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
-
         return donHangRepository.add(donHang);
     }
 
@@ -126,17 +118,21 @@ public class DonHangServiceImpl implements IDonHangService {
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
 
-        dh.setMaNv(maNv);
+        // CHỐT CHẶN BẢO MẬT & ĐỒNG BỘ CƠ SỞ DỮ LIỆU:
+        // Tránh gán "SYSTEM" hoặc "CUSTOMER" trực tiếp vào cột ma_nv của bảng DON_HANG
+        // vì ma_nv là Khóa Ngoại (Foreign Key) chỉ liên kết tới bảng NHAN_VIEN. Gán sai giá trị sẽ ném ngoại lệ SQLServerException.
+        if (maNv != null && !maNv.trim().isEmpty() && !maNv.equalsIgnoreCase("SYSTEM") && !maNv.equalsIgnoreCase("CUSTOMER")) {
+            dh.setMaNv(maNv.trim());
+        }
+
         if (trangThaiMoi == 5) {
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
-
             // Hủy đơn -> Hoàn trả lại điểm tích lũy cũ đã dùng nếu có
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
             }
-
             // Thu hồi lại số điểm CRM tích lũy đã cộng của đơn này
             if (dh.getMaKh() != null) {
                 int diemCongDaNhan = dh.getTongPhaiTra() / 10000;
@@ -144,12 +140,10 @@ public class DonHangServiceImpl implements IDonHangService {
                     khachHangRepository.truDiemTichLuy(dh.getMaKh(), diemCongDaNhan);
                 }
             }
-
             // Hoàn lại số lượng voucher đã áp dụng
             if (dh.getMaKm() != null) {
                 khuyenMaiRepository.congSoLuongVoucher(dh.getMaKm());
             }
-
             // ĐÃ LOẠI BỎ HÀM GHI NHẬT KÝ ĐƠN HÀNG DƯ THỪA THEO YÊU CẦU CỦA KHÁCH HÀNG CRM
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
@@ -166,7 +160,6 @@ public class DonHangServiceImpl implements IDonHangService {
                 }
             }
         }
-
         // ĐÃ LOẠI BỎ HÀM GHI NHẬT KÝ ĐƠN HÀNG DƯ THỪA THEO YÊU CẦU CỦA KHÁCH HÀNG CRM
         return donHangRepository.updateTrangThaiDon(maDh, trangThaiMoi);
     }

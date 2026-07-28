@@ -9,20 +9,23 @@ import repository.impl.SanPhamKichCoRepoImpl;
 import repository.impl.SanPhamRepoImpl;
 import service.ISanPhamService;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * =========================================================================
  * TEA POS SYSTEM - PRODUCT SERVICE IMPLEMENTATION (BULLETPROOF CONCURRENCY)
- * Fixed Connection Leaks, Transaction Rollovers, and Foreign Key conflicts with Cart details.
+ * Fixed Connection Leaks, Transaction Rollovers, and Foreign Key conflicts.
+ * Solved transaction deadlock by performing all DB modifications inside transactions
+ * directly on the same connection object.
  * =========================================================================
  */
 public class SanPhamServiceImpl implements ISanPhamService {
+
+    private static final Logger LOGGER = Logger.getLogger(SanPhamServiceImpl.class.getName());
     private static SanPhamServiceImpl instance;
     private final ISanPhamRepository sanPhamRepository;
     private final ISanPhamKichCoRepository sanPhamKichCoRepository;
@@ -75,26 +78,65 @@ public class SanPhamServiceImpl implements ISanPhamService {
             return false;
         }
         Connection conn = null;
+        CallableStatement csAddSp = null;
+        PreparedStatement psUpdateFlags = null;
+        PreparedStatement psAddSize = null;
         try {
             conn = DBConnect.getConnection();
             conn.setAutoCommit(false);
-            boolean addedSp = sanPhamRepository.add(sanPham);
-            if (!addedSp || sanPham.getMaSp() == null) {
+
+            // 1. Thêm sản phẩm mẹ thông qua Stored Procedure trực tiếp trên Connection Transaction này
+            String callSql = "{call sp_ThemSanPham(?, ?, ?, ?)}";
+            csAddSp = conn.prepareCall(callSql);
+            csAddSp.setString(1, sanPham.getMaDm());
+            csAddSp.setString(2, sanPham.getTenSp());
+            csAddSp.setString(3, sanPham.getMoTa());
+            csAddSp.setString(4, sanPham.getHinhAnh());
+
+            String generatedMaSp = null;
+            try (ResultSet rs = csAddSp.executeQuery()) {
+                if (rs.next()) {
+                    generatedMaSp = rs.getString("ma_sp");
+                    sanPham.setMaSp(generatedMaSp);
+                }
+            }
+
+            if (generatedMaSp == null || generatedMaSp.trim().isEmpty()) {
                 conn.rollback();
                 return false;
             }
+
+            // 2. Cập nhật các trường cờ flags và thứ tự hiển thị ưu tiên trực tiếp trên connection này
+            String updateFlagsSql = "UPDATE SAN_PHAM SET cho_phep_doi_da = ?, cho_phep_doi_duong = ?, is_new = ?, " +
+                    "is_bestseller = ?, trang_thai = ?, cho_phep_topping = ?, thu_tu_hien_thi = ? WHERE ma_sp = ?";
+            psUpdateFlags = conn.prepareStatement(updateFlagsSql);
+            psUpdateFlags.setBoolean(1, sanPham.isChoPhepDoiDa());
+            psUpdateFlags.setBoolean(2, sanPham.isChoPhepDoiDuong());
+            psUpdateFlags.setBoolean(3, sanPham.getIsNew());
+            psUpdateFlags.setBoolean(4, sanPham.getIsBestseller());
+            psUpdateFlags.setBoolean(5, sanPham.isTrangThai());
+            psUpdateFlags.setBoolean(6, sanPham.isChoPhepTopping());
+            psUpdateFlags.setInt(7, sanPham.getThuTuHienThi());
+            psUpdateFlags.setString(8, generatedMaSp);
+            psUpdateFlags.executeUpdate();
+
+            // 3. Thêm mới các kích cỡ đi kèm trực tiếp trên connection này để tránh nghẽn pool
+            String addSizeSql = "INSERT INTO SAN_PHAM_KICH_CO (ma_sp, ma_size, gia_ban, dinh_luong, trang_thai) VALUES (?, ?, ?, ?, ?)";
+            psAddSize = conn.prepareStatement(addSizeSql);
+
             for (SanPhamKichCo size : sizes) {
-                size.setMaSp(sanPham.getMaSp());
-                boolean addedSize = sanPhamKichCoRepository.add(size);
-                if (!addedSize) {
-                    conn.rollback();
-                    return false;
-                }
+                psAddSize.setString(1, generatedMaSp);
+                psAddSize.setInt(2, size.getMaSize());
+                psAddSize.setInt(3, size.getGiaBan());
+                psAddSize.setString(4, size.getDinhLuong());
+                psAddSize.setBoolean(5, size.isTrangThai());
+                psAddSize.executeUpdate();
             }
+
             conn.commit();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Sập luồng tạo mới sản phẩm mẹ và kích cỡ đi kèm", e);
             if (conn != null) {
                 try {
                     conn.rollback();
@@ -104,13 +146,13 @@ public class SanPhamServiceImpl implements ISanPhamService {
             }
             return false;
         } finally {
+            // Giải phóng tài nguyên an toàn tuyệt đối chống Leak kết nối
+            if (csAddSp != null) { try { csAddSp.close(); } catch (SQLException e) {} }
+            if (psUpdateFlags != null) { try { psUpdateFlags.close(); } catch (SQLException e) {} }
+            if (psAddSize != null) { try { psAddSize.close(); } catch (SQLException e) {} }
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                try { conn.setAutoCommit(true); } catch (SQLException e) {}
+                try { conn.close(); } catch (SQLException e) {}
             }
         }
     }
@@ -121,16 +163,36 @@ public class SanPhamServiceImpl implements ISanPhamService {
             return false;
         }
         Connection conn = null;
+        PreparedStatement psUpdateMother = null;
         PreparedStatement psCheckOrders = null;
         PreparedStatement psSoftDelete = null;
         PreparedStatement psHardDelete = null;
+        PreparedStatement psUpdateSize = null;
+        PreparedStatement psInsertSize = null;
         try {
             conn = DBConnect.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Cập nhật thông tin sản phẩm mẹ
-            boolean updatedSp = sanPhamRepository.update(sanPham);
-            if (!updatedSp) {
+            // 1. Cập nhật thông tin sản phẩm mẹ trực tiếp trên Connection Transaction này (Tránh deadlock)
+            String updateMotherSql = "UPDATE SAN_PHAM SET ma_dm = ?, ten_sp = ?, mo_ta = ?, hinh_anh = ?, " +
+                    "cho_phep_doi_da = ?, cho_phep_doi_duong = ?, is_new = ?, is_bestseller = ?, " +
+                    "trang_thai = ?, cho_phep_topping = ?, thu_tu_hien_thi = ?, thoi_gian_cap_nhat = GETDATE() WHERE ma_sp = ?";
+            psUpdateMother = conn.prepareStatement(updateMotherSql);
+            psUpdateMother.setString(1, sanPham.getMaDm());
+            psUpdateMother.setString(2, sanPham.getTenSp());
+            psUpdateMother.setString(3, sanPham.getMoTa());
+            psUpdateMother.setString(4, sanPham.getHinhAnh());
+            psUpdateMother.setBoolean(5, sanPham.isChoPhepDoiDa());
+            psUpdateMother.setBoolean(6, sanPham.isChoPhepDoiDuong());
+            psUpdateMother.setBoolean(7, sanPham.getIsNew());
+            psUpdateMother.setBoolean(8, sanPham.getIsBestseller());
+            psUpdateMother.setBoolean(9, sanPham.isTrangThai());
+            psUpdateMother.setBoolean(10, sanPham.isChoPhepTopping());
+            psUpdateMother.setInt(11, sanPham.getThuTuHienThi());
+            psUpdateMother.setString(12, sanPham.getMaSp());
+
+            int rowsUpdated = psUpdateMother.executeUpdate();
+            if (rowsUpdated <= 0) {
                 conn.rollback();
                 return false;
             }
@@ -160,7 +222,6 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     "  (SELECT COUNT(*) FROM CHI_TIET_GIO_HANG WHERE ma_sp = ? AND ma_size = ?)";
             String softDeleteSql = "UPDATE SAN_PHAM_KICH_CO SET trang_thai = 0 WHERE ma_sp = ? AND ma_size = ?";
             String hardDeleteSql = "DELETE FROM SAN_PHAM_KICH_CO WHERE ma_sp = ? AND ma_size = ?";
-
             psCheckOrders = conn.prepareStatement(checkOrdersSql);
             psSoftDelete = conn.prepareStatement(softDeleteSql);
             psHardDelete = conn.prepareStatement(hardDeleteSql);
@@ -196,7 +257,12 @@ public class SanPhamServiceImpl implements ISanPhamService {
                 }
             }
 
-            // Xử lý chèn mới hoặc cập nhật các kích cỡ được chọn trên form
+            // Xử lý chèn mới hoặc cập nhật các kích cỡ được chọn trên form trực tiếp trên conn này (Triệt tiêu 100% deadlock!)
+            String updateSizeSql = "UPDATE SAN_PHAM_KICH_CO SET gia_ban = ?, dinh_luong = ?, trang_thai = ? WHERE ma_sp = ? AND ma_size = ?";
+            String insertSizeSql = "INSERT INTO SAN_PHAM_KICH_CO (ma_sp, ma_size, gia_ban, dinh_luong, trang_thai) VALUES (?, ?, ?, ?, ?)";
+            psUpdateSize = conn.prepareStatement(updateSizeSql);
+            psInsertSize = conn.prepareStatement(insertSizeSql);
+
             for (SanPhamKichCo newSize : sizes) {
                 boolean existsInDb = false;
                 for (SanPhamKichCo dbSize : allDbSizes) {
@@ -206,27 +272,28 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 }
                 if (existsInDb) {
-                    // Đã tồn tại -> Cập nhật giá bán, định lượng và trạng thái hoạt động mới
-                    boolean updatedSize = sanPhamKichCoRepository.update(newSize);
-                    if (!updatedSize) {
-                        conn.rollback();
-                        return false;
-                    }
+                    // Đã tồn tại -> Cập nhật giá bán, định lượng và trạng thái hoạt động mới trực tiếp trên conn
+                    psUpdateSize.setInt(1, newSize.getGiaBan());
+                    psUpdateSize.setString(2, newSize.getDinhLuong());
+                    psUpdateSize.setBoolean(3, newSize.isTrangThai());
+                    psUpdateSize.setString(4, sanPham.getMaSp());
+                    psUpdateSize.setInt(5, newSize.getMaSize());
+                    psUpdateSize.executeUpdate();
                 } else {
-                    // Chưa tồn tại -> Thêm mới bản ghi liên kết vào DB
-                    newSize.setMaSp(sanPham.getMaSp());
-                    boolean addedSize = sanPhamKichCoRepository.add(newSize);
-                    if (!addedSize) {
-                        conn.rollback();
-                        return false;
-                    }
+                    // Chưa tồn tại -> Thêm mới bản ghi liên kết trực tiếp trên conn
+                    psInsertSize.setString(1, sanPham.getMaSp());
+                    psInsertSize.setInt(2, newSize.getMaSize());
+                    psInsertSize.setInt(3, newSize.getGiaBan());
+                    psInsertSize.setString(4, newSize.getDinhLuong());
+                    psInsertSize.setBoolean(5, newSize.isTrangThai());
+                    psInsertSize.executeUpdate();
                 }
             }
 
             conn.commit();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Lỗi luồng cập nhật sản phẩm mẹ và kích cỡ trong Service", e);
             if (conn != null) {
                 try {
                     conn.rollback();
@@ -237,9 +304,12 @@ public class SanPhamServiceImpl implements ISanPhamService {
             return false;
         } finally {
             // ĐÓNG TÀI NGUYÊN AN TOÀN TUYỆT ĐỐI (Gỡ bỏ Connection Leak rò rỉ bộ đệm HikariCP)
+            if (psUpdateMother != null) { try { psUpdateMother.close(); } catch (SQLException e) {} }
             if (psCheckOrders != null) { try { psCheckOrders.close(); } catch (SQLException e) {} }
             if (psSoftDelete != null) { try { psSoftDelete.close(); } catch (SQLException e) {} }
             if (psHardDelete != null) { try { psHardDelete.close(); } catch (SQLException e) {} }
+            if (psUpdateSize != null) { try { psUpdateSize.close(); } catch (SQLException e) {} }
+            if (psInsertSize != null) { try { psInsertSize.close(); } catch (SQLException e) {} }
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
