@@ -16,6 +16,8 @@
     <c:set var="isBestseller" value="${not empty product ? product.isBestseller : false}" />
     <c:set var="trangThai" value="${not empty product ? product.trangThai : true}" />
     <c:set var="choPhepTopping" value="${not empty product ? product.choPhepTopping : true}" />
+    <c:set var="thuTuHienThi" value="${not empty product ? product.thuTuHienThi : 0}" />
+
     <title>TEA POS - ${not empty product ? "Cập Nhật" : "Thêm"} Sản Phẩm Đồ Uống</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,19 +41,21 @@
         }
         .preview-img-box {
             width: 100%;
-            height: 250px;
-            border: 2px dashed var(--border-color);
+            aspect-ratio: 1/1;
+            max-width: 250px;
+            margin: 0 auto;
             border-radius: 12px;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            border: 2px dashed #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            background-color: #f8fafc;
         }
         .preview-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
         }
     </style>
 </head>
@@ -96,7 +100,7 @@
                                                value="${tenSp}" placeholder="Ví dụ: Trà Sữa Khoai Môn Trân Châu..." required autocomplete="off">
                                     </div>
                                     <!-- Danh mục -->
-                                    <div class="col-12 col-md-6">
+                                    <div class="col-12 col-md-4">
                                         <label for="maDm" class="form-label fw-bold small text-dark">Nhóm Danh Mục <span class="text-danger">*</span></label>
                                         <select class="form-select form-control-teapos" id="maDm" name="maDm" required>
                                             <option value="">-- Chọn danh mục --</option>
@@ -107,8 +111,13 @@
                                             </c:forEach>
                                         </select>
                                     </div>
+                                    <!-- Sắp xếp thứ tự hiển thị ưu tiên -->
+                                    <div class="col-12 col-md-4">
+                                        <label for="thuTuHienThi" class="form-label fw-bold small text-dark">Thứ tự hiển thị ưu tiên</label>
+                                        <input type="number" class="form-control form-control-teapos" id="thuTuHienThi" name="thuTuHienThi" value="${thuTuHienThi}" min="0" required>
+                                    </div>
                                     <!-- Hỗ trợ uploader từ máy tính -->
-                                    <div class="col-12 col-md-6">
+                                    <div class="col-12 col-md-4">
                                         <label class="form-label fw-bold small text-dark">Hình ảnh Đồ uống</label>
                                         <ul class="nav nav-pills border-0 bg-light p-1 rounded mb-2" id="sanphamImgTab" style="font-size: 11px; max-width: fit-content;">
                                             <li class="nav-item">
@@ -174,7 +183,7 @@
                                             <label class="form-check-label fw-semibold text-danger small" for="isBestseller">🔥 Bán Chạy (Hot)</label>
                                         </div>
                                     </div>
-                                    <div class="col-12 border-top pt-3 mt-3">
+                                    <div class="col-12 col-md-9 border-top pt-3 mt-3">
                                         <label class="form-label fw-bold small text-dark d-block">Trạng thái bán của sản phẩm mẹ</label>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="trangThai" id="statusActive" value="1"
@@ -197,7 +206,7 @@
                                 <div class="preview-img-box mb-3 border shadow-sm">
                                     <img id="imgPreview" src="${not empty hinhAnh ? hinhAnh : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" alt="Preview">
                                 </div>
-                                <p class="small text-muted text-center" style="line-height: 1.4;">Đo lường tỉ lệ hiển thị tối ưu là 500x500px tỉ lệ vuông (1:1) để đồ uống hiển thị sắc nét nhất trên cả POS và Website.</p>
+                                <p class="small text-muted text-center" style="line-height: 1.4;">Tỷ lệ hiển thị tối ưu là 500x500px tỷ lệ vuông (1:1) để đồ uống hiển thị sắc nét nhất trên cả POS và Website.</p>
                             </div>
                         </div>
                         <!-- PHẦN QUẢN LÝ KÍCH CỠ & GIÁ BÁN -->
@@ -219,7 +228,7 @@
                                         <button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="addNewSizeAjax()"><i class="bi bi-plus-circle"></i> THÊM TÊN SIZE MỚI</button>
                                     </div>
                                 </div>
-                                <p class="small text-muted">Vui lòng tích chọn kích cỡ khả dụng để thiết lập giá bán và định lượng cho cốc nước. (Hệ thống yêu cầu ít nhất một kích cỡ hoạt động để mở bán món uống thành công).</p>
+                                <p class="small text-muted">Vui lòng tích chọn kích cỡ khả dụng để thiết lập giá bán và định lượng cho cốc nước. (Hệ thống yêu cầu ít nhất một kích cỡ hoạt động ở trạng thái "Mở bán" để lưu).</p>
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle bg-white rounded border overflow-hidden" id="sizesConfigTable">
                                         <thead class="table-success text-center">
@@ -596,6 +605,7 @@
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
+
     document.getElementById("productForm").addEventListener("submit", function(e) {
         const activeChecks = document.querySelectorAll(".size-check:checked");
         if (activeChecks.length === 0) {
@@ -603,11 +613,33 @@
             Swal.fire({
                 icon: 'warning',
                 title: 'Khuyết thiếu kích cỡ',
-                text: 'Hệ thống yêu cầu sản phẩm mới bắt buộc phải bật cấu hình tối thiểu một kích cỡ và giá bán!',
+                text: 'Hệ thống yêu cầu sản phẩm bắt buộc phải bật cấu hình tối thiểu một kích cỡ và giá bán!',
                 confirmButtonColor: '#2e7d32'
             });
             return;
         }
+
+        // CHỐT CHẶN PHÒNG THỦ: Kiểm tra phải có ít nhất một kích cỡ được chọn đang ở trạng thái MỞ BÁN (status-switch ON)
+        let hasActiveSize = false;
+        activeChecks.forEach(function(chk) {
+            const sizeId = chk.id.replace("size_active_", "");
+            const statusSwitch = document.getElementById("size_status_" + sizeId);
+            if (statusSwitch && statusSwitch.checked) {
+                hasActiveSize = true;
+            }
+        });
+
+        if (!hasActiveSize) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Chưa có kích cỡ mở bán',
+                text: 'Sản phẩm bắt buộc phải có ít nhất một kích cỡ ở trạng thái "Mở bán" (Bật công tắc xanh) để lưu!',
+                confirmButtonColor: '#2e7d32'
+            });
+            return;
+        }
+
         let invalidPrice = false;
         activeChecks.forEach(function(chk) {
             const sizeId = chk.id.replace("size_active_", "");
@@ -619,6 +651,7 @@
                 }
             }
         });
+
         if (invalidPrice) {
             e.preventDefault();
             Swal.fire({
@@ -629,6 +662,7 @@
             });
         }
     });
+
     document.addEventListener("DOMContentLoaded", function() {
         <c:if test="${not empty error}">
         Swal.fire({

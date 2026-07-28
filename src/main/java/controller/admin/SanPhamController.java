@@ -23,6 +23,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -100,6 +101,13 @@ public class SanPhamController extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String id = request.getParameter("id");
+        if (id == null || id.trim().isEmpty()) {
+            id = (String) request.getAttribute("id");
+        }
+        if (id == null || id.trim().isEmpty()) {
+            id = request.getParameter("maSp"); // POST Fallback
+        }
+
         SanPham sp = sanPhamService.getSanPhamById(id);
         if (sp != null) {
             List<DanhMuc> categories = danhMucService.getActiveDanhMuc();
@@ -185,7 +193,6 @@ public class SanPhamController extends HttpServlet {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         if (hasOrders) {
             boolean softSuccess = sanPhamService.deleteSanPham(id);
             if (softSuccess) {
@@ -335,7 +342,6 @@ public class SanPhamController extends HttpServlet {
     private void performCreate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String actorNv = WebUtil.getCurrentActor(request);
         String ip = WebUtil.getRemoteIP(request);
-
         try {
             String tenSp = request.getParameter("tenSp");
             String maDmStr = request.getParameter("maDm");
@@ -359,6 +365,7 @@ public class SanPhamController extends HttpServlet {
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
             boolean choPhepTopping = request.getParameter("choPhepTopping") != null;
+            int thuTuHienThi = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
 
             SanPham sp = new SanPham();
             sp.setTenSp(tenSp);
@@ -371,6 +378,7 @@ public class SanPhamController extends HttpServlet {
             sp.setIsBestseller(isBestseller);
             sp.setTrangThai(trangThai);
             sp.setChoPhepTopping(choPhepTopping);
+            sp.setThuTuHienThi(thuTuHienThi);
 
             List<KichCo> allSizes = kichCoRepository.getAll();
             List<SanPhamKichCo> selectedSizes = new ArrayList<>();
@@ -391,12 +399,14 @@ public class SanPhamController extends HttpServlet {
                     }
                 }
             }
+
             if (selectedSizes.isEmpty()) {
                 request.setAttribute("error", "Sản phẩm mới bắt buộc phải cấu hình tối thiểu một kích cỡ và giá bán đi kèm!");
                 request.setAttribute("product", sp);
                 showCreateForm(request, response);
                 return;
             }
+
             boolean success = sanPhamService.createSanPham(sp, selectedSizes);
             if (success) {
                 NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -418,7 +428,6 @@ public class SanPhamController extends HttpServlet {
     private void performUpdate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String actorNv = WebUtil.getCurrentActor(request);
         String ip = WebUtil.getRemoteIP(request);
-
         try {
             String maSp = request.getParameter("maSp");
             String tenSp = request.getParameter("tenSp");
@@ -448,6 +457,7 @@ public class SanPhamController extends HttpServlet {
             boolean isBestseller = request.getParameter("isBestseller") != null;
             boolean trangThai = "1".equals(request.getParameter("trangThai"));
             boolean choPhepTopping = request.getParameter("choPhepTopping") != null;
+            int thuTuHienThi = WebUtil.getIntParameter(request, "thuTuHienThi", 0);
 
             SanPham sp = sanPhamService.getSanPhamById(maSp);
             if (sp != null) {
@@ -462,6 +472,7 @@ public class SanPhamController extends HttpServlet {
                 sp.setIsBestseller(isBestseller);
                 sp.setTrangThai(trangThai);
                 sp.setChoPhepTopping(choPhepTopping);
+                sp.setThuTuHienThi(thuTuHienThi);
 
                 List<KichCo> allSizes = kichCoRepository.getAll();
                 List<SanPhamKichCo> selectedSizes = new ArrayList<>();
@@ -482,11 +493,22 @@ public class SanPhamController extends HttpServlet {
                         }
                     }
                 }
-                if (selectedSizes.isEmpty()) {
-                    request.setAttribute("error", "Không thể lưu: Sản phẩm phải có ít nhất một kích cỡ hoạt động!");
+
+                // CHỐT CHẶN PHÒNG THỦ: Phải có ít nhất một kích cỡ hoạt động ở trạng thái "Mở bán" (trangThai = true) để cho phép khách hàng mua
+                boolean hasActiveSize = false;
+                for (SanPhamKichCo sz : selectedSizes) {
+                    if (sz.isTrangThai()) {
+                        hasActiveSize = true;
+                        break;
+                    }
+                }
+                if (!hasActiveSize) {
+                    request.setAttribute("error", "Lỗi cấu hình: Sản phẩm bắt buộc phải bật nút gạt 'Mở bán' cho ít nhất một mốc kích cỡ!");
+                    request.setAttribute("id", maSp); // Tránh Null Pointer khi load lại Edit Form
                     showEditForm(request, response);
                     return;
                 }
+
                 boolean success = sanPhamService.updateSanPham(sp, selectedSizes);
                 if (success) {
                     NhatKyRepoImpl.getInstance().addLog(new NhatKyHoatDong(
@@ -494,7 +516,8 @@ public class SanPhamController extends HttpServlet {
                     ));
                     response.sendRedirect(request.getContextPath() + "/admin/sanpham?msg=updatesuccess");
                 } else {
-                    request.setAttribute("error", "Cập nhật sản phẩm thất bại trong CSDL!");
+                    request.setAttribute("error", "Lỗi: Không thể cập nhật thay đổi mốc giá và kích cỡ sản phẩm!");
+                    request.setAttribute("id", maSp); // Tránh Null Pointer khi load lại Edit Form
                     showEditForm(request, response);
                 }
             } else {
@@ -503,6 +526,7 @@ public class SanPhamController extends HttpServlet {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi luồng cập nhật sản phẩm", e);
             request.setAttribute("error", "Lỗi xử lý nghiệp vụ cập nhật!");
+            request.setAttribute("id", request.getParameter("maSp"));
             showEditForm(request, response);
         }
     }

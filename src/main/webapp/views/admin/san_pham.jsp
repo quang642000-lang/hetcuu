@@ -9,14 +9,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <style>
         :root {
             --primary: #10b981;
-            --primary-dark: #059669;
+            --primary-hover: #059669;
             --primary-light: #ecfdf5;
             --bg-main: #f1f5f9;
             --border-color: #cbd5e1;
@@ -28,6 +28,7 @@
             font-family: 'Inter', sans-serif !important;
             background-color: var(--bg-main) !important;
             color: var(--text-main) !important;
+            overflow: hidden !important;
         }
         .filter-wrapper {
             background-color: #ffffff;
@@ -37,12 +38,15 @@
             box-shadow: var(--shadow-sm);
         }
         .product-img-circle {
-            width: 44px;
-            height: 44px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-            box-shadow: var(--shadow-sm);
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            object-fit: cover !important;
+            border-radius: 50% !important;
+            border: 2px solid var(--primary) !important;
+            box-shadow: var(--shadow-sm) !important;
+            display: inline-block !important;
         }
         .pagination-container {
             display: flex;
@@ -70,7 +74,6 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-
                 <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM -->
                 <div class="filter-wrapper mb-4">
                     <div class="row g-3 text-start">
@@ -116,7 +119,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="productTable">
@@ -128,6 +130,7 @@
                             <th class="text-start">Tên Sản Phẩm</th>
                             <th class="text-start" style="width: 150px;">Danh Mục</th>
                             <th style="width: 150px;">Kích Cỡ Có Sẵn</th>
+                            <th style="width: 90px;">Thứ tự</th>
                             <th class="text-end" style="width: 110px;">Giá S</th>
                             <th class="text-end" style="width: 110px;">Giá L</th>
                             <th style="width: 140px;">Trạng Thái</th>
@@ -167,11 +170,11 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
-                                                    <img src="${item.hinhAnh}" class="product-img-circle shadow-sm" alt="Pic">
+                                                    <img src="${item.hinhAnh}" class="product-img-circle shadow-sm" style="width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; object-fit: cover !important; border-radius: 50% !important; border: 2px solid #10b981 !important;" alt="Pic">
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 44px; height: 44px;">
-                                                        <i class="bi bi-cup-straw fs-2 text-muted"></i>
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 44px; height: 44px; border: 2px solid #cbd5e1; border-radius: 50%;">
+                                                        <i class="bi bi-cup-straw fs-5 text-muted"></i>
                                                     </div>
                                                 </c:otherwise>
                                             </c:choose>
@@ -197,6 +200,9 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
+                                        <td>
+                                            <span class="badge bg-secondary px-2.5 py-1.5 text-white" style="border-radius: 6px;">${item.thuTuHienThi}</span>
+                                        </td>
                                         <td class="text-end fw-bold text-dark">
                                             <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
@@ -204,9 +210,9 @@
                                             <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                         </td>
                                         <td>
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                                </span>
+                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                    ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+                                            </span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5 align-items-center">
@@ -227,7 +233,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="10" class="text-center py-5 text-muted">
+                                    <td colspan="11" class="text-center py-5 text-muted">
                                         <i class="bi bi-cup-hot fs-1 text-secondary opacity-50 d-block mb-2"></i>
                                         Chưa ghi nhận sản phẩm đồ uống nào hoạt động trong CSDL!
                                     </td>
@@ -237,7 +243,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- Pagination block -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -245,12 +250,10 @@
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -266,6 +269,7 @@
         const hotVal = document.getElementById("filterHot").value;
 
         const allRows = Array.from(document.querySelectorAll("#productTableBody .product-row"));
+
         filteredRows = allRows.filter(row => {
             const maSp = row.dataset.masp.toLowerCase();
             const tenSp = row.dataset.tensp.toLowerCase();
@@ -320,9 +324,10 @@
 
         const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
         const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
-        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng sản phẩm';
 
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng sản phẩm';
         btnContainer.innerHTML = "";
+
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;

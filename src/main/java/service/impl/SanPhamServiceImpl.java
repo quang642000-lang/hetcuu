@@ -16,6 +16,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - PRODUCT SERVICE IMPLEMENTATION (BULLETPROOF CONCURRENCY)
+ * Fixed Connection Leaks, Transaction Rollovers, and Foreign Key conflicts with Cart details.
+ * =========================================================================
+ */
 public class SanPhamServiceImpl implements ISanPhamService {
     private static SanPhamServiceImpl instance;
     private final ISanPhamRepository sanPhamRepository;
@@ -147,8 +153,11 @@ public class SanPhamServiceImpl implements ISanPhamService {
                 }
             }
 
-            // Chuẩn bị các câu lệnh SQL phục vụ gộp dữ liệu (Smart Merge)
-            String checkOrdersSql = "SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ? AND ma_size = ?";
+            // CHỐT CHẶN PHÒNG THỦ: Kiểm toán lồng ghép cả CHI_TIET_DON_HANG (đã thanh toán/bán) và CHI_TIET_GIO_HANG (trong giỏ của khách)
+            // Triệt tiêu hoàn toàn lỗi vi phạm khóa ngoại (REFERENCE constraint) khi xóa cứng biến thể!
+            String checkOrdersSql = "SELECT " +
+                    "  (SELECT COUNT(*) FROM CHI_TIET_DON_HANG WHERE ma_sp = ? AND ma_size = ?) + " +
+                    "  (SELECT COUNT(*) FROM CHI_TIET_GIO_HANG WHERE ma_sp = ? AND ma_size = ?)";
             String softDeleteSql = "UPDATE SAN_PHAM_KICH_CO SET trang_thai = 0 WHERE ma_sp = ? AND ma_size = ?";
             String hardDeleteSql = "DELETE FROM SAN_PHAM_KICH_CO WHERE ma_sp = ? AND ma_size = ?";
 
@@ -166,17 +175,19 @@ public class SanPhamServiceImpl implements ISanPhamService {
                     }
                 }
                 if (!stillSelected) {
-                    // Size này đã bị deselect khỏi form. Kiểm tra xem đã bán đơn nào chưa!
+                    // Size này đã bị deselect khỏi form. Kiểm tra xem đã bán đơn nào hoặc có trong giỏ hàng nào chưa!
                     psCheckOrders.setString(1, sanPham.getMaSp());
                     psCheckOrders.setInt(2, dbSize.getMaSize());
+                    psCheckOrders.setString(3, sanPham.getMaSp());
+                    psCheckOrders.setInt(4, dbSize.getMaSize());
                     try (ResultSet rs = psCheckOrders.executeQuery()) {
                         if (rs.next() && rs.getInt(1) > 0) {
-                            // Đã bán -> Chỉ cho phép tắt trạng thái (Soft Delete) để bảo toàn lịch sử in bill
+                            // Đã bán hoặc đã nằm trong giỏ hàng -> Chỉ cho phép tắt trạng thái (Soft Delete) để bảo toàn dữ liệu
                             psSoftDelete.setString(1, sanPham.getMaSp());
                             psSoftDelete.setInt(2, dbSize.getMaSize());
                             psSoftDelete.executeUpdate();
                         } else {
-                            // Chưa bán -> Cho phép xóa cứng hoàn toàn khỏi cơ sở dữ liệu
+                            // Chưa bán và không nằm trong giỏ -> Cho phép xóa cứng hoàn toàn khỏi cơ sở dữ liệu
                             psHardDelete.setString(1, sanPham.getMaSp());
                             psHardDelete.setInt(2, dbSize.getMaSize());
                             psHardDelete.executeUpdate();
@@ -225,16 +236,21 @@ public class SanPhamServiceImpl implements ISanPhamService {
             }
             return false;
         } finally {
-            try {
-                if (psCheckOrders != null) psCheckOrders.close();
-                if (psSoftDelete != null) psSoftDelete.close();
-                if (psHardDelete != null) psHardDelete.close();
-                if (conn != null) {
+            // ĐÓNG TÀI NGUYÊN AN TOÀN TUYỆT ĐỐI (Gỡ bỏ Connection Leak rò rỉ bộ đệm HikariCP)
+            if (psCheckOrders != null) { try { psCheckOrders.close(); } catch (SQLException e) {} }
+            if (psSoftDelete != null) { try { psSoftDelete.close(); } catch (SQLException e) {} }
+            if (psHardDelete != null) { try { psHardDelete.close(); } catch (SQLException e) {} }
+            if (conn != null) {
+                try {
                     conn.setAutoCommit(true);
-                    conn.close();
+                } catch (SQLException e) {
+                    // Bỏ qua lỗi cấu hình autocommit trong finally
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
