@@ -1,71 +1,24 @@
-/* =========================================================================
-   TEA POS - DESIGN SYSTEM GLOBAL STYLES (COHESIVE EMERALD-SLATE LIGHT & DARK)
-   ========================================================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 :root {
-    /* Main Brand Palette - Organic Emerald Green & Corporate Slate Dark */
-    --primary: #10b981;             /* Emerald Green - Xanh Ngọc Lục Bảo */
-    --primary-hover: #059669;       /* Darker Emerald */
-    --primary-light: #ecfdf5;       /* Very light emerald background */
-    --dark-slate: #0f172a;          /* Slate Dark Header/Sidebar background */
-    --slate-medium: #1e293b;        /* Slate Medium */
-    --slate-light: #334155;         /* Slate Light */
-    --bg-main: #f8fafc;             /* Screen background */
-    --border-color: #e2e8f0;        /* Light Grey border */
-    --text-main: #1e293b;           /* Slate Dark text */
-    --text-muted: #64748b;          /* Cool grey text */
-
-    /* Semantic Colors */
-    --success: #10b981;             /* Green success */
-    --warning: #f59e0b;             /* Amber warning */
-    --danger: #ef4444;              /* Rose danger */
-    --info: #0284c7;                /* Sky blue info */
-
-    /* Layout Constants */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-
-    /* Elegant Drop Shadows */
+    --primary: #10b981; --primary-hover: #059669; --primary-light: #ecfdf5;
+    --dark-slate: #0f172a; --slate-medium: #1e293b; --slate-light: #334155;
+    --bg-main: #f8fafc; --border-color: #e2e8f0; --text-main: #1e293b;
+    --text-muted: #64748b; --success: #10b981; --warning: #f59e0b;
+    --danger: #ef4444; --info: #0284c7;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
     --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
 }
-
-/* Base resets & typography */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    font-family: 'Inter', sans-serif;
-    color: var(--text-main);
-    background-color: var(--bg-main);
-    line-height: 1.5;
-    height: 100vh !important;
-    overflow: hidden !important; /* Block body scroll globally to lock sidebar */
+    font-family: 'Inter', sans-serif; color: var(--text-main); background-color: var(--bg-main);
+    line-height: 1.5; height: 100vh !important; overflow: hidden !important;
 }
-
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Unified Typography sizes */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 h1 { font-size: 2rem; font-weight: 700; color: var(--text-main); }
 h2 { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
 h3 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
@@ -74,92 +27,59 @@ h5 { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
 h6 { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
 p { font-size: 0.875rem; color: var(--text-muted); }
 
-/* Custom Badge Status System */
-.badge-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 600;
-    gap: 4px;
-    border: 1px solid transparent;
+.badge-status { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; gap: 4px; border: 1px solid transparent; }
+.status-active { background-color: #d1fae5 !important; color: #065f46 !important; border-color: #a7f3d0 !important; }
+.status-inactive { background-color: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
+
+.form-control-teapos { width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background-color: #ffffff; transition: all 0.2s ease; color: var(--text-main); }
+.form-control-teapos:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+.form-control-teapos:disabled { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
+
+.btn-primary-teapos { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important; color: #ffffff !important; font-weight: 600 !important; font-size: 14px !important; border-radius: var(--radius-sm) !important; padding: 10px 20px !important; border: none !important; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important; transition: all 0.2s ease !important; }
+.btn-primary-teapos:hover { background: linear-gradient(135deg, var(--primary-hover) 0%, #047857 100%) !important; transform: translateY(-1px) !important; box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important; }
+.btn-secondary-teapos { background-color: #ffffff !important; color: var(--text-main) !important; border: 1px solid var(--border-color) !important; font-weight: 600 !important; font-size: 14px !important; border-radius: var(--radius-sm) !important; padding: 10px 20px !important; box-shadow: var(--shadow-sm) !important; transition: all 0.2s ease !important; }
+.btn-secondary-teapos:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; transform: translateY(-1px) !important; }
+
+/* UTILITY CLASSES NÂNG CẤP CHỐNG RỚT DÒNG */
+.text-truncate-1 { display: inline-block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ĐIỀU CHỈNH FONT CHỮ TRÊN THIẾT BỊ DI ĐỘNG (IPAD/MOBILE) */
+@media (max-width: 768px) {
+    body { font-size: 13.5px !important; }
+    h1 { font-size: 1.6rem !important; }
+    h2 { font-size: 1.4rem !important; }
+    h3 { font-size: 1.25rem !important; }
+    h4 { font-size: 1.15rem !important; }
+    h5 { font-size: 1.05rem !important; }
+    h6 { font-size: 0.95rem !important; }
+    p, span, div { font-size: 13px; }
+    .btn-primary-teapos, .btn-secondary-teapos { padding: 8px 16px !important; font-size: 13px !important; }
 }
 
-.status-active {
-    background-color: #d1fae5 !important;
-    color: #065f46 !important;
-    border-color: #a7f3d0 !important;
-}
-.status-inactive {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border-color: #fca5a5 !important;
-}
-.status-pending {
-    background-color: #fef3c7 !important;
-    color: #92400e !important;
-    border-color: #fde68a !important;
-}
-.status-info {
-    background-color: #e0f2fe !important;
-    color: #075985 !important;
-    border-color: #bae6fd !important;
+/* =========================================================================
+   VÁ LỖI UI: CO GIÃN ĐA THIẾT BỊ (RESPONSIVE)
+========================================================================= */
+@media screen and (max-width: 992px) { /* Cho màn hình iPad / Tablet */
+    body { font-size: 13.5px !important; }
+    h4, h3 { font-size: 1.25rem !important; }
+    .btn-primary-teapos, .btn-secondary-teapos { padding: 8px 14px !important; font-size: 13px !important; }
 }
 
-/* Form inputs styling */
-.form-control-teapos {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 14px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    background-color: #ffffff;
-    transition: all 0.2s ease;
-    color: var(--text-main);
-}
-.form-control-teapos:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-}
-.form-control-teapos:disabled {
-    background-color: #f1f5f9;
-    color: var(--text-muted);
-    cursor: not-allowed;
+/* =========================================================================
+   VÁ LỖI UI: CO GIÃN ĐA THIẾT BỊ (RESPONSIVE IPAD/MOBILE)
+========================================================================= */
+@media screen and (max-width: 992px) {
+    body { font-size: 13.5px !important; }
+    h4, h3 { font-size: 1.25rem !important; }
+    .btn-primary-teapos, .btn-secondary-teapos { padding: 8px 14px !important; font-size: 13px !important; }
 }
 
-/* Beautiful custom buttons mapped to the design system */
-.btn-primary-teapos {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    border-radius: var(--radius-sm) !important;
-    padding: 10px 20px !important;
-    border: none !important;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
-    transition: all 0.2s ease !important;
-}
-.btn-primary-teapos:hover {
-    background: linear-gradient(135deg, var(--primary-hover) 0%, #047857 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
-}
-
-.btn-secondary-teapos {
-    background-color: #ffffff !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    border-radius: var(--radius-sm) !important;
-    padding: 10px 20px !important;
-    box-shadow: var(--shadow-sm) !important;
-    transition: all 0.2s ease !important;
-}
-.btn-secondary-teapos:hover {
-    background-color: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
-    transform: translateY(-1px) !important;
+@media screen and (max-width: 768px) {
+    body { font-size: 13px !important; }
+    .card { padding: 16px !important; }
+    .pos-product-card { padding: 8px !important; }
+    .pos-product-img { height: 80px !important; }
+    .pos-card-name { font-size: 12px !important; -webkit-line-clamp: 2 !important; height: 34px !important; white-space: normal !important; }
+    .pos-search-input { font-size: 12px !important; padding: 6px 12px 6px 30px !important;}
 }
