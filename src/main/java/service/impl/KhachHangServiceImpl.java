@@ -69,11 +69,32 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setMatKhau(SecurityUtil.hashSHA256(password));
         kh.setDiemTichLuy(0);
         kh.setMaHang(1); // Mặc định ĐỒNG
-        kh.setTrangThai(false); // Chưa kích hoạt
+        kh.setTrangThai(false); // Chưa kích hoạt trên web
         boolean success = khachHangRepository.add(kh);
         if (success) {
             sendActivationOTP(email);
             return kh;
+        }
+        return null;
+    }
+
+    // ĐĂNG KÝ KHÁCH HÀNG TẠI QUẦY POS - AN TOÀN TUYỆT ĐỐI, KHÔNG MẬT KHẨU MẶC ĐỊNH CRASH LỖI
+    @Override
+    public KhachHang registerCustomerAtPOS(String tenKh, String sdt, String email) {
+        if (khachHangRepository.checkTrungSdtOrEmail(sdt, email, null)) {
+            return null;
+        }
+        KhachHang kh = new KhachHang();
+        kh.setTenKh(tenKh);
+        kh.setSoDienThoai(sdt);
+        kh.setEmail(email);
+        kh.setMatKhau(null); // mật khẩu trống, chờ kích hoạt trên web
+        kh.setDiemTichLuy(0);
+        kh.setMaHang(1); // Đồng
+        kh.setTrangThai(true); // Trạng thái = true để có thể sử dụng ngay tại POS!
+        boolean success = khachHangRepository.add(kh);
+        if (success) {
+            return khachHangRepository.getBySdt(sdt);
         }
         return null;
     }
@@ -84,7 +105,8 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (kh == null) {
             kh = khachHangRepository.getByEmail(usernameOrSdtOrEmail);
         }
-        if (kh != null && kh.isTrangThai()) {
+        // CHỐT CHẶN BẢO MẬT CHỐNG NULL POINTER EXCEPTION KHI MẬT KHẨU LÀ NULL (TÀI KHOẢN QUẦY CHƯA KÍCH HOẠT)
+        if (kh != null && kh.isTrangThai() && kh.getMatKhau() != null) {
             String hashedInput = SecurityUtil.hashSHA256(password);
             if (kh.getMatKhau().equals(hashedInput)) {
                 return kh;
@@ -133,7 +155,8 @@ public class KhachHangServiceImpl implements IKhachHangService {
     @Override
     public boolean sendForgotPasswordOTP(String email) {
         KhachHang kh = khachHangRepository.getByEmail(email);
-        if (kh == null || !kh.isTrangThai()) {
+        // Cho phép gửi OTP khôi phục / kích hoạt mật khẩu cho cả tài khoản chưa có mật khẩu
+        if (kh == null) {
             return false;
         }
         String otpCode = String.format("%06d", new Random().nextInt(999999));
@@ -171,7 +194,9 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (verifyForgotPasswordOTP(email, otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
-                return updateMatKhau(kh.getMaKh(), SecurityUtil.hashSHA256(newPassword));
+                kh.setMatKhau(SecurityUtil.hashSHA256(newPassword));
+                kh.setTrangThai(true); // Tự động kích hoạt tài khoản luôn sau khi tạo mật khẩu
+                return khachHangRepository.update(kh);
             }
         }
         return false;

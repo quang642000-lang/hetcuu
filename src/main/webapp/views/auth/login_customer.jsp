@@ -10,14 +10,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .auth-card { width: 100%; max-width: 440px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.1); overflow: hidden; }
-        .brand-banner { background-color: #10b981; color: #ffffff; padding: 25px; text-align: center; }
+        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-card { width: 100%; max-width: 460px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15); overflow: hidden; }
+        .brand-banner { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; padding: 25px; }
     </style>
 </head>
 <body>
-<div class="auth-card animate__animated animate__fadeIn">
+<div class="auth-card">
     <div class="brand-banner">
         <div class="fs-1 mb-2"><i class="bi bi-cup-hot-fill"></i></div>
         <h4 class="fw-bold mb-0">TEA POS PORTAL</h4>
@@ -30,20 +31,21 @@
         <form action="${pageContext.request.contextPath}/customer/login" method="POST">
             <div class="mb-3">
                 <label class="form-label fw-semibold text-dark small">Email hoặc Số điện thoại</label>
-                <input type="text" class="form-control" name="username" placeholder="example@teapos.vn..." required>
+                <input type="text" class="form-control" name="username" placeholder="example@teapos.vn..." required autocomplete="off">
             </div>
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-1">
                     <label class="form-label fw-semibold text-dark small mb-0">Mật khẩu</label>
-                    <!-- QUÊN MẬT KHẨU CHO KHÁCH HÀNG GẮN ROLE=CUSTOMER -->
                     <a href="${pageContext.request.contextPath}/forgot-password?role=customer" class="text-decoration-none small text-success fw-bold">Quên mật khẩu?</a>
                 </div>
                 <input type="password" class="form-control" name="password" placeholder="Nhập mật khẩu..." required>
             </div>
             <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold text-uppercase"><i class="bi bi-box-arrow-in-right"></i> ĐĂNG NHẬP THÀNH VIÊN</button>
-            <div class="text-center mt-3">
-                <span class="text-muted small">Chưa có thẻ thành viên? </span>
-                <a href="${pageContext.request.contextPath}/register" class="text-success text-decoration-none fw-bold small">Đăng ký ngay</a>
+
+            <!-- ĐƯỜNG DẪN KÍCH HOẠT THÀNH VIÊN ĐĂNG KÝ TẠI QUẦY -->
+            <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-10 d-flex justify-content-between">
+                <a href="${pageContext.request.contextPath}/register" class="text-success text-decoration-none fw-bold small"><i class="bi bi-person-plus-fill"></i> Đăng ký mới</a>
+                <a href="${pageContext.request.contextPath}/activate" class="text-danger text-decoration-none fw-bold small"><i class="bi bi-person-check-fill"></i> Kích hoạt thẻ quầy POS</a>
             </div>
         </form>
     </div>
@@ -52,7 +54,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         <c:if test="${not empty requestScope.error}">
         Swal.fire({ icon: 'error', title: 'Thất bại', text: '${requestScope.error}', confirmButtonColor: '#ef4444' });
-    </c:if>
+        </c:if>
+    });
 </script>
 </body>
 </html>

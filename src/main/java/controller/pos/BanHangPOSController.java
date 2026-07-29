@@ -13,22 +13,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - POINT OF SALE (POS) CASHIER CONTROLLER (v2)
- * Synchronized with STRICT product-mother and size-variant status constraints.
- * Invisible categories or disabled products are completely filtered out.
- * =========================================================================
- */
 @WebServlet(name = "BanHangPOSController", urlPatterns = {
         "/pos",
         "/pos/search-customer",
@@ -54,15 +43,6 @@ public class BanHangPOSController extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        String uri = request.getRequestURI();
-        if (uri.endsWith("/pos/search-customer")) {
-            performSearchCustomer(request, response);
-            return;
-        }
-        if (uri.endsWith("/pos/bill-detail")) {
-            performGetBillDetail(request, response);
             return;
         }
 
@@ -100,20 +80,23 @@ public class BanHangPOSController extends HttpServlet {
         request.setAttribute("toppings", toppings);
 
         // Gộp JSON topping làm cấu hình chọn nhanh ở popup
-        StringBuilder toppingsJson = new StringBuilder();
-        toppingsJson.append("[");
-        for (int i = 0; i < toppings.size(); i++) {
-            Topping t = toppings.get(i);
-            toppingsJson.append("{");
-            toppingsJson.append("\"maTp\":\"").append(t.getMaTp()).append("\",");
-            toppingsJson.append("\"tenTp\":\"").append(t.getTenTp()).append("\",");
-            toppingsJson.append("\"giaBan\":").append(t.getGiaBan()).append(",");
-            toppingsJson.append("\"hinhAnh\":\"").append(t.getHinhAnh() != null ? t.getHinhAnh() : "").append("\"");
-            toppingsJson.append("}");
-            if (i < toppings.size() - 1) toppingsJson.append(",");
+        StringBuilder toppingsJson = new StringBuilder("[");
+        if (toppings != null) {
+            for (int i = 0; i < toppings.size(); i++) {
+                Topping t = toppings.get(i);
+                toppingsJson.append("{");
+                toppingsJson.append("\"maTp\":\"").append(t.getMaTp()).append("\",");
+                // FIXED: Changed """ to "\"" to prevent unclosed text block syntax errors
+                toppingsJson.append("\"tenTp\":\"").append(t.getTenTp().replace("\"", "\\\"")).append("\",");
+                toppingsJson.append("\"giaBan\":").append(t.getGiaBan()).append(",");
+                toppingsJson.append("\"hinhAnh\":\"").append(t.getHinhAnh() != null ? t.getHinhAnh() : "").append("\"");
+                toppingsJson.append("}");
+                if (i < toppings.size() - 1) toppingsJson.append(",");
+            }
         }
         toppingsJson.append("]");
         request.setAttribute("allToppingsJson", toppingsJson.toString());
+
         request.getRequestDispatcher("/views/pos/ban_hang.jsp").forward(request, response);
     }
 
@@ -130,6 +113,10 @@ public class BanHangPOSController extends HttpServlet {
             performUpdateProfile(request, response);
         } else if (uri.endsWith("/pos/change-password")) {
             performChangePassword(request, response);
+        } else if (uri.endsWith("/pos/search-customer")) { // ADDED missing route
+            performSearchCustomer(request, response);
+        } else if (uri.endsWith("/pos/bill-detail")) { // ADDED missing route
+            performGetBillDetail(request, response);
         } else {
             doGet(request, response);
         }
@@ -161,7 +148,7 @@ public class BanHangPOSController extends HttpServlet {
                 json.append("\"loaiGiam\":").append(v.getLoaiGiam()).append(",");
                 json.append("\"giaTriGiam\":").append(v.getGiaTriGiam()).append(",");
                 json.append("\"giamToiDa\":").append(v.getGiamToiDa()).append(",");
-                json.append("\"donToiThieu\":").append(v.getDonToiThieu()).append("");
+                json.append("\"donToiThieu\":").append(v.getDonToiThieu());
                 json.append("}");
                 if (i < vouchers.size() - 1) json.append(",");
             }
@@ -183,10 +170,9 @@ public class BanHangPOSController extends HttpServlet {
             return;
         }
         try {
-            KhachHang kh = khachHangService.registerCustomer(tenKh, sdt, email, "12345678");
+            // NÂNG CẤP BẢO MẬT: Gọi registerCustomerAtPOS thay vì gán cứng mật khẩu mặc định "12345678"
+            KhachHang kh = khachHangService.registerCustomerAtPOS(tenKh, sdt, email);
             if (kh != null) {
-                kh.setTrangThai(true);
-                khachHangService.updateCustomerProfile(kh);
                 StringBuilder json = new StringBuilder();
                 json.append("{");
                 json.append("\"status\":\"SUCCESS\",");
@@ -233,7 +219,7 @@ public class BanHangPOSController extends HttpServlet {
             json.append("\"giaTriGiam\":").append(km.getGiaTriGiam()).append(",");
             json.append("\"giamToiDa\":").append(km.getGiamToiDa()).append(",");
             json.append("\"donToiThieu\":").append(km.getDonToiThieu()).append(",");
-            json.append("\"discount\":").append(discount).append("");
+            json.append("\"discount\":").append(discount);
             json.append("}");
             response.getWriter().write(json.toString());
         } else {
@@ -289,24 +275,23 @@ public class BanHangPOSController extends HttpServlet {
             json.append("\"items\":[");
             List<ChiTietDonHang> items = dh.getChiTietDonHangList();
             for (int i = 0; i < items.size(); i++) {
-                ChiTietDonHang ctdh = items.get(i);
+                ChiTietDonHang item = items.get(i);
                 json.append("{");
-                json.append("\"tenMon\":\"").append(ctdh.getTenSp() != null ? ctdh.getTenSp() : ctdh.getMaSp()).append("\",");
-                json.append("\"maSize\":").append(ctdh.getMaSize()).append(",");
-                json.append("\"tenSize\":\"").append(ctdh.getTenSize() != null ? ctdh.getTenSize() : (ctdh.getMaSize() == 1 ? "S" : (ctdh.getMaSize() == 2 ? "M" : "L"))).append("\",");
-                json.append("\"soLuong\":").append(ctdh.getSoLuong()).append(",");
-                json.append("\"giaChot\":").append(ctdh.getGiaChot()).append(",");
-                json.append("\"mucDa\":\"").append(ctdh.getMucDa() != null ? ctdh.getMucDa() : "100%").append("\",");
-                json.append("\"mucDuong\":\"").append(ctdh.getMucDuong() != null ? ctdh.getMucDuong() : "100%").append("\",");
+                json.append("\"tenMon\":\"").append(item.getTenSp() != null ? item.getTenSp() : "N/A").append("\",");
+                json.append("\"tenSize\":\"").append(item.getTenSize() != null ? item.getTenSize() : "S").append("\",");
+                json.append("\"soLuong\":").append(item.getSoLuong()).append(",");
+                json.append("\"giaChot\":").append(item.getGiaChot()).append(",");
+                json.append("\"mucDa\":\"").append(item.getMucDa()).append("\",");
+                json.append("\"mucDuong\":\"").append(item.getMucDuong()).append("\",");
                 json.append("\"toppings\":[");
-                List<ChiTietTopping> tps = ctdh.getToppingsList();
+                List<ChiTietTopping> tps = item.getToppingsList();
                 if (tps != null) {
                     for (int j = 0; j < tps.size(); j++) {
                         ChiTietTopping tp = tps.get(j);
                         json.append("{");
-                        json.append("\"tenTopping\":\"").append(tp.getTenTopping() != null ? tp.getTenTopping() : tp.getMaTp()).append("\",");
+                        json.append("\"tenTopping\":\"").append(tp.getTenTopping() != null ? tp.getTenTopping() : "Topping").append("\",");
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
-                        json.append("\"giaChotTp\":").append(tp.getGiaChotTp()).append("");
+                        json.append("\"giaChotTp\":").append(tp.getGiaChotTp());
                         json.append("}");
                         if (j < tps.size() - 1) json.append(",");
                     }
@@ -392,7 +377,6 @@ public class BanHangPOSController extends HttpServlet {
                     ctdh.setMaSp(itemMaSp[i]);
                     ctdh.setMaSize(WebUtil.parseIntSafe(itemMaSize != null && i < itemMaSize.length ? itemMaSize[i] : "1", 1));
                     ctdh.setSoLuong(WebUtil.parseIntSafe(itemSoLuong != null && i < itemSoLuong.length ? itemSoLuong[i] : "1", 1));
-
                     int priceChot = sanPhamService.getGiaKichCoSanPham(ctdh.getMaSp(), ctdh.getMaSize());
                     if (priceChot <= 0 && itemGiaChot != null && i < itemGiaChot.length) {
                         priceChot = WebUtil.parseIntSafe(itemGiaChot[i], 0);
@@ -403,12 +387,13 @@ public class BanHangPOSController extends HttpServlet {
                     ctdh.setGhiChuMon(itemGhiChuMon != null && i < itemGhiChuMon.length ? itemGhiChuMon[i] : "Normal");
 
                     List<ChiTietTopping> toppingsList = new ArrayList<>();
-                    if (itemToppingKeys != null && i < itemToppingKeys.length && itemToppingKeys[i] != null && !itemToppingKeys[i].isEmpty()) {
-                        String[] rawTps = itemToppingKeys[i].split("\\|");
-                        for (String rtp : rawTps) {
-                            String[] parts = rtp.split("_");
+                    if (itemToppingKeys != null && i < itemToppingKeys.length && itemToppingKeys[i] != null && !itemToppingKeys[i].trim().isEmpty()) {
+                        String[] tops = itemToppingKeys[i].split("\\|");
+                        for (String tKey : tops) {
+                            String[] parts = tKey.split("_");
                             if (parts.length >= 3) {
                                 ChiTietTopping ctt = new ChiTietTopping();
+                                ctt.setMaCtdh(0);
                                 ctt.setMaTp(parts[0]);
                                 ctt.setSoLuong(WebUtil.parseIntSafe(parts[1], 1));
                                 ctt.setGiaChotTp(WebUtil.parseIntSafe(parts[2], 0));

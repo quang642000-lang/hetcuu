@@ -9,6 +9,7 @@ public interface IKhachHangService {
     KhachHang getKhachHangBySdt(String sdt);
     KhachHang getKhachHangByEmail(String email);
     KhachHang registerCustomer(String tenKh, String sdt, String email, String password);
+    KhachHang registerCustomerAtPOS(String tenKh, String sdt, String email); // ĐỒNG BỘ BẢO MẬT KHÔNG MẬT KHẨU
     KhachHang loginCustomer(String usernameOrSdtOrEmail, String password);
     boolean sendActivationOTP(String email);
     boolean verifyActivationOTP(String email, String otp);
