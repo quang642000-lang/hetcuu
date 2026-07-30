@@ -11,6 +11,7 @@
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/auth/login_admin.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/auth" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/layout/header_portal.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/layout" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/views/portal/gio_hang.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/portal" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/views/pos/ban_hang.jsp" value="file://$PROJECT_DIR$/src/main/webapp/views/pos" />
       </map>
     </option>
   </component>
