@@ -51,7 +51,6 @@ public class PortalCartController extends HttpServlet {
         HttpSession session = request.getSession(false);
         String requestedWith = request.getHeader("X-Requested-With");
         boolean isAjax = "XMLHttpRequest".equals(requestedWith) || "true".equals(request.getParameter("ajax"));
-
         if (session == null || session.getAttribute("customer") == null) {
             if (isAjax) {
                 response.getWriter().write("NOT_LOGGED_IN");
@@ -76,7 +75,6 @@ public class PortalCartController extends HttpServlet {
             String maSp = request.getParameter("maSp");
             int maSize = Integer.parseInt(request.getParameter("maSize"));
             int soLuong = Integer.parseInt(request.getParameter("soLuong"));
-
             // CHỐT CHẶN PHÒNG THỦ: Khi chọn bánh ngọt/cafe nóng không có đá/đường, tham số gửi lên sẽ là null.
             // Gán giá trị mặc định tránh lỗi khóa ngoại và NOT NULL trong DB.
             String mucDa = request.getParameter("mucDa");
@@ -91,7 +89,6 @@ public class PortalCartController extends HttpServlet {
             if (ghiChuMon == null || ghiChuMon.trim().isEmpty()) {
                 ghiChuMon = "Normal";
             }
-
             String[] arrToppings = request.getParameterValues("toppings[]");
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
             if (arrToppings != null) {
@@ -109,6 +106,22 @@ public class PortalCartController extends HttpServlet {
                     toppingList.add(new ChiTietToppingGioHang(0L, maTp, qty));
                 }
             }
+
+            // FIX: Xử lý bộ lọc thông minh cho nút "MUA NGAY" (Bypass selective checkout)
+            // Nếu hành động gửi lên là "buy", tự động đưa is_chon_mua = 0 cho tất cả món khác hiện tại của giỏ hàng,
+            // giúp cốc nước mới thêm này là món duy nhất được chọn thanh toán mà không bị gộp đơn rác cũ!
+            String action = request.getParameter("action");
+            if ("buy".equals(action)) {
+                String deselectOtherSql = "UPDATE CHI_TIET_GIO_HANG SET is_chon_mua = 0 WHERE ma_gh = (SELECT ma_gh FROM GIO_HANG WHERE ma_kh = ?)";
+                try (Connection conn = DBConnect.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(deselectOtherSql)) {
+                    ps.setString(1, maKh);
+                    ps.executeUpdate();
+                } catch (Exception e) {
+                    System.err.println("[TEA POS WARNING] Không thể tự động bỏ chọn giỏ hàng cũ: " + e.getMessage());
+                }
+            }
+
             String maCtghStr = request.getParameter("maCtgh");
             if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
                 long maCtgh = Long.parseLong(maCtghStr.trim());

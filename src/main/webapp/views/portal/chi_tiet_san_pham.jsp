@@ -37,6 +37,7 @@
                     <c:if test="${not empty editItem}">
                         <input type="hidden" name="maCtgh" value="${editItem.maCtgh}">
                     </c:if>
+
                     <!-- 1. CHỌN SIZE -->
                     <div class="mb-4 text-start">
                         <label class="form-label fw-bold text-dark d-block">1. Chọn kích cỡ cốc nước <span class="text-danger">*</span></label>
@@ -65,6 +66,7 @@
                             </c:forEach>
                         </div>
                     </div>
+
                     <!-- 2. ĐÁ & ĐƯỜNG -->
                     <div class="row g-3 mb-4 text-start">
                         <c:if test="${product.choPhepDoiDa}">
@@ -90,6 +92,7 @@
                             </div>
                         </c:if>
                     </div>
+
                     <!-- 3. TOPPING (Toggles dynamically based on product.choPhepTopping) -->
                     <div class="mb-4 text-start">
                         <c:choose>
@@ -133,11 +136,13 @@
                             </c:otherwise>
                         </c:choose>
                     </div>
+
                     <!-- 4. GHI CHÚ -->
                     <div class="mb-4 text-start">
                         <label for="ghiChuMon" class="form-label fw-bold text-dark small">5. Ghi chú của bạn cho thợ pha chế</label>
                         <textarea class="form-control" id="ghiChuMon" name="ghiChuMon" rows="2" placeholder="Ví dụ: Mang ly đá riêng, bọc kỹ màng nhôm mang đi xa..."><c:out value="${not empty editItem ? editItem.ghiChuMon : ''}"/></textarea>
                     </div>
+
                     <!-- 5. TỔNG TIỀN VÀ SỐ LƯỢNG -->
                     <div class="d-flex align-items-center justify-content-between border-top pt-4 mb-4">
                         <div class="text-start">
@@ -150,6 +155,7 @@
                             <button type="button" class="btn btn-outline-secondary px-3 py-2" onclick="adjustQty(1)"><i class="bi bi-plus-lg"></i></button>
                         </div>
                     </div>
+
                     <!-- BỘ ĐÔI NÚT SONG HÀNH -->
                     <div class="row g-3">
                         <c:choose>
@@ -180,6 +186,7 @@
     </div>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
+
 <script>
     function toggleWebToppingQty(maTp) {
         const chk = document.getElementById('tp_' + maTp);
@@ -196,6 +203,7 @@
         }
         calculateRealtimeTotal();
     }
+
     function adjustWebToppingQty(maTp, delta) {
         const qtyInput = document.getElementById('web_tp_qty_' + maTp);
         if (qtyInput) {
@@ -206,6 +214,7 @@
         }
         calculateRealtimeTotal();
     }
+
     function calculateRealtimeTotal() {
         let total = 0;
         const checkedSize = document.querySelector('input[name="maSize"]:checked');
@@ -223,6 +232,7 @@
         const finalPrice = total * qty;
         document.getElementById('displayTotal').innerText = finalPrice.toLocaleString('vi-VN') + ' đ';
     }
+
     function adjustQty(amount) {
         const input = document.getElementById('qtyInput');
         let currentVal = parseInt(input.value);
@@ -231,9 +241,13 @@
         input.value = currentVal;
         calculateRealtimeTotal();
     }
+
     function handleCartAction(action) {
         const form = document.getElementById("addToCartForm");
         const formData = new FormData(form);
+        // FIX: Đóng gói và gửi kèm action 'buy' hoặc 'add' lên Servlet để phân tách logic chốt lọc giỏ hàng
+        formData.append('action', action);
+
         Swal.fire({
             title: 'Đang kết nối hệ thống...',
             allowOutsideClick: false,
@@ -302,6 +316,7 @@
                 console.error('Lỗi hệ thống kết nối AJAX:', err);
             });
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         calculateRealtimeTotal();
     });

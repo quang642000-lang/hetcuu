@@ -55,21 +55,19 @@
         <div class="col-12 col-lg-8">
             <div class="card cart-card p-4 text-start">
                 <c:choose>
-                    <c:when test="${not empty cart.chiTietGioHangList}">
+                    <c:when test="${not empty cart.getChiTietGioHangList()}">
                         <div class="d-flex flex-column gap-3">
-                            <c:forEach var="item" items="${cart.chiTietGioHangList}">
+                            <c:forEach var="item" items="${cart.getChiTietGioHangList()}">
                                 <c:set var="toppingSum" value="0"/>
                                 <c:forEach var="tp" items="${item.toppingGioHangList}">
                                     <c:set var="toppingSum" value="${toppingSum + (tp.giaTp * tp.soLuongTp)}"/>
                                 </c:forEach>
                                 <c:set var="itemUnitTotal" value="${item.giaBan + toppingSum}"/>
                                 <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
-
                                 <div class="cart-item-row d-flex align-items-center gap-3"
                                      id="cart_row_${item.maCtgh}"
                                      data-ctgh="${item.maCtgh}"
                                      data-unit-price="${itemUnitTotal}">
-
                                     <!-- Checkbox Chọn mua -->
                                     <div class="flex-shrink-0">
                                         <input type="checkbox" class="form-check-input custom-checkbox"
@@ -77,12 +75,11 @@
                                             ${item.isChonMua() ? 'checked' : ''}
                                                onchange="toggleCartSelectionRealtime(${item.maCtgh})">
                                     </div>
-
-                                    <!-- Ảnh sản phẩm -->
+                                    <!-- Ảnh sản phẩm, lấy trực tiếp từ thuộc tính liên kết sanPham.hinhAnh -->
                                     <div class="flex-shrink-0">
                                         <c:choose>
-                                            <c:when test="${not empty item.hinhAnh}">
-                                                <img src="${item.hinhAnh}" class="item-image border shadow-sm" alt="Beverage">
+                                            <c:when test="${not empty item.sanPham.hinhAnh}">
+                                                <img src="${item.sanPham.hinhAnh}" class="item-image border shadow-sm" alt="Beverage">
                                             </c:when>
                                             <c:otherwise>
                                                 <div class="bg-light rounded border text-center d-flex align-items-center justify-content-center item-image">
@@ -91,25 +88,29 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
-
                                     <!-- Thông tin cốc nước, size & toppings -->
                                     <div class="flex-grow-1 text-start">
                                         <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">
-                                            <c:out value="${item.tenSp}"/>
+                                            <c:out value="${item.sanPham.tenSp}"/>
                                             <span class="badge bg-success bg-opacity-10 text-success border border-success ms-1" style="font-size:10px; border-radius:4px;">Size ${item.tenSize}</span>
                                         </h6>
+                                        <!-- Kiểm tra mốc cấu hình sản phẩm mẹ để ẩn/hiển thị đá đường tương thích -->
                                         <div class="d-flex flex-wrap gap-1.5 mb-1.5">
-                                            <span class="badge bg-light text-muted border" style="font-size:10.5px;">Đá: ${item.mucDa}</span>
-                                            <span class="badge bg-light text-muted border" style="font-size:10.5px;">Đường: ${item.mucDuong}</span>
+                                            <c:if test="${item.sanPham.choPhepDoiDa}">
+                                                <span class="badge bg-light text-muted border" style="font-size:10.5px;">Đá: ${item.mucDa}</span>
+                                            </c:if>
+                                            <c:if test="${item.sanPham.choPhepDoiDuong}">
+                                                <span class="badge bg-light text-muted border" style="font-size:10.5px;">Đường: ${item.mucDuong}</span>
+                                            </c:if>
                                         </div>
                                         <!-- Toppings list -->
                                         <c:if test="${not empty item.toppingGioHangList}">
                                             <div class="ps-1 mt-1 small text-success d-flex flex-wrap gap-1 align-items-center" style="font-size: 11px;">
                                                 <i class="bi bi-patch-plus"></i> Toppings:
                                                 <c:forEach var="tp" items="${item.toppingGioHangList}" varStatus="loop">
-                                                    <span class="text-success fw-bold">
-                                                        <c:out value="${not empty tp.tenTp ? tp.tenTp : 'Topping #' += tp.maTp}"/> (x${tp.soLuongTp})
-                                                    </span>${!loop.last ? ',' : ''}
+<span class="text-success fw-bold">
+<c:out value="${not empty tp.tenTp ? tp.tenTp : 'Topping #' += tp.maTp}"/> (x${tp.soLuongTp})
+</span>${!loop.last ? ',' : ''}
                                                 </c:forEach>
                                             </div>
                                         </c:if>
@@ -120,7 +121,6 @@
                                             </small>
                                         </c:if>
                                     </div>
-
                                     <!-- Điều phối Số lượng & Giá trị -->
                                     <div class="flex-shrink-0 text-center d-flex flex-column align-items-end gap-2" style="min-width: 120px;">
                                         <!-- Nút chỉnh số lượng -->
@@ -134,7 +134,6 @@
                                             <fmt:formatNumber value="${itemRowTotal}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
                                         </div>
                                     </div>
-
                                     <!-- Thao tác Sửa / Xóa -->
                                     <div class="flex-shrink-0 d-flex flex-column gap-2 justify-content-center border-start ps-3 align-self-stretch" style="width: 44px;">
                                         <a href="${pageContext.request.contextPath}/product/detail?id=${item.maSp}&maCtgh=${item.maCtgh}" class="text-primary fs-5" title="Sửa tùy chọn pha chế"><i class="bi bi-pencil-square"></i></a>
@@ -154,13 +153,12 @@
                 </c:choose>
             </div>
         </div>
-
         <!-- KHỐI THANH TOÁN (CỘT PHẢI) -->
         <div class="col-12 col-lg-4">
             <div class="card sticky-summary p-4 shadow-sm text-start">
                 <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">THÔNG TIN ĐƠN ĐẶT</h5>
                 <c:choose>
-                    <c:when test="${not empty cart.chiTietGioHangList}">
+                    <c:when test="${not empty cart.getChiTietGioHangList()}">
                         <div class="d-flex flex-column gap-3">
                             <div class="d-flex justify-content-between align-items-center small">
                                 <span class="text-muted">Tổng tiền cốc & Toppings:</span>
@@ -198,14 +196,10 @@
     </div>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 <script>
-    // Định dạng tiền tệ VNĐ
     function formatVND(amount) {
         return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
     }
-
-    // Tính toán tiền mặt trực quan cực nhanh bên Client-side (Zero Page Reload!)
     function recalculatePortalCartTotals() {
         let subtotal = 0;
         const rows = document.querySelectorAll('.cart-item-row');
@@ -215,33 +209,24 @@
             const qtySpan = document.getElementById('qty_' + maCtgh);
             const qty = parseInt(qtySpan.innerText) || 0;
             const checkbox = document.getElementById('chk_' + maCtgh);
-
-            // Tính thành tiền dòng
             const lineTotal = unitPrice * qty;
             const lineTotalEl = document.getElementById('line_total_' + maCtgh);
             if (lineTotalEl) {
                 lineTotalEl.innerText = formatVND(lineTotal);
             }
-
-            // Cộng dồn nếu được chọn mua
             if (checkbox && checkbox.checked) {
                 subtotal += lineTotal;
             }
         });
-
         const vat = Math.round(subtotal * 0.08);
         const total = subtotal + vat;
-
         const subtotalEl = document.getElementById('subtotalCart');
         const vatEl = document.getElementById('vatCart');
         const totalEl = document.getElementById('finalPayableCart');
         const checkoutBtn = document.getElementById('checkoutBtn');
-
         if (subtotalEl) subtotalEl.innerText = formatVND(subtotal);
         if (vatEl) vatEl.innerText = formatVND(vat);
         if (totalEl) totalEl.innerText = formatVND(total);
-
-        // Khóa/Mở khóa nút đặt hàng linh động
         if (checkoutBtn) {
             if (subtotal <= 0) {
                 checkoutBtn.setAttribute('href', 'javascript:void(0)');
@@ -256,8 +241,6 @@
             }
         }
     }
-
-    // Đồng bộ tăng giảm số lượng ngầm
     function updateCartQtyRealtime(maCtgh, delta) {
         const qtySpan = document.getElementById('qty_' + maCtgh);
         if (!qtySpan) return;
@@ -267,12 +250,8 @@
             confirmDeleteCartItem(maCtgh);
             return;
         }
-
-        // Cập nhật giao diện tức thì
         qtySpan.innerText = newQty;
         recalculatePortalCartTotals();
-
-        // Gửi AJAX đồng bộ ngầm lên Server
         fetch('${pageContext.request.contextPath}/cart/update?maCtgh=' + maCtgh + '&soLuong=' + newQty, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -297,15 +276,11 @@
                 console.error('Lỗi sync giỏ hàng:', err);
             });
     }
-
-    // Đồng bộ lựa chọn mua ngầm
     function toggleCartSelectionRealtime(maCtgh) {
         const checkbox = document.getElementById('chk_' + maCtgh);
         if (!checkbox) return;
-
         recalculatePortalCartTotals();
         const isChecked = checkbox.checked ? '1' : '0';
-
         fetch('${pageContext.request.contextPath}/cart/toggle-select?maCtgh=' + maCtgh + '&chon=' + isChecked, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -330,8 +305,6 @@
                 console.error('Lỗi sync chọn mua:', err);
             });
     }
-
-    // Hủy món
     function confirmDeleteCartItem(maCtgh) {
         Swal.fire({
             title: 'Gỡ món khỏi giỏ hàng?',
@@ -348,7 +321,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         recalculatePortalCartTotals();
         const urlParams = new URLSearchParams(window.location.search);

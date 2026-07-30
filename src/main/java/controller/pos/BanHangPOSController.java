@@ -40,6 +40,16 @@ public class BanHangPOSController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // FIX: Điều hướng các yêu cầu GET của API tra cứu về đúng hàm xử lý JSON trước khi forward sang JSP
+        String uri = request.getRequestURI();
+        if (uri.endsWith("/pos/search-customer")) {
+            performSearchCustomer(request, response);
+            return;
+        } else if (uri.endsWith("/pos/bill-detail")) {
+            performGetBillDetail(request, response);
+            return;
+        }
+
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -74,7 +84,6 @@ public class BanHangPOSController extends HttpServlet {
 
         // Toppings phải đang hoạt động
         List<Topping> toppings = toppingService.getActiveTopping();
-
         request.setAttribute("categories", categories);
         request.setAttribute("products", products);
         request.setAttribute("toppings", toppings);
@@ -86,17 +95,17 @@ public class BanHangPOSController extends HttpServlet {
                 Topping t = toppings.get(i);
                 toppingsJson.append("{");
                 toppingsJson.append("\"maTp\":\"").append(t.getMaTp()).append("\",");
-                // FIXED: Changed """ to "\"" to prevent unclosed text block syntax errors
                 toppingsJson.append("\"tenTp\":\"").append(t.getTenTp().replace("\"", "\\\"")).append("\",");
                 toppingsJson.append("\"giaBan\":").append(t.getGiaBan()).append(",");
                 toppingsJson.append("\"hinhAnh\":\"").append(t.getHinhAnh() != null ? t.getHinhAnh() : "").append("\"");
                 toppingsJson.append("}");
-                if (i < toppings.size() - 1) toppingsJson.append(",");
+                if (i < toppings.size() - 1) {
+                    toppingsJson.append(",");
+                }
             }
         }
         toppingsJson.append("]");
         request.setAttribute("allToppingsJson", toppingsJson.toString());
-
         request.getRequestDispatcher("/views/pos/ban_hang.jsp").forward(request, response);
     }
 
@@ -113,9 +122,9 @@ public class BanHangPOSController extends HttpServlet {
             performUpdateProfile(request, response);
         } else if (uri.endsWith("/pos/change-password")) {
             performChangePassword(request, response);
-        } else if (uri.endsWith("/pos/search-customer")) { // ADDED missing route
+        } else if (uri.endsWith("/pos/search-customer")) {
             performSearchCustomer(request, response);
-        } else if (uri.endsWith("/pos/bill-detail")) { // ADDED missing route
+        } else if (uri.endsWith("/pos/bill-detail")) {
             performGetBillDetail(request, response);
         } else {
             doGet(request, response);
@@ -150,7 +159,9 @@ public class BanHangPOSController extends HttpServlet {
                 json.append("\"giamToiDa\":").append(v.getGiamToiDa()).append(",");
                 json.append("\"donToiThieu\":").append(v.getDonToiThieu());
                 json.append("}");
-                if (i < vouchers.size() - 1) json.append(",");
+                if (i < vouchers.size() - 1) {
+                    json.append(",");
+                }
             }
             json.append("]");
             json.append("}");
@@ -163,7 +174,13 @@ public class BanHangPOSController extends HttpServlet {
     private void performCreateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String tenKh = request.getParameter("tenKh");
+
+        // FIX: Hỗ trợ linh hoạt cả parameter 'soDienThoai' (Servlet cũ) và 'sdt' (Do file giao diện pos.js gửi lên)
         String sdt = request.getParameter("soDienThoai");
+        if (sdt == null || sdt.trim().isEmpty()) {
+            sdt = request.getParameter("sdt");
+        }
+
         String email = request.getParameter("email");
         if (tenKh == null || tenKh.trim().isEmpty() || sdt == null || sdt.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Các trường thông tin không được để trống!\"}");
@@ -264,7 +281,9 @@ public class BanHangPOSController extends HttpServlet {
             String textNhanVien = "Hệ thống tự động";
             if (dh.getMaNv() != null) {
                 NhanVien nv = nhanVienService.getNhanVienById(dh.getMaNv());
-                if (nv != null) textNhanVien = nv.getHoTen();
+                if (nv != null) {
+                    textNhanVien = nv.getHoTen();
+                }
             }
             json.append("\"tenNhanVien\":\"").append(textNhanVien).append("\",");
             json.append("\"tongTienHang\":").append(dh.getTongTienHang()).append(",");
@@ -293,12 +312,16 @@ public class BanHangPOSController extends HttpServlet {
                         json.append("\"soLuong\":").append(tp.getSoLuong()).append(",");
                         json.append("\"giaChotTp\":").append(tp.getGiaChotTp());
                         json.append("}");
-                        if (j < tps.size() - 1) json.append(",");
+                        if (j < tps.size() - 1) {
+                            json.append(",");
+                        }
                     }
                 }
                 json.append("]");
                 json.append("}");
-                if (i < items.size() - 1) json.append(",");
+                if (i < items.size() - 1) {
+                    json.append(",");
+                }
             }
             json.append("]");
             json.append("}");
@@ -350,21 +373,37 @@ public class BanHangPOSController extends HttpServlet {
             }
 
             String[] itemMaSp = request.getParameterValues("item_maSp[]");
-            if (itemMaSp == null) itemMaSp = request.getParameterValues("item_maSp");
+            if (itemMaSp == null) {
+                itemMaSp = request.getParameterValues("item_maSp");
+            }
             String[] itemMaSize = request.getParameterValues("item_maSize[]");
-            if (itemMaSize == null) itemMaSize = request.getParameterValues("item_maSize");
+            if (itemMaSize == null) {
+                itemMaSize = request.getParameterValues("item_maSize");
+            }
             String[] itemSoLuong = request.getParameterValues("item_soLuong[]");
-            if (itemSoLuong == null) itemSoLuong = request.getParameterValues("item_soLuong");
+            if (itemSoLuong == null) {
+                itemSoLuong = request.getParameterValues("item_soLuong");
+            }
             String[] itemGiaChot = request.getParameterValues("item_giaChot[]");
-            if (itemGiaChot == null) itemGiaChot = request.getParameterValues("item_giaChot");
+            if (itemGiaChot == null) {
+                itemGiaChot = request.getParameterValues("item_giaChot");
+            }
             String[] itemMucDa = request.getParameterValues("item_mucDa[]");
-            if (itemMucDa == null) itemMucDa = request.getParameterValues("item_mucDa");
+            if (itemMucDa == null) {
+                itemMucDa = request.getParameterValues("item_mucDa");
+            }
             String[] itemMucDuong = request.getParameterValues("item_mucDuong[]");
-            if (itemMucDuong == null) itemMucDuong = request.getParameterValues("item_mucDuong");
+            if (itemMucDuong == null) {
+                itemMucDuong = request.getParameterValues("item_mucDuong");
+            }
             String[] itemGhiChuMon = request.getParameterValues("item_ghiChuMon[]");
-            if (itemGhiChuMon == null) itemGhiChuMon = request.getParameterValues("item_ghiChuMon");
+            if (itemGhiChuMon == null) {
+                itemGhiChuMon = request.getParameterValues("item_ghiChuMon");
+            }
             String[] itemToppingKeys = request.getParameterValues("item_toppingKeys[]");
-            if (itemToppingKeys == null) itemToppingKeys = request.getParameterValues("item_toppingKeys");
+            if (itemToppingKeys == null) {
+                itemToppingKeys = request.getParameterValues("item_toppingKeys");
+            }
 
             List<ChiTietDonHang> items = new ArrayList<>();
             if (itemMaSp != null) {
@@ -469,6 +508,7 @@ public class BanHangPOSController extends HttpServlet {
         currentStaff.setMatKhau(SecurityUtil.hashSHA256(newPassword));
         boolean success = nhanVienService.updateNhanVien(currentStaff);
         if (success) {
+            session.setAttribute("user", currentStaff);
             response.getWriter().write("{\"status\":\"SUCCESS\"}");
         } else {
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Cập nhật mật khẩu thất bại!\"}");

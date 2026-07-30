@@ -19,7 +19,6 @@ public class ActivateAccountController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
-
         if (uri.endsWith("/activate/password")) {
             if (session == null || session.getAttribute("otpVerified") == null || !(Boolean) session.getAttribute("otpVerified")) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
@@ -28,7 +27,6 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_password.jsp").forward(request, response);
             return;
         }
-
         if (uri.endsWith("/activate/verify")) {
             if (session == null || session.getAttribute("otpEmail") == null) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
@@ -37,7 +35,6 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_verify.jsp").forward(request, response);
             return;
         }
-
         // Mặc định: trang tìm kiếm thẻ / tài khoản để kích hoạt
         request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
     }
@@ -46,7 +43,6 @@ public class ActivateAccountController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(true);
-
         if (uri.endsWith("/activate/password")) {
             if (session == null || session.getAttribute("otpVerified") == null || !(Boolean) session.getAttribute("otpVerified")) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
@@ -54,30 +50,33 @@ public class ActivateAccountController extends HttpServlet {
             }
             String password = request.getParameter("newPassword");
             String confirm = request.getParameter("confirmPassword");
-
             if (password == null || password.trim().isEmpty() || confirm == null || confirm.trim().isEmpty()) {
                 request.setAttribute("error", "Vui lòng nhập mật khẩu mới đầy đủ!");
                 request.getRequestDispatcher("/views/auth/activate_password.jsp").forward(request, response);
                 return;
             }
-
             if (!password.equals(confirm)) {
                 request.setAttribute("error", "Xác nhận mật khẩu mới không trùng khớp!");
                 request.getRequestDispatcher("/views/auth/activate_password.jsp").forward(request, response);
                 return;
             }
-
             if (password.length() < 8) {
                 request.setAttribute("error", "Mật khẩu bảo mật phải chứa tối thiểu từ 8 ký tự!");
                 request.getRequestDispatcher("/views/auth/activate_password.jsp").forward(request, response);
                 return;
             }
-
             String email = (String) session.getAttribute("otpEmail");
             KhachHang kh = khachHangService.getKhachHangByEmail(email);
             if (kh != null) {
-                boolean success = khachHangService.resetPasswordWithOTP(email, (String) session.getAttribute("otpCode"), password);
+                // FIX CHÍ MẠNG: Triệt tiêu cơ chế re-verify OTP vốn đã bị xóa khỏi cache (activationOtpCache) sau khi verify thành công.
+                // Vì OTP đã được xác minh thành công ở bước trước và lưu trạng thái "otpVerified" vào Session,
+                // chúng ta chỉ việc cập nhật mật khẩu trực tiếp thông qua updateMatKhau và lưu trạng thái kích hoạt tài khoản.
+                boolean success = khachHangService.updateMatKhau(kh.getMaKh(), util.SecurityUtil.hashSHA256(password));
                 if (success) {
+                    kh.setTrangThai(true); // Đưa trạng thái hoạt động về true để cho phép đăng nhập portal
+                    khachHangService.updateCustomerProfile(kh); // Đồng bộ lưu trạng thái kích hoạt mới vào DB
+
+                    // Xóa dọn bộ nhớ tạm Session sạch sẽ sau khi hoàn tất vòng đời kích hoạt
                     session.removeAttribute("otpEmail");
                     session.removeAttribute("otpCode");
                     session.removeAttribute("otpVerified");
@@ -90,7 +89,6 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_password.jsp").forward(request, response);
             return;
         }
-
         if (uri.endsWith("/activate/verify")) {
             if (session == null || session.getAttribute("otpEmail") == null) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
@@ -103,11 +101,10 @@ public class ActivateAccountController extends HttpServlet {
                 if (digit != null) otpBuilder.append(digit.trim());
             }
             String otp = otpBuilder.toString();
-
             boolean success = khachHangService.verifyForgotPasswordOTP(email, otp);
             if (success) {
                 session.setAttribute("otpVerified", true);
-                session.setAttribute("otpCode", otp); // Lưu để gọi resetPasswordWithOTP
+                session.setAttribute("otpCode", otp); // Lưu để làm mốc đối soát
                 response.sendRedirect(request.getContextPath() + "/activate/password");
             } else {
                 request.setAttribute("error", "Mã xác thực OTP không chính xác hoặc đã hết hiệu lực!");
@@ -115,7 +112,6 @@ public class ActivateAccountController extends HttpServlet {
             }
             return;
         }
-
         // POST /activate: Tìm kiếm SĐT/Email để gửi mã OTP kích hoạt
         String searchInput = request.getParameter("username"); // Số điện thoại hoặc Email
         if (searchInput == null || searchInput.trim().isEmpty()) {
@@ -123,24 +119,20 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
             return;
         }
-
         KhachHang kh = khachHangService.getKhachHangBySdt(searchInput.trim());
         if (kh == null) {
             kh = khachHangService.getKhachHangByEmail(searchInput.trim());
         }
-
         if (kh == null) {
             request.setAttribute("error", "Không tìm thấy thông tin hội viên này trên hệ thống! Vui lòng kiểm tra lại.");
             request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
             return;
         }
-
         if (kh.getMatKhau() != null) {
             request.setAttribute("error", "Tài khoản hội viên này đã được kích hoạt từ trước! Vui lòng đăng nhập bình thường.");
             request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
             return;
         }
-
         // Gửi mã OTP khôi phục / kích hoạt mật khẩu về Email của khách hàng
         boolean sent = khachHangService.sendForgotPasswordOTP(kh.getEmail());
         if (sent) {

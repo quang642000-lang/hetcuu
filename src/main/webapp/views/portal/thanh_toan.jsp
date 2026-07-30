@@ -45,10 +45,8 @@
         <input type="hidden" name="diemSuDung" id="param_diemSuDung" value="0">
         <input type="hidden" name="tienTruDiem" id="param_tienTruDiem" value="0">
         <input type="hidden" name="tongPhaiTra" id="param_tongPhaiTra" value="${tongTienHang}">
-
-        <!-- CHỐT CHẶN BẢO MẬT: Bơm Idempotency Token chống Spam nút Back/Double Checkout -->
+        <!-- Idempotency Token chống Spam nút Back/Double Checkout -->
         <input type="hidden" name="checkoutToken" value="${checkoutToken}">
-
         <div class="row g-4">
             <!-- CỘT TRÁI: THÔNG TIN NHẬN NƯỚC & THANH TOÁN -->
             <div class="col-12 col-lg-7">
@@ -93,7 +91,6 @@
                     <!-- DANH SÁCH MÓN VÀ TOPPING CHI TIẾT -->
                     <div class="mb-4" style="max-height: 250px; overflow-y: auto;">
                         <c:forEach var="item" items="${checkoutItems}">
-                            <!-- Tính tiền thực tế từng dòng bao gồm topping -->
                             <c:set var="itemToppingSum" value="0"/>
                             <c:forEach var="tp" items="${item.toppingGioHangList}">
                                 <c:set var="itemToppingSum" value="${itemToppingSum + (tp.giaTp * tp.soLuongTp)}"/>
@@ -102,8 +99,8 @@
                             <div class="row align-items-center mb-3 g-2">
                                 <div class="col-2">
                                     <c:choose>
-                                        <c:when test="${not empty item.hinhAnh}">
-                                            <img src="${item.hinhAnh}" class="item-thumbnail border shadow-sm">
+                                        <c:when test="${not empty item.sanPham.hinhAnh}">
+                                            <img src="${item.sanPham.hinhAnh}" class="item-thumbnail border shadow-sm">
                                         </c:when>
                                         <c:otherwise>
                                             <div class="bg-light rounded border text-center py-2" style="width: 50px; height: 50px;">
@@ -113,8 +110,12 @@
                                     </c:choose>
                                 </div>
                                 <div class="col-7">
-                                    <strong class="text-dark small d-block"><c:out value="${item.tenSp}"/> (Size ${item.tenSize})</strong>
-                                    <small class="text-muted d-block" style="font-size: 10px;">Đá: ${item.mucDa} | Đường: ${item.mucDuong} | SL: x${item.soLuong}</small>
+                                    <strong class="text-dark small d-block"><c:out value="${item.sanPham.tenSp}"/> (Size ${item.tenSize})</strong>
+                                    <small class="text-muted d-block" style="font-size: 10px;">
+                                        <c:if test="${item.sanPham.choPhepDoiDa}">Đá: ${item.mucDa} | </c:if>
+                                        <c:if test="${item.sanPham.choPhepDoiDuong}">Đường: ${item.mucDuong} | </c:if>
+                                        SL: x${item.soLuong}
+                                    </small>
                                     <!-- HIỂN THỊ ĐỦ TOPPINGS ĐÃ CHỌN -->
                                     <c:if test="${not empty item.toppingGioHangList}">
                                         <div class="text-success" style="font-size: 10px; font-weight: 500;">
@@ -191,23 +192,17 @@
     </form>
 </div>
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 <script>
     const userMaxPointsAvailable = ${not empty sessionScope.customer.diemTichLuy ? sessionScope.customer.diemTichLuy : 0};
     const rawBillTotal = ${tongTienHang};
-
     document.addEventListener("DOMContentLoaded", function() {
         const selectTime = document.getElementById("thoiGianHenLay");
         if (selectTime) {
             selectTime.innerHTML = "";
             const now = new Date();
-            // Mốc tối thiểu khả dụng: Hiện tại + 16 phút (dung sai an toàn vượt màng lọc server mượt mà)
             const startLimit = new Date(now.getTime() + 16 * 60 * 1000);
-
-            // Cửa hàng đóng cửa ngưng nhận đơn lúc 22:30
             const endLimit = new Date();
             endLimit.setHours(22, 30, 0, 0);
-
             if (startLimit.getTime() > endLimit.getTime()) {
                 const opt = document.createElement("option");
                 opt.value = "";
@@ -215,34 +210,27 @@
                 selectTime.appendChild(opt);
                 selectTime.disabled = true;
             } else {
-                // Nạp các mốc 24H cách nhau 5 phút
                 let current = new Date(startLimit.getTime());
-                // Làm tròn số phút lên bội số của 5 tiếp theo để giao diện gọn gàng
                 let minDiff = current.getMinutes() % 5;
                 if (minDiff > 0) {
                     current.setMinutes(current.getMinutes() + (5 - minDiff));
                 }
                 current.setSeconds(0);
                 current.setMilliseconds(0);
-
                 while (current.getTime() <= endLimit.getTime()) {
                     const opt = document.createElement("option");
                     const hours = String(current.getHours()).padStart(2, '0');
                     const minutes = String(current.getMinutes()).padStart(2, '0');
                     const timeStr = hours + ":" + minutes;
-
                     opt.value = timeStr;
                     opt.textContent = timeStr + " (Hôm nay)";
                     selectTime.appendChild(opt);
-
-                    // Kích tăng 5 phút tiếp theo
                     current.setMinutes(current.getMinutes() + 5);
                 }
             }
         }
         calculateRealtimeBill();
     });
-
     function useMaxPoints() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         if (inputPoints) {
@@ -253,7 +241,6 @@
                 const type = parseInt(selectedOpt.dataset.type);
                 const value = parseInt(selectedOpt.dataset.value);
                 const maxVal = parseInt(selectedOpt.dataset.max);
-
                 if (type === 1) {
                     voucherDiscount = value;
                 } else if (type === 2) {
@@ -269,7 +256,6 @@
             calculateRealtimeBill();
         }
     }
-
     function calculateRedeemPointsRealtime() {
         const inputPoints = document.getElementById("inputRedeemPoints");
         if (inputPoints) {
@@ -283,22 +269,18 @@
         }
         calculateRealtimeBill();
     }
-
     function calculateRealtimeBill() {
         let rawSum = rawBillTotal;
         let voucherDiscount = 0;
         let pointsDiscount = 0;
-
         const select = document.getElementById("selectVoucher");
         const selectedOpt = select ? select.options[select.selectedIndex] : null;
-
         if (selectedOpt && selectedOpt.value !== "") {
             const code = selectedOpt.value;
             const type = parseInt(selectedOpt.dataset.type);
             const value = parseInt(selectedOpt.dataset.value);
             const maxVal = parseInt(selectedOpt.dataset.max);
             const minVal = parseInt(selectedOpt.dataset.min);
-
             if (rawSum < minVal) {
                 Swal.fire({
                     icon: 'warning',
@@ -309,7 +291,6 @@
                 calculateRealtimeBill();
                 return;
             }
-
             if (type === 1) {
                 voucherDiscount = value;
             } else if (type === 2) {
@@ -327,18 +308,15 @@
             document.getElementById("param_tienGiamGia").value = 0;
             document.getElementById("display_discount").innerText = '-0 đ';
         }
-
         const inputPoints = document.getElementById("inputRedeemPoints");
         let pointsToUse = parseInt(inputPoints.value) || 0;
         pointsDiscount = pointsToUse * 1000;
-
         const limitPrePoints = rawSum - voucherDiscount;
         if (pointsDiscount > limitPrePoints) {
             pointsDiscount = Math.floor(limitPrePoints / 1000) * 1000;
             pointsToUse = pointsDiscount / 1000;
             inputPoints.value = pointsToUse > 0 ? pointsToUse : "";
         }
-
         if (pointsToUse > 0) {
             document.getElementById("displayPointsRow").style.setProperty('display', 'flex', 'important');
             document.getElementById("txtPointsRedeemed").innerText = pointsToUse;
@@ -350,12 +328,10 @@
             document.getElementById("param_diemSuDung").value = 0;
             document.getElementById("param_tienTruDiem").value = 0;
         }
-
         let billBeforeTax = rawSum - voucherDiscount - pointsDiscount;
         if (billBeforeTax < 0) billBeforeTax = 0;
         let vatPrice = Math.round(billBeforeTax * 0.08);
         let finalPayable = billBeforeTax + vatPrice;
-
         document.getElementById("display_vat").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
         document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN') + ' đ';
         document.getElementById("param_tongPhaiTra").value = finalPayable;

@@ -286,7 +286,6 @@
             </div>
         </div>
     </nav>
-
     <div class="pos-main-container" id="posMainContainer">
         <div class="pos-category-sidebar">
             <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
@@ -300,7 +299,6 @@
                 </button>
             </c:forEach>
         </div>
-
         <div class="pos-menu-area">
             <div class="pos-menu-header">
                 <div class="pos-search-wrapper">
@@ -318,7 +316,7 @@
                     <c:forEach var="sp" items="${products}">
                         <div class="pos-card-wrapper">
                             <div class="pos-product-card" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}"
-                                 onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>', encodeURIComponent(JSON.stringify(window['sp_opt_' + '${sp.maSp}'])))">
+                                 onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>')">
                                 <c:choose>
                                     <c:when test="${not empty sp.hinhAnh}">
                                         <img src="${sp.hinhAnh}" class="pos-product-img rounded" alt="Pic">
@@ -343,7 +341,6 @@
                 </div>
             </div>
         </div>
-
         <div class="pos-checkout-sidebar">
             <div class="pos-checkout-header">
                 <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
@@ -357,7 +354,6 @@
                     <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
                 </div>
             </div>
-
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
                     <input type="text" id="customerPhoneSearch" class="form-control form-control-sm" placeholder="Nhập SĐT tìm hội viên CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
@@ -372,7 +368,6 @@
                 </div>
                 <div id="crmLoyaltyArea" class="mt-2 text-start" style="display: none !important;">
                     <div class="d-flex gap-1.5 mb-1">
-                        <!-- VỮA BẢO MẬT: ĐÃ LOẠI BỎ HOÀN TOÀN NÚT "HỘP VOUCHER VIP" ĐỂ TRÁNH THU NGÂN XEM TRỘM VOUCHER CỦA KHÁCH -->
                         <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM TÍCH LŨY</button>
                     </div>
                 </div>
@@ -380,7 +375,6 @@
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
-
             <div class="pos-summary-panel">
                 <div class="d-flex gap-1.5 mb-3">
                     <input type="text" id="manualVoucherInput" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã Voucher..." style="height: 32px; letter-spacing:0.5px;">
@@ -406,7 +400,6 @@
                     <span>TỔNG THỰC THU:</span>
                     <span class="text-success" id="totalPayablePrice">0 đ</span>
                 </div>
-
                 <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
                         <small class="fw-bold text-muted small"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
@@ -424,7 +417,6 @@
                         <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
                     </div>
                 </div>
-
                 <div class="mb-3 text-start">
                     <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
                     <div class="btn-group w-100" role="group">
@@ -438,7 +430,6 @@
                         </label>
                     </div>
                 </div>
-
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
                     <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
@@ -459,7 +450,6 @@
         </div>
     </div>
 </div>
-
 <!-- PROFILE MODAL -->
 <div class="modal fade" id="posProfileModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
@@ -493,7 +483,6 @@
         </div>
     </div>
 </div>
-
 <!-- PASSWORD MODAL -->
 <div class="modal fade" id="posPasswordModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
@@ -523,7 +512,6 @@
         </div>
     </div>
 </div>
-
 <!-- RECEIPT MODAL -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 340px;">
@@ -586,7 +574,6 @@
         </div>
     </div>
 </div>
-
 <!-- VIETQR MODAL -->
 <div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
@@ -624,7 +611,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -713,13 +699,16 @@
         }
     });
 </script>
+<script>
+    const allToppingsData = ${allToppingsJson};
+</script>
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {
             choPhepDoiDa: ${sp.choPhepDoiDa},
             choPhepDoiDuong: ${sp.choPhepDoiDuong},
             choPhepTopping: ${sp.choPhepTopping},
-            allToppings: ${allToppingsJson},
+            allToppings: allToppingsData,
             sizesList: [
                 <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
                 {

@@ -98,8 +98,9 @@ function recalculatePopupPrice() {
     if (totalEl) totalEl.innerText = formatVND(total);
 }
 
-function openCustomizePopup(maSp, tenSp, encodedOptions) {
-    const rawOptions = JSON.parse(decodeURIComponent(encodedOptions));
+function openCustomizePopup(maSp, tenSp) {
+    const rawOptions = window['sp_opt_' + maSp];
+    if (!rawOptions) return;
     let html = '';
     html += '<div id="posCustomizer" data-masp="' + maSp + '" data-tensp="' + tenSp + '" class="text-start p-2">';
     html += '  <div class="mb-3">';
@@ -121,6 +122,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     }
     html += '    </div>';
     html += '  </div>';
+
     if (rawOptions.choPhepDoiDa) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">2. MỨC ĐỘ ĐÁ LẠNH</label>';
@@ -133,6 +135,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
+
     if (rawOptions.choPhepDoiDuong) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">3. MỨC ĐỘ ĐƯỜNG NGỌT</label>';
@@ -145,6 +148,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
+
     if (rawOptions.choPhepTopping && rawOptions.allToppings && rawOptions.allToppings.length > 0) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING DAI GIÒN SẦN SẬT</label>';
@@ -153,14 +157,14 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
             let imgHtml = tp.hinhAnh ? '<img src="' + tp.hinhAnh + '" class="rounded me-2 border" style="width: 28px; height: 28px; object-fit: cover;">' : '';
             html += '      <div class="d-flex justify-content-between align-items-center p-1.5 border-bottom bg-white">';
             html += '        <div class="d-flex align-items-center">';
-            html += '          <input class="form-check-input topping-check me-2" type="checkbox" id="tp_' + tp.maTp + '" value="' + tp.maTp + '" data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" onchange="toggleToppingQty(this, \'' + tp.maTp + '\')">';
+            html += '          <input class="form-check-input topping-check me-2" type="checkbox" id="tp_' + tp.maTp + '" value="' + tp.maTp + '" data-price="' + tp.giaBan + '" data-name="' + tp.tenTp + '" onchange="toggleToppingQty(this, '' + tp.maTp + '')">';
             html += '          ' + imgHtml;
             html += '          <label class="form-check-label small fw-semibold text-dark" for="tp_' + tp.maTp + '">' + tp.tenTp + '<br><span class="text-success" style="font-size:10px;">+' + formatVND(tp.giaBan) + '</span></label>';
             html += '        </div>';
             html += '        <div class="d-flex align-items-center gap-1" id="tp_qty_container_' + tp.maTp + '" style="display: none !important;">';
-            html += '          <button type="button" class="btn btn-outline-secondary px-1.5 py-0" onclick="changePopupTpQty(\'' + tp.maTp + '\', -1)">-</button>';
+            html += '          <button type="button" class="btn btn-outline-secondary px-1.5 py-0" onclick="changePopupTpQty('' + tp.maTp + '', -1)">-</button>';
             html += '          <input type="text" class="form-control text-center p-0 fw-bold border-0" id="tp_qty_' + tp.maTp + '" value="1" readonly style="width: 24px; font-size:12px; background: transparent;">';
-            html += '          <button type="button" class="btn btn-outline-secondary px-1.5 py-0 text-success" onclick="changePopupTpQty(\'' + tp.maTp + '\', 1)">+</button>';
+            html += '          <button type="button" class="btn btn-outline-secondary px-1.5 py-0 text-success" onclick="changePopupTpQty('' + tp.maTp + '', 1)">+</button>';
             html += '        </div>';
             html += '      </div>';
         });
@@ -171,6 +175,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    <span class="text-muted small fw-semibold"><i class="bi bi-info-circle text-warning"></i> Sản phẩm này không áp dụng Topping!</span>';
         html += '  </div>';
     }
+
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
     html += '    <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
@@ -185,6 +190,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '    </button>';
     html += '  </div>';
     html += '</div>';
+
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
@@ -200,16 +206,23 @@ function addCustomizedToCart() {
     const el = document.getElementById('posCustomizer');
     const maSp = el.dataset.masp;
     const tenSp = el.dataset.tensp;
+    const rawOptions = window['sp_opt_' + maSp];
+    const choPhepDoiDa = rawOptions ? rawOptions.choPhepDoiDa : true;
+    const choPhepDoiDuong = rawOptions ? rawOptions.choPhepDoiDuong : true;
+
     const checkedSize = document.querySelector('.size-radio:checked');
     const maSize = parseInt(checkedSize.value);
     const tenSize = checkedSize.dataset.name;
     const giaBan = parseInt(checkedSize.dataset.price);
+
     const sugarEl = document.querySelector('input[name="popup_sugar"]:checked');
-    const sugar = sugarEl ? sugarEl.value : '100% Đường';
+    const sugar = (choPhepDoiDuong && sugarEl) ? sugarEl.value : 'N/A';
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
-    const ice = iceEl ? iceEl.value : '100% Đá';
+    const ice = (choPhepDoiDa && iceEl) ? iceEl.value : 'N/A';
+
     const note = document.getElementById('popup_note').value.trim() || 'Normal';
     let toppings = [];
+
     document.querySelectorAll('.topping-check:checked').forEach(chk => {
         let tpPrice = parseInt(chk.dataset.price) || 0;
         let tpName = chk.dataset.name;
@@ -222,6 +235,7 @@ function addCustomizedToCart() {
             giaTp: tpPrice
         });
     });
+
     let duplicateItem = posCart.find(item =>
         item.maSp === maSp &&
         item.maSize === maSize &&
@@ -230,6 +244,7 @@ function addCustomizedToCart() {
         item.ghiChuMon === note &&
         isSameToppingsList(item.toppings, toppings)
     );
+
     if (duplicateItem) {
         duplicateItem.soLuong += 1;
     } else {
@@ -241,6 +256,8 @@ function addCustomizedToCart() {
             giaBan: giaBan,
             mucDa: ice,
             mucDuong: sugar,
+            choPhepDoiDa: choPhepDoiDa,
+            choPhepDoiDuong: choPhepDoiDuong,
             ghiChuMon: note,
             toppings: toppings,
             soLuong: 1
@@ -274,6 +291,7 @@ function renderPosCart() {
         if (mobileBadge) mobileBadge.innerText = "0";
         return;
     }
+
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingsPrice = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
@@ -284,13 +302,25 @@ function renderPosCart() {
             toppingsText = '<div class="text-success small" style="font-size: 10px; font-weight:600;">Toppings: ' +
                 item.toppings.map(t => t.tenTopping + ' (x' + t.soLuongTp + ')').join(', ') + '</div>';
         }
+
         let noteText = item.ghiChuMon !== 'Normal' ? ' | Ghi chú: <span class="text-danger fw-semibold">' + item.ghiChuMon + '</span>' : '';
+
+        let iceSugarText = '';
+        if (item.choPhepDoiDa || item.choPhepDoiDuong) {
+            let parts = [];
+            if (item.choPhepDoiDa && item.mucDa !== 'N/A') parts.push('Đá: ' + item.mucDa);
+            if (item.choPhepDoiDuong && item.mucDuong !== 'N/A') parts.push('Đường: ' + item.mucDuong);
+            iceSugarText = parts.join(' | ') + noteText;
+        } else {
+            iceSugarText = (item.ghiChuMon !== 'Normal' && item.ghiChuMon !== '') ? '<span class="text-danger fw-semibold">Ghi chú: ' + item.ghiChuMon + '</span>' : '';
+        }
+
         let cardHtml = '<div class="pos-cart-item p-2.5 bg-white border border-secondary border-opacity-10 rounded-3 mb-2 shadow-sm">' +
             '  <div class="d-flex justify-content-between align-items-start">' +
             '    <div class="text-start">' +
             '      <span class="fw-bold text-dark" style="font-size:13px;">' + item.tenSp + '</span> <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 10px; border-radius: 4px;">Size ' + item.tenSize + '</span>' +
             '      <div class="text-muted" style="font-size:10.5px; margin-top:2px;">' +
-            '        Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + noteText + toppingsText +
+            (iceSugarText ? iceSugarText : '') + toppingsText +
             '      </div>' +
             '    </div>' +
             '    <button type="button" class="btn btn-link text-danger p-0 border-0 ms-2 animate-pulse" onclick="removeCartItem(' + idx + ')"><i class="bi bi-trash3-fill"></i></button>' +
@@ -389,6 +419,7 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="email" class="form-control" id="reg_email" placeholder="example@gmail.com..." required>';
     html += '  </div>';
     html += '</div>';
+
     Swal.fire({
         title: 'ĐĂNG KÝ HỘI VIÊN NHANH',
         html: html,
@@ -521,10 +552,12 @@ function recalculatePOSBill(tongTienHang) {
             document.getElementById("submit_tienGiamGia").value = "0";
         }
     }
+
     let pointsDiscount = appliedPoints * 1000;
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
+
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.setProperty('display', 'flex', 'important');
         document.getElementById("txtUsedPoints").innerText = appliedPoints.toString();
@@ -536,13 +569,16 @@ function recalculatePOSBill(tongTienHang) {
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
+
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
+
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
     calculateChangeRefund();
@@ -595,9 +631,11 @@ function showPosQrCodeModal(orderId, payable) {
     document.getElementById("posQrAmount").innerText = formatVND(parseInt(payable));
     document.getElementById("posQrCodeDisplay").innerText = orderId;
     document.getElementById("posQrImage").src = `https://img.vietqr.io/image/TPB-0346406405-compact2.png?amount=${payable}&addInfo=${orderId}`;
+
     let qrModalEl = document.getElementById("posQrModal");
     let qrModalInstance = new bootstrap.Modal(qrModalEl);
     qrModalInstance.show();
+
     let leftTime = 120;
     document.getElementById("posQrCountdownText").innerText = leftTime;
     clearInterval(posQrCountdownInterval);
@@ -611,6 +649,7 @@ function showPosQrCodeModal(orderId, payable) {
             document.getElementById("posQrLoadingStatus").style.setProperty("display", "none", "important");
         }
     }, 1000);
+
     clearInterval(posQrPollInterval);
     posQrPollInterval = setInterval(() => {
         if (!isPosQrActive) return;
@@ -671,6 +710,7 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
+
     fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -681,25 +721,30 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+
                 if (parseInt(data.tienGiamGia) > 0) {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'flex', 'important');
                 } else {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'none', 'important');
                 }
+
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
+
                 let rawSum = parseInt(data.tongTienHang) || 0;
                 let disc = parseInt(data.tienGiamGia) || 0;
                 let ptsDisc = parseInt(data.tienTruDiem) || 0;
                 let billBeforeTax = rawSum - disc - ptsDisc;
                 if (billBeforeTax < 0) billBeforeTax = 0;
                 let vatPrice = Math.round(billBeforeTax * 0.08);
+
                 document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
+
                 let cashGiven = parseInt(localStorage.getItem('last_cash_given_' + orderId)) || 0;
                 if (cashGiven > 0) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'flex', 'important');
@@ -715,6 +760,7 @@ function loadAndShowPrintReceipt(orderId) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'none', 'important');
                     document.getElementById("billCashRefundRow").style.setProperty('display', 'none', 'important');
                 }
+
                 container.innerHTML = '';
                 data.items.forEach(item => {
                     let html = '<div class="mb-2 border-bottom pb-1 text-start">';
@@ -722,7 +768,19 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '    <span><strong>' + item.tenMon + '</strong> (Size: ' + item.tenSize + ')</span>';
                     html += '    <span>' + item.soLuong + ' x ' + parseInt(item.giaChot).toLocaleString('vi-VN') + ' đ</span>';
                     html += '  </div>';
-                    html += '  <div class="small text-muted">Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + (item.ghiChuMon ? ' | Lưu ý: ' + item.ghiChuMon : '') + '</div>';
+
+                    let printIceSugar = '';
+                    let parts = [];
+                    if (item.mucDa && item.mucDa !== 'N/A') parts.push('Đá: ' + item.mucDa);
+                    if (item.mucDuong && item.mucDuong !== 'N/A') parts.push('Đường: ' + item.mucDuong);
+                    if (parts.length > 0) {
+                        printIceSugar = parts.join(' | ');
+                    }
+                    if (item.ghiChuMon && item.ghiChuMon !== 'Normal' && item.ghiChuMon !== '') {
+                        printIceSugar += (printIceSugar ? ' | ' : '') + 'Lưu ý: ' + item.ghiChuMon;
+                    }
+
+                    html += '  <div class="small text-muted">' + (printIceSugar ? printIceSugar : '') + '</div>';
                     if (item.toppings && item.toppings.length > 0) {
                         html += '  <div class="text-success small pl-2" style="font-size: 10px;">';
                         item.toppings.forEach(tp => {
@@ -733,6 +791,7 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.insertAdjacentHTML('beforeend', html);
                 });
+
                 if (typeof bootstrap !== 'undefined') {
                     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                     printModal.show();
@@ -853,6 +912,7 @@ function submitPOSOrderTransaction() {
     } else {
         localStorage.removeItem('temp_last_cash_given');
     }
+
     const container = document.getElementById('posFormItemsContainer');
     if (!container) {
         showToast('error', 'Lỗi cấu trúc trang: Không tìm thấy posFormItemsContainer!');
@@ -870,6 +930,7 @@ function submitPOSOrderTransaction() {
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
     });
+
     Swal.fire({
         title: 'Chốt giao dịch quầy POS',
         text: 'Xác nhận xuất hóa đơn tài chính và tiến hành giao dịch?',
