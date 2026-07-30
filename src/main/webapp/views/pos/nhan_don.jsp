@@ -1,502 +1,465 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>TEA POS - Điều Phối Đơn Hàng Trực Tuyến</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
-    <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhận Đơn Online - TEA POS</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/global.css">
     <style>
-        :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.08);
-        }
         body {
-            font-family: 'Inter', sans-serif !important;
-            background-color: var(--bg-main) !important;
-            color: var(--text-main) !important;
-            height: 100vh;
+            background-color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            height: 100vh !important;
+            overflow: hidden !important;
+            display: flex;
+            flex-direction: column;
+        }
+        .nd-header {
+            height: 56px;
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            z-index: 1030;
+        }
+        .nd-main {
+            height: calc(100vh - 56px);
+            display: flex;
             overflow: hidden;
         }
-        .nhandon-layout {
-            height: calc(100vh - 60px);
-            overflow-y: auto;
-            padding: 24px;
+        .nd-sidebar {
+            width: 260px;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 16px 0;
+        }
+        .nd-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .status-tab {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 13.5px;
+            border-left: 4px solid transparent;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        .status-tab:hover {
+            background-color: #f8fafc;
+            color: #10b981;
+        }
+        .status-tab.active {
+            background-color: #ecfdf5;
+            color: #10b981;
+            border-left-color: #10b981;
         }
         .order-card {
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            background-color: #ffffff;
-            transition: all 0.25s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow-sm);
+            background-color: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            overflow: hidden;
         }
         .order-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .orders-grid-wrapper {
-            flex-grow: 1;
+        .order-card-header {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 16px;
         }
-        .pagination-container {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 16px 20px !important;
-            background-color: #ffffff !important;
-            border-radius: var(--radius-lg) !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: var(--shadow-sm) !important;
-            margin-top: 20px !important;
-            margin-bottom: 10px !important;
+        .order-card-body {
+            padding: 16px;
         }
-        .pagination .page-item.active .page-link {
-            background-color: var(--primary) !important;
-            border-color: var(--primary) !important;
-            color: #ffffff !important;
-            font-weight: 600;
+        .order-card-footer {
+            background-color: #f8fafc;
+            border-top: 1px dashed #e2e8f0;
+            padding: 12px 16px;
         }
-        .pagination .page-link {
-            color: var(--primary) !important;
-            border-color: var(--border-color) !important;
-            transition: all 0.2s ease;
+        .item-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .pagination .page-link:hover {
-            background-color: var(--primary-light) !important;
-            border-color: var(--primary) !important;
+        .item-row:last-child {
+            border-bottom: none;
         }
-        .btn-status-active {
-            background-color: var(--primary) !important;
-            border-color: var(--primary) !important;
-            color: #ffffff !important;
-        }
-        .btn-status-inactive {
-            background-color: #ffffff !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-muted) !important;
-            transition: all 0.2s ease;
-        }
-        .btn-status-inactive:hover {
-            background-color: #f1f5f9 !important;
-            color: var(--text-main) !important;
+        .topping-tag {
+            font-size: 11px;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 4px;
+            padding: 1px 6px;
+            display: inline-block;
+            margin-top: 2px;
+            margin-right: 4px;
         }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 100;">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center gap-3">
-            <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
-                <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
-                <span>TEA POS PRO</span>
-            </a>
-            <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
-                <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-3">
-                    <i class="bi bi-cart-fill me-1"></i> BÁN TẠI QUẦY
-                </a>
-                <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-3">
-                    <i class="bi bi-bell-fill me-1 text-warning"></i> ĐƠN ONLINE
-                </a>
-            </div>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-<span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
-🔴 LIVE POLLING (5S/LẦN)
-</span>
-            <span class="small fw-semibold border-end pr-3 border-secondary d-none d-md-inline text-white">
-<i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-</span>
-            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
-                <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
-            </a>
-            <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-outline-danger border-2">
-                <i class="bi bi-box-arrow-right"></i>
-            </a>
-        </div>
+
+<!-- Header Navigation -->
+<header class="nd-header">
+    <div class="d-flex align-items-center gap-3">
+        <h4 class="m-0 fw-bold text-success"><i class="bi bi-bell-fill"></i> NHẬN ĐƠN ONLINE</h4>
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-1.5 px-2.5 small">
+                Nhân viên quầy: <c:out value="${sessionScope.user.hoTen}"/>
+            </span>
     </div>
-</nav>
-<div class="nhandon-layout">
-    <div class="card card-teapos p-4 mb-4 border-0 shadow-sm text-start" style="border-radius: 12px; background-color: #ffffff;">
-        <div class="row g-3 align-items-center">
-            <div class="col-12 col-xl-7">
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 0 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-clock-history me-1"></i>Chờ Xác Nhận
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 1 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-check2-all me-1"></i>Đã Xác Nhận
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 2 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-cup-straw me-1"></i>Đang Pha Chế
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 3 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-box2-heart me-1"></i>Chờ Lấy Hàng
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 4 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-check-circle-fill me-1"></i>Đã Hoàn Thành
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 5 ? 'btn-status-active' : 'btn-status-inactive'}">
-                        <i class="bi bi-x-circle-fill me-1"></i>Đã Hủy Bỏ
-                    </a>
-                </div>
-            </div>
-            <div class="col-12 col-xl-5">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                            <input type="text" id="orderSearchInput" class="form-control bg-light border-start-0 py-2" placeholder="Mã đơn, SĐT..." onkeyup="filterAndPaginateOnlineOrders()">
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <input type="date" id="orderDateInput" class="form-control form-control-sm bg-light py-2 fw-semibold text-dark" style="border-radius: var(--radius-md);" onchange="filterAndPaginateOnlineOrders()">
-                    </div>
-                    <div class="col-2">
-                        <button type="button" class="btn btn-sm btn-secondary-teapos w-100 py-2 fw-bold" onclick="resetOnlineFilters()"><i class="bi bi-arrow-counterclockwise"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="${pageContext.request.contextPath}/pos" class="btn btn-outline-success btn-sm fw-bold">
+            <i class="bi bi-cup-hot-fill"></i> TRANG QUẦY POS
+        </a>
+        <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger btn-sm fw-bold">
+            <i class="bi bi-box-arrow-right"></i> ĐĂNG XUẤT
+        </a>
     </div>
-    <div class="orders-grid-wrapper">
-        <div class="row g-4" id="ordersGrid">
-            <c:choose>
-                <c:when test="${not empty onlineOrders}">
-                    <c:forEach var="order" items="${onlineOrders}">
-                        <div class="col-12 col-md-6 col-lg-4 order-card-col"
-                             data-madh="${order.maDh}"
-                             data-makh="${order.maKh}"
-                             data-sdt="${order.maKh}"
-                             data-date="<fmt:formatDate value="${order.thoiGianTao}" pattern="yyyy-MM-dd"/>">
-                            <div class="card order-card shadow-sm p-4 text-start">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="text-start">
-                                        <h5 class="fw-bold mb-0 text-success">${order.maDh}</h5>
-                                        <small class="text-muted">Đặt lúc: <fmt:formatDate value="${order.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></small>
-                                    </div>
-                                    <span class="badge ${order.trangThaiThanhToan == 1 ? 'bg-success' : 'bg-warning'} text-white rounded-pill px-2.5 py-1" style="font-size:11px;">
-                                            ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
-                                    </span>
-                                </div>
-                                <div class="p-2.5 bg-light rounded text-dark small mb-3 border border-dashed border-success text-start">
-                                    <i class="bi bi-alarm-fill text-danger me-1"></i> HẸN ĐẾN QUẦY LẤY:
-                                    <strong><fmt:formatDate value="${order.thoiGianHenLay}" pattern="HH:mm (dd/MM)"/></strong>
-                                </div>
-                                <div class="mb-3 text-start">
-                                    <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
-                                    <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách lẻ vãng lai'}"/></strong>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-success w-100 fw-bold py-2 mb-3 shadow-sm" onclick="showOnlineOrderDetail('${order.maDh}')">
-                                    <i class="bi bi-receipt-cutoff me-1"></i> XEM CHI TIẾT MÓN & TOPPING
-                                </button>
-                                <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2 text-start">
+</header>
+
+<!-- Main Container -->
+<div class="nd-main">
+
+    <!-- Status Tabs Sidebar -->
+    <aside class="nd-sidebar">
+        <div class="px-3 mb-3 text-start">
+            <h6 class="text-uppercase text-secondary fw-bold small m-0" style="letter-spacing: 0.5px;">BỘ LỌC ĐƠN HÀNG</h6>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="status-tab ${currentStatus == 0 ? 'active' : ''}">
+            <span><i class="bi bi-hourglass-split me-2"></i> Chờ xác nhận</span>
+            <span class="badge bg-warning text-dark rounded-pill" style="font-size:10px;">HOT</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=1" class="status-tab ${currentStatus == 1 ? 'active' : ''}">
+            <span><i class="bi bi-check-circle me-2"></i> Đã xác nhận</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=2" class="status-tab ${currentStatus == 2 ? 'active' : ''}">
+            <span><i class="bi bi-fire me-2"></i> Đang pha chế</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=3" class="status-tab ${currentStatus == 3 ? 'active' : ''}">
+            <span><i class="bi bi-box-seam me-2"></i> Chờ lấy hàng</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=4" class="status-tab ${currentStatus == 4 ? 'active' : ''}">
+            <span><i class="bi bi-flag-fill me-2"></i> Hoàn thành</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/pos/nhandon?status=5" class="status-tab ${currentStatus == 5 ? 'active' : ''}">
+            <span><i class="bi bi-x-octagon me-2"></i> Đã hủy</span>
+        </a>
+    </aside>
+
+    <!-- Orders List Area -->
+    <main class="nd-content">
+        <div class="d-flex justify-content-between align-items-center mb-4 text-start">
+            <div>
+                <h3 class="fw-bold m-0 text-dark">
+                    <c:choose>
+                        <c:when test="${currentStatus == 0}">Đơn hàng Chờ xác nhận</c:when>
+                        <c:when test="${currentStatus == 1}">Đơn hàng Đã xác nhận</c:when>
+                        <c:when test="${currentStatus == 2}">Đơn hàng Đang pha chế</c:when>
+                        <c:when test="${currentStatus == 3}">Đơn hàng Chờ lấy</c:when>
+                        <c:when test="${currentStatus == 4}">Đơn hàng Hoàn tất</c:when>
+                        <c:otherwise>Đơn hàng Đã hủy</c:otherwise>
+                    </c:choose>
+                </h3>
+                <p class="text-muted m-0 small mt-1">Danh sách đơn đặt trước (Click & Collect) qua Website Portal của hội viên</p>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Làm mới trang
+            </button>
+        </div>
+
+        <c:choose>
+            <c:when test="${empty onlineOrders}">
+                <div class="text-center text-muted py-5 bg-white rounded-4 border border-dashed my-4">
+                    <i class="bi bi-inbox fs-1 text-secondary opacity-25"></i>
+                    <p class="mt-2 fw-semibold m-0">Không có đơn đặt online nào trong mục này.</p>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="row g-4">
+                    <c:forEach var="dh" items="${onlineOrders}">
+                        <div class="col-12 col-xl-6 text-start">
+                            <div class="order-card">
+
+                                <!-- Header: Code and Date -->
+                                <div class="order-card-header d-flex justify-content-between align-items-center">
                                     <div>
-                                        <small class="text-muted d-block" style="font-size: 11px;">Giá trị thu</small>
-                                        <strong class="text-danger fs-5"><fmt:formatNumber value="${order.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ</strong>
+                                        <span class="fw-bold text-success font-monospace" style="font-size: 15px;"><c:out value="${dh.maDh}"/></span>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 ms-1.5" style="font-size:10px;">
+                                                Đặt: <fmt:formatDate value="${dh.thoiGianTao}" pattern="HH:mm dd/MM"/>
+                                            </span>
                                     </div>
-                                    <div class="text-end">
-                                        <small class="text-muted d-block" style="font-size: 11px;">Hình thức đặt</small>
-                                        <span class="badge bg-dark text-white fw-bold" style="border-radius: 4px;">CLICK & COLLECT</span>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <i class="bi bi-clock-fill text-warning"></i>
+                                        <span class="fw-bold text-warning font-monospace" style="font-size:13.5px;">
+                                                Hẹn lấy: <fmt:formatDate value="${dh.thoiGianHenLay}" pattern="HH:mm"/>
+                                            </span>
                                     </div>
                                 </div>
-                                <form action="${pageContext.request.contextPath}/pos/nhandon" method="POST" id="formUpdate_${order.maDh}">
-                                    <input type="hidden" name="maDh" value="${order.maDh}">
-                                    <input type="hidden" name="trangThaiMoi" id="statusField_${order.maDh}">
-                                    <input type="hidden" name="lyDoHuy" id="cancelReason_${order.maDh}">
-                                    <div class="row g-2">
+
+                                <!-- Body: Customer and Items list -->
+                                <div class="order-card-body">
+                                    <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                        <div>
+                                            <div class="fw-bold text-dark" style="font-size:13.5px;">
+                                                <i class="bi bi-person"></i> <c:out value="${dh.maKh != null ? 'Hội viên' : 'Khách vãng lai'}"/>
+                                            </div>
+                                            <div class="small text-muted" style="font-size:11.5px; margin-top:1px;">
+                                                <i class="bi bi-telephone"></i> SĐT: <c:out value="${dh.maKh != null ? '0909999999' : 'N/A'}"/>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div>
+                                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 10px;">
+                                                        <c:out value="${dh.maPt == 1 ? 'Tiền mặt' : 'Chuyển khoản VietQR'}"/>
+                                                    </span>
+                                            </div>
+                                            <div class="small text-muted mt-1" style="font-size:11px;">
+                                                Thanh toán:
+                                                <span class="fw-bold ${dh.trangThaiThanhToan == 1 ? 'text-success' : 'text-danger'}">
+                                                        <c:out value="${dh.trangThaiThanhToan == 1 ? 'Đã trả' : 'Chưa trả'}"/>
+                                                    </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Detail of drinks -->
+                                    <div class="mb-3">
+                                        <c:forEach var="item" items="${dh.chiTietDonHangList}">
+                                            <div class="item-row">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <span class="fw-bold text-dark" style="font-size:13.5px;"><c:out value="${item.tenSp}"/></span>
+                                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 ms-1" style="font-size: 9.5px;">Size <c:out value="${item.tenSize}"/></span>
+                                                        <span class="text-muted fw-bold font-monospace ms-1.5" style="font-size:12.5px;">x<c:out value="${item.soLuong}"/></span>
+                                                    </div>
+                                                    <span class="fw-bold text-secondary font-monospace" style="font-size:13px;">
+                                                            <fmt:formatNumber value="${item.giaChot * item.soLuong}" type="currency" currencySymbol=""/>đ
+                                                        </span>
+                                                </div>
+
+                                                <!-- Ice, Sugar options -->
+                                                <div class="text-muted small" style="font-size: 11px; margin-top:2px;">
+                                                    <c:choose>
+                                                        <c:when test="${item.mucDa != 'N/A' || item.mucDuong != 'N/A'}">
+                                                            <c:if test="${item.mucDa != 'N/A'}">Đá: <c:out value="${item.mucDa}"/> | </c:if>
+                                                            <c:if test="${item.mucDuong != 'N/A'}">Đường: <c:out value="${item.mucDuong}"/></c:if>
+                                                            <c:if test="${not empty item.ghiChuMon && item.ghiChuMon != 'Normal'}"> | Ghi chú: <span class="text-danger fw-semibold"><c:out value="${item.ghiChuMon}"/></span></c:if>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <c:if test="${not empty item.ghiChuMon && item.ghiChuMon != 'Normal' && item.ghiChuMon != ''}">Ghi chú: <span class="text-danger fw-semibold"><c:out value="${item.ghiChuMon}"/></span></c:if>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+
+                                                <!-- Topping details -->
+                                                <c:if test="${not empty item.toppingsList}">
+                                                    <div class="mt-1">
+                                                        <c:forEach var="tp" items="${item.toppingsList}">
+                                                            <span class="topping-tag">+ <c:out value="${tp.tenTopping}"/> (x<c:out value="${tp.soLuong}"/>)</span>
+                                                        </c:forEach>
+                                                    </div>
+                                                </c:if>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+
+                                    <c:if test="${not empty dh.ghiChuDon}">
+                                        <div class="p-2 border border-dashed rounded bg-light small mb-3 text-muted">
+                                            <i class="bi bi-pencil-square text-warning"></i> <strong>Ý kiến của khách:</strong> <c:out value="${dh.ghiChuDon}"/>
+                                        </div>
+                                    </c:if>
+
+                                    <c:if test="${dh.trangThaiDon == 5 && not empty dh.lyDoHuy}">
+                                        <div class="p-2 border border-danger border-opacity-10 rounded bg-danger bg-opacity-5 small mb-3 text-danger">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Lý do hủy đơn:</strong> <c:out value="${dh.lyDoHuy}"/>
+                                        </div>
+                                    </c:if>
+                                </div>
+
+                                <!-- Footer: Totals and Action Buttons -->
+                                <div class="order-card-footer d-flex justify-content-between align-items-center">
+                                    <div class="text-start">
+                                        <small class="text-muted d-block" style="font-size:11px;">Phải thanh toán:</small>
+                                        <span class="fw-bold text-danger font-monospace fs-5">
+                                                <fmt:formatNumber value="${dh.tongPhaiTra}" type="currency" currencySymbol=""/>đ
+                                            </span>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm fw-bold px-2.5" onclick="loadAndShowPrintReceipt('${dh.maDh}')">
+                                            <i class="bi bi-printer"></i>
+                                        </button>
+
                                         <c:choose>
-                                            <c:when test="${order.trangThaiDon == 0}">
-                                                <div class="col-6">
-                                                    <button type="button" class="btn btn-sm btn-outline-danger w-100 fw-bold py-2" onclick="cancelOnlineOrder('${order.maDh}')">HỦY ĐƠN</button>
-                                                </div>
-                                                <div class="col-6">
-                                                    <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 1)">XÁC NHẬN</button>
-                                                </div>
+                                            <c:when test="${dh.trangThaiDon == 0}">
+                                                <button type="button" class="btn btn-outline-danger btn-sm fw-bold px-2.5" onclick="cancelOnlineOrder('${dh.maDh}')">HỦY</button>
+                                                <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="updateOrderStatus('${dh.maDh}', 1)">XÁC NHẬN</button>
                                             </c:when>
-                                            <c:when test="${order.trangThaiDon == 1}">
-                                                <div class="col-12">
-                                                    <button type="button" class="btn btn-sm btn-primary w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 2)">BẮT ĐẦU PHA CHẾ</button>
-                                                </div>
+                                            <c:when test="${dh.trangThaiDon == 1}">
+                                                <button type="button" class="btn btn-warning text-dark btn-sm fw-bold px-3" onclick="updateOrderStatus('${dh.maDh}', 2)">PHA CHẾ</button>
                                             </c:when>
-                                            <c:when test="${order.trangThaiDon == 2}">
-                                                <div class="col-12">
-                                                    <button type="button" class="btn btn-sm btn-success w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 3)">BÁO LÊN KỆ CHỜ LẤY</button>
-                                                </div>
+                                            <c:when test="${dh.trangThaiDon == 2}">
+                                                <button type="button" class="btn btn-info text-white btn-sm fw-bold px-3" onclick="updateOrderStatus('${dh.maDh}', 3)">CHO LẤY</button>
                                             </c:when>
-                                            <c:when test="${order.trangThaiDon == 3}">
-                                                <div class="col-12">
-                                                    <button type="button" class="btn btn-sm btn-dark w-100 fw-bold py-2" onclick="submitStatus('${order.maDh}', 4)">GIAO NƯỚC (HOÀN THÀNH)</button>
-                                                </div>
+                                            <c:when test="${dh.trangThaiDon == 3}">
+                                                <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="updateOrderStatus('${dh.maDh}', 4)">HOÀN TẤT</button>
                                             </c:when>
                                             <c:otherwise>
-                                                <div class="col-12 text-center text-muted small py-2 bg-light rounded border">
-                                                    Giao dịch đã đóng (Locked)
-                                                </div>
+                                                <!-- Đơn đã hủy hoặc đã hoàn thành, không có thêm nút hành động -->
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>
-                </c:when>
-                <c:otherwise>
-                    <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-50"></i>
-                        Không có đơn hàng online nào thuộc trạng thái lọc hiện hành!
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </main>
+</div>
+
+<!-- Hidden Action Form for Status Updates -->
+<form id="actionStatusForm" action="${pageContext.request.contextPath}/pos/nhandon" method="POST" style="display:none;">
+    <input type="hidden" name="maDh" id="action_maDh">
+    <input type="hidden" name="trangThaiMoi" id="action_trangThaiMoi">
+    <input type="hidden" name="lyDoHuy" id="action_lyDoHuy">
+</form>
+
+<!-- Receipt Print Preview Modal -->
+<div class="modal fade" id="receiptDetailModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="width: 320px;">
+        <div class="modal-content p-3 border-0 text-center" style="border-radius:12px;">
+            <div id="billPrintArea" class="bg-white p-1 text-dark" style="font-family: 'Courier New', Courier, monospace; font-size:12px;">
+                <h5 class="fw-bold m-0" style="font-size:16px;">TEA POS CAFE</h5>
+                <p class="m-0 small" style="font-size:10px;">Đ/C: 123 Đường Sữa, CodeDevSquad 2026</p>
+                <p class="m-0 small" style="font-size:10px;">Hotline: (+84) 123 456 789</p>
+                <div class="my-2 border-bottom border-dark border-opacity-50"></div>
+                <h6 class="fw-bold my-1" style="font-size:13px; text-transform: uppercase;">Hóa Đơn Thanh Toán</h6>
+                <div class="text-start mb-2" style="font-size:10px; line-height: 1.4;">
+                    <div>Mã đơn: <span id="billMaDh" class="fw-bold">TEAxxxx</span></div>
+                    <div>Thời gian: <span id="billThoiGian">N/A</span></div>
+                    <div>Khách hàng: <span id="billTenKh">Khách lẻ vãng lai</span></div>
+                    <div>Nhân sự: <span id="billTenNv">N/A</span></div>
+                </div>
+                <div class="my-2 border-bottom border-dark border-opacity-50"></div>
+
+                <!-- Items container -->
+                <div id="billItemsContainer"></div>
+
+                <div class="my-2 border-bottom border-dark border-opacity-50"></div>
+                <div class="text-start" style="font-size:10.5px; line-height: 1.5;">
+                    <div class="d-flex justify-content-between">
+                        <span>Tiền hàng:</span>
+                        <span id="billRawPrice" class="font-monospace">0đ</span>
                     </div>
-                </c:otherwise>
-            </c:choose>
+                    <div class="d-flex justify-content-between" style="display:none !important;" id="billDiscountRow">
+                        <span>Ưu đãi Voucher:</span>
+                        <span id="billDiscount" class="font-monospace">-0đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between" style="display:none !important;" id="billPointsRow">
+                        <span>Trừ điểm CRM:</span>
+                        <span id="billPointsDiscount" class="font-monospace">-0đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Thuế VAT (8%):</span>
+                        <span id="billVatPrice" class="font-monospace">0đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold text-dark fs-6 pt-1 border-top border-dark border-opacity-25 mt-1">
+                        <span>TỔNG CỘNG:</span>
+                        <span id="billFinalPayable" class="font-monospace">0đ</span>
+                    </div>
+                </div>
+                <div class="my-2 border-bottom border-dark border-opacity-50"></div>
+                <div class="text-center small py-1" style="font-size: 10px; font-style: italic;">
+                    Cảm ơn quý khách và hẹn gặp lại!<br>CodeDevSquad 2026
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="btn btn-outline-secondary flex-fill fw-bold" data-bs-dismiss="modal">ĐÓNG</button>
+                <button type="button" class="btn btn-success flex-fill fw-bold" onclick="printReceipt()"><i class="bi bi-printer-fill"></i> IN BILL</button>
+            </div>
         </div>
     </div>
-    <div class="pagination-container" id="ordersPaginationBlock" style="display: none;">
-        <span class="small text-muted" id="ordersPaginationInfo">Hiển thị từ 1 đến 6 dòng trên tổng số 6 đơn hàng</span>
-        <nav>
-            <ul class="pagination pagination-sm mb-0 justify-content-end" id="ordersPaginationButtons"></ul>
-        </nav>
-    </div>
 </div>
-<div class="modal fade" id="onlineOrderDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold"><i class="bi bi-receipt-cutoff text-success me-2"></i>CHI TIẾT MÓN & TOPPING</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 bg-light text-start">
-                <div class="mb-3 small">
-                    <div>Mã hóa đơn: <strong id="modalMaDh" class="text-success"></strong></div>
-                    <div>Thời gian đặt: <span id="modalThoiGian"></span></div>
-                    <div>Hẹn nhận nước: <strong id="modalHenLay" class="text-danger"></strong></div>
-                    <div>Tên khách hàng: <span id="modalKhachHang"></span></div>
-                    <div>Số điện thoại: <strong id="modalSdt"></strong></div>
-                    <div class="mt-1">Dặn dò của khách: <em id="modalGhiChu" class="text-muted fw-bold"></em></div>
-                </div>
-                <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
-                <div id="modalItemsContainer"></div>
-                <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
-                <div class="small">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span>Tổng tiền hàng gốc:</span>
-                        <strong id="modalRawPrice">0 đ</strong>
-                    </div>
-                    <div class="d-flex justify-content-between text-danger mb-1">
-                        <span>Giảm giá Voucher:</span>
-                        <strong id="modalDiscount">-0 đ</strong>
-                    </div>
-                    <div class="d-flex justify-content-between text-primary mb-1" id="modalPointsRow" style="display: none;">
-                        <span>Khấu trừ điểm CRM:</span>
-                        <strong id="modalPointsDiscount">-0 đ</strong>
-                    </div>
-                    <div class="d-flex justify-content-between fs-5 fw-bold text-success border-top pt-2 mt-2">
-                        <span>THỰC THU TRÊN WEB:</span>
-                        <span id="modalFinalPayable">0 đ</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer bg-light p-2.5">
-                <button type="button" class="btn btn-secondary px-3.5" data-bs-dismiss="modal">Đóng đối soát</button>
-            </div>
-        </div>
-    </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
+
 <script>
-    function submitStatus(maDh, targetStatus) {
-        document.getElementById("statusField_" + maDh).value = targetStatus;
-        document.getElementById("formUpdate_" + maDh).submit();
+    function updateOrderStatus(maDh, status) {
+        Swal.fire({
+            title: 'Cập nhật trạng thái đơn?',
+            text: 'Bạn có chắc muốn chuyển trạng thái đơn ' + maDh + ' không?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('action_maDh').value = maDh;
+                document.getElementById('action_trangThaiMoi').value = status;
+                document.getElementById('action_lyDoHuy').value = "";
+                document.getElementById('actionStatusForm').submit();
+            }
+        });
     }
+
     function cancelOnlineOrder(maDh) {
         Swal.fire({
-            title: 'Từ chối đơn hàng?',
-            text: 'Vui lòng điền rõ lý do hủy đơn hàng online đặt trước này:',
+            title: 'HỦY ĐƠN ĐẶT ONLINE',
+            text: 'Vui lòng nhập lý do hủy đơn bắt buộc:',
             input: 'text',
-            inputPlaceholder: 'Ví dụ: Hết nguyên liệu, hết đá sạch...',
+            inputPlaceholder: 'Khách yêu cầu hủy, hết nguyên liệu pha chế...',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý hủy',
-            cancelButtonText: 'Quay lại',
-            preConfirm: (reason) => {
-                if (!reason || reason.trim() === '') {
-                    Swal.showValidationMessage('Bạn bắt buộc phải nhập lý do hủy đơn!');
+            confirmButtonText: 'Xác nhận hủy đơn',
+            cancelButtonText: 'Đóng',
+            preConfirm: (value) => {
+                if (!value || value.trim() === "") {
+                    Swal.showValidationMessage('Bạn phải nhập lý do hủy đơn!');
+                    return false;
                 }
-                return reason;
+                return value.trim();
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById("statusField_" + maDh).value = 5; // Hủy đơn
-                document.getElementById("cancelReason_" + maDh).value = result.value;
-                document.getElementById("formUpdate_" + maDh).submit();
+                document.getElementById('action_maDh').value = maDh;
+                document.getElementById('action_trangThaiMoi').value = 5; // HỦY ĐƠN = 5
+                document.getElementById('action_lyDoHuy').value = result.value;
+                document.getElementById('actionStatusForm').submit();
             }
         });
     }
-    function getContextPath() {
-        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
-    }
-    const onlineDetailModal = new bootstrap.Modal(document.getElementById('onlineOrderDetailModal'));
-    function showOnlineOrderDetail(maDh) {
-        document.getElementById("modalItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết đơn...</p></div>';
-        onlineDetailModal.show();
-        fetch(getContextPath() + '/pos/bill-detail?id=' + maDh)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'SUCCESS') {
-                    document.getElementById("modalMaDh").innerText = data.maDh;
-                    document.getElementById("modalThoiGian").innerText = data.thoiGianTao;
-                    document.getElementById("modalHenLay").innerText = data.thoiGianHenLay;
-                    document.getElementById("modalKhachHang").innerText = data.tenKhachHang;
-                    document.getElementById("modalSdt").innerText = data.sdtKhachHang;
-                    document.getElementById("modalGhiChu").innerText = data.ghiChuDon ? data.ghiChuDon : "Không có";
-                    document.getElementById("modalRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
-                    document.getElementById("modalDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-                    if (data.diemSuDung > 0) {
-                        document.getElementById("modalPointsRow").style.setProperty('display', 'flex', 'important');
-                        document.getElementById("modalPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
-                    } else {
-                        document.getElementById("modalPointsRow").style.setProperty('display', 'none', 'important');
-                    }
-                    document.getElementById("modalFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-                    let container = document.getElementById("modalItemsContainer");
-                    container.innerHTML = '';
-                    data.items.forEach(item => {
-                        let html = '<div class="mb-3 border-bottom pb-2">';
-                        html += '  <div class="d-flex justify-content-between align-items-center">';
-                        html += '    <span class="fs-6"><strong>' + item.tenMon + '</strong> (Size ' + item.tenSize + ')</span>';
-                        html += '    <span class="badge bg-success py-1.5 px-3">SL: x' + item.soLuong + '</span>';
-                        html += '  </div>';
-                        html += '  <div class="mt-1 small text-muted">';
-                        html += '    <span class="badge bg-light text-dark border me-1">Đá: ' + item.mucDa + '</span>';
-                        html += '    <span class="badge bg-light text-dark border me-1">Đường: ' + item.mucDuong + '</span>';
-                        if (item.ghiChuMon) {
-                            html += '    <span class="badge bg-warning-subtle text-warning border border-warning">Dặn thợ: ' + item.ghiChuMon + '</span>';
-                        }
-                        html += '  </div>';
-                        if (item.toppings && item.toppings.length > 0) {
-                            html += '  <div class="ps-3 mt-2 border-start border-success border-2 small text-muted">';
-                            html += '    <div class="fw-bold text-success mb-1" style="font-size: 11px;">Topping đi kèm:</div>';
-                            item.toppings.forEach(tp => {
-                                html += '    <div>+ ' + tp.tenTopping + ' (Số lượng phần: x' + tp.soLuong + ')</div>';
-                            });
-                            html += '  </div>';
-                        }
-                        html += '  </div>';
-                        container.innerHTML += html;
-                    });
-                } else {
-                    showToast('error', 'Không tìm thấy chi tiết hóa đơn!');
-                    onlineDetailModal.hide();
-                }
-            })
-            .catch(err => {
-                console.error("Lỗi:", err);
-                showToast('error', 'Không thể nạp dữ liệu từ máy chủ!');
-                onlineDetailModal.hide();
-            });
-    }
-    let currentPage = 1;
-    const pageSize = 6;
-    let filteredOrdersList = [];
-    function filterAndPaginateOnlineOrders() {
-        const searchKeyword = document.getElementById("orderSearchInput").value.trim().toLowerCase();
-        const dateKeyword = document.getElementById("orderDateInput").value;
-        const allCards = Array.from(document.querySelectorAll("#ordersGrid .order-card-col"));
-        filteredOrdersList = allCards.filter(card => {
-            const maDh = card.dataset.madh.toLowerCase();
-            const maKh = card.dataset.makh ? card.dataset.makh.toLowerCase() : "";
-            const cardDate = card.dataset.date;
-            const matchSearch = maDh.includes(searchKeyword) || maKh.includes(searchKeyword);
-            const matchDate = dateKeyword === "" || cardDate === dateKeyword;
-            return matchSearch && matchDate;
-        });
-        currentPage = 1;
-        renderOnlineOrders();
-    }
-    function renderOnlineOrders() {
-        const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
-        allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
-        const totalRows = filteredOrdersList.length;
-        const totalPages = Math.ceil(totalRows / pageSize) || 1;
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-        const startIdx = (currentPage - 1) * pageSize;
-        const endIdx = Math.min(startIdx + pageSize, totalRows);
-        const pageCards = filteredOrdersList.slice(startIdx, endIdx);
-        pageCards.forEach(card => card.style.setProperty('display', 'block', 'important'));
-        const infoEl = document.getElementById("ordersPaginationInfo");
-        if (infoEl) {
-            infoEl.innerText = 'Hiển thị từ ' + (totalRows > 0 ? (startIdx + 1) : 0) + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRows + ' đơn đặt online';
-        }
-        const buttonsContainer = document.getElementById("ordersPaginationButtons");
-        if (buttonsContainer) {
-            buttonsContainer.innerHTML = "";
-            if (totalPages <= 1) {
-                document.getElementById("ordersPaginationBlock").style.setProperty('display', 'none', 'important');
-                return;
-            }
-            document.getElementById("ordersPaginationBlock").style.setProperty('display', 'flex', 'important');
-            const prevLi = document.createElement("li");
-            prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
-            prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage - 1) + ')">&laquo;</a>';
-            buttonsContainer.appendChild(prevLi);
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement("li");
-                li.className = "page-item " + (currentPage === i ? "active" : "");
-                li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeOrdersPage(' + i + ')">' + i + '</a>';
-                buttonsContainer.appendChild(li);
-            }
-            const nextLi = document.createElement("li");
-            nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
-            nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage + 1) + ')">&raquo;</a>';
-            buttonsContainer.appendChild(nextLi);
-        }
-    }
-    function changeOrdersPage(newPage) {
-        currentPage = newPage;
-        renderOnlineOrders();
-    }
-    function resetOnlineFilters() {
-        document.getElementById("orderSearchInput").value = "";
-        document.getElementById("orderDateInput").value = "";
-        filterAndPaginateOnlineOrders();
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-        filterAndPaginateOnlineOrders();
-    });
-    setInterval(function() {
-        fetch('${pageContext.request.contextPath}/pos/nhandon?action=checkPollingCount&status=' + ${currentStatus})
-            .then(res => res.text())
-            .then(data => {
-                const currentCount = ${onlineOrders.size()};
-                if (parseInt(data) !== currentCount && parseInt(data) > 0) {
-                    showToast('info', 'Phát hiện có đơn đặt online mới hoặc thanh toán qua SePay!');
-                    setTimeout(() => { location.reload(); }, 1500);
-                }
-            })
-            .catch(err => console.error("Lỗi Polling:", err));
-    }, 5000);
 </script>
+<script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 </body>
 </html>

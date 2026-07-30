@@ -7,75 +7,84 @@
     <title>TEA POS PRO - Quầy Thu Ngân & Điều Phối Đơn Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Link CSS Frameworks & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
-    <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
+
     <style>
         :root {
             --primary: #10b981;
             --primary-dark: #059669;
             --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
             --text-muted: #64748b;
-            --radius-md: 8px;
-            --radius-sm: 4px;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
+
         body {
-            background-color: var(--bg-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
-        .pos-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
+
+        /* 3-COLUMNS SYSTEM CONTAINER */
         .pos-main-container {
             display: flex;
             height: calc(100vh - 60px);
             overflow: hidden;
-            flex-grow: 1;
+            background-color: #f1f5f9;
         }
+
+        /* COLUMN 1: Category Sidebar (Left) */
         .pos-category-sidebar {
-            width: 110px;
+            width: 120px;
             background-color: #ffffff;
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
+            z-index: 10;
         }
+
         .pos-category-btn {
-            width: 100%;
-            padding: 15px 8px;
-            background: transparent;
-            border: none;
-            border-left: 3px solid transparent;
-            color: var(--text-muted);
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 11px;
+            padding: 16px 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 11.5px;
             font-weight: 700;
+            gap: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
-            gap: 4px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            text-transform: uppercase;
         }
-        .pos-category-btn:hover {
-            color: var(--primary);
-            background-color: #f8fafc;
+
+        .pos-category-btn i {
+            font-size: 22px;
         }
-        .pos-category-btn.active {
-            color: var(--primary);
+
+        .pos-category-btn:hover, .pos-category-btn.active {
             background-color: var(--primary-light);
-            border-left-color: var(--primary);
+            color: var(--primary);
         }
+
+        /* COLUMN 2: Products Menu Area (Center) */
         .pos-menu-area {
             flex-grow: 1;
             padding: 20px;
@@ -83,7 +92,9 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            background-color: #f8fafc;
         }
+
         .pos-menu-header {
             display: flex;
             justify-content: space-between;
@@ -91,115 +102,164 @@
             gap: 16px;
             flex-wrap: wrap;
         }
+
         .pos-search-wrapper {
             position: relative;
             flex-grow: 1;
             max-width: 400px;
         }
-        .pos-search-icon {
+
+        .pos-search-input {
+            width: 100%;
+            height: 40px;
+            padding: 8px 16px 8px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 13.5px;
+            outline: none;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.15s;
+        }
+
+        .pos-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .pos-search-wrapper i {
             position: absolute;
-            left: 12px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
+            font-size: 16px;
         }
-        .pos-search-input {
-            width: 100%;
-            padding: 8px 12px 8px 36px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            outline: none;
-            font-size: 13px;
-            background-color: #ffffff;
+
+        .active-filter {
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
         }
+
+        /* Products Grid styling */
         .pos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 16px;
         }
+
+        .pos-card-wrapper {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pos-card-wrapper:hover {
+            transform: translateY(-4px);
+        }
+
         .pos-product-card {
             background-color: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.25s ease;
-            height: 100%;
             display: flex;
             flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            user-select: none;
         }
-        .pos-product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary);
-        }
-        .pos-product-img {
+
+        .pos-card-img-container {
             width: 100%;
-            height: 100px;
-            object-fit: cover;
+            height: 120px;
             border-radius: var(--radius-sm);
-            margin-bottom: 8px;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .pos-card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .pos-card-name {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 700;
             color: var(--text-main);
-            height: 36px;
+            height: 38px;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             margin-bottom: 4px;
+            line-height: 1.4;
+            text-align: left;
         }
+
         .pos-card-price {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 800;
-            color: var(--primary);
+            color: var(--primary-dark);
             margin-top: auto;
+            text-align: left;
         }
+
+        /* COLUMN 3: Checkout Sidebar (Right) */
         .pos-checkout-sidebar {
-            width: 390px;
+            width: 410px;
             background-color: #ffffff;
             border-left: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            height: 100%;
             flex-shrink: 0;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.02);
+            z-index: 10;
         }
+
         .pos-checkout-header {
-            height: 60px;
-            padding: 15px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
-            background-color: #ffffff;
+            background-color: #fff;
         }
+
         .pos-cart-items-wrapper {
             flex-grow: 1;
+            padding: 16px 20px;
             overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
             background-color: #f8fafc;
         }
+
+        /* Cart Item Styling */
+        .pos-cart-item {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* CRM Loyalty, Vouchers & Summary Panels */
         .pos-crm-panel {
-            padding: 12px 15px;
-            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
             background-color: #ffffff;
-            flex-shrink: 0;
+            border-top: 1px solid var(--border-color);
         }
+
         .pos-summary-panel {
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
             background-color: #ffffff;
-            flex-shrink: 0;
+            border-top: 1px solid var(--border-color);
         }
+
         .pos-line-price {
             display: flex;
             justify-content: space-between;
@@ -207,6 +267,7 @@
             color: var(--text-muted);
             margin-bottom: 6px;
         }
+
         .pos-total-row {
             display: flex;
             justify-content: space-between;
@@ -218,261 +279,334 @@
             margin-top: 10px;
             margin-bottom: 12px;
         }
+
         .pos-cash-suggest-btn {
             background-color: #f1f5f9;
             border: 1px solid #cbd5e1;
-            padding: 4px 8px;
+            padding: 5px 10px;
             font-size: 11px;
             font-weight: 700;
             border-radius: 4px;
             color: #475569;
             flex: 1;
             transition: all 0.15s;
+            cursor: pointer;
         }
+
         .pos-cash-suggest-btn:hover {
             background-color: #e2e8f0;
             color: #0f172a;
         }
-        .active-filter {
-            background-color: #f1f5f9 !important;
-            border: 1px solid #cbd5e1 !important;
-        }
+
+        /* Receipt/Bill print template styling */
         .receipt-container {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #000000;
-            background-color: #ffffff;
+            color: #000;
+        }
+
+        /* RESPONSIVE LAYOUT BREAKPOINTS */
+        @media (max-width: 1024px) {
+            .pos-main-container {
+                flex-direction: column !important;
+            }
+
+            .pos-category-sidebar {
+                width: 100% !important;
+                height: auto !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border-color) !important;
+            }
+
+            .pos-category-btn {
+                min-width: 90px !important;
+                padding: 10px !important;
+                border-bottom: none !important;
+                border-top: 3px solid transparent !important;
+            }
+
+            .pos-category-btn.active {
+                border-top-color: var(--primary) !important;
+                border-left: none !important;
+            }
+
+            .pos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+            }
+
+            .pos-checkout-sidebar {
+                width: 100% !important;
+                height: 55vh !important;
+                border-left: none !important;
+                border-top: 2px solid var(--primary) !important;
+                box-shadow: 0 -4px 15px rgba(0,0,0,0.05) !important;
+            }
         }
     </style>
 </head>
 <body>
-<div class="pos-wrapper">
-    <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px; flex-shrink: 0; z-index: 1040;">
-        <div class="container-fluid d-flex align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
-                    <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i> TEA POS PRO
+
+<!-- CORE HEADER NAVIGATION -->
+<nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 100;">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center gap-3">
+            <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
+                <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
+                <span>TEA POS PRO</span>
+            </a>
+
+            <!-- Tab Switching Panel -->
+            <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
+                <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
+                    <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
                 </a>
-                <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary d-none d-sm-flex" style="height: 30px;">
-                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
-                        <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
-                        <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
-                    </a>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-3 text-white ms-auto">
-                <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
-                    <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posProfileModal"><i class="bi bi-person-circle me-2 text-success"></i>Cài đặt cá nhân</a></li>
-                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posPasswordModal"><i class="bi bi-key-fill me-2 text-warning"></i>Đổi mật khẩu</a></li>
-                    </ul>
-                </div>
-                <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-<i class="bi bi-calendar3 text-success me-1"></i>
-<span id="posCurrentClock">--:--:--</span>
-</span>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
-                    <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
-                </a>
-                <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm" style="font-size: 12px; border-radius: 6px;">
-                    <i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT
+                <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-outline-light fw-bold px-3">
+                    <i class="bi bi-bell-fill me-1"></i> ĐƠN ONLINE
                 </a>
             </div>
         </div>
-    </nav>
-    <div class="pos-main-container" id="posMainContainer">
-        <div class="pos-category-sidebar">
-            <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
-                <i class="bi bi-grid-fill fs-4 mb-1"></i>
-                <span>TẤT CẢ</span>
+
+        <!-- Profile Clock and Cashier User settings -->
+        <div class="d-flex align-items-center gap-3 text-white ms-auto">
+            <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline" id="posHeaderClock">Loading...</span>
+
+            <div class="dropdown">
+                <a class="dropdown-toggle text-decoration-none text-white fw-bold small d-flex align-items-center gap-1.5" href="#" role="button" id="posProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle fs-5 text-success"></i>
+                    <span><c:out value="${sessionScope.user.hoTen != null ? sessionScope.user.hoTen : 'Nhân viên'}"/></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="posProfileMenu">
+                    <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posProfileModal"><i class="bi bi-person-circle me-2 text-success"></i>Cài đặt cá nhân</a></li>
+                    <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posPasswordModal"><i class="bi bi-key-fill me-2 text-warning"></i>Đổi mật khẩu</a></li>
+                </ul>
+            </div>
+
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-xs btn-outline-danger fw-bold rounded px-2.5 py-1" style="font-size:11px;">
+                <i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- CORE 3-COLUMNS SYSTEM CONTAINER -->
+<div class="pos-main-container" id="posMainContainer">
+
+    <!-- COLUMN 1: Category Sidebar (Left) -->
+    <div class="pos-category-sidebar">
+        <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
+            <i class="bi bi-grid-fill fs-4 mb-1"></i>
+            <span>TẤT CẢ</span>
+        </button>
+        <c:forEach var="cat" items="${categories}">
+            <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory('${cat.maDm}')">
+                <c:choose>
+                    <c:when test="${not empty cat.hinhAnh}">
+                        <img src="${cat.hinhAnh}" class="rounded-circle mb-1" style="width:24px; height:24px; object-fit:cover;">
+                    </c:when>
+                    <c:otherwise>
+                        <i class="bi bi-cup-straw mb-1"></i>
+                    </c:otherwise>
+                </c:choose>
+                <span><c:out value="${cat.tenDm}"/></span>
             </button>
-            <c:forEach var="cat" items="${categories}">
-                <button class="pos-category-btn" id="btn_cat_${cat.maDm}" onclick="filterCategory('${cat.maDm}')">
-                    <i class="bi bi-cup-straw fs-4 mb-1"></i>
-                    <span class="text-uppercase"><c:out value="${cat.tenDm}"/></span>
-                </button>
-            </c:forEach>
-        </div>
-        <div class="pos-menu-area">
-            <div class="pos-menu-header">
-                <div class="pos-search-wrapper">
-                    <i class="bi bi-search pos-search-icon"></i>
-                    <input type="text" id="posSearchProductInput" class="pos-search-input" placeholder="Tìm tên đồ uống hoặc mã sản phẩm..." onkeyup="searchPOSProduct()">
-                </div>
-                <div class="btn-group border bg-white shadow-sm" style="border-radius: 20px; padding: 2px;">
-                    <button class="btn btn-sm px-3 border-0 rounded-pill btn-light active-filter" id="f_all" onclick="filterBadge('all')">Tất cả</button>
-                    <button class="btn btn-sm px-3 border-0 rounded-pill text-warning fw-bold" id="f_new" onclick="filterBadge('new')">Mới ✨</button>
-                    <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
-                </div>
+        </c:forEach>
+    </div>
+
+    <!-- COLUMN 2: Products Area (Center Grid) -->
+    <div class="pos-menu-area">
+        <div class="pos-menu-header">
+            <div class="pos-search-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" id="posSearchProductInput" class="pos-search-input" placeholder="Tìm tên đồ uống hoặc mã sản phẩm..." onkeyup="searchPOSProduct()">
             </div>
-            <div class="pos-product-container">
-                <div class="pos-grid" id="posProductGrid">
-                    <c:forEach var="sp" items="${products}">
-                        <div class="pos-card-wrapper">
-                            <div class="pos-product-card" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}"
-                                 onclick="openCustomizePopup('${sp.maSp}', this.querySelector('.pos-card-name').innerText)">
+            <div class="btn-group border bg-white shadow-sm" style="border-radius: 20px; padding: 2px;">
+                <button class="btn btn-sm px-3 border-0 rounded-pill btn-light active-filter" id="f_all" onclick="filterBadge('all')">Tất cả</button>
+                <button class="btn btn-sm px-3 border-0 rounded-pill text-warning fw-bold" id="f_new" onclick="filterBadge('new')">Mới ✨</button>
+                <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
+            </div>
+        </div>
+
+        <div class="pos-product-container">
+            <div class="pos-grid" id="posProductGrid">
+                <c:forEach var="sp" items="${products}">
+                    <div class="pos-card-wrapper">
+                        <div class="pos-product-card" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}"
+                             onclick="openCustomizePopup('${sp.maSp}', this.querySelector('.pos-card-name').innerText.trim())">
+                            <div class="pos-card-img-container">
                                 <c:choose>
                                     <c:when test="${not empty sp.hinhAnh}">
-                                        <img src="${sp.hinhAnh}" class="pos-product-img rounded" alt="Pic">
+                                        <img src="${sp.hinhAnh}" alt="Pic">
                                     </c:when>
                                     <c:otherwise>
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 100%; height: 90px;">
-                                            <i class="bi bi-cup-straw fs-2 text-muted"></i>
-                                        </div>
+                                        <i class="bi bi-cup-straw fs-2 text-muted"></i>
                                     </c:otherwise>
                                 </c:choose>
-                                <div class="pos-card-name"><c:out value="${sp.tenSp}"/></div>
-                                <div class="pos-card-price text-success fw-bold">
-                                    <c:forEach var="sz" items="${sp.sizesList}" end="0">
-                                        <fmt:formatNumber value="${sz.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
-                                    </c:forEach>
-                                </div>
-                                <c:if test="${sp.isNew}"><span class="position-absolute top-0 start-0 badge bg-warning text-dark small m-1" style="font-size: 9px; border-radius:4px;">NEW</span></c:if>
-                                <c:if test="${sp.isBestseller}"><span class="position-absolute top-0 end-0 badge bg-danger text-white small m-1" style="font-size: 9px; border-radius:4px;">HOT</span></c:if>
+                            </div>
+                            <div class="pos-card-name"><c:out value="${sp.tenSp}"/></div>
+                            <div class="pos-card-price text-success fw-bold">
+                                <c:forEach var="sz" items="${sp.sizesList}" end="0">
+                                    <fmt:formatNumber value="${sz.giaBan}" type="currency" currencySymbol="" maxFractionDigits="0"/> đ
+                                </c:forEach>
                             </div>
                         </div>
-                    </c:forEach>
-                </div>
-            </div>
-        </div>
-        <div class="pos-checkout-sidebar">
-            <div class="pos-checkout-header">
-                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
-                <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()">
-                    <i class="bi bi-trash3-fill"></i> Hủy đơn
-                </button>
-            </div>
-            <div class="pos-cart-items-wrapper" id="posCartItems">
-                <div class="text-center text-muted py-5 my-5">
-                    <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
-                    <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
-                </div>
-            </div>
-            <div class="pos-crm-panel border-bottom">
-                <div class="d-flex gap-2 mb-2">
-                    <input type="text" id="customerPhoneSearch" class="form-control form-control-sm" placeholder="Nhập SĐT tìm hội viên CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
-                    <button class="btn btn-sm btn-success fw-bold" type="button" onclick="searchCustomerCRM()"><i class="bi bi-search"></i> Tìm</button>
-                </div>
-                <div class="p-2 border rounded bg-light mb-2 d-flex justify-content-between align-items-center">
-                    <div class="text-start">
-                        <small class="text-muted d-block" style="font-size: 9px; letter-spacing: 0.5px; font-weight: 700;">HỘI VIÊN THANH TOÁN</small>
-                        <strong class="text-success small" id="customerNameResult">Khách lẻ vãng lai</strong>
                     </div>
-                    <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
-                </div>
-                <div id="crmLoyaltyArea" class="mt-2 text-start" style="display: none !important;">
-                    <div class="d-flex gap-1.5 mb-1">
-                        <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM TÍCH LŨY</button>
-                    </div>
-                </div>
-                <div id="posAddCustomerArea" class="mt-2 text-start" style="display: none !important;">
-                    <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
-                </div>
-            </div>
-            <div class="pos-summary-panel">
-                <div class="d-flex gap-1.5 mb-3">
-                    <input type="text" id="manualVoucherInput" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã Voucher..." style="height: 32px; letter-spacing:0.5px;">
-                    <button type="button" class="btn btn-sm btn-dark fw-bold" style="height: 32px; font-size:11px;" onclick="applyManualVoucherCode()">ÁP MÃ</button>
-                </div>
-                <div class="pos-line-price">
-                    <span>Tổng tiền gốc (Kèm Toppings):</span>
-                    <strong id="totalRawPrice">0 đ</strong>
-                </div>
-                <div class="pos-line-price text-danger" id="summaryDiscountRow" style="display: none !important;">
-                    <span>Khấu trừ Voucher (<span id="txtAppliedCode">N/A</span>):</span>
-                    <strong id="totalDiscountPrice">-0 đ</strong>
-                </div>
-                <div class="pos-line-price text-primary" id="summaryPointsRow" style="display: none !important;">
-                    <span>Quy đổi tích điểm <span id="txtUsedPoints" class="fw-bold">0</span> CRM:</span>
-                    <strong id="totalPointsPrice">-0 đ</strong>
-                </div>
-                <div class="pos-line-price">
-                    <span>Thuế GTGT VAT (8%):</span>
-                    <strong class="text-dark" id="totalTaxPrice">0 đ</strong>
-                </div>
-                <div class="pos-total-row">
-                    <span>TỔNG THỰC THU:</span>
-                    <span class="text-success" id="totalPayablePrice">0 đ</span>
-                </div>
-                <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
-                    <div class="d-flex justify-content-between align-items-center mb-1.5">
-                        <small class="fw-bold text-muted small"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
-                        <input type="number" class="form-control form-control-sm text-end fw-bold text-primary font-monospace bg-white" id="inputCustomerCash" placeholder="Nhập số tiền..." style="width: 130px; height: 30px;" oninput="calculateChangeRefund()">
-                    </div>
-                    <div class="d-flex justify-content-between gap-1 mb-2">
-                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(50000)">50k</button>
-                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(100000)">100k</button>
-                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(200000)">200k</button>
-                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(500000)">500k</button>
-                        <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(0)">ĐỦ</button>
-                    </div>
-                    <div class="d-flex justify-content-between text-dark fw-bold border-top pt-2 small">
-                        <span>TIỀN THỐI LẠI:</span>
-                        <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
-                    </div>
-                </div>
-                <div class="mb-3 text-start">
-                    <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
-                    <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onchange="changePaymentMethod(1)">
-                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_cash">
-                            <i class="bi bi-cash-coin me-1"></i> TIỀN MẶT
-                        </label>
-                        <input type="radio" class="btn-check" name="payment_method_group" id="pt_qr" value="2" onchange="changePaymentMethod(2)">
-                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr">
-                            <i class="bi bi-qr-code-scan me-1"></i> CHUYỂN KHOẢN QR
-                        </label>
-                    </div>
-                </div>
-                <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
-                    <input type="hidden" name="maKh" id="submit_maKh" value="">
-                    <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
-                    <input type="hidden" name="maPt" id="submit_maPt" value="1">
-                    <input type="hidden" name="maKm" id="submit_maKm" value="">
-                    <input type="hidden" name="tongTienHang" id="submit_tongTienHang" value="0">
-                    <input type="hidden" name="tienGiamGia" id="submit_tienGiamGia" value="0">
-                    <input type="hidden" name="diemSuDung" id="submit_diemSuDung" value="0">
-                    <input type="hidden" name="tienTruDiem" id="submit_tienTruDiem" value="0">
-                    <input type="hidden" name="tongPhaiTra" id="submit_tongPhaiTra" value="0">
-                    <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
-                    <div id="posFormItemsContainer"></div>
-                </form>
-                <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
-                    <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
-                </button>
+                </c:forEach>
             </div>
         </div>
     </div>
+
+    <!-- COLUMN 3: POS Basket / Cart (Right) -->
+    <div class="pos-checkout-sidebar">
+        <div class="pos-checkout-header">
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
+            <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()">
+                <i class="bi bi-trash3-fill"></i> Hủy đơn
+            </button>
+        </div>
+
+        <!-- Dynamic basket items container -->
+        <div class="pos-cart-items-wrapper" id="posCartItems">
+            <div class="text-center text-muted py-5 my-5">
+                <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
+                <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
+            </div>
+        </div>
+
+        <!-- CRM Loyalty Member Panel -->
+        <div class="pos-crm-panel border-bottom">
+            <div class="d-flex gap-2 mb-2">
+                <input type="text" id="customerPhoneSearch" class="form-control form-control-sm" placeholder="Nhập SĐT tìm hội viên CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
+                <button class="btn btn-sm btn-success fw-bold" type="button" onclick="searchCustomerCRM()"><i class="bi bi-search"></i> Tìm</button>
+            </div>
+            <div class="p-2 border rounded bg-light mb-2 d-flex justify-content-between align-items-center">
+                <div class="text-start">
+                    <small class="text-muted d-block" style="font-size: 9px; letter-spacing: 0.5px; font-weight: 700;">HỘI VIÊN THANH TOÁN</small>
+                    <strong class="text-success small" id="customerNameResult">Khách lẻ vãng lai</strong>
+                </div>
+                <span class="badge bg-secondary text-white py-1.5 px-3" id="customerPoints" style="border-radius: 50px;">Hạng: Mới | 0 Điểm</span>
+            </div>
+            <div id="crmLoyaltyArea" class="mt-2 text-start" style="display: none !important;">
+                <div class="d-flex gap-1.5 mb-1">
+                    <button type="button" class="btn btn-xs btn-outline-primary fw-bold flex-fill py-1.5" style="font-size: 11px;" onclick="applyPointsDiscount()"><i class="bi bi-coin"></i> TIÊU ĐIỂM CRM TÍCH LŨY</button>
+                </div>
+            </div>
+            <div id="posAddCustomerArea" class="mt-2 text-start" style="display: none !important;">
+                <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
+            </div>
+        </div>
+
+        <!-- Receipt calculation and checkout panel -->
+        <div class="pos-summary-panel">
+            <div class="d-flex gap-1.5 mb-3">
+                <input type="text" id="manualVoucherInput" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã Voucher..." style="height: 32px; letter-spacing:0.5px;">
+                <button type="button" class="btn btn-sm btn-dark fw-bold" style="height: 32px; font-size:11px;" onclick="applyManualVoucherCode()">ÁP MÃ</button>
+            </div>
+            <div class="pos-line-price">
+                <span>Tổng tiền gốc (Kèm Toppings):</span>
+                <strong id="totalRawPrice">0 đ</strong>
+            </div>
+            <div class="pos-line-price text-danger" id="summaryDiscountRow" style="display: none !important;">
+                <span>Khấu trừ Voucher (<span id="txtAppliedCode">N/A</span>):</span>
+                <strong id="totalDiscountPrice">-0 đ</strong>
+            </div>
+            <div class="pos-line-price text-primary" id="summaryPointsRow" style="display: none !important;">
+                <span>Quy đổi tích điểm <span id="txtUsedPoints" class="fw-bold">0</span> CRM:</span>
+                <strong id="totalPointsPrice">-0 đ</strong>
+            </div>
+            <div class="pos-line-price">
+                <span>Thuế GTGT VAT (8%):</span>
+                <strong class="text-dark" id="totalTaxPrice">0 đ</strong>
+            </div>
+            <div class="pos-total-row">
+                <span>TỔNG THỰC THU:</span>
+                <span class="text-success" id="totalPayablePrice">0 đ</span>
+            </div>
+
+            <!-- Cash Calculator given vs refund -->
+            <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
+                <div class="d-flex justify-content-between align-items-center mb-1.5">
+                    <small class="fw-bold text-muted small"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
+                    <input type="number" class="form-control form-control-sm text-end fw-bold text-success font-monospace" id="inputCustomerCash" value="0" style="width: 140px; height: 28px;" onkeyup="calculatePOSCashRefund()">
+                </div>
+                <div class="d-flex gap-1 mb-2">
+                    <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(50000)">50k</button>
+                    <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(100000)">100k</button>
+                    <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(200000)">200k</button>
+                    <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(500000)">500k</button>
+                    <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(0)">ĐỦ</button>
+                </div>
+                <div class="d-flex justify-content-between text-dark fw-bold border-top pt-2 small">
+                    <span>TIỀN THỐI LẠI:</span>
+                    <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
+                </div>
+            </div>
+
+            <!-- Payment methods selection -->
+            <div class="mb-3 text-start">
+                <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onchange="changePaymentMethod(1)">
+                    <label class="btn btn-outline-success py-2 fw-semibold" for="pt_cash">
+                        <i class="bi bi-cash-coin me-1"></i> TIỀN MẶT
+                    </label>
+                    <input type="radio" class="btn-check" name="payment_method_group" id="pt_qr" value="2" onchange="changePaymentMethod(2)">
+                    <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr">
+                        <i class="bi bi-qr-code-scan me-1"></i> CHUYỂN KHOẢN QR
+                    </label>
+                </div>
+            </div>
+
+            <!-- POS Hidden Forms for Transaction mapping -->
+            <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
+                <input type="hidden" name="maKh" id="submit_maKh" value="">
+                <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
+                <input type="hidden" name="maPt" id="submit_maPt" value="1">
+                <input type="hidden" name="maKm" id="submit_maKm" value="">
+                <input type="hidden" name="tongTienHang" id="submit_tongTienHang" value="0">
+                <input type="hidden" name="tienGiamGia" id="submit_tienGiamGia" value="0">
+                <input type="hidden" name="diemSuDung" id="submit_diemSuDung" value="0">
+                <input type="hidden" name="tienTruDiem" id="submit_tienTruDiem" value="0">
+                <input type="hidden" name="tongPhaiTra" id="submit_tongPhaiTra" value="0">
+                <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
+                <div id="posFormItemsContainer"></div>
+            </form>
+
+            <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()" style="background-color: var(--primary); border-color: var(--primary);">
+                <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
+            </button>
+        </div>
+    </div>
+
 </div>
-<!-- PROFILE MODAL -->
+
+<!-- PROFILE SETTING MODAL -->
 <div class="modal fade" id="posProfileModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-success text-white py-3">
-                <h5 class="modal-title fw-bold m-0"><i class="bi bi-person-circle me-1"></i> THÔNG TIN CÁ NHÂN</h5>
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-gear text-success me-1"></i> HỒ SƠ THU NGÂN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 text-start bg-light">
+            <div class="modal-body p-4 text-start">
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Họ và tên nhân viên</label>
-                    <input type="text" id="profile_hoTen" class="form-control" value="<c:out value='${sessionScope.user.hoTen}'/>" required>
+                    <label class="form-label fw-bold small text-muted">Mã Nhân Viên</label>
+                    <input type="text" class="form-control bg-light text-muted" value="${sessionScope.user.maNv}" readonly>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Số điện thoại liên hệ</label>
-                    <input type="text" id="profile_sdt" class="form-control" value="${sessionScope.user.soDienThoai}" required>
+                    <label class="form-label fw-bold small text-muted">Họ và Tên</label>
+                    <input type="text" class="form-control" id="profile_hoTen" value="<c:out value='${sessionScope.user.hoTen}'/>" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Địa chỉ Email</label>
-                    <input type="email" id="profile_email" class="form-control" value="${sessionScope.user.email}" required>
+                    <label class="form-label fw-bold small text-muted">Số điện thoại</label>
+                    <input type="text" class="form-control" id="profile_sdt" value="${sessionScope.user.soDienThoai}" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Tên đăng nhập hệ thống</label>
+                    <label class="form-label fw-bold small text-muted">Địa chỉ Email</label>
+                    <input type="email" class="form-control" id="profile_email" value="${sessionScope.user.email}" required>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-bold small text-muted">Tên Đăng Nhập</label>
                     <input type="text" class="form-control bg-light text-muted" value="<c:out value='${sessionScope.user.tenDangNhap}'/>" readonly>
                 </div>
             </div>
@@ -483,26 +617,27 @@
         </div>
     </div>
 </div>
+
 <!-- PASSWORD MODAL -->
 <div class="modal fade" id="posPasswordModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-warning text-dark py-3">
-                <h5 class="modal-title fw-bold m-0"><i class="bi bi-key-fill me-1"></i> ĐỔI MẬT KHẨU BẢO MẬT</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock-fill text-warning me-1"></i> ĐỔI MẬT KHẨU BẢO MẬT</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4 text-start bg-light">
+            <div class="modal-body p-4 text-start">
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Mật khẩu cũ hiện tại <span class="text-danger">*</span></label>
-                    <input type="password" id="password_old" class="form-control" placeholder="Nhập mật khẩu cũ..." required>
+                    <label class="form-label fw-bold small text-muted">Mật khẩu hiện tại</label>
+                    <input type="password" class="form-control" id="pass_old" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Mật khẩu mới bảo mật <span class="text-danger">*</span></label>
-                    <input type="password" id="password_new" class="form-control" placeholder="Tối thiểu từ 8 ký tự..." required>
+                    <label class="form-label fw-bold small text-muted">Mật khẩu mới (Tối thiểu 8 ký tự)</label>
+                    <input type="password" class="form-control" id="pass_new" required>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
-                    <input type="password" id="password_confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." required>
+                <div class="mb-0">
+                    <label class="form-label fw-bold small text-muted">Xác nhận mật khẩu mới</label>
+                    <input type="password" class="form-control" id="pass_confirm" required>
                 </div>
             </div>
             <div class="modal-footer bg-light border-top p-2.5">
@@ -512,6 +647,7 @@
         </div>
     </div>
 </div>
+
 <!-- RECEIPT MODAL -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 340px;">
@@ -547,7 +683,7 @@
                 </div>
                 <div class="d-flex justify-content-between" style="font-size: 10px; margin-bottom: 2px;">
                     <span>Thuế VAT (8%):</span>
-                    <strong class="text-dark" id="billVatPrice"></strong>
+                    <strong id="billVatPrice"></strong>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 4px 0;"></div>
                 <div class="d-flex justify-content-between fw-bold text-success" style="font-size: 12px; margin-bottom: 4px;">
@@ -563,7 +699,7 @@
                     <span id="billCashRefund" class="fw-bold text-success"></span>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div class="text-center mt-3" style="font-size: 9px; color: #444; text-align: center;">
+                <div class="text-center" style="font-size: 9px; color: #555; line-height: 1.3; margin-top: 10px;">
                     Cảm ơn quý khách hàng và hẹn gặp lại!<br><i>Powered by CodeDevSquad</i>
                 </div>
             </div>
@@ -574,12 +710,13 @@
         </div>
     </div>
 </div>
+
 <!-- VIETQR MODAL -->
 <div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
             <div class="modal-header bg-dark text-white py-2.5">
-                <h6 class="modal-title fw-bold m-0"><i class="bi bi-qr-code-scan me-2 text-success"></i> QUÉT MÃ CHUYỂN KHOẢN</h6>
+                <h6 class="modal-title fw-bold"><i class="bi bi-qr-code-scan text-success me-1"></i> VIETQR TỰ ĐỘNG</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cancelQRPayment()"></button>
             </div>
             <div class="modal-body text-center bg-white p-4">
@@ -588,7 +725,7 @@
                 <div class="bg-light p-3 rounded-4 d-inline-block mb-3 position-relative border" style="border-radius: 12px !important;">
                     <img id="posQrImage" src="" alt="VietQR Payment Code" class="img-fluid" style="max-width: 200px; height: 200px; object-fit: contain;">
                     <div id="posQrSuccessOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem; animation: pulse 1.5s infinite;"></i>
                         <h6 class="text-success mt-2 fw-bold mb-0">Đã Khớp Số Dư!</h6>
                     </div>
                     <div id="posQrExpiredOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
@@ -601,107 +738,18 @@
                 </div>
                 <div id="posQrLoadingStatus" class="text-success fw-bold small mb-0 d-flex align-items-center justify-content-center">
                     <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                    <span style="font-size: 11px;">Hệ thống đang chờ tiền vào...</span>
+                    <span>Đang lắng nghe tài khoản ngân hàng...</span>
                 </div>
-            </div>
-            <div class="modal-footer border-0 p-2 bg-light d-flex justify-content-between rounded-bottom-4">
-                <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="cancelQRPayment()">Hủy bỏ</button>
-                <button type="button" class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="forceSubmitCheckout()">Bỏ qua <i class="bi bi-arrow-right"></i></button>
             </div>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
+
+<!-- JAVASCRIPT GLOBAL OBJECTS BOOTSTRAP -->
 <script>
-    function updatePOSClock() {
-        const el = document.getElementById("posCurrentClock");
-        if (el) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const dateStr = now.toLocaleDateString('vi-VN');
-            el.innerText = hours + ":" + minutes + ":" + seconds + " | " + dateStr;
-        }
-    }
-    setInterval(updatePOSClock, 1000);
-    updatePOSClock();
-    function restrictPhoneInputAndSearch(el) {
-        el.value = el.value.replace(/[^0-9]/g, '');
-        if (el.value.length >= 10) {
-            searchCustomerCRM();
-        }
-    }
-    function filterCategory(maDm) {
-        document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
-        if (maDm === 'all') {
-            const btnAll = document.getElementById('btn_cat_all');
-            if (btnAll) btnAll.classList.add('active');
-            document.querySelectorAll('#posProductGrid .pos-card-wrapper').forEach(card => card.style.setProperty('display', 'block', 'important'));
-        } else {
-            const btn = document.getElementById('btn_cat_' + maDm);
-            if (btn) btn.classList.add('active');
-            document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
-                const parent = card.closest('.pos-card-wrapper');
-                if (card.dataset.madm === maDm) {
-                    parent.style.setProperty('display', 'block', 'important');
-                } else {
-                    parent.style.setProperty('display', 'none', 'important');
-                }
-            });
-        }
-    }
-    function filterBadge(tag) {
-        document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
-        const activeBtn = document.getElementById('f_' + tag);
-        if (activeBtn) activeBtn.classList.add('active-filter', 'btn-light');
-        document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
-            const isNew = card.dataset.isnew === 'true';
-            const isHot = card.dataset.ishot === 'true';
-            const parent = card.closest('.pos-card-wrapper');
-            if (tag === 'all') {
-                parent.style.setProperty('display', 'block', 'important');
-            } else if (tag === 'new') {
-                if (isNew) parent.style.setProperty('display', 'block', 'important');
-                else parent.style.setProperty('display', 'none', 'important');
-            } else if (tag === 'hot') {
-                if (isHot) parent.style.setProperty('display', 'block', 'important');
-                else parent.style.setProperty('display', 'none', 'important');
-            }
-        });
-    }
-    function searchPOSProduct() {
-        const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
-        document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
-            const name = card.querySelector('.pos-card-name').innerText.toLowerCase();
-            const id = card.dataset.masp.toLowerCase();
-            const parent = card.closest('.pos-card-wrapper');
-            if (name.includes(keyword) || id.includes(keyword)) {
-                parent.style.setProperty('display', 'block', 'important');
-            } else {
-                parent.style.setProperty('display', 'none', 'important');
-            }
-        });
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const msg = urlParams.get('msg');
-        const orderId = urlParams.get('orderId');
-        const maPt = urlParams.get('maPt');
-        const payable = urlParams.get('payable');
-        if (msg === 'createsuccess' && orderId) {
-            if (maPt === '2') {
-                showPosQrCodeModal(orderId, payable);
-            } else {
-                loadAndShowPrintReceipt(orderId);
-            }
-        }
-    });
+    const allToppingsData = ${allToppingsJson != null ? allToppingsJson : "[]"};
 </script>
-<script>
-    const allToppingsData = ${not empty allToppingsJson ? allToppingsJson : '[]'};
-</script>
+
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {
@@ -713,7 +761,7 @@
                 <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
                 {
                     maSize: ${sz.maSize},
-                    tenSize: '${sz.tenSize}',
+                    tenSize: '${sz.tenSize != null ? sz.tenSize : (sz.maSize == 1 ? "S" : (sz.maSize == 2 ? "M" : "L"))}',
                     giaBan: ${sz.giaBan}
                 }${not sLoop.last ? ',' : ''}
                 </c:forEach>
@@ -721,6 +769,9 @@
         };
     </script>
 </c:forEach>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/pos.js"></script>
 </body>
 </html>
