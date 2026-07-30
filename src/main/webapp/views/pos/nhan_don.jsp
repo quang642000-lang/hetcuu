@@ -27,7 +27,6 @@
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.08);
         }
-
         body {
             font-family: 'Inter', sans-serif !important;
             background-color: var(--bg-main) !important;
@@ -35,7 +34,6 @@
             height: 100vh;
             overflow: hidden;
         }
-
         .nhandon-layout {
             height: calc(100vh - 60px);
             overflow-y: auto;
@@ -43,7 +41,6 @@
             display: flex;
             flex-direction: column;
         }
-
         .order-card {
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-color);
@@ -54,18 +51,14 @@
             flex-direction: column;
             box-shadow: var(--shadow-sm);
         }
-
         .order-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow-md);
             border-color: var(--primary);
         }
-
         .orders-grid-wrapper {
             flex-grow: 1;
         }
-
-        /* Đồng bộ tuyệt đối kiểu dáng phân trang với san_pham.jsp & khach_hang.jsp */
         .pagination-container {
             display: flex !important;
             justify-content: space-between !important;
@@ -78,39 +71,32 @@
             margin-top: 20px !important;
             margin-bottom: 10px !important;
         }
-
-        /* Thống nhất kiểu dáng nút chuyển trang số màu xanh ngọc lục bảo */
         .pagination .page-item.active .page-link {
             background-color: var(--primary) !important;
             border-color: var(--primary) !important;
             color: #ffffff !important;
             font-weight: 600;
         }
-
         .pagination .page-link {
             color: var(--primary) !important;
             border-color: var(--border-color) !important;
             transition: all 0.2s ease;
         }
-
         .pagination .page-link:hover {
             background-color: var(--primary-light) !important;
             border-color: var(--primary) !important;
         }
-
         .btn-status-active {
             background-color: var(--primary) !important;
             border-color: var(--primary) !important;
             color: #ffffff !important;
         }
-
         .btn-status-inactive {
             background-color: #ffffff !important;
             border-color: var(--border-color) !important;
             color: var(--text-muted) !important;
             transition: all 0.2s ease;
         }
-
         .btn-status-inactive:hover {
             background-color: #f1f5f9 !important;
             color: var(--text-main) !important;
@@ -118,8 +104,6 @@
     </style>
 </head>
 <body>
-
-<!-- HEADER ĐỒNG BỘ TOÀN DIỆN VỚI QUẦY POS -->
 <nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 100;">
     <div class="container-fluid">
         <div class="d-flex align-items-center gap-3">
@@ -127,7 +111,6 @@
                 <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
                 <span>TEA POS PRO</span>
             </a>
-            <!-- BỘ ĐÔI TAB CHUYỂN PHÂN HỆ NGAY TRONG GIAO DIỆN POS -->
             <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                 <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-3">
                     <i class="bi bi-cart-fill me-1"></i> BÁN TẠI QUẦY
@@ -138,12 +121,12 @@
             </div>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
-                🔴 LIVE POLLING (5S/LẦN)
-            </span>
+<span class="badge bg-danger p-2 px-3 fw-bold border border-light animate-pulse" style="font-size: 11px; letter-spacing: 0.5px;">
+🔴 LIVE POLLING (5S/LẦN)
+</span>
             <span class="small fw-semibold border-end pr-3 border-secondary d-none d-md-inline text-white">
-                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-            </span>
+<i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+</span>
             <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase" style="font-size: 11px;">
                 <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
             </a>
@@ -153,12 +136,9 @@
         </div>
     </div>
 </nav>
-
 <div class="nhandon-layout">
-    <!-- KHỐI BỘ LỌC TRẠNG THÁI TRỰC TUYẾN & TÌM KIẾM NHANH & LỌC NGÀY -->
     <div class="card card-teapos p-4 mb-4 border-0 shadow-sm text-start" style="border-radius: 12px; background-color: #ffffff;">
         <div class="row g-3 align-items-center">
-            <!-- 1. Màng lọc Tab trạng thái đơn hàng -->
             <div class="col-12 col-xl-7">
                 <div class="d-flex flex-wrap gap-2">
                     <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="btn btn-sm rounded-pill px-3 fw-bold ${currentStatus == 0 ? 'btn-status-active' : 'btn-status-inactive'}">
@@ -181,8 +161,6 @@
                     </a>
                 </div>
             </div>
-
-            <!-- 2. Ô tìm kiếm nhanh và Ô lọc chọn ngày -->
             <div class="col-12 col-xl-5">
                 <div class="row g-2">
                     <div class="col-6">
@@ -201,14 +179,11 @@
             </div>
         </div>
     </div>
-
-    <!-- DANH SÁCH ĐƠN HÀNG TRỰC TUYẾN CARD-GRID -->
     <div class="orders-grid-wrapper">
         <div class="row g-4" id="ordersGrid">
             <c:choose>
                 <c:when test="${not empty onlineOrders}">
                     <c:forEach var="order" items="${onlineOrders}">
-                        <!-- Nâng cấp bọc lót dynamic attributes cho màng lọc Javascript kiểm toán -->
                         <div class="col-12 col-md-6 col-lg-4 order-card-col"
                              data-madh="${order.maDh}"
                              data-makh="${order.maKh}"
@@ -224,24 +199,17 @@
                                             ${order.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
                                     </span>
                                 </div>
-
-                                <!-- Mốc giờ Click & Collect hẹn lấy nước -->
                                 <div class="p-2.5 bg-light rounded text-dark small mb-3 border border-dashed border-success text-start">
                                     <i class="bi bi-alarm-fill text-danger me-1"></i> HẸN ĐẾN QUẦY LẤY:
                                     <strong><fmt:formatDate value="${order.thoiGianHenLay}" pattern="HH:mm (dd/MM)"/></strong>
                                 </div>
-
                                 <div class="mb-3 text-start">
                                     <small class="text-muted d-block" style="font-size: 11px;">Thành viên CRM</small>
                                     <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty order.maKh ? order.maKh : 'Khách lẻ vãng lai'}"/></strong>
                                 </div>
-
-                                <!-- NÚT XEM CHI TIẾT MÓN ĂN PHA CHẾ -->
                                 <button type="button" class="btn btn-sm btn-outline-success w-100 fw-bold py-2 mb-3 shadow-sm" onclick="showOnlineOrderDetail('${order.maDh}')">
                                     <i class="bi bi-receipt-cutoff me-1"></i> XEM CHI TIẾT MÓN & TOPPING
                                 </button>
-
-                                <!-- Khối tính dồn tiền -->
                                 <div class="d-flex justify-content-between align-items-center mb-4 border-top pt-2 text-start">
                                     <div>
                                         <small class="text-muted d-block" style="font-size: 11px;">Giá trị thu</small>
@@ -252,8 +220,6 @@
                                         <span class="badge bg-dark text-white fw-bold" style="border-radius: 4px;">CLICK & COLLECT</span>
                                     </div>
                                 </div>
-
-                                <!-- Trục điều phối trạng thái -->
                                 <form action="${pageContext.request.contextPath}/pos/nhandon" method="POST" id="formUpdate_${order.maDh}">
                                     <input type="hidden" name="maDh" value="${order.maDh}">
                                     <input type="hidden" name="trangThaiMoi" id="statusField_${order.maDh}">
@@ -304,8 +270,6 @@
             </c:choose>
         </div>
     </div>
-
-    <!-- PAGINATION WRAPPER ĐỒNG BỘ 100% VỚI KHACH_HANG.JSP & SAN_PHAM.JSP -->
     <div class="pagination-container" id="ordersPaginationBlock" style="display: none;">
         <span class="small text-muted" id="ordersPaginationInfo">Hiển thị từ 1 đến 6 dòng trên tổng số 6 đơn hàng</span>
         <nav>
@@ -313,8 +277,6 @@
         </nav>
     </div>
 </div>
-
-<!-- MODAL BẮT TRỌN CHI TIẾT ĐƠN HÀNG ONLINE CHO NHÂN VIÊN CHỐT PHA CHẾ -->
 <div class="modal fade" id="onlineOrderDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -332,7 +294,6 @@
                     <div class="mt-1">Dặn dò của khách: <em id="modalGhiChu" class="text-muted fw-bold"></em></div>
                 </div>
                 <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
-                <!-- Danh sách món nước uống + Topping + Định lượng -->
                 <div id="modalItemsContainer"></div>
                 <div style="border-bottom: 1.5px dashed #cbd5e1; margin: 10px 0;"></div>
                 <div class="small">
@@ -360,7 +321,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -368,7 +328,6 @@
         document.getElementById("statusField_" + maDh).value = targetStatus;
         document.getElementById("formUpdate_" + maDh).submit();
     }
-
     function cancelOnlineOrder(maDh) {
         Swal.fire({
             title: 'Từ chối đơn hàng?',
@@ -394,13 +353,9 @@
             }
         });
     }
-
-    // Hàm lấy Context Path tự động
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
-
-    // Hàm mở Modal đối soát bóc tách chi tiết món ăn + topping dành riêng cho nhân viên
     const onlineDetailModal = new bootstrap.Modal(document.getElementById('onlineOrderDetailModal'));
     function showOnlineOrderDetail(maDh) {
         document.getElementById("modalItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải chi tiết đơn...</p></div>';
@@ -461,58 +416,39 @@
                 onlineDetailModal.hide();
             });
     }
-
-    // ==========================================
-    // PHÂN TRANG CARD-BASED & BỘ LỌC TÌM KIẾM ONLINE ĐƠN HÀNG (CLIENT SIDE)
-    // Đồng bộ hoàn mỹ kiểu hiển thị với san_pham.jsp & khach_hang.jsp
-    // ==========================================
     let currentPage = 1;
-    const pageSize = 6; // Khóa cứng hiển thị 6 đơn hàng / trang cho ngăn nắp
+    const pageSize = 6;
     let filteredOrdersList = [];
-
     function filterAndPaginateOnlineOrders() {
         const searchKeyword = document.getElementById("orderSearchInput").value.trim().toLowerCase();
-        const dateKeyword = document.getElementById("orderDateInput").value; // Format: YYYY-MM-DD or ""
-
+        const dateKeyword = document.getElementById("orderDateInput").value;
         const allCards = Array.from(document.querySelectorAll("#ordersGrid .order-card-col"));
         filteredOrdersList = allCards.filter(card => {
             const maDh = card.dataset.madh.toLowerCase();
             const maKh = card.dataset.makh ? card.dataset.makh.toLowerCase() : "";
-            const cardDate = card.dataset.date; // Format: YYYY-MM-DD
-
+            const cardDate = card.dataset.date;
             const matchSearch = maDh.includes(searchKeyword) || maKh.includes(searchKeyword);
             const matchDate = dateKeyword === "" || cardDate === dateKeyword;
-
             return matchSearch && matchDate;
         });
-
         currentPage = 1;
         renderOnlineOrders();
     }
-
     function renderOnlineOrders() {
         const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
-
         const totalRows = filteredOrdersList.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageCards = filteredOrdersList.slice(startIdx, endIdx);
         pageCards.forEach(card => card.style.setProperty('display', 'block', 'important'));
-
-        // Cập nhật thông số dải đếm dòng
         const infoEl = document.getElementById("ordersPaginationInfo");
         if (infoEl) {
             infoEl.innerText = 'Hiển thị từ ' + (totalRows > 0 ? (startIdx + 1) : 0) + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRows + ' đơn đặt online';
         }
-
-        // Vẽ dải nút bấm trang số đồng dạng tăm tắp
         const buttonsContainer = document.getElementById("ordersPaginationButtons");
         if (buttonsContainer) {
             buttonsContainer.innerHTML = "";
@@ -521,45 +457,34 @@
                 return;
             }
             document.getElementById("ordersPaginationBlock").style.setProperty('display', 'flex', 'important');
-
-            // Nút Trước
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
             prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage - 1) + ')">&laquo;</a>';
             buttonsContainer.appendChild(prevLi);
-
-            // Các phím trang số màu Emerald sặc sỡ
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement("li");
                 li.className = "page-item " + (currentPage === i ? "active" : "");
                 li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeOrdersPage(' + i + ')">' + i + '</a>';
                 buttonsContainer.appendChild(li);
             }
-
-            // Nút Sau
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
             nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" onclick="changeOrdersPage(' + (currentPage + 1) + ')">&raquo;</a>';
             buttonsContainer.appendChild(nextLi);
         }
     }
-
     function changeOrdersPage(newPage) {
         currentPage = newPage;
         renderOnlineOrders();
     }
-
     function resetOnlineFilters() {
         document.getElementById("orderSearchInput").value = "";
         document.getElementById("orderDateInput").value = "";
         filterAndPaginateOnlineOrders();
     }
-
     document.addEventListener("DOMContentLoaded", () => {
         filterAndPaginateOnlineOrders();
     });
-
-    // Ajax live polling rà soát đơn online mới 5 giây/lần
     setInterval(function() {
         fetch('${pageContext.request.contextPath}/pos/nhandon?action=checkPollingCount&status=' + ${currentStatus})
             .then(res => res.text())

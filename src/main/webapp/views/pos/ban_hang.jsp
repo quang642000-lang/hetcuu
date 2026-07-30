@@ -316,7 +316,7 @@
                     <c:forEach var="sp" items="${products}">
                         <div class="pos-card-wrapper">
                             <div class="pos-product-card" data-masp="${sp.maSp}" data-madm="${sp.maDm}" data-isnew="${sp.isNew}" data-ishot="${sp.isBestseller}"
-                                 onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>')">
+                                 onclick="openCustomizePopup('${sp.maSp}', this.querySelector('.pos-card-name').innerText)">
                                 <c:choose>
                                     <c:when test="${not empty sp.hinhAnh}">
                                         <img src="${sp.hinhAnh}" class="pos-product-img rounded" alt="Pic">
@@ -547,7 +547,7 @@
                 </div>
                 <div class="d-flex justify-content-between" style="font-size: 10px; margin-bottom: 2px;">
                     <span>Thuế VAT (8%):</span>
-                    <strong id="billVatPrice"></strong>
+                    <strong class="text-dark" id="billVatPrice"></strong>
                 </div>
                 <div style="border-bottom: 1px dashed #333; margin: 4px 0;"></div>
                 <div class="d-flex justify-content-between fw-bold text-success" style="font-size: 12px; margin-bottom: 4px;">
@@ -700,7 +700,7 @@
     });
 </script>
 <script>
-    const allToppingsData = ${allToppingsJson};
+    const allToppingsData = ${not empty allToppingsJson ? allToppingsJson : '[]'};
 </script>
 <c:forEach var="sp" items="${products}">
     <script>
@@ -713,7 +713,7 @@
                 <c:forEach var="sz" items="${sp.sizesList}" varStatus="sLoop">
                 {
                     maSize: ${sz.maSize},
-                    tenSize: '${sz.maSize == 1 ? "S" : (sz.maSize == 2 ? "M" : "L")}',
+                    tenSize: '${sz.tenSize}',
                     giaBan: ${sz.giaBan}
                 }${not sLoop.last ? ',' : ''}
                 </c:forEach>
