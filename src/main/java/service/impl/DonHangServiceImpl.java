@@ -10,12 +10,18 @@ import repository.impl.DonHangRepoImpl;
 import repository.impl.KhuyenMaiRepoImpl;
 import repository.impl.KhachHangRepoImpl;
 import service.IDonHangService;
-
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - ORDER SERVICE IMPLEMENTATION
+ * Fully synchronized with in-memory pending orders cache, ACID transactions,
+ * and SePay Webhook dual-layered lookups.
+ * =========================================================================
+ */
 public class DonHangServiceImpl implements IDonHangService {
     private static DonHangServiceImpl instance;
     private final IDonHangRepository donHangRepository;
@@ -42,6 +48,11 @@ public class DonHangServiceImpl implements IDonHangService {
 
     @Override
     public DonHang getDonHangById(String id) {
+        // Hỗ trợ tìm kiếm đơn hàng tạm thời từ Cache nếu chưa có trong DB
+        if (util.PaymentStore.pendingOrders != null && util.PaymentStore.pendingOrders.containsKey(id)) {
+            return util.PaymentStore.pendingOrders.get(id);
+        }
+
         DonHang dh = donHangRepository.getById(id);
         if (dh != null) {
             List<ChiTietDonHang> items = donHangRepository.getChiTietDonHang(id);
@@ -68,6 +79,18 @@ public class DonHangServiceImpl implements IDonHangService {
         donHang.setMaNv(maNv);
         donHang.setChiTietDonHangList(items);
 
+        // Nếu thanh toán chuyển khoản QR, lưu tạm thời vào Cache chờ khớp tiền, KHÔNG ghi nhận DB ngay
+        if (donHang.getMaPt() == 2) {
+            donHang.setTrangThaiThanhToan(0); // Chưa thanh toán
+            donHang.setTrangThaiDon(0);       // Chờ duyệt
+
+            // Đưa vào Cache in-memory
+            util.PaymentStore.pendingOrders.put(donHang.getMaDh(), donHang);
+            System.out.println("💾 [TEA POS] Đơn hàng QR tại quầy " + donHang.getMaDh() + " được lưu tạm thời vào Cache.");
+            return true;
+        }
+
+        // Với Tiền mặt, ghi nhận DB trực tiếp
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
             if (!voucherDecremented) {
@@ -75,7 +98,6 @@ public class DonHangServiceImpl implements IDonHangService {
                 return false;
             }
         }
-
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
@@ -98,10 +120,18 @@ public class DonHangServiceImpl implements IDonHangService {
         if (!validateThoiGianHenLay(donHang.getThoiGianHenLay())) {
             return false;
         }
-
         donHang.setChiTietDonHangList(items);
-        donHang.setTrangThaiDon(0);
+        donHang.setTrangThaiDon(0); // Chờ duyệt
 
+        // Nếu thanh toán bằng QR trực tuyến, đưa vào Cache, không lưu DB rác
+        if (donHang.getMaPt() == 2) {
+            donHang.setTrangThaiThanhToan(0);
+            util.PaymentStore.pendingOrders.put(donHang.getMaDh(), donHang);
+            System.out.println("💾 [TEA PORTAL] Đơn hàng Online QR " + donHang.getMaDh() + " được lưu tạm thời vào Cache.");
+            return true;
+        }
+
+        // Với Tiền mặt khi đến lấy, lưu trực tiếp
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
             if (!voucherDecremented) {
@@ -109,16 +139,48 @@ public class DonHangServiceImpl implements IDonHangService {
                 return false;
             }
         }
-
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
-
         return donHangRepository.add(donHang);
     }
 
     @Override
     public boolean updateTrangThaiDon(String maDh, int trangThaiMoi, String maNv, String lyDoHuy) {
+        // Hỗ trợ "Bỏ qua chuyển khoản" (Force Submit) cho đơn hàng QR nằm trong Cache
+        if (util.PaymentStore.pendingOrders.containsKey(maDh) && (trangThaiMoi == 1 || trangThaiMoi == 2)) {
+            DonHang cachedOrder = util.PaymentStore.pendingOrders.  remove(maDh);
+            cachedOrder.setTrangThaiThanhToan(1); // Ép trạng thái đã thanh toán
+            cachedOrder.setTrangThaiDon(trangThaiMoi);
+            if (maNv != null && !maNv.isEmpty()) {
+                cachedOrder.setMaNv(maNv);
+            }
+
+            // Áp mã giảm giá và ví điểm CRM
+            if (cachedOrder.getMaKm() != null) {
+                khuyenMaiRepository.giamSoLuongVoucher(cachedOrder.getMaKm());
+            }
+            if (cachedOrder.getMaKh() != null && cachedOrder.getDiemSuDung() > 0) {
+                khachHangRepository.truDiemTichLuy(cachedOrder.getMaKh(), cachedOrder.getDiemSuDung());
+            }
+
+            // Ghi nhận trực tiếp xuống database
+            boolean success = donHangRepository.add(cachedOrder);
+            if (success) {
+                donHangRepository.updateTrangThaiDon(maDh, trangThaiMoi);
+                if (cachedOrder.getMaKh() != null) {
+                    int diemCong = cachedOrder.getTongPhaiTra() / 10000;
+                    if (diemCong > 0) {
+                        khachHangRepository.congDiemTichLuy(cachedOrder.getMaKh(), diemCong);
+                    }
+                }
+                util.PaymentStore.transactions.put(maDh, true);
+                util.PaymentStore.transactions.put(maDh.replace("-", ""), true);
+                return true;
+            }
+            return false;
+        }
+
         DonHang dh = donHangRepository.getById(maDh);
         if (dh == null) return false;
 
@@ -126,26 +188,28 @@ public class DonHangServiceImpl implements IDonHangService {
             dh.setMaNv(maNv.trim());
         }
 
-        if (trangThaiMoi == 5) {
+        // Buộc trạng thái thanh toán = 1 khi đơn chuyển thành Hoàn thành (status = 4)
+        if (trangThaiMoi == 4) {
+            dh.setTrangThaiThanhToan(1);
+            donHangRepository.updateTrangThaiThanhToan(maDh, 1);
+        }
+
+        if (trangThaiMoi == 5) { // Đã hủy
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
-
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
                 khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
             }
-
             if (dh.getMaKh() != null) {
                 int diemCongDaNhan = dh.getTongPhaiTra() / 10000;
                 if (diemCongDaNhan > 0) {
                     khachHangRepository.truDiemTichLuy(dh.getMaKh(), diemCongDaNhan);
                 }
             }
-
             if (dh.getMaKm() != null) {
                 khuyenMaiRepository.congSoLuongVoucher(dh.getMaKm());
             }
-
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
 
@@ -160,7 +224,6 @@ public class DonHangServiceImpl implements IDonHangService {
                 }
             }
         }
-
         return donHangRepository.updateTrangThaiDon(maDh, trangThaiMoi);
     }
 
@@ -172,36 +235,79 @@ public class DonHangServiceImpl implements IDonHangService {
     @Override
     public boolean handleSePayWebhook(String content, double amount) {
         String cleanContent = content.replaceAll("[\\s\\-]+", "").toUpperCase();
+        System.out.println("🔍 [SEPAY MATCHING] Đang phân tách nội dung chuyển khoản: " + cleanContent);
 
-        // VÁ LỖI CHÍ MẠNG TOÀN DIỆN: Hỗ trợ linh hoạt cả mã đơn 5 số (e.g. TEA2026072900003) và 6 số (e.g. TEA20260729000003)
         Pattern pattern = Pattern.compile("TEA(\\d{8})(\\d{5,6})", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(cleanContent);
-
         if (matcher.find()) {
             String datePart = matcher.group(1);
             String serialPart = matcher.group(2);
 
-            // Đồng dạng mã: Nếu mã chuyển khoản có 6 số (000003), quy đổi về 5 số (00003) để khớp khóa chính DB
             if (serialPart.length() == 6) {
                 try {
                     int val = Integer.parseInt(serialPart);
                     serialPart = String.format("%05d", val);
                 } catch (NumberFormatException e) {
-                    // Bỏ qua nếu có lỗi định dạng thô
+                    // ignore
                 }
             }
-
             String extractedMaDh = "TEA-" + datePart + "-" + serialPart;
-            DonHang dh = donHangRepository.getById(extractedMaDh);
+            System.out.println("🎯 [SEPAY MATCHING] Khớp được mã đơn hàng trích xuất: " + extractedMaDh);
 
-            if (dh != null && (dh.getTrangThaiDon() == 0 || dh.getTrangThaiDon() == 1)) {
-                // Cho phép sai số nhỏ dưới 100đ khi đối soát khớp tiền
-                if (Math.abs(dh.getTongPhaiTra() - amount) < 100) {
-                    donHangRepository.updateTrangThaiThanhToan(extractedMaDh, 1);
-                    updateTrangThaiDon(extractedMaDh, 2, "SYSTEM", "Khớp thành công đơn SePay Webhook.");
-                    util.PaymentStore.transactions.put(extractedMaDh, true);
-                    util.PaymentStore.transactions.put(extractedMaDh.replace("-", ""), true);
-                    return true;
+            // BƯỚC 1: Tìm trong bộ nhớ đệm pendingOrders trước!
+            if (util.PaymentStore.pendingOrders != null && util.PaymentStore.pendingOrders.containsKey(extractedMaDh)) {
+                DonHang cachedOrder = util.PaymentStore.pendingOrders.get(extractedMaDh);
+
+                // Cho phép sai lệch nhỏ dưới 100đ khi đối soát
+                if (Math.abs(cachedOrder.getTongPhaiTra() - amount) < 100) {
+                    // Xóa khỏi cache
+                    util.PaymentStore.pendingOrders.remove(extractedMaDh);
+
+                    // Thiết lập trạng thái thanh toán = 1 (Đã trả) và trạng thái đơn = 1 (Đã xác nhận) hoặc 2 (Pha chế)
+                    cachedOrder.setTrangThaiThanhToan(1);
+                    cachedOrder.setTrangThaiDon(2); // Chuyển thẳng sang khu pha chế
+
+                    // Áp mã giảm giá và CRM ví điểm chính thức
+                    if (cachedOrder.getMaKm() != null) {
+                        khuyenMaiRepository.giamSoLuongVoucher(cachedOrder.getMaKm());
+                    }
+                    if (cachedOrder.getMaKh() != null && cachedOrder.getDiemSuDung() > 0) {
+                        khachHangRepository.truDiemTichLuy(cachedOrder.getMaKh(), cachedOrder.getDiemSuDung());
+                    }
+
+                    // INSERT chính thức vào database
+                    boolean success = donHangRepository.add(cachedOrder);
+                    if (success) {
+                        donHangRepository.updateTrangThaiDon(extractedMaDh, 2); // Cập nhật trạng thái pha chế
+                        if (cachedOrder.getMaKh() != null) {
+                            int diemCong = cachedOrder.getTongPhaiTra() / 10000;
+                            if (diemCong > 0) {
+                                khachHangRepository.congDiemTichLuy(cachedOrder.getMaKh(), diemCong);
+                            }
+                        }
+
+                        // Đánh dấu giao dịch thành công để Front-end Polling nhận biết
+                        util.PaymentStore.transactions.put(extractedMaDh, true);
+                        util.PaymentStore.transactions.put(extractedMaDh.replace("-", ""), true);
+                        System.out.println("✅ [SEPAY MATCHING] Khớp cache thành công! Lưu DB đơn hàng: " + extractedMaDh);
+                        return true;
+                    }
+                } else {
+                    System.err.println("❌ [SEPAY MATCHING] Sai số tiền cho đơn " + extractedMaDh + ". Đơn cần: " + cachedOrder.getTongPhaiTra() + "đ | Thực nhận: " + amount + "đ");
+                }
+            } else {
+                // BƯỚC 2: Fallback tìm kiếm dưới Database vật lý (đề phòng đơn đã lưu dưới DB từ trước)
+                DonHang dh = donHangRepository.getById(extractedMaDh);
+                if (dh != null && (dh.getTrangThaiThanhToan() == 0)) {
+                    if (Math.abs(dh.getTongPhaiTra() - amount) < 100) {
+                        donHangRepository.updateTrangThaiThanhToan(extractedMaDh, 1);
+                        updateTrangThaiDon(extractedMaDh, 2, "SYSTEM", "Khớp thành công đơn SePay Webhook.");
+
+                        util.PaymentStore.transactions.put(extractedMaDh, true);
+                        util.PaymentStore.transactions.put(extractedMaDh.replace("-", ""), true);
+                        System.out.println("✅ [SEPAY MATCHING] Khớp CSDL thành công! Cập nhật trạng thái đơn hàng: " + extractedMaDh);
+                        return true;
+                    }
                 }
             }
         }

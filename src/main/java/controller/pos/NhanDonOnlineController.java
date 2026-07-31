@@ -1,7 +1,6 @@
 package controller.pos;
 
 import model.entity.DonHang;
-import model.entity.ChiTietDonHang;
 import model.entity.NhanVien;
 import service.IDonHangService;
 import service.impl.DonHangServiceImpl;
@@ -12,13 +11,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * =========================================================================
  * TEA POS SYSTEM - ONLINE ORDER RECEIVING CONTROLLER
- * Optimized to dynamically pre-load all product details and toppings
- * directly before forwarding to nhan_don.jsp, preventing blank lists on UI.
+ * Optimized to filter and ONLY display online orders (loai_don_hang = 3),
+ * preventing POS in-store orders from cluttering the online dispatch UI.
+ * Fully pre-loads all product details and toppings dynamically.
  * =========================================================================
  */
 @WebServlet(name = "NhanDonOnlineController", urlPatterns = {"/pos/nhandon"})
@@ -38,15 +39,18 @@ public class NhanDonOnlineController extends HttpServlet {
         }
 
         // Tải danh sách các đơn hàng theo trạng thái lọc
-        List<DonHang> onlineOrders = donHangService.getDonHangByTrangThai(filterStatus);
+        List<DonHang> rawOrders = donHangService.getDonHangByTrangThai(filterStatus);
+        List<DonHang> onlineOrders = new ArrayList<>();
 
-        // VÁ LỖI LOGIC: Bắt buộc duyệt nạp đầy đủ chi tiết sản phẩm và toppings cho từng đơn đặt online
-        // trước khi đẩy sang giao diện JSP. Giúp loại bỏ hoàn toàn hiện tượng hiển thị trống danh sách món ăn/nước uống.
-        if (onlineOrders != null) {
-            for (DonHang dh : onlineOrders) {
-                DonHang freshDh = donHangService.getDonHangById(dh.getMaDh());
-                if (freshDh != null) {
-                    dh.setChiTietDonHangList(freshDh.getChiTietDonHangList());
+        // VỐN DĨ CHỈ LỌC ĐƠN ĐẶT ONLINE (loai_don_hang = 3) CHO TRANG ĐIỀU PHỐI ONLINE
+        if (rawOrders != null) {
+            for (DonHang dh : rawOrders) {
+                if (dh.getLoaiDonHang() == 3) {
+                    DonHang freshDh = donHangService.getDonHangById(dh.getMaDh());
+                    if (freshDh != null) {
+                        dh.setChiTietDonHangList(freshDh.getChiTietDonHangList());
+                    }
+                    onlineOrders.add(dh);
                 }
             }
         }
@@ -63,6 +67,7 @@ public class NhanDonOnlineController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
         NhanVien currentStaff = (NhanVien) session.getAttribute("user");
         String maDh = request.getParameter("maDh");
         int trangThaiMoi = Integer.parseInt(request.getParameter("trangThaiMoi"));

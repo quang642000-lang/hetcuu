@@ -19,17 +19,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - CLIENT WEBSITE ONLINE CHECKOUT CONTROLLER
- * Fully optimized with Server-side Recalculation and Validation of totals.
- * Triet tieu hoan toan rui ro gian lan va thieu dong bo gia khi admin thay doi!
- * =========================================================================
- */
 @WebServlet(name = "PortalCheckoutController", urlPatterns = {"/checkout", "/checkout/place"})
 public class PortalCheckoutController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(PortalCheckoutController.class.getName());
-
     private final IGioHangService gioHangService = GioHangServiceImpl.getInstance();
     private final IKhuyenMaiService khuyenMaiService = KhuyenMaiServiceImpl.getInstance();
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
@@ -54,19 +46,27 @@ public class PortalCheckoutController extends HttpServlet {
         request.setAttribute("checkoutToken", checkoutToken);
 
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
-        // Lay thong tin tuoi moi nhat tu Database de cap nhat vi diem Loyalty CRM
+        // Get fresh loyalty points info from Database
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
         session.setAttribute("customer", freshCustomer);
 
-        GioHang gh = gioHangService.getGioHangComplete(freshCustomer.getMaKh());
         List<ChiTietGioHang> checkoutItems = new ArrayList<>();
         int tongTienHang = 0;
 
-        if (gh != null && gh.getChiTietGioHangList() != null) {
-            for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
-                if (item.isChonMua()) {
-                    checkoutItems.add(item);
-                    tongTienHang += calculateItemTotal(item);
+        // BUY NOW ELEMENT IN THE SESSION
+        ChiTietGioHang buyNowItem = (ChiTietGioHang) session.getAttribute("buyNowItem");
+        if (buyNowItem != null) {
+            checkoutItems.add(buyNowItem);
+            tongTienHang = calculateItemTotal(buyNowItem);
+        } else {
+            // Regular checkout from the database cart
+            GioHang gh = gioHangService.getGioHangComplete(freshCustomer.getMaKh());
+            if (gh != null && gh.getChiTietGioHangList() != null) {
+                for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
+                    if (item.isChonMua()) {
+                        checkoutItems.add(item);
+                        tongTienHang += calculateItemTotal(item);
+                    }
                 }
             }
         }
@@ -76,7 +76,7 @@ public class PortalCheckoutController extends HttpServlet {
             return;
         }
 
-        // Tai danh sach Voucher ca nhan kha dung cho khach hang dua tren tong tien goc
+        // Load active vouchers based on subtotal
         List<KhuyenMai> activeVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(tongTienHang, freshCustomer.getMaKh());
 
         request.setAttribute("checkoutItems", checkoutItems);
@@ -93,7 +93,7 @@ public class PortalCheckoutController extends HttpServlet {
             return;
         }
 
-        // 1. Chot chan bao mat Idempotency Token chong Double Checkout / Spam  Back
+        // 1. Double Checkout and Spam Back protection
         String sessionToken = (String) session.getAttribute("checkoutToken");
         String paramToken = request.getParameter("checkoutToken");
         if (sessionToken == null || paramToken == null || !sessionToken.equals(paramToken)) {
@@ -102,12 +102,11 @@ public class PortalCheckoutController extends HttpServlet {
             return;
         }
 
-        // Huy Token ngay lap tuc truoc khi xu ly nghiep vu de khoa luong chong trung lap
+        // Invalidate Token immediately to lock the process
         session.removeAttribute("checkoutToken");
-
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
+
         try {
-            // ĐỌC CÁC THAM SỐ GỐC TỪ CLIENT ĐỂ ĐỐI SOÁT BẢO MẬT
             String maKm = request.getParameter("maKm");
             int diemSuDung = 0;
             try {
@@ -130,26 +129,30 @@ public class PortalCheckoutController extends HttpServlet {
             }
 
             String ghiChuDon = request.getParameter("ghiChuDon");
-            String henLayRaw = request.getParameter("thoiGianHenLay"); // Nhan moc gio tu select 24h
+            String henLayRaw = request.getParameter("thoiGianHenLay");
             if (henLayRaw == null || henLayRaw.trim().isEmpty()) {
                 request.setAttribute("error", "Bat buoc phai hen gio den cua hang nhan nuoc!");
                 doGet(request, response);
                 return;
             }
 
-            // ----------------================---------------------------------
-            // TỐI ƯU ARCHITECTURE: TỰ ĐỘNG TÍNH LẠI VÀ THẨM ĐỊNH GIÁ TRÊN SERVER-SIDE
-            // Triet tieu hoan toan rui ro khach can thiep gia de mua gia re hoac loi lech pha gia!
-            // ----------------================---------------------------------
-            GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
             List<ChiTietDonHang> orderItems = new ArrayList<>();
             int freshTongTienHang = 0;
 
-            if (gh != null && gh.getChiTietGioHangList() != null) {
-                for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
-                    if (item.isChonMua()) {
-                        orderItems.add(mapCartToOrderDetail(item));
-                        freshTongTienHang += calculateItemTotal(item);
+            // CHECK BUY NOW STATE IN SESSION
+            ChiTietGioHang buyNowItem = (ChiTietGioHang) session.getAttribute("buyNowItem");
+            if (buyNowItem != null) {
+                orderItems.add(mapCartToOrderDetail(buyNowItem));
+                freshTongTienHang = calculateItemTotal(buyNowItem);
+            } else {
+                // Regular cart checkout from Database
+                GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
+                if (gh != null && gh.getChiTietGioHangList() != null) {
+                    for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
+                        if (item.isChonMua()) {
+                            orderItems.add(mapCartToOrderDetail(item));
+                            freshTongTienHang += calculateItemTotal(item);
+                        }
                     }
                 }
             }
@@ -159,7 +162,7 @@ public class PortalCheckoutController extends HttpServlet {
                 return;
             }
 
-            // A. Tinh lai gia tri giam gia Voucher tu Database an toan
+            // Server-side Recalculation of Voucher Discounts
             int freshTienGiamGia = 0;
             if (maKm != null && !maKm.trim().isEmpty() && !maKm.equalsIgnoreCase("null")) {
                 KhuyenMai voucher = khuyenMaiService.getKhuyenMaiById(maKm.trim());
@@ -168,22 +171,21 @@ public class PortalCheckoutController extends HttpServlet {
                     if (isVoucherValid) {
                         freshTienGiamGia = khuyenMaiService.calculateDiscount(voucher.getMaCode(), freshTongTienHang);
                     } else {
-                        LOGGER.log(Level.WARNING, "⚠️ Phat hien hanh vi gian lan Voucher {0} khong hop le cho gio hang!", voucher.getMaCode());
-                        maKm = null; // Vo hieu hoa voucher rác
+                        LOGGER.log(Level.WARNING, "⚠️ Phat hien hanh vi gian lan Voucher {0} khong hop le!", voucher.getMaCode());
+                        maKm = null;
                     }
                 } else {
                     maKm = null;
                 }
             }
 
-            // B. Thm dinh diem tich luy CRM Loyalty de chong gian lan diem am/diem ao
+            // Server-side Recalculation of Loyalty Points
             KhachHang freshDbCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
             if (diemSuDung > freshDbCustomer.getDiemTichLuy()) {
                 LOGGER.log(Level.WARNING, "⚠️ Phat hien hanh vi can thiep diem CRM trai phep! Co su dung: {0}, Thuc te: {1}", new Object[]{diemSuDung, freshDbCustomer.getDiemTichLuy()});
                 diemSuDung = freshDbCustomer.getDiemTichLuy();
             }
             if (diemSuDung < 0) diemSuDung = 0;
-
             int freshTienTruDiem = diemSuDung * 1000;
             int limitPrePoints = freshTongTienHang - freshTienGiamGia;
             if (limitPrePoints < 0) limitPrePoints = 0;
@@ -192,33 +194,28 @@ public class PortalCheckoutController extends HttpServlet {
                 diemSuDung = freshTienTruDiem / 1000;
             }
 
-            // C. Tinh toan thue VAT 8% va Tong phai tra cuoi cung chot cung dong nhat
+            // Bill Totals after Tax (VAT 8%)
             int billBeforeTax = freshTongTienHang - freshTienGiamGia - freshTienTruDiem;
             if (billBeforeTax < 0) billBeforeTax = 0;
             int freshVat = (int) Math.round(billBeforeTax * 0.08);
             int freshTongPhaiTra = billBeforeTax + freshVat;
 
-            // GAN HOAN TOAN CAC GIA TRI MOI DUOC QUYET TOAN DUOI TANG SERVER
             int tongTienHang = freshTongTienHang;
             int tienGiamGia = freshTienGiamGia;
             int tienTruDiem = freshTienTruDiem;
             int tongPhaiTra = freshTongPhaiTra;
 
-            // Gop Gio go tu Client ("15:30") voi Ngay hom nay (Today) thanh moc Timestamp day du
             LocalDate today = LocalDate.now();
             String fullDateTimeStr = today.toString() + " " + henLayRaw.trim() + ":00";
             Timestamp thoiGianHenLay = Timestamp.valueOf(fullDateTimeStr);
 
-            // ĐỒNG BỘ CHUẨN HÓA MÃ HÓA ĐƠN AUTO-GENERATE TỪ SEQUENCE
             String maDh = donHangService.generateNextMaDh();
-
-            // Khoi tao thuc the DonHang chuan bi ghi nhan CSDL
             DonHang dh = new DonHang();
             dh.setMaDh(maDh);
             dh.setMaKh(currentCustomer.getMaKh());
             dh.setMaPt(maPt);
             dh.setMaKm(maKm != null && !maKm.trim().isEmpty() ? maKm : null);
-            dh.setLoaiDonHang(3); // 3: Don hang online Click & Collect dat truoc
+            dh.setLoaiDonHang(3); // 3: Online Click & Collect
             dh.setThoiGianHenLay(thoiGianHenLay);
             dh.setTongTienHang(tongTienHang);
             dh.setTienGiamGia(tienGiamGia);
@@ -226,35 +223,39 @@ public class PortalCheckoutController extends HttpServlet {
             dh.setTienTruDiem(tienTruDiem);
             dh.setTongPhaiTra(tongPhaiTra);
             dh.setGhiChuDon(ghiChuDon);
-            dh.setTrangThaiThanhToan(0); // 0: Chua thanh toan
-            dh.setTrangThaiDon(0);       // 0: Cho duyet/Cho xac nhan
+            dh.setTrangThaiThanhToan(0);
+            dh.setTrangThaiDon(0);
 
-            // Dat don hang online an toan trong mot Transaction duy nhat
+            // Place the order
             boolean placed = donHangService.placeOrderOnline(dh, orderItems);
             if (placed) {
-                // Xoa sach cac mon da thanh toan thanh cong khoi gio hang truc tuyen
-                if (gh != null && gh.getChiTietGioHangList() != null) {
-                    for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
-                        if (item.isChonMua()) {
-                            gioHangService.deleteChiTietGioHang(item.getMaCtgh());
+                if (buyNowItem != null) {
+                    // Success! Remove temporary Buy Now session attribute
+                    session.removeAttribute("buyNowItem");
+                } else {
+                    // Regular checkout: clear items from database cart
+                    GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
+                    if (gh != null && gh.getChiTietGioHangList() != null) {
+                        for (ChiTietGioHang item : gh.getChiTietGioHangList()) {
+                            if (item.isChonMua()) {
+                                gioHangService.deleteChiTietGioHang(item.getMaCtgh());
+                            }
                         }
                     }
                 }
 
-                // CẬP NHẬT LẠI VÍ ĐIỂM CỦA KHÁCH TRONG SESSION NGAY LẬP TỨC SAU KHI TRỪ ĐIỂM THÀNH CÔNG!
+                // Refresh customer profile to sync remaining points
                 KhachHang customerFreshAfterCheckout = khachHangService.getKhachHangById(currentCustomer.getMaKh());
                 session.setAttribute("customer", customerFreshAfterCheckout);
 
-                // Dong bo cap nhat lai Badge gio hang tuc thi
+                // Refresh cart count badge
                 GioHang freshGh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
                 int remainCount = (freshGh != null && freshGh.getChiTietGioHangList() != null) ? freshGh.getChiTietGioHangList().size() : 0;
                 session.setAttribute("customerCartCount", remainCount);
 
                 if (maPt == 2) {
-                    // Chuyen khoan VietQR: dua sang cong tao QR hoa don tu dong
                     response.sendRedirect(request.getContextPath() + "/portal/order/payment-qr?id=" + dh.getMaDh());
                 } else {
-                    // Tien mat: Chuyen huong truc tiep ve trang lich su theo doi don hang
                     response.sendRedirect(request.getContextPath() + "/profile/orders?msg=order_placed");
                 }
             } else {
@@ -287,7 +288,7 @@ public class PortalCheckoutController extends HttpServlet {
         ctdh.setMaSp(cartItem.getMaSp());
         ctdh.setMaSize(cartItem.getMaSize());
         ctdh.setSoLuong(cartItem.getSoLuong());
-        ctdh.setGiaChot(cartItem.getGiaBan()); // Chot gia san pham gốc tai thoi diem mua (Moi tuong thich dynamic)
+        ctdh.setGiaChot(cartItem.getGiaBan());
         ctdh.setMucDa(cartItem.getMucDa());
         ctdh.setMucDuong(cartItem.getMucDuong());
         ctdh.setGhiChuMon(cartItem.getGhiChuMon());

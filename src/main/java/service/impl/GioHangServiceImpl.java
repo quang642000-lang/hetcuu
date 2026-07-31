@@ -6,7 +6,6 @@ import model.entity.ChiTietToppingGioHang;
 import repository.IGioHangRepository;
 import repository.impl.GioHangRepoImpl;
 import service.IGioHangService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,20 +27,15 @@ public class GioHangServiceImpl implements IGioHangService {
 
     @Override
     public GioHang getGioHangComplete(String maKh) {
-        // [TÍNH NĂNG MỚI] BẢO MẬT GIỎ HÀNG: Tự động dọn dẹp các món/size/topping đã bị Admin tắt bán
         try (java.sql.Connection conn = config.DBConnect.getConnection();
              java.sql.Statement stmt = conn.createStatement()) {
-            // 1. Xóa topping đã ngừng bán khỏi giỏ
             stmt.addBatch("DELETE FROM CHI_TIET_TOPPING_GIO_HANG WHERE ma_tp IN (SELECT ma_tp FROM TOPPING WHERE trang_thai = 0)");
-            // 2. Xóa toàn bộ ly nước nếu sản phẩm mẹ đã ngừng bán
             stmt.addBatch("DELETE FROM CHI_TIET_GIO_HANG WHERE ma_sp IN (SELECT ma_sp FROM SAN_PHAM WHERE trang_thai = 0)");
-            // 3. Xóa toàn bộ ly nước nếu mốc Size đó đã ngừng bán
             stmt.addBatch("DELETE FROM CHI_TIET_GIO_HANG WHERE ma_ctgh IN (SELECT ct.ma_ctgh FROM CHI_TIET_GIO_HANG ct JOIN SAN_PHAM_KICH_CO sk ON ct.ma_sp = sk.ma_sp AND ct.ma_size = sk.ma_size WHERE sk.trang_thai = 0)");
             stmt.executeBatch();
         } catch(Exception e) {
             e.printStackTrace();
         }
-
         GioHang gh = gioHangRepository.getByKhachHang(maKh);
         if (gh == null) {
             gioHangRepository.createGioHang(maKh);
@@ -124,33 +118,37 @@ public class GioHangServiceImpl implements IGioHangService {
 
     @Override
     public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int qty, String da, String duong, String note, List<ChiTietToppingGioHang> toppings) {
+        return addSanPhamToGioHang(maKh, maSp, maSize, qty, da, duong, note, toppings, false);
+    }
+
+    @Override
+    public boolean addSanPhamToGioHang(String maKh, String maSp, int maSize, int qty, String da, String duong, String note, List<ChiTietToppingGioHang> toppings, boolean isBuyNow) {
         GioHang gh = gioHangRepository.getByKhachHang(maKh);
         if (gh == null) {
             gioHangRepository.createGioHang(maKh);
             gh = gioHangRepository.getByKhachHang(maKh);
         }
         if (gh == null) return false;
-
         String normDa = normalizeIce(da);
         String normDuong = normalizeSugar(duong);
         String normNote = normalizeNote(note);
 
-        List<ChiTietGioHang> existingDetails = gioHangRepository.getChiTietGioHang(gh.getMaGh());
         ChiTietGioHang targetItem = null;
-
-        for (ChiTietGioHang item : existingDetails) {
-            if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize) {
-                String itemDa = normalizeIce(item.getMucDa());
-                String itemDuong = normalizeSugar(item.getMucDuong());
-                String itemNote = normalizeNote(item.getGhiChuMon());
-
-                if (itemDa.equalsIgnoreCase(normDa) &&
-                        itemDuong.equalsIgnoreCase(normDuong) &&
-                        itemNote.equalsIgnoreCase(normNote)) {
-                    List<ChiTietToppingGioHang> existingToppings = gioHangRepository.getToppingByChiTiet(item.getMaCtgh());
-                    if (areToppingsEqual(existingToppings, toppings)) {
-                        targetItem = item;
-                        break;
+        if (!isBuyNow) { // BỎ QUA KIỂM TRA TRÙNG LẶP NẾU LÀ "MUA NGAY" ĐỂ KHÔNG BỊ GÔM CHUNG ĐƠN CŨ!
+            List<ChiTietGioHang> existingDetails = gioHangRepository.getChiTietGioHang(gh.getMaGh());
+            for (ChiTietGioHang item : existingDetails) {
+                if (item.getMaSp().equals(maSp) && item.getMaSize() == maSize) {
+                    String itemDa = normalizeIce(item.getMucDa());
+                    String itemDuong = normalizeSugar(item.getMucDuong());
+                    String itemNote = normalizeNote(item.getGhiChuMon());
+                    if (itemDa.equalsIgnoreCase(normDa) &&
+                            itemDuong.equalsIgnoreCase(normDuong) &&
+                            itemNote.equalsIgnoreCase(normNote)) {
+                        List<ChiTietToppingGioHang> existingToppings = gioHangRepository.getToppingByChiTiet(item.getMaCtgh());
+                        if (areToppingsEqual(existingToppings, toppings)) {
+                            targetItem = item;
+                            break;
+                        }
                     }
                 }
             }
@@ -161,6 +159,7 @@ public class GioHangServiceImpl implements IGioHangService {
             targetItem.setMucDa(normDa);
             targetItem.setMucDuong(normDuong);
             targetItem.setGhiChuMon(normNote);
+            targetItem.setChonMua(true); // Luôn tích chọn sản phẩm vừa thêm
             return gioHangRepository.addOrUpdateChiTiet(targetItem);
         } else {
             ChiTietGioHang newItem = new ChiTietGioHang();
@@ -171,7 +170,7 @@ public class GioHangServiceImpl implements IGioHangService {
             newItem.setMucDa(normDa);
             newItem.setMucDuong(normDuong);
             newItem.setGhiChuMon(normNote);
-            newItem.setChonMua(true);
+            newItem.setChonMua(true); // Luôn tích chọn mua đối với sản phẩm mới
             newItem.setToppingGioHangList(toppings);
             return gioHangRepository.addOrUpdateChiTiet(newItem);
         }

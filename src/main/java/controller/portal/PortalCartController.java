@@ -32,6 +32,10 @@ public class PortalCartController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
+
+        // Clean up any leftover Buy Now item when user visits the cart page directly
+        session.removeAttribute("buyNowItem");
+
         String uri = request.getRequestURI();
         if (uri.endsWith("/cart/delete")) {
             performDeleteCartItem(request, response);
@@ -51,6 +55,7 @@ public class PortalCartController extends HttpServlet {
         HttpSession session = request.getSession(false);
         String requestedWith = request.getHeader("X-Requested-With");
         boolean isAjax = "XMLHttpRequest".equals(requestedWith) || "true".equals(request.getParameter("ajax"));
+
         if (session == null || session.getAttribute("customer") == null) {
             if (isAjax) {
                 response.getWriter().write("NOT_LOGGED_IN");
@@ -61,6 +66,7 @@ public class PortalCartController extends HttpServlet {
             }
             return;
         }
+
         if (uri.endsWith("/cart/update")) {
             performUpdateQuantity(request, response);
             return;
@@ -69,14 +75,15 @@ public class PortalCartController extends HttpServlet {
             performToggleSelect(request, response);
             return;
         }
+
         KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         String maKh = currentCustomer.getMaKh();
+
         try {
             String maSp = request.getParameter("maSp");
             int maSize = Integer.parseInt(request.getParameter("maSize"));
             int soLuong = Integer.parseInt(request.getParameter("soLuong"));
-            // CHỐT CHẶN PHÒNG THỦ: Khi chọn bánh ngọt/cafe nóng không có đá/đường, tham số gửi lên sẽ là null.
-            // Gán giá trị mặc định tránh lỗi khóa ngoại và NOT NULL trong DB.
+
             String mucDa = request.getParameter("mucDa");
             if (mucDa == null || mucDa.trim().isEmpty()) {
                 mucDa = "100% Đá";
@@ -89,11 +96,12 @@ public class PortalCartController extends HttpServlet {
             if (ghiChuMon == null || ghiChuMon.trim().isEmpty()) {
                 ghiChuMon = "Normal";
             }
+
             String[] arrToppings = request.getParameterValues("toppings[]");
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
             if (arrToppings != null) {
                 for (String tpIdStr : arrToppings) {
-                    String maTp = tpIdStr; // STRING Key TPxxxxx
+                    String maTp = tpIdStr;
                     int qty = 1;
                     String qtyStr = request.getParameter("topping_qty_" + maTp);
                     if (qtyStr != null && !qtyStr.trim().isEmpty()) {
@@ -107,20 +115,65 @@ public class PortalCartController extends HttpServlet {
                 }
             }
 
-            // FIX: Xử lý bộ lọc thông minh cho nút "MUA NGAY" (Bypass selective checkout)
-            // Nếu hành động gửi lên là "buy", tự động đưa is_chon_mua = 0 cho tất cả món khác hiện tại của giỏ hàng,
-            // giúp cốc nước mới thêm này là món duy nhất được chọn thanh toán mà không bị gộp đơn rác cũ!
             String action = request.getParameter("action");
+
+            // CRUCIAL: ULTIMATE "BUY NOW" LOGIC (SESSION-BASED BYPASS PERSISTENT CART)
             if ("buy".equals(action)) {
-                String deselectOtherSql = "UPDATE CHI_TIET_GIO_HANG SET is_chon_mua = 0 WHERE ma_gh = (SELECT ma_gh FROM GIO_HANG WHERE ma_kh = ?)";
-                try (Connection conn = DBConnect.getConnection();
-                     PreparedStatement ps = conn.prepareStatement(deselectOtherSql)) {
-                    ps.setString(1, maKh);
-                    ps.executeUpdate();
-                } catch (Exception e) {
-                    System.err.println("[TEA POS WARNING] Không thể tự động bỏ chọn giỏ hàng cũ: " + e.getMessage());
+                ChiTietGioHang buyNowItem = new ChiTietGioHang();
+                buyNowItem.setMaCtgh(-99L); // Temp ID to identify Buy Now
+                buyNowItem.setMaSp(maSp);
+                buyNowItem.setMaSize(maSize);
+                buyNowItem.setSoLuong(soLuong);
+                buyNowItem.setMucDa(mucDa);
+                buyNowItem.setMucDuong(mucDuong);
+                buyNowItem.setGhiChuMon(ghiChuMon);
+                buyNowItem.setChonMua(true);
+
+                // Get product information
+                service.ISanPhamService spService = service.impl.SanPhamServiceImpl.getInstance();
+                model.entity.SanPham sp = spService.getSanPhamById(maSp);
+                buyNowItem.setSanPham(sp);
+
+                // Set unit price
+                int price = spService.getGiaKichCoSanPham(maSp, maSize);
+                buyNowItem.setGiaBan(price);
+
+                // Set size name
+                List<model.entity.SanPhamKichCo> sizes = spService.getSizesBySanPham(maSp);
+                for (model.entity.SanPhamKichCo sz : sizes) {
+                    if (sz.getMaSize() == maSize) {
+                        buyNowItem.setTenSize(sz.getTenSize());
+                        break;
+                    }
                 }
+
+                // Set topping names and prices
+                service.IToppingService tpService = service.impl.ToppingServiceImpl.getInstance();
+                if (toppingList != null) {
+                    for (ChiTietToppingGioHang tp : toppingList) {
+                        model.entity.Topping masterTp = tpService.getToppingById(tp.getMaTp());
+                        if (masterTp != null) {
+                            tp.setTenTp(masterTp.getTenTp());
+                            tp.setGiaTp(masterTp.getGiaBan());
+                        }
+                    }
+                }
+                buyNowItem.setToppingGioHangList(toppingList);
+
+                // Put the Buy Now item in the Session
+                session.setAttribute("buyNowItem", buyNowItem);
+
+                if (isAjax) {
+                    response.getWriter().write("SUCCESS|" + session.getAttribute("customerCartCount"));
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/checkout");
+                }
+                return;
             }
+
+            // Regular Add-To-Cart flow
+            // Clear any old buyNowItem from session when adding to normal cart
+            session.removeAttribute("buyNowItem");
 
             String maCtghStr = request.getParameter("maCtgh");
             if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
@@ -147,6 +200,7 @@ public class PortalCartController extends HttpServlet {
                 }
                 return;
             }
+
             boolean success = gioHangService.addSanPhamToGioHang(maKh, maSp, maSize, soLuong, mucDa, mucDuong, ghiChuMon, toppingList);
             if (isAjax) {
                 if (success) {
