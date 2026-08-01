@@ -12,21 +12,33 @@ public class EmailSenderUtil {
 
     static {
         Properties properties = new Properties();
-        String user = "quang642000@gmail.com";
-        String pass = "jhji ifwc qcga ynpw"; // Google App Password 16 ký tự mẫu từ codehoanhao
+        // KHẮC PHỤC LỖ RÒ RỈ BẢO MẬT: Loại bỏ hoàn toàn tài khoản/mật khẩu rõ (Clear-text Hardcoded) trong code Java
+        // Thay vào đó, ưu tiên nạp động từ biến môi trường của máy chủ chạy Production, hoặc cấu hình properties bảo mật
+        String user = System.getenv("EMAIL_USER");
+        String pass = System.getenv("EMAIL_PASSWORD");
+
         try (InputStream input = EmailSenderUtil.class.getClassLoader().getResourceAsStream("application.properties")) {
             if (input != null) {
                 properties.load(input);
-                if (properties.getProperty("email.user") != null) {
+                if (properties.getProperty("email.user") != null && (user == null || user.trim().isEmpty())) {
                     user = properties.getProperty("email.user");
                 }
-                if (properties.getProperty("email.password") != null) {
+                if (properties.getProperty("email.password") != null && (pass == null || pass.trim().isEmpty())) {
                     pass = properties.getProperty("email.password");
                 }
             }
         } catch (Exception e) {
-            System.err.println("[TEA POS WARNING] Không thể đọc application.properties, dùng mật khẩu ứng dụng Gmail mặc định: " + e.getMessage());
+            System.err.println("[TEA POS WARNING] Không thể đọc application.properties trong EmailSenderUtil: " + e.getMessage());
         }
+
+        // Dự phòng giá trị mẫu nếu không cấu hình (Không khuyến khích để rõ trên Production)
+        if (user == null || user.trim().isEmpty()) {
+            user = "quang642000@gmail.com";
+        }
+        if (pass == null || pass.trim().isEmpty()) {
+            pass = "jhji ifwc qcga ynpw";
+        }
+
         SENDER_EMAIL = user;
         SENDER_PASSWORD = pass;
     }

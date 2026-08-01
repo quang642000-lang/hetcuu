@@ -8,12 +8,41 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 
 @WebServlet(name = "ImageServlet", urlPatterns = {"/assets/images/*"})
 public class ImageServlet extends HttpServlet {
-    private static final String UPLOAD_DIR_WIN = "C:/teapos_uploads/images/";
-    private static final String UPLOAD_DIR_MAC = "/var/teapos_uploads/images/";
+    private static String uploadDir;
+
+    @Override
+    public void init() throws ServletException {
+        // SỬA LỖI: Đồng bộ hóa hoàn toàn đường dẫn lưu trữ từ application.properties
+        // Tránh lỗi Hardcoded "C:/teapos_uploads/images/" gây lệch thư mục hiển thị ảnh (Lỗi 404)
+        Properties properties = new Properties();
+        String defaultDirWin = "C:/tea_pos_images"; // Khớp với properties mặc định
+        String defaultDirMac = "/var/teapos_uploads/images/";
+
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+            if (input != null) {
+                properties.load(input);
+                uploadDir = properties.getProperty("upload.dir");
+            }
+        } catch (Exception e) {
+            System.err.println("[TEA POS WARNING] Không thể đọc application.properties trong ImageServlet, dùng mặc định: " + e.getMessage());
+        }
+
+        if (uploadDir == null || uploadDir.trim().isEmpty()) {
+            uploadDir = System.getProperty("os.name").toLowerCase().contains("win") ? defaultDirWin : defaultDirMac;
+        }
+
+        // Đảm bảo thư mục tồn tại
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -23,11 +52,10 @@ public class ImageServlet extends HttpServlet {
             return;
         }
 
-        // Tự động phân tách ổ đĩa lưu trữ cố định dựa trên hệ điều hành của máy tính chạy local
-        String baseDir = System.getProperty("os.name").toLowerCase().contains("win") ? UPLOAD_DIR_WIN : UPLOAD_DIR_MAC;
-        File file = new File(baseDir, pathInfo);
+        // Sử dụng thư mục uploadDir đã được đồng bộ từ file cấu hình properties
+        File file = new File(uploadDir, pathInfo);
 
-        // FALLBACK: Nếu tệp tin không tồn tại ở thư mục cố định bên ngoài, tìm kiếm trong thư mục Real Path tạm thời của Webapp
+        // FALLBACK: Nếu tệp tin không tồn tại ở thư mục cấu hình bên ngoài, tìm kiếm trong thư mục Real Path tạm thời của Webapp
         if (!file.exists()) {
             String realPath = getServletContext().getRealPath("/assets/images" + pathInfo);
             if (realPath != null) {

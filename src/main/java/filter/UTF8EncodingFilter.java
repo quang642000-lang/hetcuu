@@ -20,7 +20,9 @@ public class UTF8EncodingFilter implements Filter {
         // Thiết lập mã hóa UTF-8 cho luồng dữ liệu hai chiều
         httpRequest.setCharacterEncoding("UTF-8");
         httpResponse.setCharacterEncoding("UTF-8");
-        httpResponse.setContentType("text/html; charset=UTF-8");
+
+        // CHÚ Ý CHÍ MẠNG: KHÔNG ĐƯỢC SET CONTENT TYPE Ở ĐÂY!
+        // httpResponse.setContentType("text/html; charset=UTF-8"); // <- Dòng này phải được xóa bỏ!
 
         chain.doFilter(request, response);
     }

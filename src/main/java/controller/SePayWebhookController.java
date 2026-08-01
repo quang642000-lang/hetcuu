@@ -14,20 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - HIGHLY ROBUST SEPAY WEBHOOK CONTROLLER
- * Maps to /api/sepay-webhook
- * Safe fallback, JSON parsing, automatic order matching and status transition.
- * ALWAYS returns HTTP 200 OK for standard received payloads to prevent SePay
- * from flagging errors or unverified statuses!
- * =========================================================================
- */
 @WebServlet(name = "SePayWebhookController", urlPatterns = {"/api/sepay-webhook"})
 public class SePayWebhookController extends HttpServlet {
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
     private String sepayToken;
-    private static final boolean BYPASS_TOKEN_FOR_DEMO = true;
+    private boolean bypassTokenForDemo = false; // Mặc định chuyển sang FALSE để đảm bảo an toàn tuyệt đối trên Production
 
     @Override
     public void init() throws ServletException {
@@ -40,12 +31,17 @@ public class SePayWebhookController extends HttpServlet {
             if (in != null) {
                 properties.load(in);
                 sepayToken = properties.getProperty("sepay.token");
+                String bypassProp = properties.getProperty("sepay.bypass");
+                if (bypassProp != null) {
+                    bypassTokenForDemo = Boolean.parseBoolean(bypassProp.trim());
+                }
             }
         } catch (Exception e) {
-            System.err.println("[TEA POS WARNING] Không thể nạp application.properties để lấy sepay.token: " + e.getMessage());
+            System.err.println("[TEA POS WARNING] Không thể nạp application.properties để lấy cấu hình SePay: " + e.getMessage());
         }
+
         if (sepayToken == null || sepayToken.trim().isEmpty()) {
-            sepayToken = "U4RXVN1VBGSWAZR68VQ3SMYHUPFFC6AGOYBKXY8PQBTXAT3YULOBQZI4KDPZ2WSE"; // Fallback từ properties mặc định
+            sepayToken = "U4RXVN1VBGSWAZR68VQ3SMYHUPFFC6AGOYBKXY8PQBTXAT3YULOBQZI4KDPZ2WSE"; // Fallback mẫu
         }
     }
 
@@ -58,9 +54,10 @@ public class SePayWebhookController extends HttpServlet {
         String paramToken = request.getParameter("token");
         boolean authorized = false;
 
-        if (BYPASS_TOKEN_FOR_DEMO) {
+        // KIỂM TOÁN LỖ HỔNG BYPASS: Sử dụng cấu hình động thay vì hardcode true
+        if (bypassTokenForDemo) {
             authorized = true;
-            System.out.println("⚠️ [SECURITY NOTICE] Đang chạy chế độ BYPASS_TOKEN_FOR_DEMO = true. Bỏ qua kiểm tra Token bảo mật!");
+            System.out.println("⚠️ [SECURITY NOTICE] Đang chạy chế độ BYPASS_TOKEN_FOR_DEMO = true. Chỉ dùng cho thử nghiệm!");
         } else {
             if (sepayToken != null && !sepayToken.trim().isEmpty()) {
                 if (paramToken != null && paramToken.trim().equals(sepayToken.trim())) {
@@ -72,7 +69,7 @@ public class SePayWebhookController extends HttpServlet {
                     }
                 }
             } else {
-                authorized = true; // Bỏ qua nếu không cấu hình token
+                authorized = true; // Bỏ qua nếu hoàn toàn không cấu hình token
             }
         }
 
@@ -94,7 +91,6 @@ public class SePayWebhookController extends HttpServlet {
         try {
             String jsonStr = sb.toString();
             if (jsonStr.trim().isEmpty()) {
-                // Trả về 200 OK cho ping thử nghiệm không có nội dung
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Empty payload acknowledged\"}");
                 return;
@@ -103,14 +99,12 @@ public class SePayWebhookController extends HttpServlet {
             System.out.println("📬 [SEPAY WEBHOOK RAW] " + jsonStr);
             JsonObject json = JsonParser.parseString(jsonStr).getAsJsonObject();
 
-            // Hỗ trợ kiểm tra Webhook Test từ SePay
             if (json.has("content") && json.get("content").getAsString().toLowerCase().contains("test")) {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Test Webhook received successfully\"}");
                 return;
             }
 
-            // HỖ TRỢ ĐA KHÓA: Đọc cả content lẫn transactionContent đề phòng SePay thay đổi API payload
             String content = "";
             if (json.has("transactionContent") && !json.get("transactionContent").isJsonNull()) {
                 content = json.get("transactionContent").getAsString();
@@ -118,7 +112,6 @@ public class SePayWebhookController extends HttpServlet {
                 content = json.get("content").getAsString();
             }
 
-            // HỖ TRỢ ĐA KHÓA SỐ TIỀN: Đọc cả transferAmount lẫn amount
             double amount = 0.0;
             if (json.has("transferAmount") && !json.get("transferAmount").isJsonNull()) {
                 amount = json.get("transferAmount").getAsDouble();
@@ -135,14 +128,13 @@ public class SePayWebhookController extends HttpServlet {
                 response.getWriter().write("{\"status\":\"SUCCESS\",\"message\":\"Order matched and processed\"}");
                 System.out.println("✅ [SEPAY WEBHOOK] Khớp đơn và cập nhật CSDL thành công cho nội dung: " + upperContent);
             } else {
-                // LUÔN TRẢ VỀ 200 OK khi nhận thành công Webhook để tránh lỗi không xác thực, nhưng gắn nhãn SKIPPED trong JSON
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write("{\"status\":\"SKIPPED\",\"message\":\"No pending order matched this transfer content or amount\"}");
                 System.err.println("ℹ️ [SEPAY WEBHOOK] Đã nhận tín hiệu nhưng không tìm thấy đơn hàng chờ khớp hoặc sai tiền: " + upperContent + " (" + amount + "đ)");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_OK); // Trả về 200 OK kèm thông tin lỗi để đảm bảo SePay không báo lỗi gửi liên tục
+            response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"" + e.getMessage().replace('"', '\'') + "\"}");
         }
     }

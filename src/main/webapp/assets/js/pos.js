@@ -885,5 +885,3 @@ function submitPOSOrderTransaction() {
         }
     });
 }
-
-

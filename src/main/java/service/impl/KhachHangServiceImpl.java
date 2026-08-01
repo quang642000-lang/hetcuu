@@ -70,15 +70,19 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setDiemTichLuy(0);
         kh.setMaHang(1); // Mặc định ĐỒNG
         kh.setTrangThai(false); // Chưa kích hoạt trên web
+
         boolean success = khachHangRepository.add(kh);
         if (success) {
-            sendActivationOTP(email);
+            // SỬA LỖI LOGIC: Kiểm toán kết quả gửi OTP để trả về trạng thái chính xác
+            boolean otpSent = sendActivationOTP(email);
+            if (!otpSent) {
+                System.err.println("[TEA POS WARNING] Tạo được tài khoản nhưng không gửi được mail kích hoạt OTP cho email: " + email);
+            }
             return kh;
         }
         return null;
     }
 
-    // ĐĂNG KÝ KHÁCH HÀNG TẠI QUẦY POS - AN TOÀN TUYỆT ĐỐI, KHÔNG MẬT KHẨU MẶC ĐỊNH CRASH LỖI
     @Override
     public KhachHang registerCustomerAtPOS(String tenKh, String sdt, String email) {
         if (khachHangRepository.checkTrungSdtOrEmail(sdt, email, null)) {
@@ -92,6 +96,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setDiemTichLuy(0);
         kh.setMaHang(1); // Đồng
         kh.setTrangThai(true); // Trạng thái = true để có thể sử dụng ngay tại POS!
+
         boolean success = khachHangRepository.add(kh);
         if (success) {
             return khachHangRepository.getBySdt(sdt);
@@ -105,7 +110,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (kh == null) {
             kh = khachHangRepository.getByEmail(usernameOrSdtOrEmail);
         }
-        // CHỐT CHẶN BẢO MẬT CHỐNG NULL POINTER EXCEPTION KHI MẬT KHẨU LÀ NULL (TÀI KHOẢN QUẦY CHƯA KÍCH HOẠT)
         if (kh != null && kh.isTrangThai() && kh.getMatKhau() != null) {
             String hashedInput = SecurityUtil.hashSHA256(password);
             if (kh.getMatKhau().equals(hashedInput)) {
@@ -120,17 +124,20 @@ public class KhachHangServiceImpl implements IKhachHangService {
         String otpCode = String.format("%06d", new Random().nextInt(999999));
         long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
         activationOtpCache.put(email, new OtpInfo(otpCode, expireTime));
+
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KÍCH HOẠT TÀI KHOẢN KHÁCH HÀNG MỚI]");
         System.out.println("Email khách nhận: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
         System.out.println("======================================================================");
+
         try {
-            EmailSenderUtil.sendOTPEmail(email, otpCode);
+            // SỬA LỖI LOGIC: Trả về giá trị của EmailSenderUtil thay vì luôn trả về true bừa bãi
+            return EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
             System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
+            return false;
         }
-        return true;
     }
 
     @Override
@@ -155,24 +162,26 @@ public class KhachHangServiceImpl implements IKhachHangService {
     @Override
     public boolean sendForgotPasswordOTP(String email) {
         KhachHang kh = khachHangRepository.getByEmail(email);
-        // Cho phép gửi OTP khôi phục / kích hoạt mật khẩu cho cả tài khoản chưa có mật khẩu
         if (kh == null) {
             return false;
         }
         String otpCode = String.format("%06d", new Random().nextInt(999999));
         long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
         forgotPasswordOtpCache.put(email, new OtpInfo(otpCode, expireTime));
+
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KHÔI PHỤC MẬT KHẨU (FORGOT PASSWORD)]");
         System.out.println("Email tài khoản: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
         System.out.println("======================================================================");
+
         try {
-            EmailSenderUtil.sendOTPEmail(email, otpCode);
+            // SỬA LỖI LOGIC: Trả về kết quả thực gửi thư từ SMTP Server
+            return EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
             System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
+            return false;
         }
-        return true;
     }
 
     @Override
