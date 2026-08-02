@@ -24,18 +24,45 @@ public class SePayWebhookController extends BaseController {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (input != null) {
                 properties.load(input);
-                sepayToken = properties.getProperty("sepay.token");
-                String bypassProp = properties.getProperty("sepay.bypass");
-                if (bypassProp != null) {
-                    bypassTokenForDemo = Boolean.parseBoolean(bypassProp.trim());
+
+                String rawToken = properties.getProperty("sepay.token");
+                String rawBypass = properties.getProperty("sepay.bypass");
+
+                if (rawToken != null) {
+                    sepayToken = resolvePlaceholder(rawToken);
+                }
+                if (rawBypass != null) {
+                    String cleanBypass = resolvePlaceholder(rawBypass);
+                    bypassTokenForDemo = Boolean.parseBoolean(cleanBypass.trim());
                 }
             }
         } catch (Exception e) {
             System.err.println("[TEA POS WARNING] Không thể nạp application.properties để lấy cấu hình SePay: " + e.getMessage());
         }
-        if (sepayToken == null || sepayToken.trim().isEmpty()) {
+
+        if (sepayToken == null || sepayToken.trim().isEmpty() || sepayToken.contains("${")) {
             sepayToken = "U4RXVN1VBGSWAZR68VQ3SMYHUPFFC6AGOYBKXY8PQBTXAT3YULOBQZI4KDPZ2WSE";
         }
+
+        System.out.println("[TEA POS SEPAY INIT] SePay Webhook Token initialized (Bypass: " + bypassTokenForDemo + ")");
+    }
+
+    private static String resolvePlaceholder(String value) {
+        if (value == null) return null;
+        value = value.trim();
+        if (value.startsWith("${") && value.endsWith("}")) {
+            String inner = value.substring(2, value.length() - 1);
+            int colonIdx = inner.indexOf(':');
+            String envVar = colonIdx == -1 ? inner : inner.substring(0, colonIdx);
+            String defaultValue = colonIdx == -1 ? "" : inner.substring(colonIdx + 1);
+
+            String envValue = System.getenv(envVar);
+            if (envValue != null && !envValue.trim().isEmpty()) {
+                return envValue.trim();
+            }
+            return defaultValue.trim();
+        }
+        return value;
     }
 
     @Override
@@ -99,7 +126,6 @@ public class SePayWebhookController extends BaseController {
             System.out.println("📬 [SEPAY WEBHOOK] Nhận tín hiệu thanh toán: Nội dung='" + content + "', Số tiền=" + amount);
             String upperContent = content.toUpperCase();
             boolean success = donHangService.handleSePayWebhook(upperContent, amount);
-
             if (success) {
                 System.out.println("✅ [SEPAY WEBHOOK] Khớp đơn và cập nhật CSDL thành công cho nội dung: " + upperContent);
                 sendJson(response, new WebhookResponse("SUCCESS", "Order matched and processed"));
@@ -116,6 +142,7 @@ public class SePayWebhookController extends BaseController {
     private static class WebhookResponse {
         private String status;
         private String message;
+
         public WebhookResponse(String status, String message) {
             this.status = status;
             this.message = message;

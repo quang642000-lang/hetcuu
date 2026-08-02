@@ -66,7 +66,8 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setTenKh(tenKh);
         kh.setSoDienThoai(sdt);
         kh.setEmail(email);
-        kh.setMatKhau(SecurityUtil.hashSHA256(password));
+        // FIX: Đăng ký mới băm mật khẩu kèm muối Email để đồng bộ bảo mật 100%
+        kh.setMatKhau(SecurityUtil.hashWithSalt(password, email));
         kh.setDiemTichLuy(0);
         kh.setMaHang(1);
         kh.setTrangThai(false);
@@ -108,7 +109,8 @@ public class KhachHangServiceImpl implements IKhachHangService {
             kh = khachHangRepository.getByEmail(usernameOrSdtOrEmail);
         }
         if (kh != null && kh.isTrangThai() && kh.getMatKhau() != null) {
-            String hashedInput = SecurityUtil.hashSHA256(password);
+            // FIX CHÍ MẠNG: Băm mật khẩu kèm muối Email để đối soát khớp 100% với CSDL mới
+            String hashedInput = SecurityUtil.hashWithSalt(password, kh.getEmail());
             if (kh.getMatKhau().equals(hashedInput)) {
                 return kh;
             }
@@ -194,7 +196,8 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (verifyForgotPasswordOTP(email, otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
-                kh.setMatKhau(SecurityUtil.hashSHA256(newPassword));
+                // FIX: resetPassword băm mật khẩu kèm muối Email chuẩn
+                kh.setMatKhau(SecurityUtil.hashWithSalt(newPassword, kh.getEmail()));
                 kh.setTrangThai(true);
                 return khachHangRepository.update(kh);
             }

@@ -35,7 +35,6 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_verify.jsp").forward(request, response);
             return;
         }
-        // Mặc định: trang tìm kiếm thẻ / tài khoản để kích hoạt
         request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
     }
 
@@ -68,15 +67,12 @@ public class ActivateAccountController extends HttpServlet {
             String email = (String) session.getAttribute("otpEmail");
             KhachHang kh = khachHangService.getKhachHangByEmail(email);
             if (kh != null) {
-                // FIX CHÍ MẠNG: Triệt tiêu cơ chế re-verify OTP vốn đã bị xóa khỏi cache (activationOtpCache) sau khi verify thành công.
-                // Vì OTP đã được xác minh thành công ở bước trước và lưu trạng thái "otpVerified" vào Session,
-                // chúng ta chỉ việc cập nhật mật khẩu trực tiếp thông qua updateMatKhau và lưu trạng thái kích hoạt tài khoản.
-                boolean success = khachHangService.updateMatKhau(kh.getMaKh(), util.SecurityUtil.hashSHA256(password));
+                // FIX CHÍ MẠNG: Băm mật khẩu kèm muối Email để đồng bộ hoàn toàn với thuật toán đăng nhập mới
+                String saltedHashedPassword = util.SecurityUtil.hashWithSalt(password, kh.getEmail());
+                boolean success = khachHangService.updateMatKhau(kh.getMaKh(), saltedHashedPassword);
                 if (success) {
-                    kh.setTrangThai(true); // Đưa trạng thái hoạt động về true để cho phép đăng nhập portal
-                    khachHangService.updateCustomerProfile(kh); // Đồng bộ lưu trạng thái kích hoạt mới vào DB
-
-                    // Xóa dọn bộ nhớ tạm Session sạch sẽ sau khi hoàn tất vòng đời kích hoạt
+                    kh.setTrangThai(true);
+                    khachHangService.updateCustomerProfile(kh);
                     session.removeAttribute("otpEmail");
                     session.removeAttribute("otpCode");
                     session.removeAttribute("otpVerified");
@@ -104,7 +100,7 @@ public class ActivateAccountController extends HttpServlet {
             boolean success = khachHangService.verifyForgotPasswordOTP(email, otp);
             if (success) {
                 session.setAttribute("otpVerified", true);
-                session.setAttribute("otpCode", otp); // Lưu để làm mốc đối soát
+                session.setAttribute("otpCode", otp);
                 response.sendRedirect(request.getContextPath() + "/activate/password");
             } else {
                 request.setAttribute("error", "Mã xác thực OTP không chính xác hoặc đã hết hiệu lực!");
@@ -112,8 +108,7 @@ public class ActivateAccountController extends HttpServlet {
             }
             return;
         }
-        // POST /activate: Tìm kiếm SĐT/Email để gửi mã OTP kích hoạt
-        String searchInput = request.getParameter("username"); // Số điện thoại hoặc Email
+        String searchInput = request.getParameter("username");
         if (searchInput == null || searchInput.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập Email hoặc Số điện thoại đăng ký tại quầy.");
             request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
@@ -133,7 +128,6 @@ public class ActivateAccountController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/activate_account.jsp").forward(request, response);
             return;
         }
-        // Gửi mã OTP khôi phục / kích hoạt mật khẩu về Email của khách hàng
         boolean sent = khachHangService.sendForgotPasswordOTP(kh.getEmail());
         if (sent) {
             session.setAttribute("otpEmail", kh.getEmail());

@@ -24,7 +24,6 @@ public class ForgotPasswordController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(false);
-
         if (uri.endsWith("/reset-password")) {
             if (session == null || session.getAttribute("otpVerified") == null || !(Boolean) session.getAttribute("otpVerified")) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
@@ -33,13 +32,10 @@ public class ForgotPasswordController extends HttpServlet {
             request.getRequestDispatcher("/views/auth/reset_password.jsp").forward(request, response);
             return;
         }
-
-        // forgot-password view routing
         String role = request.getParameter("role");
         if (role == null || role.trim().isEmpty()) {
-            role = "customer"; // Mặc định là khách hàng
+            role = "customer";
         }
-
         request.setAttribute("role", role);
         if ("employee".equals(role)) {
             request.getRequestDispatcher("/views/auth/forgot_password_admin.jsp").forward(request, response);
@@ -52,57 +48,48 @@ public class ForgotPasswordController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession(true);
-
         if (uri.endsWith("/reset-password")) {
             if (session == null || session.getAttribute("otpVerified") == null || !(Boolean) session.getAttribute("otpVerified")) {
                 response.sendRedirect(request.getContextPath() + "/customer/login");
                 return;
             }
-
             String newPassword = request.getParameter("newPassword");
             String confirmPassword = request.getParameter("confirmPassword");
-
             if (newPassword == null || newPassword.trim().isEmpty() || confirmPassword == null || confirmPassword.trim().isEmpty()) {
                 request.setAttribute("error", "Vui lòng nhập mật khẩu mới đầy đủ!");
                 request.getRequestDispatcher("/views/auth/reset_password.jsp").forward(request, response);
                 return;
             }
-
             if (!newPassword.equals(confirmPassword)) {
                 request.setAttribute("error", "Xác nhận mật khẩu mới không trùng khớp!");
                 request.getRequestDispatcher("/views/auth/reset_password.jsp").forward(request, response);
                 return;
             }
-
             if (newPassword.length() < 8) {
                 request.setAttribute("error", "Mật khẩu mới bắt buộc phải chứa tối thiểu từ 8 ký tự!");
                 request.getRequestDispatcher("/views/auth/reset_password.jsp").forward(request, response);
                 return;
             }
-
             String email = (String) session.getAttribute("otpEmail");
             String role = (String) session.getAttribute("otpRole");
             boolean success = false;
-
             if ("employee".equals(role)) {
                 NhanVien nv = nhanVienService.getNhanVienByEmail(email);
                 if (nv != null) {
-                    // resetPasswordByAdmin hashes internally
                     success = nhanVienService.resetPasswordByAdmin(nv.getMaNv(), newPassword);
                 }
             } else {
                 KhachHang kh = khachHangService.getKhachHangByEmail(email);
                 if (kh != null) {
-                    success = khachHangService.updateMatKhau(kh.getMaKh(), SecurityUtil.hashSHA256(newPassword));
+                    // FIX CHÍ MẠNG: Khôi phục mật khẩu băm kèm muối Email đồng bộ
+                    success = khachHangService.updateMatKhau(kh.getMaKh(), SecurityUtil.hashWithSalt(newPassword, kh.getEmail()));
                 }
             }
-
             if (success) {
                 session.removeAttribute("otpEmail");
                 session.removeAttribute("otpType");
                 session.removeAttribute("otpRole");
                 session.removeAttribute("otpVerified");
-
                 request.setAttribute("success", "Khôi phục mật khẩu thành công! Hãy đăng nhập bằng mật khẩu mới.");
                 if ("employee".equals(role)) {
                     request.getRequestDispatcher("/views/auth/login_admin.jsp").forward(request, response);
@@ -115,14 +102,11 @@ public class ForgotPasswordController extends HttpServlet {
             }
             return;
         }
-
-        // POST /forgot-password
         String email = request.getParameter("email");
         String role = request.getParameter("role");
         if (role == null || role.trim().isEmpty()) {
             role = "customer";
         }
-
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập địa chỉ Email đăng ký tài khoản.");
             request.setAttribute("role", role);
@@ -133,14 +117,12 @@ public class ForgotPasswordController extends HttpServlet {
             }
             return;
         }
-
         boolean sent = false;
         if ("employee".equals(role)) {
             sent = nhanVienService.sendForgotPasswordOTP(email.trim());
         } else {
             sent = khachHangService.sendForgotPasswordOTP(email.trim());
         }
-
         if (sent) {
             session.setAttribute("otpEmail", email.trim());
             session.setAttribute("otpType", "recovery");

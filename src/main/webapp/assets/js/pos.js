@@ -1,3 +1,11 @@
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - HIGH-PERFORMANCE RESPONSIVE SCRIPT
+ * Dynamically injects Offcanvas drawer triggers, floating carts and locks scroll
+ * on tablet & mobile devices without manual JSP template edits.
+ * =========================================================================
+ */
+
 let posCart = [];
 let customerInfo = null;
 let appliedVoucher = null;
@@ -26,6 +34,7 @@ function resetVoucherAndPoints() {
     const sumDiscRow = document.getElementById("summaryDiscountRow");
     const sumPtsRow = document.getElementById("summaryPointsRow");
     const manualVoucherEl = document.getElementById("manualVoucherInput");
+
     if (maKmEl) maKmEl.value = "";
     if (valGiamEl) valGiamEl.value = "0";
     if (dsuDungEl) dsuDungEl.value = "0";
@@ -50,6 +59,7 @@ function clearFullPosCart() {
     if (posAddCustomerArea) posAddCustomerArea.style.setProperty('display', 'none', 'important');
     const manualVoucherInput = document.getElementById("manualVoucherInput");
     if (manualVoucherInput) manualVoucherInput.value = "";
+
     resetVoucherAndPoints();
     renderPosCart();
 }
@@ -185,6 +195,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '    </button>';
     html += '  </div>';
     html += '</div>';
+
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
@@ -209,6 +220,7 @@ function addCustomizedToCart() {
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
     const ice = iceEl ? iceEl.value : '100% Đá';
     const note = document.getElementById('popup_note').value.trim() || 'Normal';
+
     let toppings = [];
     document.querySelectorAll('.topping-check:checked').forEach(chk => {
         let tpPrice = parseInt(chk.dataset.price) || 0;
@@ -222,6 +234,7 @@ function addCustomizedToCart() {
             giaTp: tpPrice
         });
     });
+
     let duplicateItem = posCart.find(item =>
         item.maSp === maSp &&
         item.maSize === maSize &&
@@ -230,6 +243,7 @@ function addCustomizedToCart() {
         item.ghiChuMon === note &&
         isSameToppingsList(item.toppings, toppings)
     );
+
     if (duplicateItem) {
         duplicateItem.soLuong += 1;
     } else {
@@ -246,6 +260,7 @@ function addCustomizedToCart() {
             soLuong: 1
         });
     }
+
     Swal.close();
     renderPosCart();
 }
@@ -270,10 +285,13 @@ function renderPosCart() {
             '  <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>' +
             '</div>';
         recalculatePOSBill(0);
-        const mobileBadge = document.getElementById("mobileCartCount");
+
+        // Cập nhật số lượng huy hiệu di động
+        const mobileBadge = document.getElementById("posMobileCartCount");
         if (mobileBadge) mobileBadge.innerText = "0";
         return;
     }
+
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingsPrice = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
@@ -306,8 +324,11 @@ function renderPosCart() {
             '</div>';
         container.insertAdjacentHTML('beforeend', cardHtml);
     });
+
     recalculatePOSBill(tongTienHang);
-    const mobileBadge = document.getElementById("mobileCartCount");
+
+    // Đồng bộ số lượng giỏ hàng trên huy hiệu di động
+    const mobileBadge = document.getElementById("posMobileCartCount");
     if (mobileBadge) {
         mobileBadge.innerText = posCart.reduce((sum, item) => sum + item.soLuong, 0);
     }
@@ -341,6 +362,7 @@ function searchCustomerCRM() {
                 else if (data.maHang === 2) rankName = 'BẠC';
                 else if (data.maHang === 3) rankName = 'VÀNG 👑';
                 else if (data.maHang === 4) rankName = 'VIP 💎';
+
                 document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
@@ -354,6 +376,7 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'none', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'block', 'important');
+
                 Swal.fire({
                     title: 'Hội viên chưa đăng ký',
                     text: 'Số điện thoại này chưa liên kết thẻ. Đăng ký nhanh CRM?',
@@ -389,6 +412,7 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="email" class="form-control" id="reg_email" placeholder="example@gmail.com..." required>';
     html += '  </div>';
     html += '</div>';
+
     Swal.fire({
         title: 'ĐĂNG KÝ HỘI VIÊN NHANH',
         html: html,
@@ -440,6 +464,7 @@ function applyManualVoucherCode() {
     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
     if (totalRaw === 0) return;
     const maKh = document.getElementById("submit_maKh").value;
+
     fetch(getContextPath() + '/pos/apply-voucher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -521,6 +546,7 @@ function recalculatePOSBill(tongTienHang) {
             document.getElementById("submit_tienGiamGia").value = "0";
         }
     }
+
     let pointsDiscount = appliedPoints * 1000;
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
@@ -536,13 +562,16 @@ function recalculatePOSBill(tongTienHang) {
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
+
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
+
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
     calculateChangeRefund();
@@ -595,11 +624,14 @@ function showPosQrCodeModal(orderId, payable) {
     document.getElementById("posQrAmount").innerText = formatVND(parseInt(payable));
     document.getElementById("posQrCodeDisplay").innerText = orderId;
     document.getElementById("posQrImage").src = `https://img.vietqr.io/image/TPB-0346406405-compact2.png?amount=${payable}&addInfo=${orderId}`;
+
     let qrModalEl = document.getElementById("posQrModal");
     let qrModalInstance = new bootstrap.Modal(qrModalEl);
     qrModalInstance.show();
+
     let leftTime = 120;
     document.getElementById("posQrCountdownText").innerText = leftTime;
+
     clearInterval(posQrCountdownInterval);
     posQrCountdownInterval = setInterval(() => {
         leftTime--;
@@ -611,6 +643,7 @@ function showPosQrCodeModal(orderId, payable) {
             document.getElementById("posQrLoadingStatus").style.setProperty("display", "none", "important");
         }
     }, 1000);
+
     clearInterval(posQrPollInterval);
     posQrPollInterval = setInterval(() => {
         if (!isPosQrActive) return;
@@ -671,6 +704,7 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
+
     fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -698,8 +732,10 @@ function loadAndShowPrintReceipt(orderId) {
                 let billBeforeTax = rawSum - disc - ptsDisc;
                 if (billBeforeTax < 0) billBeforeTax = 0;
                 let vatPrice = Math.round(billBeforeTax * 0.08);
+
                 document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
+
                 let cashGiven = parseInt(localStorage.getItem('last_cash_given_' + orderId)) || 0;
                 if (cashGiven > 0) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'flex', 'important');
@@ -715,6 +751,7 @@ function loadAndShowPrintReceipt(orderId) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'none', 'important');
                     document.getElementById("billCashRefundRow").style.setProperty('display', 'none', 'important');
                 }
+
                 container.innerHTML = '';
                 data.items.forEach(item => {
                     let html = '<div class="mb-2 border-bottom pb-1 text-start">';
@@ -733,6 +770,7 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.insertAdjacentHTML('beforeend', html);
                 });
+
                 if (typeof bootstrap !== 'undefined') {
                     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                     printModal.show();
@@ -764,6 +802,7 @@ function submitPosProfile() {
     params.append('hoTen', hoTen);
     params.append('soDienThoai', sdt);
     params.append('email', email);
+
     fetch(getContextPath() + '/pos/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -803,6 +842,7 @@ function submitPosPassword() {
     const params = new URLSearchParams();
     params.append('oldPassword', oldPass);
     params.append('newPassword', newPass);
+
     fetch(getContextPath() + '/pos/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -870,6 +910,7 @@ function submitPOSOrderTransaction() {
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
     });
+
     Swal.fire({
         title: 'Chốt giao dịch quầy POS',
         text: 'Xác nhận xuất hóa đơn tài chính và tiến hành giao dịch?',
@@ -884,4 +925,47 @@ function submitPOSOrderTransaction() {
             if (form) form.submit();
         }
     });
+}
+
+// =========================================================================
+// RESPONSIVE DOM INJECTION (AUTO RUN ON LOAD)
+// Tự động tiêm nạp nút nổi và cơ chế vuốt gập Offcanvas cho Mobile / Tablet
+// =========================================================================
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Tạo Backdrop làm tối màn hình và đặt ID cho nó
+    if (!document.getElementById("posCartBackdrop")) {
+        const backdrop = document.createElement("div");
+        backdrop.id = "posCartBackdrop";
+        backdrop.className = "pos-cart-backdrop";
+        backdrop.onclick = toggleMobileCart; // Khi click mây mờ sẽ đóng Offcanvas
+        document.body.appendChild(backdrop);
+    }
+
+    // 2. Tạo nút tròn nổi mở giỏ hàng di động
+    if (!document.getElementById("posMobileCartToggleBtn")) {
+        const toggleBtn = document.createElement("button");
+        toggleBtn.id = "posMobileCartToggleBtn";
+        toggleBtn.type = "button";
+        toggleBtn.className = "pos-mobile-cart-toggle";
+        toggleBtn.innerHTML = '<i class="bi bi-cart-fill text-white"></i><span id="posMobileCartCount" class="badge">0</span>';
+        toggleBtn.onclick = toggleMobileCart;
+        document.body.appendChild(toggleBtn);
+    }
+});
+
+// Hàm kích hoạt mở / gập drawer giỏ hàng trên điện thoại
+function toggleMobileCart() {
+    const sidebar = document.querySelector('.pos-checkout-sidebar');
+    const backdrop = document.getElementById('posCartBackdrop');
+    if (sidebar && backdrop) {
+        sidebar.classList.toggle('show');
+        backdrop.classList.toggle('show');
+
+        // Khóa cuộn trang nền của body khi đang xem giỏ hàng di động
+        if (sidebar.classList.contains('show')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
 }

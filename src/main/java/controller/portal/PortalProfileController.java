@@ -44,7 +44,6 @@ public class PortalProfileController extends HttpServlet {
         KhachHang freshCustomer = khachHangService.getKhachHangById(currentCustomer.getMaKh());
         session.setAttribute("customer", freshCustomer);
         String uri = request.getRequestURI();
-
         if (uri.contains("/portal/order/detail")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -56,7 +55,6 @@ public class PortalProfileController extends HttpServlet {
             }
             return;
         }
-
         if (uri.contains("/portal/order/payment-qr")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -68,7 +66,6 @@ public class PortalProfileController extends HttpServlet {
             }
             return;
         }
-
         if (uri.contains("/portal/order/cancel")) {
             String id = request.getParameter("id");
             DonHang dh = donHangService.getDonHangById(id);
@@ -84,17 +81,13 @@ public class PortalProfileController extends HttpServlet {
             }
             return;
         }
-
         if (uri.endsWith("/profile/orders")) {
             List<DonHang> myOrders = donHangService.getDonHangByKhachHang(freshCustomer.getMaKh());
             request.setAttribute("orders", myOrders);
             request.getRequestDispatcher("/views/portal/theo_doi_don.jsp").forward(request, response);
         } else if (uri.endsWith("/profile/vouchers")) {
-            // Lấy danh sách voucher KHẢ DỤNG của khách hàng
             List<KhuyenMai> myVouchers = khuyenMaiService.getVouchersKhaDungForKhachHang(100000, freshCustomer.getMaKh());
-            // Lấy danh sách voucher LỊCH SỬ (Đã dùng hoặc hết hạn) của khách hàng
             List<KhuyenMai> historyVouchers = khuyenMaiService.getVouchersDaDungVaHetHanForKhachHang(freshCustomer.getMaKh());
-
             request.setAttribute("vouchers", myVouchers);
             request.setAttribute("historyVouchers", historyVouchers);
             request.getRequestDispatcher("/views/portal/kho_voucher.jsp").forward(request, response);
@@ -156,9 +149,10 @@ public class PortalProfileController extends HttpServlet {
         }
         KhachHang kh = khachHangService.getKhachHangById(maKh);
         if (kh != null) {
-            String oldHashed = util.SecurityUtil.hashSHA256(oldPassword);
+            // FIX: Đổi mật khẩu băm muối Email đồng bộ
+            String oldHashed = util.SecurityUtil.hashWithSalt(oldPassword, kh.getEmail());
             if (kh.getMatKhau().equals(oldHashed)) {
-                kh.setMatKhau(util.SecurityUtil.hashSHA256(newPassword));
+                kh.setMatKhau(util.SecurityUtil.hashWithSalt(newPassword, kh.getEmail()));
                 khachHangService.updateCustomerProfile(kh);
                 response.sendRedirect(request.getContextPath() + "/profile?msg=passwordsuccess");
                 return;

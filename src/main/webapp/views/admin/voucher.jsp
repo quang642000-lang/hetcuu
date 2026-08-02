@@ -55,7 +55,6 @@
         <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
     </c:if>
 </c:if>
-
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
@@ -180,7 +179,6 @@
                                 </a>
                             </div>
                         </div>
-
                         <div class="table-responsive">
                             <table class="table table-hover align-middle admin-table" id="voucherTable">
                                 <thead>
@@ -228,9 +226,9 @@
                                                 </td>
                                                 <td class="fw-bold text-dark"><span class="text-success">${item.soLuongDaDung}</span> / ${item.soLuong}</td>
                                                 <td>
-                                                            <span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
-                                                                    ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
-                                                            </span>
+<span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
+        ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
+</span>
                                                 </td>
                                                 <td>
                                                     <c:choose>
@@ -242,21 +240,18 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5">
-                                                                    ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
-                                                            </span>
+<span class="badge bg-light text-dark border px-2.5 py-1.5">
+        ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
+</span>
                                                 </td>
                                                 <td>
-                                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                                    ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
-                                                            </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
+</span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
-                                                        <!-- NÚT SỬA ĐỒNG BỘ ICON -->
                                                         <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-sm btn-action-edit" title="Sửa"><i class="bi bi-pencil-square me-1"></i> Sửa</a>
-
-                                                        <!-- NÚT BẬT TẮT ĐỒNG BỘ ICON -->
                                                         <c:choose>
                                                             <c:when test="${item.trangThai}">
                                                                 <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-sm btn-action-warning" title="Tạm ngưng"><i class="bi bi-toggle2-off me-1"></i> Ẩn</a>
@@ -265,8 +260,6 @@
                                                                 <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-sm btn-action-edit" title="Kích hoạt"><i class="bi bi-toggle2-on me-1"></i> Bật</a>
                                                             </c:otherwise>
                                                         </c:choose>
-
-                                                        <!-- NÚT XÓA ĐỒNG BỘ ICON -->
                                                         <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteVoucher('${item.maKm}')" title="Xóa"><i class="bi bi-trash3-fill me-1"></i> Xóa</button>
                                                     </div>
                                                 </td>
@@ -280,7 +273,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <div class="pagination-container" id="paginationWrapper" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
@@ -293,12 +285,13 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     function toggleVoucherScopeUI() {
-        const loaiVoucher = document.getElementById("loaiVoucher").value;
+        const loaiVoucherEl = document.getElementById("loaiVoucher");
+        if (!loaiVoucherEl) return; // FIX TRÁNH LỖI NULL KHI Ở TRANG LIST VOUCHER
+        const loaiVoucher = loaiVoucherEl.value;
         const hangApDungGroup = document.getElementById("hangApDungGroup");
         const soLuotDungCaNhanGroup = document.getElementById("soLuotDungCaNhanGroup");
         if (loaiVoucher === "2") {
@@ -309,7 +302,6 @@
             if (soLuotDungCaNhanGroup) soLuotDungCaNhanGroup.style.setProperty('display', 'block', 'important');
         }
     }
-
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
             title: 'Hủy/Xóa bỏ Voucher này?',
@@ -325,11 +317,9 @@
             }
         });
     }
-
     let currentPage = 1;
     const pageSize = 10;
     let filteredRows = [];
-
     function filterAndPaginateVouchers() {
         const searchInput = document.getElementById("voucherSearchInput");
         if (!searchInput) return;
@@ -343,7 +333,6 @@
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
         const allRows = document.querySelectorAll("#voucherTableBody .voucher-row");
         allRows.forEach(row => row.style.display = "none");
@@ -355,12 +344,10 @@
         const endIdx = Math.min(startIdx + pageSize, totalRows);
         const pageRows = filteredRows.slice(startIdx, endIdx);
         pageRows.forEach(row => row.style.display = "table-row");
-
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
-
         const start = totalRows > 0 ? startIdx + 1 : 0;
         const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng Voucher';
@@ -370,32 +357,27 @@
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

@@ -7,6 +7,7 @@ import model.entity.ChiTietGioHang;
 import service.IGioHangService;
 import service.impl.GioHangServiceImpl;
 import repository.impl.GioHangRepoImpl;
+import util.WebUtil;
 import config.DBConnect;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,21 +28,21 @@ public class PortalCartController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("customer") == null) {
+        // SỬ DỤNG TẬP TRUNG TIỆN ÍCH WebUtil LƯU SẴN
+        KhachHang currentCustomer = WebUtil.getCurrentCustomer(request);
+        if (currentCustomer == null) {
             request.getSession(true).setAttribute("errorMessage", "Vui lòng đăng nhập tài khoản thành viên để xem giỏ hàng!");
             response.sendRedirect(request.getContextPath() + "/customer/login");
             return;
         }
 
-        // Clean up any leftover Buy Now item when user visits the cart page directly
         session.removeAttribute("buyNowItem");
-
         String uri = request.getRequestURI();
         if (uri.endsWith("/cart/delete")) {
             performDeleteCartItem(request, response);
             return;
         }
-        KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
+
         GioHang gh = gioHangService.getGioHangComplete(currentCustomer.getMaKh());
         int cartCount = (gh != null && gh.getChiTietGioHangList() != null) ? gh.getChiTietGioHangList().size() : 0;
         request.getSession().setAttribute("customerCartCount", cartCount);
@@ -56,7 +57,9 @@ public class PortalCartController extends HttpServlet {
         String requestedWith = request.getHeader("X-Requested-With");
         boolean isAjax = "XMLHttpRequest".equals(requestedWith) || "true".equals(request.getParameter("ajax"));
 
-        if (session == null || session.getAttribute("customer") == null) {
+        // SỬ DỤNG TẬP TRUNG TIỆN ÍCH WebUtil LƯU SẴN
+        KhachHang currentCustomer = WebUtil.getCurrentCustomer(request);
+        if (currentCustomer == null) {
             if (isAjax) {
                 response.getWriter().write("NOT_LOGGED_IN");
             } else {
@@ -76,14 +79,11 @@ public class PortalCartController extends HttpServlet {
             return;
         }
 
-        KhachHang currentCustomer = (KhachHang) session.getAttribute("customer");
         String maKh = currentCustomer.getMaKh();
-
         try {
             String maSp = request.getParameter("maSp");
             int maSize = Integer.parseInt(request.getParameter("maSize"));
             int soLuong = Integer.parseInt(request.getParameter("soLuong"));
-
             String mucDa = request.getParameter("mucDa");
             if (mucDa == null || mucDa.trim().isEmpty()) {
                 mucDa = "100% Đá";
@@ -96,7 +96,6 @@ public class PortalCartController extends HttpServlet {
             if (ghiChuMon == null || ghiChuMon.trim().isEmpty()) {
                 ghiChuMon = "Normal";
             }
-
             String[] arrToppings = request.getParameterValues("toppings[]");
             List<ChiTietToppingGioHang> toppingList = new ArrayList<>();
             if (arrToppings != null) {
@@ -114,13 +113,10 @@ public class PortalCartController extends HttpServlet {
                     toppingList.add(new ChiTietToppingGioHang(0L, maTp, qty));
                 }
             }
-
             String action = request.getParameter("action");
-
-            // CRUCIAL: ULTIMATE "BUY NOW" LOGIC (SESSION-BASED BYPASS PERSISTENT CART)
             if ("buy".equals(action)) {
                 ChiTietGioHang buyNowItem = new ChiTietGioHang();
-                buyNowItem.setMaCtgh(-99L); // Temp ID to identify Buy Now
+                buyNowItem.setMaCtgh(-99L);
                 buyNowItem.setMaSp(maSp);
                 buyNowItem.setMaSize(maSize);
                 buyNowItem.setSoLuong(soLuong);
@@ -129,16 +125,12 @@ public class PortalCartController extends HttpServlet {
                 buyNowItem.setGhiChuMon(ghiChuMon);
                 buyNowItem.setChonMua(true);
 
-                // Get product information
                 service.ISanPhamService spService = service.impl.SanPhamServiceImpl.getInstance();
                 model.entity.SanPham sp = spService.getSanPhamById(maSp);
                 buyNowItem.setSanPham(sp);
-
-                // Set unit price
                 int price = spService.getGiaKichCoSanPham(maSp, maSize);
                 buyNowItem.setGiaBan(price);
 
-                // Set size name
                 List<model.entity.SanPhamKichCo> sizes = spService.getSizesBySanPham(maSp);
                 for (model.entity.SanPhamKichCo sz : sizes) {
                     if (sz.getMaSize() == maSize) {
@@ -147,7 +139,6 @@ public class PortalCartController extends HttpServlet {
                     }
                 }
 
-                // Set topping names and prices
                 service.IToppingService tpService = service.impl.ToppingServiceImpl.getInstance();
                 if (toppingList != null) {
                     for (ChiTietToppingGioHang tp : toppingList) {
@@ -159,10 +150,7 @@ public class PortalCartController extends HttpServlet {
                     }
                 }
                 buyNowItem.setToppingGioHangList(toppingList);
-
-                // Put the Buy Now item in the Session
                 session.setAttribute("buyNowItem", buyNowItem);
-
                 if (isAjax) {
                     response.getWriter().write("SUCCESS|" + session.getAttribute("customerCartCount"));
                 } else {
@@ -171,10 +159,7 @@ public class PortalCartController extends HttpServlet {
                 return;
             }
 
-            // Regular Add-To-Cart flow
-            // Clear any old buyNowItem from session when adding to normal cart
             session.removeAttribute("buyNowItem");
-
             String maCtghStr = request.getParameter("maCtgh");
             if (maCtghStr != null && !maCtghStr.trim().isEmpty()) {
                 long maCtgh = Long.parseLong(maCtghStr.trim());

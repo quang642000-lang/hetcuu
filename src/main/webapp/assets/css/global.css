@@ -1,44 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-    --primary: #10b981;
-    --primary-hover: #059669;
-    --primary-light: #ecfdf5;
-    --dark-slate: #0f172a;
-    --slate-medium: #1e293b;
-    --slate-light: #334155;
-    --bg-main: #f8fafc;
-    --border-color: #e2e8f0;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #0284c7;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
-    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+    /* --- BẢNG MÀU CHỦ ĐẠO PREMIUM TEA & COFFEE (COZY EMERALD & COFFEE) --- */
+    --primary: #059669;            /* Xanh Matcha Đậm đà - Đạt chuẩn tương phản WCAG AA */
+    --primary-hover: #047857;      /* Xanh Matcha đậm hơn khi hover */
+    --primary-light: #f0fdf4;      /* Nền Matcha sữa siêu nhạt làm nổi bật */
+    --primary-glow: rgba(5, 150, 105, 0.15);
+
+    --secondary: #d97706;          /* Màu Vàng Hổ Phách / Trà Sữa Amber ngọt ngào */
+    --secondary-hover: #b45309;    /* Vàng trà sữa đậm khi hover */
+    --secondary-light: #fef3c7;    /* Nền kem trà sữa nhạt */
+
+    --dark-slate: #0f172a;         /* Xám đá phiến siêu tối - Cho Header/Footer và chữ chính */
+    --slate-medium: #1e293b;       /* Xám trung tính cho bảng biểu */
+    --slate-light: #334155;        /* Cho text phụ cần đọc rõ */
+
+    --bg-main: #fcfbfa;            /* Nền Warm Cream nhã nhặn, ấm áp như không gian quán nước */
+    --bg-card: #ffffff;            /* Nền thẻ trắng tinh khôi */
+    --border-color: #e2e8f0;       /* Đường viền mảnh tinh tế */
+
+    /* --- CHỮ CHUẨN TƯƠNG PHẢN CAO CHỐNG TRÙNG MÀU NỀN --- */
+    --text-main: #0f172a;          /* Đen tuyền đá phiến - Không lo loãng màu */
+    --text-muted: #475569;         /* Xám đậm - Tuyệt đối không dùng xám nhạt khó đọc */
+    --text-white: #ffffff;         /* Trắng tinh */
+
+    /* --- MÀU TRẠNG THÁI TRỰC QUAN --- */
+    --success: #059669;            /* Thành công / Đã thanh toán */
+    --warning: #d97706;            /* Chờ duyệt / Pha chế */
+    --danger: #dc2626;             /* Hủy bỏ / Đỏ cảnh báo */
+    --info: #0284c7;               /* Đã xác nhận / Đang giao */
+
+    /* --- THÔNG SỐ ĐỒ HỌA CHUYÊN NGHIỆP --- */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-pill: 50px;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.03);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
 }
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
+
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif;
     color: var(--text-main);
     background-color: var(--bg-main);
-    line-height: 1.5;
+    line-height: 1.6;
     min-height: 100vh;
 }
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #f8fafc;
 }
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
@@ -47,21 +70,23 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
-h1 { font-size: 2rem; font-weight: 700; color: var(--text-main); }
-h2 { font-size: 1.75rem; font-weight: 700; color: var(--text-main); }
-h3 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
-h4 { font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
-h5 { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
-h6 { font-size: 0.95rem; font-weight: 600; color: var(--text-main); }
-p { font-size: 0.875rem; color: var(--text-muted); }
+
+/* Typography contrast adjustments */
+h1 { font-size: 2.25rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em; }
+h2 { font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+h3 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+h4 { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
+p { font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; }
+
+/* Status Badges with rich contrast and colored text */
 .badge-status {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    border-radius: 50px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
     font-size: 12px;
-    font-weight: 600;
-    gap: 4px;
+    font-weight: 700;
+    gap: 6px;
     border: 1px solid transparent;
 }
 .status-active {
@@ -74,55 +99,71 @@ p { font-size: 0.875rem; color: var(--text-muted); }
     color: #991b1b !important;
     border-color: #fca5a5 !important;
 }
+
+/* Form inputs with focus glow and dark readable text */
 .form-control-teapos {
     width: 100%;
-    padding: 10px 14px;
+    padding: 11px 16px;
     font-size: 14px;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
     background-color: #ffffff;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-main);
+    font-weight: 500;
 }
 .form-control-teapos:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+    background-color: #ffffff;
+}
+.form-control-teapos::placeholder {
+    color: #94a3b8;
 }
 .form-control-teapos:disabled {
     background-color: #f1f5f9;
     color: var(--text-muted);
     cursor: not-allowed;
+    border-color: #cbd5e1;
 }
+
+/* Beautiful Interactive Buttons */
 .btn-primary-teapos {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
+    color: var(--text-white) !important;
+    font-weight: 700 !important;
     font-size: 14px !important;
     border-radius: var(--radius-sm) !important;
-    padding: 10px 20px !important;
+    padding: 12px 24px !important;
     border: none !important;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2) !important;
-    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.2px;
 }
 .btn-primary-teapos:hover {
-    background: linear-gradient(135deg, var(--primary-hover) 0%, #047857 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3) !important;
+    background: linear-gradient(135deg, var(--primary-hover) 0%, #046c4e 100%) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35) !important;
 }
+.btn-primary-teapos:active {
+    transform: translateY(0.5px) !important;
+}
+
 .btn-secondary-teapos {
     background-color: #ffffff !important;
     color: var(--text-main) !important;
-    border: 1px solid var(--border-color) !important;
-    font-weight: 600 !important;
+    border: 1.5px solid var(--border-color) !important;
+    font-weight: 700 !important;
     font-size: 14px !important;
     border-radius: var(--radius-sm) !important;
-    padding: 10px 20px !important;
+    padding: 11px 24px !important;
     box-shadow: var(--shadow-sm) !important;
     transition: all 0.2s ease !important;
 }
 .btn-secondary-teapos:hover {
-    background-color: #f1f5f9 !important;
+    background-color: #f8fafc !important;
     border-color: #cbd5e1 !important;
+    color: var(--primary) !important;
     transform: translateY(-1px) !important;
 }

@@ -1,11 +1,12 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - CLIENT WEB PORTAL SCRIPT
+ * TEA POS SYSTEM - CLIENT WEB PORTAL RESPONSIVE SCRIPT
+ * Handles AJAX shopping carts, dynamic offcanvas menus and filters for mobile layout.
  * =========================================================================
  */
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Lắng nghe thay đổi số lượng giỏ hàng ngoài Portal
+    // 1. Lắng nghe thay đổi số lượng giỏ hàng ngoài Portal
     document.querySelectorAll('.qty-input-portal').forEach(input => {
         input.addEventListener('change', function() {
             const maCtgh = this.dataset.mactgh;
@@ -13,6 +14,27 @@ document.addEventListener("DOMContentLoaded", function() {
             updatePortalCartQuantity(maCtgh, soLuong);
         });
     });
+
+    // 2. Tự động tiêm nạp Backdrop mờ cho bộ lọc di động
+    if (!document.getElementById("portalFilterBackdrop")) {
+        const backdrop = document.createElement("div");
+        backdrop.id = "portalFilterBackdrop";
+        backdrop.className = "portal-filter-backdrop";
+        backdrop.onclick = togglePortalFilter; // Click ra ngoài sẽ gập lọc
+        document.body.appendChild(backdrop);
+    }
+
+    // 3. Tự động tiêm nạp nút nổi "Danh Mục & Bộ Lọc" ở chân màn hình (chỉ hiển thị trên Mobile)
+    const sidebarFilter = document.querySelector('.col-12.col-lg-3.text-start');
+    if (sidebarFilter && !document.getElementById("portalMobileFilterTriggerBtn")) {
+        const filterBtn = document.createElement("button");
+        filterBtn.id = "portalMobileFilterTriggerBtn";
+        filterBtn.type = "button";
+        filterBtn.className = "portal-mobile-filter-trigger";
+        filterBtn.innerHTML = '<i class="bi bi-funnel-fill text-white"></i> <span>DANH MỤC & LỌC</span>';
+        filterBtn.onclick = togglePortalFilter;
+        document.body.appendChild(filterBtn);
+    }
 });
 
 // Hàm lấy Context Path tự động tránh cứng đường dẫn URL
@@ -139,4 +161,21 @@ function quickAddToCart(maSp, tenSp) {
             Swal.close();
             console.error('Lỗi:', err);
         });
+}
+
+// Hàm kích hoạt mở / gập bộ lọc di động trên Portal
+function togglePortalFilter() {
+    const sidebar = document.querySelector('.col-12.col-lg-3.text-start');
+    const backdrop = document.getElementById('portalFilterBackdrop');
+    if (sidebar && backdrop) {
+        sidebar.classList.toggle('show');
+        backdrop.classList.toggle('show');
+
+        // Khóa cuộn trang nền của body khi đang bật bộ lọc di động
+        if (sidebar.classList.contains('show')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
 }
