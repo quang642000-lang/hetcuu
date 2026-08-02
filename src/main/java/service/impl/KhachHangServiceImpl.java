@@ -68,12 +68,10 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setEmail(email);
         kh.setMatKhau(SecurityUtil.hashSHA256(password));
         kh.setDiemTichLuy(0);
-        kh.setMaHang(1); // Mặc định ĐỒNG
-        kh.setTrangThai(false); // Chưa kích hoạt trên web
-
+        kh.setMaHang(1);
+        kh.setTrangThai(false);
         boolean success = khachHangRepository.add(kh);
         if (success) {
-            // SỬA LỖI LOGIC: Kiểm toán kết quả gửi OTP để trả về trạng thái chính xác
             boolean otpSent = sendActivationOTP(email);
             if (!otpSent) {
                 System.err.println("[TEA POS WARNING] Tạo được tài khoản nhưng không gửi được mail kích hoạt OTP cho email: " + email);
@@ -92,11 +90,10 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setTenKh(tenKh);
         kh.setSoDienThoai(sdt);
         kh.setEmail(email);
-        kh.setMatKhau(null); // mật khẩu trống, chờ kích hoạt trên web
+        kh.setMatKhau(null);
         kh.setDiemTichLuy(0);
-        kh.setMaHang(1); // Đồng
-        kh.setTrangThai(true); // Trạng thái = true để có thể sử dụng ngay tại POS!
-
+        kh.setMaHang(1);
+        kh.setTrangThai(true);
         boolean success = khachHangRepository.add(kh);
         if (success) {
             return khachHangRepository.getBySdt(sdt);
@@ -122,17 +119,14 @@ public class KhachHangServiceImpl implements IKhachHangService {
     @Override
     public boolean sendActivationOTP(String email) {
         String otpCode = String.format("%06d", new Random().nextInt(999999));
-        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
+        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000);
         activationOtpCache.put(email, new OtpInfo(otpCode, expireTime));
-
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KÍCH HOẠT TÀI KHOẢN KHÁCH HÀNG MỚI]");
         System.out.println("Email khách nhận: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
         System.out.println("======================================================================");
-
         try {
-            // SỬA LỖI LOGIC: Trả về giá trị của EmailSenderUtil thay vì luôn trả về true bừa bãi
             return EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
             System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
@@ -166,17 +160,14 @@ public class KhachHangServiceImpl implements IKhachHangService {
             return false;
         }
         String otpCode = String.format("%06d", new Random().nextInt(999999));
-        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 phút
+        long expireTime = System.currentTimeMillis() + (5 * 60 * 1000);
         forgotPasswordOtpCache.put(email, new OtpInfo(otpCode, expireTime));
-
         System.out.println("======================================================================");
         System.out.println("[TEA POS - OTP KHÔI PHỤC MẬT KHẨU (FORGOT PASSWORD)]");
         System.out.println("Email tài khoản: " + email);
         System.out.println("Mã OTP để nhập:  " + otpCode);
         System.out.println("======================================================================");
-
         try {
-            // SỬA LỖI LOGIC: Trả về kết quả thực gửi thư từ SMTP Server
             return EmailSenderUtil.sendOTPEmail(email, otpCode);
         } catch (Exception e) {
             System.err.println("[TEA POS WARNING] Gửi mail OTP lỗi: " + e.getMessage());
@@ -204,7 +195,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
                 kh.setMatKhau(SecurityUtil.hashSHA256(newPassword));
-                kh.setTrangThai(true); // Tự động kích hoạt tài khoản luôn sau khi tạo mật khẩu
+                kh.setTrangThai(true);
                 return khachHangRepository.update(kh);
             }
         }

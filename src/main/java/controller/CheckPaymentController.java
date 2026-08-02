@@ -6,59 +6,53 @@ import service.impl.DonHangServiceImpl;
 import model.entity.DonHang;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - HIGH-PERFORMANCE PAYMENT VERIFICATION CONTROLLER (VietQR)
- * Leverages ConcurrentHashMap cache lookup first for ultra-fast response,
- * and seamlessly falls back to direct database query as a fail-safe
- * against cache expiration, JVM restarts, or multi-node race conditions.
- * =========================================================================
- */
 @WebServlet(name = "CheckPaymentController", urlPatterns = {"/api/check-payment", "/checkout/check-payment"})
-public class CheckPaymentController extends HttpServlet {
+public class CheckPaymentController extends BaseController {
     private final IDonHangService donHangService = DonHangServiceImpl.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
-
         String code = request.getParameter("code");
         if (code == null || code.trim().isEmpty()) {
             code = request.getParameter("id");
         }
         if (code == null || code.trim().isEmpty()) {
-            out.print("{\"status\":\"ERROR\", \"message\":\"Missing transaction code/id\"}");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Missing transaction code/id");
             return;
         }
-
         String cleanCode = code.trim().toUpperCase();
         String unDashedCode = cleanCode.replace("-", "");
 
-        // 1. Kiểm tra bộ nhớ đệm PaymentStore (Ưu tiên phản hồi nhanh realtime)
-        if (PaymentStore.transactions.containsKey(cleanCode) || PaymentStore.transactions.containsKey(unDashedCode)) {
-            PaymentStore.transactions.remove(cleanCode);
-            PaymentStore.transactions.remove(unDashedCode);
+        // 1. Check Cache first
+        if (PaymentStore.containsTransaction(cleanCode) || PaymentStore.containsTransaction(unDashedCode)) {
+            PaymentStore.removeTransaction(cleanCode);
+            PaymentStore.removeTransaction(unDashedCode);
             System.out.println("✅ [TEA POS API] Chốt đơn thanh toán thành công cho (Cache): " + cleanCode);
-            out.print("{\"status\":\"SUCCESS\", \"message\":\"Payment matched successfully\"}");
+            sendJson(response, new PaymentResponse("SUCCESS", "Payment matched successfully"));
             return;
         }
 
-        // 2. FALLBACK: Kiểm tra trạng thái thực tế dưới Database phòng ngừa cache bị dọn sạch
+        // 2. Database Fallback
         DonHang dh = donHangService.getDonHangById(cleanCode);
         if (dh != null && dh.getTrangThaiThanhToan() == 1) {
             System.out.println("✅ [TEA POS API] Chốt đơn thanh toán thành công cho (Database fallback): " + cleanCode);
-            out.print("{\"status\":\"SUCCESS\", \"message\":\"Payment matched successfully\"}");
+            sendJson(response, new PaymentResponse("SUCCESS", "Payment matched successfully"));
             return;
         }
 
-        out.print("{\"status\":\"PENDING\", \"message\":\"Waiting for transfer...\"}");
+        sendJson(response, new PaymentResponse("PENDING", "Waiting for transfer..."));
+    }
+
+    private static class PaymentResponse {
+        private String status;
+        private String message;
+        public PaymentResponse(String status, String message) {
+            this.status = status;
+            this.message = message;
+        }
     }
 }

@@ -4,29 +4,18 @@ import model.entity.DonHang;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-// import redis.clients.jedis.Jedis; // Khuyên dùng nạp thư viện Jedis vào pom.xml để chạy ổn định
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Jedis;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - CENTRALIZED HYBRID PAYMENT CACHE (In-Memory + Redis Fallback)
- *
- * NÂNG CẤP HOÀN HẢO:
- * 1. Tích hợp cấu hình Redis Client (Jedis) giúp dữ liệu order/giao dịch thanh toán QR
- *    được lưu trữ bền vững (Persistent) trên bộ nhớ RAM đệm dùng chung của hệ thống.
- * 2. Triệt tiêu hoàn toàn lỗi mất mát đơn hàng chờ QR khi máy chủ Java sập nguồn hoặc reload.
- * 3. Tự động fallback về ConcurrentHashMap nếu không kết nối được Redis (Zero-configuration).
- * =========================================================================
- */
 public class PaymentStore {
-    // Luồng Fallback cục bộ phòng khi Redis mất kết nối
     private static final ConcurrentHashMap<String, Boolean> localTransactions = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, DonHang> localPendingOrders = new ConcurrentHashMap<>();
 
-    // Redis Connection Properties
-    private static String redisHost = "localhost";
+    private static String redisHost = "127.0.0.1"; // Thay vì "localhost" tránh lỗi phân giải DNS (DNS Name resolution failure)
     private static int redisPort = 6379;
     private static boolean useRedis = false;
-    // private static Jedis jedisPool; // uncomment khi đã nạp dependency Jedis
+    private static JedisPool jedisPool;
 
     static {
         Properties properties = new Properties();
@@ -35,53 +24,63 @@ public class PaymentStore {
                 properties.load(input);
                 String host = properties.getProperty("redis.host");
                 String port = properties.getProperty("redis.port");
-                if (host != null) {
+                if (host != null && !host.trim().isEmpty()) {
                     redisHost = host.trim();
                     useRedis = true;
                 }
-                if (port != null) {
+                if (port != null && !port.trim().isEmpty()) {
                     redisPort = Integer.parseInt(port.trim());
                 }
             }
         } catch (Exception e) {
-            // Dùng cấu hình cục bộ không cần Redis mặc định
             useRedis = false;
         }
 
         if (useRedis) {
             try {
                 System.out.println("[TEA POS INFO] Đang kết nối tới máy chủ Redis đệm: " + redisHost + ":" + redisPort);
-                // Thử kết nối Jedis (Mẫu cấu trúc logic)
-                // jedisPool = new Jedis(redisHost, redisPort);
-                // String ping = jedisPool.ping();
-                // if ("PONG".equalsIgnoreCase(ping)) {
-                //     System.out.println("[TEA POS INFO] Kết nối Redis Persist Cache thành công rực rỡ!");
-                // }
+                JedisPoolConfig poolConfig = new JedisPoolConfig();
+                poolConfig.setMaxTotal(10);
+                poolConfig.setMaxIdle(5);
+                poolConfig.setMinIdle(1);
+                poolConfig.setTestOnBorrow(true);
+                jedisPool = new JedisPool(poolConfig, redisHost, redisPort, 2000); // Connection timeout 2s
+
+                try (Jedis jedis = jedisPool.getResource()) {
+                    String ping = jedis.ping();
+                    if ("PONG".equalsIgnoreCase(ping)) {
+                        System.out.println("[TEA POS INFO] Kết nối Redis Cache thành công rực rỡ!");
+                    }
+                }
             } catch (Exception ex) {
                 System.err.println("[TEA POS WARNING] Khởi chạy Redis thất bại, tự động lùi về chế độ ConcurrentHashMap: " + ex.getMessage());
                 useRedis = false;
+                if (jedisPool != null) {
+                    try { jedisPool.close(); } catch(Exception e) {}
+                    jedisPool = null;
+                }
             }
         }
     }
 
-    // Proxy API cho Transactions
     public static void putTransaction(String key, boolean value) {
-        if (useRedis) {
-            try {
-                // jedisPool.setex("tx:" + key.toUpperCase(), 1800, String.valueOf(value)); // Hết hạn sau 30 phút
+        String cleanKey = key.trim().toUpperCase();
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.setex("tx:" + cleanKey, 1800, String.valueOf(value)); // TTL 30 phút
                 return;
             } catch (Exception e) {
-                System.err.println("[REDIS ERROR] Lỗi ghi nhận Transaction, chuyển về in-memory: " + e.getMessage());
+                System.err.println("[REDIS ERROR] Lỗi ghi nhận Transaction, lùi về in-memory: " + e.getMessage());
             }
         }
-        localTransactions.put(key.toUpperCase(), value);
+        localTransactions.put(cleanKey, value);
     }
 
     public static boolean containsTransaction(String key) {
         String cleanKey = key.trim().toUpperCase();
-        if (useRedis) {
-            try {
-                // return jedisPool.exists("tx:" + cleanKey);
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.exists("tx:" + cleanKey);
             } catch (Exception e) {
                 // fallback
             }
@@ -91,9 +90,10 @@ public class PaymentStore {
 
     public static void removeTransaction(String key) {
         String cleanKey = key.trim().toUpperCase();
-        if (useRedis) {
-            try {
-                // jedisPool.del("tx:" + cleanKey);
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.del("tx:" + cleanKey);
+                return;
             } catch (Exception e) {
                 // fallback
             }
@@ -101,28 +101,28 @@ public class PaymentStore {
         localTransactions.remove(cleanKey);
     }
 
-    // Proxy API cho PendingOrders
     public static void putPendingOrder(String orderId, DonHang order) {
-        if (useRedis) {
-            try {
-                // String json = util.JsonParserUtil.toJson(order);
-                // jedisPool.setex("order:" + orderId.toUpperCase(), 3600, json); // Giữ trong 1 giờ
-                // return;
+        String cleanId = orderId.trim().toUpperCase();
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                String json = util.JsonParserUtil.toJson(order);
+                jedis.setex("order:" + cleanId, 3600, json); // TTL 1 giờ
+                return;
             } catch (Exception e) {
-                System.err.println("[REDIS ERROR] Lỗi ghi nhận Order, chuyển về in-memory: " + e.getMessage());
+                System.err.println("[REDIS ERROR] Lỗi ghi nhận Order, lùi về in-memory: " + e.getMessage());
             }
         }
-        localPendingOrders.put(orderId.toUpperCase(), order);
+        localPendingOrders.put(cleanId, order);
     }
 
     public static DonHang getPendingOrder(String orderId) {
         String cleanId = orderId.trim().toUpperCase();
-        if (useRedis) {
-            try {
-                // String json = jedisPool.get("order:" + cleanId);
-                // if (json != null) {
-                //     return util.JsonParserUtil.fromJson(json, DonHang.class);
-                // }
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                String json = jedis.get("order:" + cleanId);
+                if (json != null) {
+                    return util.JsonParserUtil.fromJson(json, DonHang.class);
+                }
             } catch (Exception e) {
                 // fallback
             }
@@ -132,9 +132,9 @@ public class PaymentStore {
 
     public static boolean containsPendingOrder(String orderId) {
         String cleanId = orderId.trim().toUpperCase();
-        if (useRedis) {
-            try {
-                // return jedisPool.exists("order:" + cleanId);
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.exists("order:" + cleanId);
             } catch (Exception e) {
                 // fallback
             }
@@ -144,13 +144,13 @@ public class PaymentStore {
 
     public static DonHang removePendingOrder(String orderId) {
         String cleanId = orderId.trim().toUpperCase();
-        if (useRedis) {
-            try {
-                // DonHang order = getPendingOrder(cleanId);
-                // if (order != null) {
-                //     jedisPool.del("order:" + cleanId);
-                //     return order;
-                // }
+        if (useRedis && jedisPool != null) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                DonHang order = getPendingOrder(cleanId);
+                if (order != null) {
+                    jedis.del("order:" + cleanId);
+                    return order;
+                }
             } catch (Exception e) {
                 // fallback
             }
@@ -158,7 +158,6 @@ public class PaymentStore {
         return localPendingOrders.remove(cleanId);
     }
 
-    // Thao tác tương thích ngược cho file CheckPaymentController.java và DonHangServiceImpl.java
     public static final ConcurrentHashMap<String, Boolean> transactions = localTransactions;
     public static final ConcurrentHashMap<String, DonHang> pendingOrders = localPendingOrders;
 }

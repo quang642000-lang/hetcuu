@@ -1,16 +1,20 @@
 package repository.impl;
 
-import config.DBConnect;
 import model.entity.PhuongThucThanhToan;
 import repository.IPhuongThucThanhToanRepository;
-
-import java.sql.*;
-import java.util.ArrayList;
+import repository.RowMapper;
+import util.JdbcHelper;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PhuongThucThanhToanRepoImpl implements IPhuongThucThanhToanRepository {
-
     private static PhuongThucThanhToanRepoImpl instance;
+    private final RowMapper<PhuongThucThanhToan> rowMapper = rs -> new PhuongThucThanhToan(
+            rs.getInt("ma_pt"),
+            rs.getString("ten_pt"),
+            rs.getBoolean("trang_thai")
+    );
 
     private PhuongThucThanhToanRepoImpl() {}
 
@@ -23,106 +27,37 @@ public class PhuongThucThanhToanRepoImpl implements IPhuongThucThanhToanReposito
 
     @Override
     public List<PhuongThucThanhToan> getAll() {
-        List<PhuongThucThanhToan> list = new ArrayList<>();
-        String sql = "SELECT ma_pt, ten_pt, trang_thai FROM PHUONG_THUC_THANH_TOAN ORDER BY ma_pt ASC";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                list.add(new PhuongThucThanhToan(
-                        rs.getInt("ma_pt"),
-                        rs.getString("ten_pt"),
-                        rs.getBoolean("trang_thai")
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+        String sql = "SELECT * FROM PHUONG_THUC_THANH_TOAN ORDER BY ma_pt ASC";
+        return JdbcHelper.query(sql, rowMapper);
     }
 
     @Override
     public PhuongThucThanhToan getById(Integer id) {
-        String sql = "SELECT ma_pt, ten_pt, trang_thai FROM PHUONG_THUC_THANH_TOAN WHERE ma_pt = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new PhuongThucThanhToan(
-                            rs.getInt("ma_pt"),
-                            rs.getString("ten_pt"),
-                            rs.getBoolean("trang_thai")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        String sql = "SELECT * FROM PHUONG_THUC_THANH_TOAN WHERE ma_pt = ?";
+        return JdbcHelper.queryForObject(sql, rowMapper, id);
     }
 
     @Override
     public boolean add(PhuongThucThanhToan entity) {
         String sql = "INSERT INTO PHUONG_THUC_THANH_TOAN (ten_pt, trang_thai) VALUES (?, ?)";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, entity.getTenPt());
-            ps.setBoolean(2, entity.isTrangThai());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return JdbcHelper.update(sql, entity.getTenPt(), entity.isTrangThai()) > 0;
     }
 
     @Override
     public boolean update(PhuongThucThanhToan entity) {
         String sql = "UPDATE PHUONG_THUC_THANH_TOAN SET ten_pt = ?, trang_thai = ? WHERE ma_pt = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, entity.getTenPt());
-            ps.setBoolean(2, entity.isTrangThai());
-            ps.setInt(3, entity.getMaPt());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return JdbcHelper.update(sql, entity.getTenPt(), entity.isTrangThai(), entity.getMaPt()) > 0;
     }
 
     @Override
     public boolean delete(Integer id) {
         String sql = "UPDATE PHUONG_THUC_THANH_TOAN SET trang_thai = 0 WHERE ma_pt = ?";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return JdbcHelper.update(sql, id) > 0;
     }
 
     @Override
     public List<PhuongThucThanhToan> getByTrangThai(boolean status) {
-        List<PhuongThucThanhToan> list = new ArrayList<>();
-        String sql = "SELECT ma_pt, ten_pt, trang_thai FROM PHUONG_THUC_THANH_TOAN WHERE trang_thai = ? ORDER BY ma_pt ASC";
-        try (Connection conn = DBConnect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setBoolean(1, status);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new PhuongThucThanhToan(
-                            rs.getInt("ma_pt"),
-                            rs.getString("ten_pt"),
-                            rs.getBoolean("trang_thai")
-                    ));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+        String sql = "SELECT * FROM PHUONG_THUC_THANH_TOAN WHERE trang_thai = ? ORDER BY ma_pt ASC";
+        return JdbcHelper.query(sql, rowMapper, status);
     }
 }

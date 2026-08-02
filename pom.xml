@@ -17,13 +17,18 @@
   </properties>
 
   <dependencies>
-    <!-- 1. CÁC THƯ VIỆN ĐƯỢC TOMCAT CUNG CẤP SẴN -->
+    <!-- ========================================================================= -->
+    <!-- 1. CÁC THƯ VIỆN ĐƯỢC TOMCAT CUNG CẤP SẴN (PROVIDED SCOPE)                 -->
+    <!-- ========================================================================= -->
+    <!-- Servlet API chuẩn Jakarta EE 10 cho Tomcat 10/11 -->
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- JSP API chuẩn Jakarta EE 10 -->
     <dependency>
       <groupId>jakarta.servlet.jsp</groupId>
       <artifactId>jakarta.servlet.jsp-api</artifactId>
@@ -31,8 +36,10 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- 2. CÁC THƯ VIỆN ĐÓNG GÓI CHẠY RUNTIME (BẮT BUỘC KHÔNG ĐỂ SCOPE PROVIDED) -->
-    <!-- JSTL API & Implementation chuẩn Jakarta EE 10 -->
+    <!-- ========================================================================= -->
+    <!-- 2. CÁC THƯ VIỆN ĐÓNG GÓI CHẠY RUNTIME (BẮT BUỘC KHÔNG ĐỂ SCOPE PROVIDED)  -->
+    <!-- ========================================================================= -->
+    <!-- JSTL API & Implementation chuẩn Jakarta EE 10 để render EL JSTL trên JSP -->
     <dependency>
       <groupId>jakarta.servlet.jsp.jstl</groupId>
       <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
@@ -44,35 +51,44 @@
       <version>3.0.1</version>
     </dependency>
 
-    <!-- Microsoft SQL Server JDBC Driver -->
+    <!-- Trình điều khiển kết nối Microsoft SQL Server JDBC Driver -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
       <version>12.4.2.jre11</version>
     </dependency>
 
-    <!-- HikariCP (Connection Pool) -->
+    <!-- HikariCP: Bộ khung quản lý Connection Pool hiệu năng cao -->
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <version>5.0.0</version>
     </dependency>
 
-    <!-- Google Gson (Xử lý Chuỗi JSON trong Audit Log) -->
+    <!-- Google Gson: Xử lý chuỗi JSON lưu lịch sử Audit Log trong Nhật ký hoạt động -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.10.1</version>
     </dependency>
 
-    <!-- Eclipse Angus Mail (JavaMail nâng cấp chạy trên Jakarta EE 10) -->
+    <!-- Eclipse Angus Mail: JavaMail nâng cấp chạy trên nền tảng Jakarta EE 10 để gửi OTP -->
     <dependency>
       <groupId>org.eclipse.angus</groupId>
       <artifactId>jakarta.mail</artifactId>
       <version>2.0.3</version>
     </dependency>
 
-    <!-- 3. THƯ VIỆN PHỤC VỤ TESTING -->
+    <!-- Jedis: Thư viện Client kết nối bộ nhớ đệm phân tán Redis cho PaymentStore mới -->
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>5.1.0</version>
+    </dependency>
+
+    <!-- ========================================================================= -->
+    <!-- 3. THƯ VIỆN PHỤC VỤ TESTING (SCOPE TEST)                                  -->
+    <!-- ========================================================================= -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -84,6 +100,7 @@
   <build>
     <finalName>teapos</finalName>
     <plugins>
+      <!-- Plugin biên dịch mã nguồn Java -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -94,6 +111,8 @@
           <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
+
+      <!-- Plugin đóng gói file lưu trữ web (.WAR) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
