@@ -1,46 +1,45 @@
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - GLOBAL PREMIUM STYLE SHEET
+ * High contrast, modern typography, cozy Matcha & Amber palette, WCAG AA compliant.
+ * =========================================================================
+ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* --- BẢNG MÀU CHỦ ĐẠO PREMIUM TEA & COFFEE (COZY EMERALD & COFFEE) --- */
-    --primary: #059669;            /* Xanh Matcha Đậm đà - Đạt chuẩn tương phản WCAG AA */
-    --primary-hover: #047857;      /* Xanh Matcha đậm hơn khi hover */
-    --primary-light: #f0fdf4;      /* Nền Matcha sữa siêu nhạt làm nổi bật */
+    /* Color Palette */
+    --primary: #059669;            /* Cozy Matcha Dark Green */
+    --primary-hover: #047857;
+    --primary-light: #f0fdf4;      /* Matcha milk background */
     --primary-glow: rgba(5, 150, 105, 0.15);
+    --secondary: #d97706;          /* Amber Sweet Tea */
+    --secondary-hover: #b45309;
+    --secondary-light: #fef3c7;
+    --dark-slate: #0f172a;         /* Charcoal black for readable text */
+    --text-main: #0f172a;          /* Pure dark charcoal */
+    --text-muted: #334155;         /* Dark gray (Slate-700) for subtext - high contrast */
+    --text-white: #ffffff;
+    --bg-main: #fcfbfa;            /* Warm Cream milk-tea background */
+    --bg-card: #ffffff;
+    --border-color: #cbd5e1;       /* Gray-300 for visible borders */
 
-    --secondary: #d97706;          /* Màu Vàng Hổ Phách / Trà Sữa Amber ngọt ngào */
-    --secondary-hover: #b45309;    /* Vàng trà sữa đậm khi hover */
-    --secondary-light: #fef3c7;    /* Nền kem trà sữa nhạt */
+    /* Semantic Status */
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0284c7;
 
-    --dark-slate: #0f172a;         /* Xám đá phiến siêu tối - Cho Header/Footer và chữ chính */
-    --slate-medium: #1e293b;       /* Xám trung tính cho bảng biểu */
-    --slate-light: #334155;        /* Cho text phụ cần đọc rõ */
-
-    --bg-main: #fcfbfa;            /* Nền Warm Cream nhã nhặn, ấm áp như không gian quán nước */
-    --bg-card: #ffffff;            /* Nền thẻ trắng tinh khôi */
-    --border-color: #e2e8f0;       /* Đường viền mảnh tinh tế */
-
-    /* --- CHỮ CHUẨN TƯƠNG PHẢN CAO CHỐNG TRÙNG MÀU NỀN --- */
-    --text-main: #0f172a;          /* Đen tuyền đá phiến - Không lo loãng màu */
-    --text-muted: #475569;         /* Xám đậm - Tuyệt đối không dùng xám nhạt khó đọc */
-    --text-white: #ffffff;         /* Trắng tinh */
-
-    /* --- MÀU TRẠNG THÁI TRỰC QUAN --- */
-    --success: #059669;            /* Thành công / Đã thanh toán */
-    --warning: #d97706;            /* Chờ duyệt / Pha chế */
-    --danger: #dc2626;             /* Hủy bỏ / Đỏ cảnh báo */
-    --info: #0284c7;               /* Đã xác nhận / Đang giao */
-
-    /* --- THÔNG SỐ ĐỒ HỌA CHUYÊN NGHIỆP --- */
+    /* Theme Specs */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 18px;
     --radius-pill: 50px;
-
-    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.03);
-    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
 }
 
+/* Base resets & configurations */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -53,9 +52,10 @@ body {
     background-color: var(--bg-main);
     line-height: 1.6;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -71,36 +71,17 @@ body {
     background: #94a3b8;
 }
 
-/* Typography contrast adjustments */
-h1 { font-size: 2.25rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.025em; }
-h2 { font-size: 1.85rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
-h3 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
-h4 { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
-p { font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; }
-
-/* Status Badges with rich contrast and colored text */
-.badge-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 700;
-    gap: 6px;
-    border: 1px solid transparent;
-}
-.status-active {
-    background-color: #d1fae5 !important;
-    color: #065f46 !important;
-    border-color: #a7f3d0 !important;
-}
-.status-inactive {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border-color: #fca5a5 !important;
+/* Typography elements with high contrast */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main) !important;
+    font-weight: 800 !important;
 }
 
-/* Form inputs with focus glow and dark readable text */
+p {
+    color: var(--text-muted) !important;
+}
+
+/* Button & Form overrides with high contrast */
 .form-control-teapos {
     width: 100%;
     padding: 11px 16px;
@@ -108,27 +89,19 @@ p { font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; }
     border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
     background-color: #ffffff;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-main);
+    transition: all 0.2s ease;
+    color: var(--text-main) !important;
     font-weight: 500;
 }
 .form-control-teapos:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-glow);
-    background-color: #ffffff;
 }
 .form-control-teapos::placeholder {
-    color: #94a3b8;
-}
-.form-control-teapos:disabled {
-    background-color: #f1f5f9;
-    color: var(--text-muted);
-    cursor: not-allowed;
-    border-color: #cbd5e1;
+    color: #64748b;
 }
 
-/* Beautiful Interactive Buttons */
 .btn-primary-teapos {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
     color: var(--text-white) !important;
@@ -139,7 +112,6 @@ p { font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; }
     border: none !important;
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25) !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    letter-spacing: 0.2px;
 }
 .btn-primary-teapos:hover {
     background: linear-gradient(135deg, var(--primary-hover) 0%, #046c4e 100%) !important;
@@ -166,4 +138,26 @@ p { font-size: 0.925rem; color: var(--text-muted); line-height: 1.6; }
     border-color: #cbd5e1 !important;
     color: var(--primary) !important;
     transform: translateY(-1px) !important;
+}
+
+/* Custom Status Badges */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    gap: 6px;
+    border: 1px solid transparent;
+}
+.status-active {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
+}
+.status-inactive {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fca5a5 !important;
 }

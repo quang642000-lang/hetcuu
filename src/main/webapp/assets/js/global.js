@@ -1,11 +1,11 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - CORE UTILITIES & SWEETALERT INTEGRATIONS
+ * TEA POS SYSTEM - CORE UTILITIES & ADAPTIVE ACCORDION MATRIX ENGINE (ACM v5)
+ * Synchronized perfectly across all Admin panels (Voucher, Products, Audit Log, etc.)
  * =========================================================================
  */
 
 // Safe lazy-initialization of SweetToast to prevent "Swal is not defined" reference errors
-// when global.js is imported on pages without SweetAlert2 or loaded before it.
 function getSweetToast() {
     if (typeof Swal !== 'undefined') {
         return Swal.mixin({
@@ -36,7 +36,6 @@ function showToast(icon, message) {
             title: message
         });
     } else {
-        // Fallback to safe console logging if SweetAlert is not loaded
         console.log(`[TEA POS TOAST - ${icon.toUpperCase()}]: ${message}`);
     }
 }
@@ -67,3 +66,128 @@ function formatPhone(phone) {
     }
     return phone;
 }
+
+/**
+ * =========================================================================
+ * ACM ENGINE - ADAPTIVE COLUMN MORPHING & EXPANDABLE ACCORDION ROW
+ * =========================================================================
+ */
+function optimizeAdminTables() {
+    const tables = document.querySelectorAll('.admin-table, .table-audit');
+
+    tables.forEach(table => {
+        const container = table.closest('.admin-table-container, .table-responsive');
+        if (!container) return;
+
+        // Temporarily reset styles to measure the true layout overflow
+        table.classList.remove('table-collapsed-cards');
+        container.classList.remove('has-collapsed-cards');
+
+        const isMobile = window.innerWidth <= 768;
+        const doesOverflow = table.scrollWidth > container.clientWidth;
+
+        if (isMobile || doesOverflow) {
+            table.classList.add('table-collapsed-cards');
+            container.classList.add('has-collapsed-cards');
+
+            // Build dynamic data-labels using table header text
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim().replace(/:/g, ''));
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                // If it's a placeholder row (no real data)
+                if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
+                    row.classList.add('empty-placeholder-row');
+                    return;
+                }
+
+                // Bind click listener for expandable accordion rows
+                if (!row.dataset.accordionBound) {
+                    row.dataset.accordionBound = "true";
+                    row.addEventListener('click', function(e) {
+                        // Avoid triggering toggle if clicking form fields or actions
+                        if (e.target.closest('a, button, input, select, textarea, .btn')) {
+                            return;
+                        }
+
+                        this.classList.toggle('expanded');
+                        const chevron = this.querySelector('.row-chevron i');
+                        if (chevron) {
+                            if (this.classList.contains('expanded')) {
+                                chevron.className = 'bi bi-chevron-up';
+                            } else {
+                                chevron.className = 'bi bi-chevron-down';
+                            }
+                        }
+                    });
+                }
+
+                // Distribute columns precisely
+                Array.from(row.cells).forEach((cell, idx) => {
+                    const label = headers[idx] || '';
+                    if (label && !cell.dataset.labelApplied) {
+                        cell.setAttribute('data-label', label);
+                        cell.dataset.labelApplied = "true";
+                    }
+
+                    // FIX CHÍ MẠNG: Xác định chính xác cột Hành Động thực sự (Actions)
+                    // Không lấy nhầm cột Đơn giá (Giá S, Giá L) mặc dù chúng có class text-end
+                    const isActionCol = idx === row.cells.length - 1 ||
+                        cell.classList.contains('actions-col') ||
+                        cell.querySelector('.btn-action-edit, .btn-action-delete, .btn-action-info, .btn-action-warning') ||
+                        (idx > 5 && cell.querySelector('a, button, .d-flex'));
+
+                    // Chỉ cho phép các cột nhận dạng cốt lõi (STT, Mã, Ảnh, Tên) nằm ở Header của Card
+                    const isCoreIdentityCol = idx < 4; // STT, Mã, Ảnh, Tên
+
+                    // Reset classes to prevent overlap mismatch
+                    cell.classList.remove('card-header-col', 'card-action-col', 'card-detail-col');
+
+                    if (isCoreIdentityCol) {
+                        cell.classList.add('card-header-col');
+                    } else if (isActionCol) {
+                        cell.classList.add('card-action-col');
+                    } else {
+                        cell.classList.add('card-detail-col');
+                    }
+                });
+
+                // Inject chevron handle if missing
+                if (!row.querySelector('.row-chevron')) {
+                    const chevronTd = document.createElement('td');
+                    chevronTd.className = 'row-chevron';
+                    chevronTd.innerHTML = '<i class="bi bi-chevron-down"></i>';
+                    row.appendChild(chevronTd);
+                }
+            });
+        } else {
+            // Restore regular table state when layout fits completely
+            table.classList.remove('table-collapsed-cards');
+            container.classList.remove('has-collapsed-cards');
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.classList.remove('expanded');
+                const chevron = row.querySelector('.row-chevron');
+                if (chevron) chevron.remove();
+                Array.from(row.cells).forEach(cell => {
+                    cell.classList.remove('card-header-col', 'card-action-col', 'card-detail-col');
+                });
+            });
+        }
+    });
+}
+
+// Initial execute and handlers
+document.addEventListener("DOMContentLoaded", () => {
+    optimizeAdminTables();
+    window.addEventListener("resize", optimizeAdminTables);
+
+    // Mutation Observer to support dynamic/client-side searching and pagination without breaking
+    const tableBodies = document.querySelectorAll('.admin-table tbody, .table-audit tbody');
+    tableBodies.forEach(tbody => {
+        const observer = new MutationObserver(() => {
+            optimizeAdminTables();
+        });
+        observer.observe(tbody, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    });
+});

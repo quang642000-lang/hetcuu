@@ -1,4 +1,11 @@
-/* --- PROFESSIONAL HIGH-EFFICIENCY POS WORKBENCH DESIGN --- */
+@charset "UTF-8";
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - POWERFUL TOUCH-FRIENDLY POS LAYOUT
+ * Fixed overlap errors on small screens. Transformed checkout panel into an
+ * elegant sliding offcanvas drawer for mobile & tablet screen sizes.
+ * =========================================================================
+ */
 .pos-container {
     display: flex;
     height: calc(100vh - 60px);
@@ -15,6 +22,7 @@
     overflow-y: auto;
     flex-shrink: 0;
 }
+
 .pos-category-btn {
     display: flex;
     flex-direction: column;
@@ -70,6 +78,7 @@
     box-shadow: var(--shadow-md);
     border-color: var(--primary);
 }
+
 .pos-product-img {
     width: 100px;
     height: 100px;
@@ -77,6 +86,7 @@
     margin-bottom: 12px;
     border-radius: var(--radius-sm);
 }
+
 .pos-product-name {
     font-size: 14px;
     font-weight: 700;
@@ -88,13 +98,14 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
+
 .pos-product-price {
     font-size: 14px;
     font-weight: 800;
     color: var(--primary);
 }
 
-.pos-cart-col {
+.pos-checkout-sidebar {
     width: 420px;
     background-color: #ffffff;
     border-left: 1px solid var(--border-color);
@@ -112,6 +123,7 @@
     gap: 12px;
     background-color: #f8fafc;
 }
+
 .pos-cart-item {
     display: flex;
     align-items: flex-start;
@@ -150,6 +162,7 @@
     padding: 24px;
     background-color: #ffffff;
 }
+
 .pos-summary-line {
     display: flex;
     justify-content: space-between;
@@ -167,9 +180,16 @@
     margin-top: 12px;
 }
 
+/* =========================================================================
+TABLET & MOBILE RESPONSIVE DRAWER (< 1024px)
+========================================================================= */
 @media (max-width: 1024px) {
-    .pos-main-container { flex-direction: column !important; }
-    /* Menu cuộn ngang mượt */
+    .pos-main-container {
+        flex-direction: column !important;
+        height: calc(100vh - 60px) !important;
+    }
+
+    /* Horizontal scrolling categories bar */
     .pos-category-sidebar {
         width: 100% !important;
         height: auto !important;
@@ -178,29 +198,155 @@
         border-right: none !important;
         border-bottom: 1.5px solid var(--border-color) !important;
         background-color: #ffffff !important;
+        flex-shrink: 0 !important;
     }
     .pos-category-btn {
         min-width: 100px !important;
-        padding: 12px !important;
+        padding: 12px 8px !important;
         border-bottom: none !important;
         border-top: 4px solid transparent !important;
+        flex-shrink: 0 !important;
     }
     .pos-category-btn.active {
         border-top-color: var(--primary) !important;
         border-left: none !important;
         background-color: var(--primary-light) !important;
     }
-    /* Thu nhỏ lưới sản phẩm */
+
+    /* Product Grid Sizing adjustments */
+    .pos-menu-area {
+        flex-grow: 1 !important;
+        padding: 12px !important;
+    }
     .pos-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
         gap: 12px !important;
     }
-    /* Giỏ hàng POS dưới cùng */
+    .pos-product-card {
+        padding: 10px !important;
+    }
+    .pos-product-img {
+        width: 70px !important;
+        height: 70px !important;
+        margin-bottom: 6px !important;
+    }
+    .pos-card-name {
+        font-size: 11.5px !important;
+        height: 32px !important;
+    }
+    .pos-card-price {
+        font-size: 12px !important;
+    }
+
+    /* Transforms Checkout Sidebar into Offcanvas sliding Drawer */
     .pos-checkout-sidebar {
-        width: 100% !important;
-        height: 50vh !important;
-        border-left: none !important;
-        border-top: 2.5px solid var(--primary) !important;
-        box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08) !important;
+        position: fixed !important;
+        top: 60px !important; /* Right below POS Navbar */
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 390px !important;
+        max-width: 85vw !important;
+        z-index: 1050 !important;
+        transform: translateX(100%) !important; /* Hide to the right */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-left: 1.5px solid var(--border-color) !important;
+        height: calc(100vh - 60px) !important;
+    }
+
+    .pos-checkout-sidebar.show {
+        transform: translateX(0) !important;
+    }
+
+    /* Dark translucent backdrop when cart drawer opens */
+    .pos-cart-backdrop {
+        position: fixed !important;
+        top: 60px !important;
+        left: 0 !important; right: 0 !important; bottom: 0 !important;
+        background-color: rgba(15, 23, 42, 0.4) !important;
+        backdrop-filter: blur(2px) !important;
+        z-index: 1045 !important;
+        display: none !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+    }
+    .pos-cart-backdrop.show {
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    /* Floating Circle Cart Button (Mobile only) */
+    .pos-mobile-cart-toggle {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
+        z-index: 1000 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease !important;
+    }
+    .pos-mobile-cart-toggle:hover {
+        transform: scale(1.05) !important;
+    }
+    .pos-mobile-cart-toggle i {
+        font-size: 24px !important;
+    }
+
+    /* Cart Count Badge on Floating Button */
+    .pos-mobile-cart-toggle .badge {
+        position: absolute !important;
+        top: -4px !important;
+        right: -4px !important;
+        background-color: var(--danger) !important;
+        color: #ffffff !important;
+        border-radius: 50% !important;
+        font-size: 11px !important;
+        width: 22px !important;
+        height: 22px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 2px solid #ffffff !important;
+        padding: 0 !important;
+    }
+
+    /* Prevent overflow issues in drawer content */
+    .pos-cart-items-wrapper {
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+        max-height: 40% !important;
+    }
+    .pos-crm-panel {
+        flex-shrink: 0 !important;
+        padding: 10px 12px !important;
+    }
+    .pos-summary-panel {
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 12px !important;
+    }
+
+    /* Stick checkout button to very bottom of scroll view in summary panel */
+    .pos-summary-panel button.btn-primary-teapos {
+        position: sticky !important;
+        bottom: 0 !important;
+        margin-top: auto !important;
+        z-index: 10 !important;
+        box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.1) !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .pos-cart-backdrop, .pos-mobile-cart-toggle {
+        display: none !important;
     }
 }

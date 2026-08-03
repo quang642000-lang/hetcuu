@@ -1,12 +1,12 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - CLIENT WEB PORTAL RESPONSIVE SCRIPT
- * Handles AJAX shopping carts, dynamic offcanvas menus and filters for mobile layout.
+ * TEA PORTAL CUSTOMER RESPONSIVE INTERFACE SCRIPT
+ * Dynamically injects Offcanvas drawer triggers, sticky checkout bars,
+ * and sticky buy bars on mobile devices.
  * =========================================================================
  */
-
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Lắng nghe thay đổi số lượng giỏ hàng ngoài Portal
+    // 1. Setup change listeners for cart quantity
     document.querySelectorAll('.qty-input-portal').forEach(input => {
         input.addEventListener('change', function() {
             const maCtgh = this.dataset.mactgh;
@@ -15,16 +15,16 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // 2. Tự động tiêm nạp Backdrop mờ cho bộ lọc di động
+    // 2. Dynamic Backdrop injection for filters
     if (!document.getElementById("portalFilterBackdrop")) {
         const backdrop = document.createElement("div");
         backdrop.id = "portalFilterBackdrop";
         backdrop.className = "portal-filter-backdrop";
-        backdrop.onclick = togglePortalFilter; // Click ra ngoài sẽ gập lọc
+        backdrop.onclick = togglePortalFilter;
         document.body.appendChild(backdrop);
     }
 
-    // 3. Tự động tiêm nạp nút nổi "Danh Mục & Bộ Lọc" ở chân màn hình (chỉ hiển thị trên Mobile)
+    // 3. Dynamic Filter Trigger Floating Button injection
     const sidebarFilter = document.querySelector('.col-12.col-lg-3.text-start');
     if (sidebarFilter && !document.getElementById("portalMobileFilterTriggerBtn")) {
         const filterBtn = document.createElement("button");
@@ -35,19 +35,43 @@ document.addEventListener("DOMContentLoaded", function() {
         filterBtn.onclick = togglePortalFilter;
         document.body.appendChild(filterBtn);
     }
+
+    // 4. Dynamic Sticky Bottom Bars for Mobile Screens
+    const path = window.location.pathname;
+
+    // CASE A: Cart page sticky bottom checkout bar
+    if (path.includes("/cart") && !document.getElementById("portalMobileCheckoutBar") && window.innerWidth <= 768) {
+        injectMobileCheckoutBar();
+    }
+
+    // CASE B: Product Detail page sticky bottom buy bar
+    if (path.includes("/product/detail") && !document.getElementById("portalMobileBuyBar") && window.innerWidth <= 768) {
+        injectMobileBuyBar();
+    }
 });
 
-// Hàm lấy Context Path tự động tránh cứng đường dẫn URL
 function getContextPath() {
     return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
 }
 
-// Cập nhật số lượng chi tiết giỏ hàng trực tuyến
+function togglePortalFilter() {
+    const sidebar = document.querySelector('.col-12.col-lg-3.text-start');
+    const backdrop = document.getElementById('portalFilterBackdrop');
+    if (sidebar && backdrop) {
+        sidebar.classList.toggle('show');
+        backdrop.classList.toggle('show');
+        if (sidebar.classList.contains('show')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
 function updatePortalCartQuantity(maCtgh, soLuong) {
     const formData = new FormData();
     formData.append('maCtgh', maCtgh);
     formData.append('soLuong', soLuong);
-
     fetch(getContextPath() + '/cart/update', {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -64,22 +88,18 @@ function updatePortalCartQuantity(maCtgh, soLuong) {
             if (data.trim() === 'SUCCESS') {
                 showToast('success', 'Đã cập nhật số lượng giỏ hàng.');
                 setTimeout(() => { location.reload(); }, 600);
-            } else if (data.trim() === 'SESSION_EXPIRED' || data.trim() === 'NOT_LOGGED_IN') {
-                window.location.href = getContextPath() + '/customer/login';
             } else {
                 showToast('error', 'Cập nhật số lượng thất bại!');
             }
         })
-        .catch(err => console.error('Lỗi kết nối:', err));
+        .catch(err => console.error('Lỗi:', err));
 }
 
-// Thay đổi trạng thái lựa chọn mua để chốt thanh toán (Selective Checkout)
 function toggleSelectCartItem(maCtgh, checkboxElement) {
     const isChecked = checkboxElement.checked ? "1" : "0";
     const formData = new FormData();
     formData.append('maCtgh', maCtgh);
     formData.append('chon', isChecked);
-
     fetch(getContextPath() + '/cart/toggle-select', {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -96,8 +116,6 @@ function toggleSelectCartItem(maCtgh, checkboxElement) {
             if (data.trim() === 'SUCCESS') {
                 showToast('info', 'Đã thay đổi danh sách thanh toán.');
                 setTimeout(() => { location.reload(); }, 600);
-            } else if (data.trim() === 'SESSION_EXPIRED' || data.trim() === 'NOT_LOGGED_IN') {
-                window.location.href = getContextPath() + '/customer/login';
             } else {
                 showToast('error', 'Xử lý lỗi hệ thống!');
             }
@@ -105,14 +123,13 @@ function toggleSelectCartItem(maCtgh, checkboxElement) {
         .catch(err => console.error('Lỗi:', err));
 }
 
-// Mua nhanh từ màn hình danh sách trà sữa (Chuyển trang đăng nhập nếu chưa authenticate)
 function quickAddToCart(maSp, tenSp) {
     const formData = new FormData();
     formData.append('maSp', maSp);
-    formData.append('maSize', '1');      // Mặc định Size S
-    formData.append('soLuong', '1');     // Mặc định Số lượng 1 ly
-    formData.append('mucDa', '100%');    // Mặc định 100% đá
-    formData.append('mucDuong', '100%'); // Mặc định 100% đường
+    formData.append('maSize', '1');
+    formData.append('soLuong', '1');
+    formData.append('mucDa', '100%');
+    formData.append('mucDuong', '100%');
     formData.append('ghiChuMon', 'Quick Add');
 
     Swal.fire({
@@ -137,20 +154,13 @@ function quickAddToCart(maSp, tenSp) {
         .then(data => {
             Swal.close();
             const cleanData = data.trim();
-            if (cleanData === 'NOT_LOGGED_IN' || cleanData === 'SESSION_EXPIRED') {
-                window.location.href = getContextPath() + '/customer/login';
-            } else if (cleanData.startsWith('SUCCESS')) {
+            if (cleanData.startsWith('SUCCESS')) {
                 const parts = cleanData.split('|');
                 const cartCount = parts.length > 1 ? parts[1] : '1';
                 const badge = document.querySelector('.navbar .badge');
                 if (badge) {
                     badge.innerText = cartCount;
                     badge.style.display = 'flex';
-                } else {
-                    const cartBtn = document.querySelector('.navbar a[href*="/cart"]');
-                    if (cartBtn) {
-                        cartBtn.innerHTML += '<span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger text-white border border-light" style="font-size: 10px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; padding: 0;">' + cartCount + '</span>';
-                    }
                 }
                 showToast('success', 'Đã thêm thành công ly ' + tenSp + ' vào giỏ hàng!');
             } else {
@@ -163,19 +173,100 @@ function quickAddToCart(maSp, tenSp) {
         });
 }
 
-// Hàm kích hoạt mở / gập bộ lọc di động trên Portal
-function togglePortalFilter() {
-    const sidebar = document.querySelector('.col-12.col-lg-3.text-start');
-    const backdrop = document.getElementById('portalFilterBackdrop');
-    if (sidebar && backdrop) {
-        sidebar.classList.toggle('show');
-        backdrop.classList.toggle('show');
+/* =========================================================================
+ * STICKY CHECKOUT BAR INJECTION FOR /cart PAGE ON MOBILE
+ * ========================================================================= */
+function injectMobileCheckoutBar() {
+    const totalEl = document.getElementById("finalPayableCart");
+    if (!totalEl) return;
 
-        // Khóa cuộn trang nền của body khi đang bật bộ lọc di động
-        if (sidebar.classList.contains('show')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
+    const bar = document.createElement("div");
+    bar.id = "portalMobileCheckoutBar";
+    bar.className = "portal-mobile-checkout-bar";
+
+    const info = document.createElement("div");
+    info.className = "portal-mobile-checkout-info";
+    info.innerHTML = `<span>Tổng thanh toán (VAT 8%):</span><strong id="mobileTotalDisplay">${totalEl.innerText}</strong>`;
+
+    const checkoutBtn = document.getElementById("checkoutBtn");
+    const isBtnDisabled = checkoutBtn ? checkoutBtn.classList.contains("disabled") : true;
+
+    const actionBtn = document.createElement("button");
+    actionBtn.type = "button";
+    actionBtn.className = "btn " + (isBtnDisabled ? "btn-secondary disabled" : "btn-success") + " portal-mobile-checkout-btn";
+    actionBtn.innerText = isBtnDisabled ? "Chưa chọn món" : "Đặt nước ngay";
+
+    actionBtn.onclick = function() {
+        if (!isBtnDisabled && checkoutBtn) {
+            checkoutBtn.click();
         }
-    }
+    };
+
+    bar.appendChild(info);
+    bar.appendChild(actionBtn);
+    document.body.appendChild(bar);
+
+    // Sync price changes dynamically from JSTL/AJAX actions
+    const observer = new MutationObserver(function() {
+        document.getElementById("mobileTotalDisplay").innerText = totalEl.innerText;
+        const currentCheckoutBtn = document.getElementById("checkoutBtn");
+        const isDisabledNow = currentCheckoutBtn ? currentCheckoutBtn.classList.contains("disabled") : true;
+
+        actionBtn.className = "btn " + (isDisabledNow ? "btn-secondary disabled" : "btn-success") + " portal-mobile-checkout-btn";
+        actionBtn.innerText = isDisabledNow ? "Chưa chọn món" : "Đặt nước ngay";
+    });
+    observer.observe(totalEl, { childList: true, characterData: true, subtree: true });
+}
+
+/* =========================================================================
+ * STICKY BUY BAR INJECTION FOR /product/detail PAGE ON MOBILE
+ * ========================================================================= */
+function injectMobileBuyBar() {
+    const totalEl = document.getElementById("displayTotal");
+    if (!totalEl) return;
+
+    const bar = document.createElement("div");
+    bar.id = "portalMobileBuyBar";
+    bar.className = "portal-mobile-buy-bar";
+
+    const info = document.createElement("div");
+    info.className = "portal-mobile-buy-info";
+    info.innerHTML = `<span>Tổng tạm tính:</span><strong id="mobileBuyTotalDisplay">${totalEl.innerText}</strong>`;
+
+    const btnGroup = document.createElement("div");
+    btnGroup.className = "portal-mobile-buy-btn-group";
+
+    // Create Add To Cart Button
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "btn btn-outline-success";
+    addBtn.innerHTML = '<i class="bi bi-bag-plus-fill"></i> Thêm giỏ';
+    addBtn.onclick = function() {
+        if (typeof handleCartAction === "function") {
+            handleCartAction('add');
+        }
+    };
+
+    // Create Buy Now Button
+    const buyBtn = document.createElement("button");
+    buyBtn.type = "button";
+    buyBtn.className = "btn btn-success";
+    buyBtn.innerHTML = 'Mua ngay ⚡';
+    buyBtn.onclick = function() {
+        if (typeof handleCartAction === "function") {
+            handleCartAction('buy');
+        }
+    };
+
+    btnGroup.appendChild(addBtn);
+    btnGroup.appendChild(buyBtn);
+    bar.appendChild(info);
+    bar.appendChild(btnGroup);
+    document.body.appendChild(bar);
+
+    // Sync price changes dynamically from radio sizes and checkbox toppings
+    const observer = new MutationObserver(function() {
+        document.getElementById("mobileBuyTotalDisplay").innerText = totalEl.innerText;
+    });
+    observer.observe(totalEl, { childList: true, characterData: true, subtree: true });
 }

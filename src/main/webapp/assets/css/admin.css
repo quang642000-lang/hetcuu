@@ -5,7 +5,6 @@
     height: 100vh !important;
     overflow: hidden !important;
 }
-
 .admin-content {
     flex-grow: 1 !important;
     min-width: 0 !important;
@@ -15,14 +14,12 @@
     display: flex !important;
     flex-direction: column !important;
 }
-
 .kpi-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
     gap: 24px !important;
     padding: 24px !important;
 }
-
 .kpi-card {
     background-color: #ffffff !important;
     border-radius: var(--radius-md) !important;
@@ -39,7 +36,6 @@
     box-shadow: var(--shadow-lg) !important;
     border-color: var(--primary) !important;
 }
-
 .kpi-info h3 {
     font-size: 12px !important;
     color: var(--text-muted) !important;
@@ -54,7 +50,6 @@
     color: var(--text-main) !important;
     line-height: 1 !important;
 }
-
 .kpi-icon {
     width: 52px !important;
     height: 52px !important;
@@ -64,7 +59,6 @@
     justify-content: center !important;
     font-size: 24px !important;
 }
-
 .filter-toolbar {
     background-color: #ffffff !important;
     border: 1.5px solid var(--border-color) !important;
@@ -84,16 +78,14 @@
     margin-bottom: 24px !important;
     -webkit-overflow-scrolling: touch;
 }
-
-.admin-table {
+.admin-table, .table-audit {
     width: 100% !important;
     border-collapse: collapse !important;
     font-size: 14px !important;
-    white-space: nowrap !important;
 }
-.admin-table th {
+.admin-table th, .table-audit th {
     background-color: #f8fafc !important;
-    color: var(--text-main) !important;  /* High contrast text */
+    color: var(--text-main) !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     font-size: 12px !important;
@@ -101,7 +93,7 @@
     padding: 18px 20px !important;
     border-bottom: 2px solid var(--border-color) !important;
 }
-.admin-table td {
+.admin-table td, .table-audit td {
     padding: 16px 20px !important;
     border-bottom: 1.5px solid var(--border-color) !important;
     color: var(--text-main) !important;
@@ -109,39 +101,14 @@
     vertical-align: middle !important;
     font-weight: 500 !important;
 }
-.admin-table tbody tr {
+.admin-table tbody tr, .table-audit tbody tr {
     transition: background-color 0.15s ease !important;
 }
-.admin-table tbody tr:hover {
+.admin-table tbody tr:hover, .table-audit tbody tr:hover {
     background-color: #f8fafc !important;
 }
 
-/* Table Column overrides */
-.admin-table td.text-start {
-    max-width: 250px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    font-weight: 600 !important;
-}
-
-/* Beautiful custom status pills in admin tables */
-.badge-role-admin {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border: 1px solid #fca5a5 !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-}
-.badge-role-staff {
-    background-color: #e0f2fe !important;
-    color: #0369a1 !important;
-    border: 1px solid #bae6fd !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-}
-
-/* Action buttons */
+/* Action buttons styling */
 .btn-action-edit, .btn-action-delete, .btn-action-warning, .btn-action-info {
     font-weight: 700 !important;
     font-size: 12px !important;
@@ -151,6 +118,7 @@
     display: inline-flex !important;
     align-items: center !important;
     gap: 4px !important;
+    text-decoration: none !important;
 }
 .btn-action-edit {
     color: var(--primary) !important;
@@ -183,11 +151,240 @@
     box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2) !important;
 }
 
+/* Compare Box inside Audit Logs */
+.compare-box {
+    font-family: 'Consolas', 'Courier New', monospace !important;
+    font-size: 11.5px !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    max-height: 120px !important;
+    overflow-y: auto !important;
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    background-color: #f8fafc !important;
+    border: 1px solid var(--border-color) !important;
+    text-align: left !important;
+}
+.compare-old {
+    border-left: 3px solid #f59e0b !important;
+    color: #64748b !important;
+}
+.compare-new {
+    border-left: 3px solid #10b981 !important;
+    color: #0f172a !important;
+}
+
+/* =========================================================================
+   ULTIMATE ACM - TABLE-ACCORDION GẬP MỞ THÍCH ỨNG CHỐNG CHÈN NÚT
+   ========================================================================= */
+
+/* Trạng thái bảng co lột xác thành danh sách các Card */
+.table-collapsed-cards {
+    border: none !important;
+    background: transparent !important;
+}
+.table-collapsed-cards thead {
+    display: none !important; /* Ẩn toàn bộ header cột phẳng */
+}
+.table-collapsed-cards tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 4px !important;
+}
+.table-collapsed-cards tbody tr {
+    display: block !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 16px 48px 16px 16px !important; /* Dành chỗ trống biên phải cho mũi tên */
+    position: relative !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+}
+.table-collapsed-cards tbody tr:hover {
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+.table-collapsed-cards tbody tr.expanded {
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
+    padding-bottom: 20px !important;
+}
+
+/* Cột Nhận Diện (Core Identity) hiển thị nổi bật ở Header Card */
+.table-collapsed-cards tbody tr td.card-header-col {
+    display: inline-flex !important;
+    align-items: center !important;
+    border-bottom: none !important;
+    padding: 6px 0 !important;
+    margin-right: 18px !important;
+    vertical-align: middle !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    background: transparent !important;
+    color: var(--text-main) !important;
+    font-size: 14px !important;
+}
+.table-collapsed-cards tbody tr td.card-header-col strong,
+.table-collapsed-cards tbody tr td.card-header-col b {
+    font-weight: 700 !important;
+}
+
+/* Cột chi tiết tùy chọn ẩn đi khi gập - chỉ hiện khi Expanded */
+.table-collapsed-cards tbody tr td.card-detail-col {
+    display: none !important;
+}
+
+/* Khi bấm mở rộng (Expanded State): Xổ dọc chi tiết đẹp mắt */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 14px !important;
+    background-color: var(--primary-light) !important;
+    border: 1.5px dashed rgba(5, 150, 105, 0.15) !important;
+    margin-top: 8px !important;
+    border-radius: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: left !important;
+}
+
+/* Tiêm nhãn tiêu đề động ở bên trái cột chi tiết gập */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
+    content: attr(data-label) ": " !important;
+    font-weight: 700 !important;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-right: 16px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Cột Thao Tác Hành Động (Actions Block) ghim ở đáy Card gập */
+.table-collapsed-cards tbody tr td.card-action-col {
+    display: none !important; /* Mặc định giấu kín khi đóng */
+}
+
+.table-collapsed-cards tbody tr.expanded td.card-action-col {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    padding: 12px 0 0 0 !important;
+    border-top: 1.5px solid #f1f5f9 !important;
+    margin-top: 14px !important;
+    width: 100% !important;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+/* Expanded Details Desktop Optimization: Double Column Layout */
+@media (min-width: 769px) {
+    .table-collapsed-cards tbody tr.expanded {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-content: flex-start !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-header-col {
+        width: auto !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
+        width: 49% !important; /* Chia 2 cột cực kỳ đối xứng cân đối trên máy tính */
+        margin: 6px 0.5% 0 0.5% !important;
+        display: flex !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-action-col {
+        width: 100% !important;
+        display: flex !important;
+    }
+}
+
+/* Mobile Stack View: Safeguard 100% no overflow / no horizontal scroll */
+@media (max-width: 768px) {
+    .table-collapsed-cards tbody tr {
+        padding-right: 40px !important;
+    }
+    .table-collapsed-cards tbody tr td.card-header-col {
+        display: flex !important;
+        width: 100% !important;
+        margin-right: 0 !important;
+        padding: 6px 0 !important;
+        border-bottom: 1.5px solid #f1f5f9 !important;
+    }
+    .table-collapsed-cards tbody tr td.card-header-col:last-of-type {
+        border-bottom: none !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        flex-direction: column !important; /* Xếp dọc hoàn toàn trên điện thoại */
+        align-items: flex-start !important;
+        gap: 4px !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
+        margin-right: 0 !important;
+        margin-bottom: 2px !important;
+    }
+    .table-collapsed-cards tbody tr.expanded td.card-action-col {
+        width: 100% !important;
+        justify-content: flex-start !important; /* Căn trái dễ chạm bấm nút trên Mobile */
+    }
+}
+
+/* Floating Accordion Chevron Trigger */
+.table-collapsed-cards tbody tr td.row-chevron {
+    position: absolute !important;
+    top: 20px !important;
+    right: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+    border: 1px solid rgba(5, 150, 105, 0.15) !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    z-index: 4 !important;
+}
+.table-collapsed-cards tbody tr:hover td.row-chevron {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.table-collapsed-cards tbody tr.expanded td.row-chevron {
+    transform: rotate(180deg) !important;
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+/* Standard empty placeholders styling */
+.empty-placeholder-row {
+    display: block !important;
+    text-align: center !important;
+    padding: 40px !important;
+    color: var(--text-muted) !important;
+    background-color: #ffffff !important;
+    border: 1.5px dashed var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    width: 100% !important;
+}
+
 @media (max-width: 992px) {
     .kpi-grid { gap: 16px !important; padding: 16px !important; grid-template-columns: repeat(2, 1fr) !important; }
     .kpi-info p { font-size: 22px !important; }
     .kpi-icon { width: 44px !important; height: 44px !important; font-size: 20px !important; }
-    .admin-table-container { border-radius: 8px !important; }
+    .admin-table-container { border-radius: 8px !important; border: none !important; box-shadow: none !important; }
     .filter-toolbar { padding: 16px !important; }
 }
 @media (max-width: 576px) {

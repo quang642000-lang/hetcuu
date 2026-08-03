@@ -19,6 +19,11 @@
             --primary-hover: #059669;
             --primary-light: #ecfdf5;
         }
+        .price-range {
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            color: var(--primary) !important;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -37,7 +42,6 @@
                         <i class="bi bi-plus-circle-fill"></i> THÊM SẢN PHẨM MỚI
                     </a>
                 </div>
-
                 <!-- BỘ LỌC TÌM KIẾM SẢN PHẨM (ĐỒNG BỘ FILTER WRAPPER) -->
                 <div class="filter-wrapper mb-4">
                     <div class="row g-3 text-start">
@@ -83,7 +87,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- BẢNG DANH SÁCH SẢN PHẨM -->
                 <div class="table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="productTable">
@@ -96,8 +99,7 @@
                             <th class="text-start" style="width: 150px;">Danh Mục</th>
                             <th style="width: 150px;">Kích Cỡ Có Sẵn</th>
                             <th style="width: 90px;">Thứ tự</th>
-                            <th class="text-end" style="width: 110px;">Giá S</th>
-                            <th class="text-end" style="width: 110px;">Giá L</th>
+                            <th class="text-end" style="width: 180px;">Giá Bán</th>
                             <th style="width: 140px;">Trạng Thái</th>
                             <th style="width: 250px;" class="text-end">Thao Tác</th>
                         </tr>
@@ -135,7 +137,6 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
-                                                    <!-- VÁ TRIỆT ĐỂ LỖI BUNG ẢNH - KHÓA CỨNG KÍCH THƯỚC TRONG INLINE STYLE -->
                                                     <img src="${item.hinhAnh}" class="product-img-circle shadow-sm" style="width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; object-fit: cover !important; border-radius: 50% !important; border: 2px solid #10b981 !important;" alt="Pic">
                                                 </c:when>
                                                 <c:otherwise>
@@ -170,16 +171,21 @@
                                         <td>
                                             <span class="badge bg-secondary px-2.5 py-1.5 text-white" style="border-radius: 6px;">${item.thuTuHienThi}</span>
                                         </td>
-                                        <td class="text-end fw-bold text-dark">
-                                            <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
-                                        </td>
-                                        <td class="text-end fw-bold text-success">
-                                            <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                        <!-- HIỂN THỊ GIÁ CẢ KHOẢNG MỚI SIÊU THẨM MỸ, GỌN GÀNG CHỐNG TRÀN -->
+                                        <td class="text-end fw-bold price-range font-monospace">
+                                            <c:choose>
+                                                <c:when test="${minPrice == maxPrice}">
+                                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ - <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
-                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                            ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
-                                                    </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+        ${item.trangThai ? 'Đang mở bán' : 'Tạm dừng bán'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5 align-items-center">
@@ -203,7 +209,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="11" class="text-center py-5 text-muted">
+                                    <td colspan="10" class="text-center py-5 text-muted">
                                         <i class="bi bi-cup-hot fs-1 text-secondary opacity-50 d-block mb-2"></i>
                                         Chưa ghi nhận sản phẩm đồ uống nào hoạt động trong CSDL!
                                     </td>
@@ -213,7 +219,6 @@
                         </tbody>
                     </table>
                 </div>
-
                 <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -225,14 +230,12 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const ROWS_PER_PAGE = 10;
     let currentPage = 1;
     let filteredRows = [];
-
     function filterAndPaginateProducts() {
         const searchVal = document.getElementById("productSearchInput").value.trim().toLowerCase();
         const catVal = document.getElementById("filterCategory").value;
@@ -257,7 +260,6 @@
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
         const allRows = document.querySelectorAll("#productTableBody .product-row");
         allRows.forEach(row => row.style.display = "none");
@@ -269,12 +271,10 @@
         const endIdx = Math.min(startIdx + ROWS_PER_PAGE, totalRows);
         const pageRows = filteredRows.slice(startIdx, endIdx);
         pageRows.forEach(row => row.style.display = "table-row");
-
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
-
         const start = totalRows > 0 ? startIdx + 1 : 0;
         const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng sản phẩm';
@@ -284,32 +284,27 @@
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? 'bg-success border-success text-white' : 'text-success') + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredRows.length / ROWS_PER_PAGE) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     function resetFilters() {
         document.getElementById("productSearchInput").value = "";
         document.getElementById("filterCategory").selectedIndex = 0;
@@ -318,7 +313,6 @@
         document.getElementById("filterHot").selectedIndex = 0;
         filterAndPaginateProducts();
     }
-
     function confirmDeleteSanPham(maSp) {
         Swal.fire({
             title: 'Xác nhận xóa món uống?',
@@ -335,7 +329,6 @@
             }
         });
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         filterAndPaginateProducts();
         const urlParams = new URLSearchParams(window.location.search);

@@ -7,31 +7,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Điều Phối Nhận Đơn Online - TEA POS PRO</title>
-
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/global.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
-
     <style>
         :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #ecfdf5;
+            --primary: #059669;
+            --primary-dark: #047857;
+            --primary-light: #f0fdf4;
             --slate-dark: #0f172a;
             --border-color: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.03);
+            --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
         }
-
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif !important;
             background-color: #f8fafc;
             color: var(--text-main);
             height: 100vh;
@@ -39,7 +36,6 @@
             flex-direction: column;
             overflow: hidden;
         }
-
         /* Layout Structure */
         .nhandon-layout {
             display: flex;
@@ -47,19 +43,19 @@
             overflow: hidden;
             height: calc(100vh - 60px);
         }
-
         .nd-sidebar {
             width: 280px;
             background-color: #ffffff;
             border-right: 1px solid var(--border-color);
-            padding: 20px 0;
+            padding: 24px 0;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             flex-shrink: 0;
             overflow-y: auto;
+            z-index: 1030;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
-
         .nd-content {
             flex-grow: 1;
             padding: 24px;
@@ -67,114 +63,103 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background-color: var(--bg-main);
         }
-
         /* Sidebar Status Tabs */
         .status-tab {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
+            padding: 14px 24px;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 13.5px;
             text-decoration: none;
             border-left: 4px solid transparent;
             transition: all 0.2s ease;
         }
-
         .status-tab:hover {
             background-color: #f1f5f9;
             color: var(--primary);
+            padding-left: 28px;
         }
-
         .status-tab.active {
             background-color: var(--primary-light);
             color: var(--primary);
             border-left-color: var(--primary);
         }
-
         /* Order Card Customization */
         .order-card {
             background-color: #ffffff;
             border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
+            border: 1.5px solid var(--border-color);
             box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             height: 100%;
         }
-
         .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
         }
-
         .order-card-header {
             background-color: #f8fafc;
-            border-bottom: 1px solid var(--border-color);
-            padding: 14px 20px;
+            border-bottom: 1.5px solid var(--border-color);
+            padding: 16px 20px;
         }
-
         .order-card-body {
             padding: 20px;
             flex-grow: 1;
         }
-
         .order-card-footer {
             background-color: #f8fafc;
-            border-top: 1px dashed var(--border-color);
-            padding: 14px 20px;
+            border-top: 1.5px dashed var(--border-color);
+            padding: 16px 20px;
         }
-
         .item-row {
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 10px 0;
+            border-bottom: 1.5px solid #f1f5f9;
         }
-
         .item-row:last-child {
             border-bottom: none;
             padding-bottom: 0;
         }
-
         .topping-tag {
             display: inline-block;
             background-color: #f0fdf4;
-            color: #15803d;
+            color: #047857;
             font-size: 10.5px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-right: 4px;
-            margin-top: 2px;
-            border: 1px solid rgba(21, 128, 61, 0.1);
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-right: 6px;
+            margin-top: 4px;
+            border: 1px solid rgba(4, 120, 87, 0.15);
         }
-
         /* Pagination Alignment */
         .pagination-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            padding: 16px 24px;
             background-color: #ffffff;
             border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
+            border: 1.5px solid var(--border-color);
             box-shadow: var(--shadow-sm);
             margin-top: auto;
         }
-
         .pagination .page-item.active .page-link {
             background-color: var(--primary) !important;
             border-color: var(--primary) !important;
             color: #ffffff !important;
-            font-weight: 600;
+            font-weight: 700;
         }
-
         .pagination .page-link {
             color: var(--primary);
         }
-
         /* Receipt Print Container */
         .receipt-container {
             font-family: 'Courier New', Courier, monospace;
@@ -184,22 +169,60 @@
             background-color: #ffffff;
             text-align: left;
         }
-
         .live-polling-badge {
             font-size: 11px;
             letter-spacing: 0.5px;
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+            border: 1px solid #fca5a5 !important;
             animation: pulse-red 1.5s infinite;
         }
-
         @keyframes pulse-red {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
+            50% { transform: scale(1.03); opacity: 0.9; }
             100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Mobile / Tablet Responsive Offcanvas */
+        @media (max-width: 991.98px) {
+            .nd-sidebar {
+                position: fixed !important;
+                left: 0 !important;
+                top: 60px !important;
+                bottom: 0 !important;
+                z-index: 1045 !important;
+                transform: translateX(-100%) !important;
+                width: 280px !important;
+                box-shadow: 4px 0 15px rgba(15, 23, 42, 0.1) !important;
+            }
+            .nd-sidebar.show {
+                transform: translateX(0) !important;
+            }
+            .nd-sidebar-backdrop {
+                position: fixed !important;
+                top: 60px !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background-color: rgba(15, 23, 42, 0.4) !important;
+                backdrop-filter: blur(2px) !important;
+                z-index: 1040 !important;
+                display: none !important;
+                opacity: 0 !important;
+                transition: opacity 0.3s ease !important;
+            }
+            .nd-sidebar-backdrop.show {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            .nd-content {
+                padding: 16px !important;
+                gap: 16px !important;
+            }
         }
     </style>
 </head>
 <body>
-
 <!-- NAV HEADER -->
 <nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 1040; flex-shrink: 0;">
     <div class="container-fluid d-flex align-items-center">
@@ -208,7 +231,6 @@
                 <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
                 <span>TEA POS PRO</span>
             </a>
-
             <!-- NAVIGATION BUTTONS -->
             <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                 <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-3">
@@ -219,14 +241,13 @@
                 </a>
             </div>
         </div>
-
         <div class="d-flex align-items-center gap-3 text-white ms-auto">
-                <span class="badge bg-danger p-2 px-3 fw-bold border border-light live-polling-badge">
-                    🔴 LIVE POLLING (5S/LẦN)
-                </span>
+            <span class="badge p-2 px-3 fw-bold live-polling-badge">
+                🔴 LIVE POLLING (5S/LẦN)
+            </span>
             <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline">
-                    <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-                </span>
+                <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
+            </span>
             <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                 <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
             </a>
@@ -239,13 +260,15 @@
 
 <!-- MAIN BODY SECTION -->
 <div class="nhandon-layout">
+    <!-- BACKDROP CHO MOBILE SIDEBAR -->
+    <div class="nd-sidebar-backdrop" id="ndSidebarBackdrop" onclick="toggleNhanDonSidebar()"></div>
 
     <!-- SIDEBAR STATUS TABS -->
-    <aside class="nd-sidebar">
-        <div class="px-3 mb-3 text-start">
+    <aside class="nd-sidebar" id="ndSidebar">
+        <div class="px-3 mb-3 text-start d-flex justify-content-between align-items-center">
             <h6 class="text-uppercase text-secondary fw-bold small m-0" style="letter-spacing: 0.5px;">BỘ LỌC TRẠNG THÁI</h6>
+            <button type="button" class="btn-close d-lg-none" onclick="toggleNhanDonSidebar()"></button>
         </div>
-
         <a href="${pageContext.request.contextPath}/pos/nhandon?status=0" class="status-tab ${currentStatus == 0 ? 'active' : ''}">
             <span><i class="bi bi-hourglass-split me-2"></i> Chờ Xác Nhận</span>
             <span class="badge bg-warning text-dark rounded-pill" style="font-size: 10px;">Yêu cầu</span>
@@ -269,7 +292,6 @@
 
     <!-- RIGHT MAIN AREA -->
     <main class="nd-content">
-
         <!-- HEADER TỔNG QUAN -->
         <div class="d-flex justify-content-between align-items-center text-start">
             <div>
@@ -285,9 +307,15 @@
                 </h3>
                 <p class="text-muted m-0 small mt-1">Danh sách đơn đặt trước (Click & Collect) qua Website Portal của hội viên CRM</p>
             </div>
-            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold shadow-sm" onclick="location.reload()">
-                <i class="bi bi-arrow-clockwise"></i> LÀM MỚI TRANG
-            </button>
+            <div class="d-flex gap-2">
+                <!-- NÚT MỞ BỘ LỌC TRẠNG THÁI CHO MOBILE / TABLET -->
+                <button type="button" class="btn btn-primary-teapos btn-sm fw-bold shadow-sm d-lg-none" onclick="toggleNhanDonSidebar()">
+                    <i class="bi bi-funnel-fill"></i> Trạng thái
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm fw-bold shadow-sm" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> LÀM MỚI TRANG
+                </button>
+            </div>
         </div>
 
         <!-- THANH TÌM KIẾM & LỌC NGÀY ĐỒNG BỘ -->
@@ -322,7 +350,6 @@
                                  data-sdt="${dh.maKh}"
                                  data-date="<fmt:formatDate value="${dh.thoiGianTao}" pattern="yyyy-MM-dd"/>">
                                 <div class="order-card">
-
                                     <!-- Header đơn hàng -->
                                     <div class="order-card-header d-flex justify-content-between align-items-center">
                                         <div class="text-start">
@@ -333,7 +360,6 @@
                                                 ${dh.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chờ trả tiền mặt'}
                                         </span>
                                     </div>
-
                                     <!-- Body đơn hàng -->
                                     <div class="order-card-body">
                                         <!-- Mốc giờ hẹn lấy nước -->
@@ -346,7 +372,6 @@
                                             <small class="text-muted d-block" style="font-size: 11px;">Hội viên thanh toán</small>
                                             <strong class="text-dark small"><i class="bi bi-person-fill text-success"></i> Khách hàng: <c:out value="${not empty dh.maKh ? dh.maKh : 'Khách lẻ vãng lai'}"/></strong>
                                         </div>
-
                                         <!-- Chi tiết các món uống nạp trước động -->
                                         <div class="mb-2 text-start">
                                             <c:forEach var="item" items="${dh.chiTietDonHangList}">
@@ -358,10 +383,9 @@
                                                             <span class="text-muted fw-bold font-monospace ms-1.5" style="font-size:12px;">x<c:out value="${item.soLuong}"/></span>
                                                         </div>
                                                         <span class="fw-bold text-secondary font-monospace" style="font-size:12.5px;">
-                                                                <fmt:formatNumber value="${item.giaChot * item.soLuong}" type="currency" currencySymbol=""/>đ
-                                                            </span>
+                                                            <fmt:formatNumber value="${item.giaChot * item.soLuong}" type="currency" currencySymbol=""/>đ
+                                                        </span>
                                                     </div>
-
                                                     <!-- Ice, Sugar options - ẨN KHI LÀ N/A (BÁNH NGỌT/ĐỒ ĂN) -->
                                                     <div class="text-muted small" style="font-size: 11px; margin-top:2px;">
                                                         <c:choose>
@@ -375,7 +399,6 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </div>
-
                                                     <!-- Topping details -->
                                                     <c:if test="${not empty item.toppingsList}">
                                                         <div class="mt-1">
@@ -387,7 +410,6 @@
                                                 </div>
                                             </c:forEach>
                                         </div>
-
                                         <c:if test="${not empty dh.ghiChuDon}">
                                             <div class="p-2 border border-dashed rounded bg-light small mb-2 text-muted text-start">
                                                 <i class="bi bi-pencil-square text-warning"></i> <strong>Ghi chú đơn:</strong> <c:out value="${dh.ghiChuDon}"/>
@@ -399,21 +421,19 @@
                                             </div>
                                         </c:if>
                                     </div>
-
                                     <!-- Footer đơn hàng -->
                                     <div class="order-card-footer d-flex justify-content-between align-items-center">
                                         <div class="text-start">
                                             <small class="text-muted d-block" style="font-size:11px;">Thành tiền:</small>
                                             <span class="fw-bold text-danger font-monospace fs-5">
-                                                    <fmt:formatNumber value="${dh.tongPhaiTra}" type="currency" currencySymbol=""/>đ
-                                                </span>
+                                                <fmt:formatNumber value="${dh.tongPhaiTra}" type="currency" currencySymbol=""/>đ
+                                            </span>
                                         </div>
                                         <div class="d-flex gap-1.5">
                                             <!-- Nút in hóa đơn nhanh -->
                                             <button type="button" class="btn btn-outline-success btn-sm fw-bold px-2.5" onclick="loadAndShowPrintReceipt('${dh.maDh}')">
                                                 <i class="bi bi-printer"></i>
                                             </button>
-
                                             <!-- Các mốc điều hành trạng thái -->
                                             <c:choose>
                                                 <c:when test="${dh.trangThaiDon == 0}">
@@ -437,15 +457,15 @@
                                             </c:choose>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </c:forEach>
                     </c:when>
                     <c:otherwise>
                         <div class="col-12 text-center py-5 text-muted">
-                            <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-50 text-success"></i>
-                            Không có đơn đặt online nào trong trạng thái lọc hiện hành!
+                            <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-50 text-success animate-pulse"></i>
+                            <h5 class="fw-bold mt-2 text-dark" style="font-size: 15px;">Chưa phát sinh đơn hàng online nào!</h5>
+                            <p class="small text-muted mb-0">Hệ thống đang rà soát dữ liệu thời gian thực...</p>
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -459,7 +479,6 @@
                 <ul class="pagination pagination-sm mb-0 justify-content-end" id="ordersPaginationButtons"></ul>
             </nav>
         </div>
-
     </main>
 </div>
 
@@ -483,17 +502,14 @@
                     <strong style="font-size: 11px; text-align: center; display: block;">HÓA ĐƠN BÁN LẺ TẠI QUẦY</strong>
                     <span style="font-size: 10px; text-align: center; display: block;" id="billThoiGian"></span>
                 </div>
-
                 <div class="mb-2" style="font-size: 10px; line-height: 1.4;">
                     <div>Mã đơn: <strong id="billMaDh"></strong></div>
                     <div>Thu ngân: <span id="billTenNv"></span></div>
                     <div>Khách hàng: <span id="billTenKh"></span></div>
                 </div>
-
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
                 <div id="billItemsContainer" style="font-size: 10.5px;"></div>
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-
                 <div class="small" style="font-size: 10px; line-height: 1.5;">
                     <div class="d-flex justify-content-between mb-1">
                         <span>Tổng tiền nước gốc:</span>
@@ -517,7 +533,6 @@
                         <span id="billFinalPayable"></span>
                     </div>
                 </div>
-
                 <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
                 <div class="text-center mt-3" style="font-size: 9px; color: #444; text-align: center;">
                     Cảm ơn quý khách hàng và hẹn gặp lại!<br><i>Powered by CodeDevSquad</i>
@@ -534,14 +549,27 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
-
 <script>
+    // Hàm kích hoạt mở / gập bộ lọc di động trên Portal
+    function toggleNhanDonSidebar() {
+        const sidebar = document.getElementById('ndSidebar');
+        const backdrop = document.getElementById('ndSidebarBackdrop');
+        if (sidebar && backdrop) {
+            sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show');
+            if (sidebar.classList.contains('show')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+
     // Cập nhật trạng thái đơn đặt online nhanh
     function updateOrderStatus(maDh, status) {
         Swal.fire({
             title: 'Cập nhật trạng thái đơn?',
-            text: 'Xác nhận chuyển đổi trạng thái thực hiện pha chế cho đơn ' + maDh + '?',
+            text: 'Xác nhận chuyển đổi trạng thái thực hiện cho đơn ' + maDh + '?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#10b981',
@@ -594,14 +622,11 @@
     function loadAndShowPrintReceipt(orderId) {
         const container = document.getElementById("billItemsContainer");
         if (!container) return;
-
         container.innerHTML = '<div class="text-center py-4">' +
             '  <div class="spinner-border text-success" role="status"></div>' +
             '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
             '</div>';
-
         receiptModal.show();
-
         fetch('${pageContext.request.contextPath}/pos/bill-detail?id=' + orderId)
             .then(res => res.json())
             .then(data => {
@@ -610,30 +635,25 @@
                     document.getElementById("billThoiGian").innerText = data.thoiGianTao;
                     document.getElementById("billTenKh").innerText = data.tenKhachHang ? data.tenKhachHang : 'Khách lẻ vãng lai';
                     document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
-
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                     if (parseInt(data.tienGiamGia) > 0) {
                         document.getElementById("billDiscountRow").style.setProperty('display', 'flex', 'important');
                     } else {
                         document.getElementById("billDiscountRow").style.setProperty('display', 'none', 'important');
                     }
-
                     if (data.diemSuDung > 0) {
                         document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                         document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                     } else {
                         document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                     }
-
                     let rawSum = parseInt(data.tongTienHang) || 0;
                     let disc = parseInt(data.tienGiamGia) || 0;
                     let ptsDisc = parseInt(data.tienTruDiem) || 0;
                     let billBeforeTax = rawSum - disc - ptsDisc;
                     if (billBeforeTax < 0) billBeforeTax = 0;
                     let vatPrice = Math.round(billBeforeTax * 0.08);
-
                     document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
 
@@ -656,7 +676,6 @@
                         if (configLine) {
                             html += '  <div class="small text-muted">' + configLine + '</div>';
                         }
-
                         if (item.toppings && item.toppings.length > 0) {
                             html += '  <div class="text-success small pl-2" style="font-size: 10px;">';
                             item.toppings.forEach(tp => {
@@ -699,25 +718,21 @@
     function filterAndPaginateOnlineOrders() {
         const searchKeyword = document.getElementById("orderSearchInput").value.trim().toLowerCase();
         const dateKeyword = document.getElementById("orderDateInput").value;
-
         const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
-        filteredOrdersList = [];
 
+        filteredOrdersList = [];
         allCards.forEach(card => {
             const cardId = card.getAttribute("data-madh").toLowerCase();
             const cardPhone = card.getAttribute("data-sdt").toLowerCase();
             const cardDate = card.getAttribute("data-date");
-
             const matchSearch = searchKeyword === "" || cardId.includes(searchKeyword) || cardPhone.includes(searchKeyword);
             const matchDate = dateKeyword === "" || cardDate === dateKeyword;
-
             if (matchSearch && matchDate) {
                 filteredOrdersList.push(card);
             } else {
                 card.style.setProperty('display', 'none', 'important');
             }
         });
-
         currentPage = 1;
         renderOnlineOrders();
     }
@@ -725,16 +740,13 @@
     function renderOnlineOrders() {
         const allCards = document.querySelectorAll("#ordersGrid .order-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
-
         const totalRows = filteredOrdersList.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
 
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageCards = filteredOrdersList.slice(startIdx, endIdx);
         pageCards.forEach(card => card.style.setProperty('display', 'block', 'important'));
 
@@ -752,9 +764,7 @@
                 document.getElementById("ordersPaginationBlock").style.setProperty('display', 'none', 'important');
                 return;
             }
-
             document.getElementById("ordersPaginationBlock").style.setProperty('display', 'flex', 'important');
-
             // Nút Trước
             const prevLi = document.createElement("li");
             prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
@@ -768,7 +778,6 @@
                 li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeOrdersPage(' + i + ')">' + i + '</a>';
                 buttonsContainer.appendChild(li);
             }
-
             // Nút Sau
             const nextLi = document.createElement("li");
             nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
@@ -790,7 +799,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         filterAndPaginateOnlineOrders();
-
         // Kiểm tra thông báo lưu thay đổi từ server chuyển về
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -804,7 +812,10 @@
     // Ajax live polling rà soát đơn online mới 5 giây/lần
     setInterval(function() {
         fetch('${pageContext.request.contextPath}/pos/nhandon?action=checkPollingCount&status=' + ${currentStatus})
-            .then(res => res.text())
+            .then(res => {
+                if (res.ok) return res.text();
+                throw new Error("Polling network issue");
+            })
             .then(data => {
                 const currentCount = ${onlineOrders != null ? onlineOrders.size() : 0};
                 if (parseInt(data) !== currentCount && parseInt(data) > 0) {
@@ -812,7 +823,7 @@
                     setTimeout(() => { location.reload(); }, 1500);
                 }
             })
-            .catch(err => console.error("Lỗi Polling:", err));
+            .catch(err => console.log("Polling skipped or offline."));
     }, 5000);
 </script>
 </body>
