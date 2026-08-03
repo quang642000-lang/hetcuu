@@ -88,34 +88,6 @@
             border-radius: 50px !important;
             font-size: 11px !important;
         }
-        .table-audit th {
-            background-color: #f8fafc !important;
-            color: var(--text-muted) !important;
-            font-weight: 700 !important;
-            font-size: 11.5px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 0.5px !important;
-            padding: 14px 16px !important;
-            border-bottom: 2px solid var(--border-color) !important;
-        }
-        .table-audit td {
-            padding: 14px 16px !important;
-            vertical-align: middle !important;
-            font-size: 13.5px !important;
-            border-bottom: 1px solid var(--border-color) !important;
-        }
-        .compare-box {
-            font-family: 'Consolas', 'Courier New', monospace !important;
-            font-size: 11.5px !important;
-            border-radius: 6px !important;
-            padding: 10px 14px !important;
-            max-height: 120px !important;
-            overflow-y: auto !important;
-            white-space: pre-wrap !important;
-            word-break: break-all !important;
-            background-color: #f8fafc !important;
-            border: 1px solid var(--border-color) !important;
-        }
         .compare-old {
             border-left: 3px solid #f59e0b !important;
             color: #64748b !important;
@@ -211,7 +183,9 @@
                         Tìm thấy ${totalLogs} mốc biến động
                     </span>
                 </div>
-                <div class="table-responsive">
+
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <div class="d-none d-lg-block table-responsive">
                     <table class="table table-audit mb-0" id="auditLogTable">
                         <thead>
                         <tr class="text-center">
@@ -231,7 +205,7 @@
                                     <tr class="audit-log-row text-center">
                                         <td class="font-monospace fw-bold text-success">#${log.maLog}</td>
                                         <td class="font-monospace text-dark">
-                                            <fmt:formatDate value="${log.thoiGian}" pattern="HH:mm:ss  dd/MM/yyyy" />
+                                            <fmt:formatDate value="${log.thoiGian}" pattern="HH:mm:ss dd/MM/yyyy" />
                                         </td>
                                         <td class="text-start">
                                             <div class="d-flex align-items-center">
@@ -270,7 +244,7 @@
                                                     <span class="badge-delete"><i class="bi bi-trash3-fill me-1"></i>DELETE</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="badge bg-secondary"><c:out value="${log.hanhDong}"/></span>
+                                                    <span class="badge bg-secondary text-white"><c:out value="${log.hanhDong}"/></span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
@@ -284,12 +258,12 @@
                                                 <!-- COLUMN CŨ -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
-                                                    <div class="compare-box compare-old"><c:choose><c:when test="${not empty log.duLieuCu}"><c:out value="${log.duLieuCu}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
+                                                    <div class="compare-box compare-old" style="font-family: monospace; font-size: 11px; max-height: 80px; overflow-y: auto; background: #fafafa; border-radius: 4px; padding: 4px; border-left: 3px solid #f59e0b; color: #64748b;"><c:choose><c:when test="${not empty log.duLieuCu}"><c:out value="${log.duLieuCu}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
                                                 </div>
                                                 <!-- COLUMN MỚI -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU MỚI SAU BIẾN ĐỘNG:</div>
-                                                    <div class="compare-box compare-new"><c:choose><c:when test="${not empty log.duLieuMoi}"><c:out value="${log.duLieuMoi}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
+                                                    <div class="compare-box compare-new" style="font-family: monospace; font-size: 11px; max-height: 80px; overflow-y: auto; background: #fafafa; border-radius: 4px; padding: 4px; border-left: 3px solid #10b981; color: #0f172a;"><c:choose><c:when test="${not empty log.duLieuMoi}"><c:out value="${log.duLieuMoi}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -317,6 +291,107 @@
                     </table>
                 </div>
 
+                <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                <div class="d-block d-lg-none" id="auditLogMobileCards">
+                    <c:choose>
+                        <c:when test="${not empty logsList}">
+                            <c:forEach var="log" items="${logsList}">
+                                <div class="card mb-3 p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
+                                    <!-- Expand/Collapse Chevron -->
+                                    <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
+                                        <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
+                                            <i class="bi bi-chevron-down fs-6"></i>
+                                        </span>
+                                    </div>
+
+                                    <!-- Card Header: Mã Log, Thời gian, Badge hành động -->
+                                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="font-monospace fw-bold text-success" style="font-size: 13px;">#${log.maLog}</span>
+                                            <span class="font-monospace text-muted small" style="font-size: 11px;">
+                                                <fmt:formatDate value="${log.thoiGian}" pattern="HH:mm:ss dd/MM/yyyy" />
+                                            </span>
+                                        </div>
+                                        <span>
+                                            <c:choose>
+                                                <c:when test="${log.hanhDong == 'LOGIN'}">
+                                                    <span class="badge-login" style="padding: 3px 10px !important;"><i class="bi bi-box-arrow-in-right me-1"></i>LOGIN</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'LOGOUT'}">
+                                                    <span class="badge-logout" style="padding: 3px 10px !important;"><i class="bi bi-box-arrow-left me-1"></i>LOGOUT</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'INSERT'}">
+                                                    <span class="badge-insert" style="padding: 3px 10px !important;"><i class="bi bi-plus-circle me-1"></i>INSERT</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'UPDATE'}">
+                                                    <span class="badge-update" style="padding: 3px 10px !important;"><i class="bi bi-pencil-square me-1"></i>UPDATE</span>
+                                                </c:when>
+                                                <c:when test="${log.hanhDong == 'DELETE'}">
+                                                    <span class="badge-delete" style="padding: 3px 10px !important;"><i class="bi bi-trash3-fill me-1"></i>DELETE</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge bg-secondary text-white" style="font-size: 10px; padding: 3px 10px !important;"><c:out value="${log.hanhDong}"/></span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+
+                                    <!-- Card Body: Nhân viên & Vùng tác động -->
+                                    <div class="small text-muted" style="line-height: 1.6;">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Nhân viên:</span>
+                                            <strong class="text-dark text-end">
+                                                <c:choose>
+                                                    <c:when test="${not empty log.maNv}">
+                                                        <c:out value="${log.maNv}"/> - <c:out value="${log.hoTenNhanVien}"/>
+                                                    </c:when>
+                                                    <c:otherwise>SYSTEM / PORTAL</c:otherwise>
+                                                </c:choose>
+                                            </strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span>Vùng tác động:</span>
+                                            <strong class="text-dark"><c:out value="${log.bangTacDong}"/></strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span>IP Address:</span>
+                                            <span class="font-monospace text-dark">${not empty log.ipAddress ? log.ipAddress : '127.0.0.1'}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Card Expandable Details: Old & New JSON comparison -->
+                                    <div class="mobile-card-details border-top pt-2 mt-2 d-none">
+                                        <div class="mb-2">
+                                            <div class="text-muted fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
+                                            <div class="compare-box compare-old p-2 bg-light rounded text-start" style="font-family: monospace; font-size: 11px; white-space: pre-wrap; overflow-x: auto; border-left: 3px solid #f59e0b; color: #64748b;">
+                                                <c:choose>
+                                                    <c:when test="${not empty log.duLieuCu}"><c:out value="${log.duLieuCu}"/></c:when>
+                                                    <c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="text-muted fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU MỚI SAU BIẾN ĐỘNG:</div>
+                                            <div class="compare-box compare-new p-2 bg-light rounded text-start" style="font-family: monospace; font-size: 11px; white-space: pre-wrap; overflow-x: auto; border-left: 3px solid #10b981; color: #0f172a;">
+                                                <c:choose>
+                                                    <c:when test="${not empty log.duLieuMoi}"><c:out value="${log.duLieuMoi}"/></c:when>
+                                                    <c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm border">
+                                <i class="bi bi-shield-slash fs-1 text-secondary opacity-30 d-block mb-2"></i>
+                                <span class="fw-semibold">Hộp đen trống trơn! Chưa có nhật ký hoạt động nào.</span>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
                 <!-- SERVER-SIDE PAGINATION CONTROLS -->
                 <c:if test="${totalPages > 1}">
                     <div class="pagination-container" id="paginationWrapper">
@@ -325,11 +400,11 @@
                         </span>
                         <nav>
                             <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons">
-                                <!-- Nút Trước -->
+                                <!-- Previous -->
                                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                                     <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage - 1})">&laquo; Trước</a>
                                 </li>
-                                <!-- Danh sách trang số -->
+                                <!-- Pages list -->
                                 <c:forEach var="i" begin="1" end="${totalPages}">
                                     <c:if test="${i >= currentPage - 2 && i <= currentPage + 2}">
                                         <li class="page-item ${currentPage == i ? 'active' : ''}">
@@ -337,7 +412,7 @@
                                         </li>
                                     </c:if>
                                 </c:forEach>
-                                <!-- Nút Sau -->
+                                <!-- Next -->
                                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                                     <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage + 1})">Sau &raquo;</a>
                                 </li>
@@ -349,11 +424,26 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function changePage(page) {
         document.getElementById('pageField').value = page;
         document.getElementById('filterForm').submit();
+    }
+
+    // EXPAND/COLLAPSE MOBILE CARD DETAILS
+    function toggleMobileCardDetails(element) {
+        const card = element.closest('.card');
+        const details = card.querySelector('.mobile-card-details');
+        const icon = element.querySelector('i');
+        if (details.classList.contains('d-none')) {
+            details.classList.remove('d-none');
+            icon.className = 'bi bi-chevron-up fs-6';
+        } else {
+            details.classList.add('d-none');
+            icon.className = 'bi bi-chevron-down fs-6';
+        }
     }
 </script>
 </body>

@@ -37,6 +37,10 @@
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
         }
+        /* Mobile Card Styles */
+        .mobile-card-details {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -45,11 +49,11 @@
     <div class="admin-content">
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
-            <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                     <div>
-                        <h3 class="fw-bold mb-1" style="color: var(--primary-color);">LỊCH SỬ HÓA ĐƠN TÀI CHÍNH</h3>
-                        <p class="text-muted small mb-0">Quản lý vòng đời hóa đơn, tra soát mốc doanh thu, lọc nhân viên xử lý và in hóa đơn tại quầy</p>
+                        <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-receipt me-2"></i>LỊCH SỬ HÓA ĐƠN</h3>
+                        <p class="text-muted small mb-0">Tra cứu thông tin hóa đơn bán lẻ tại quầy POS và đơn đặt hàng online Click & Collect</p>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/hoadon" method="GET" class="d-flex flex-wrap gap-2">
                         <select name="status" class="form-select form-select-sm" style="max-width: 200px;">
@@ -63,7 +67,7 @@
                         </select>
                         <select id="filterNhanVien" class="form-select form-select-sm" style="max-width: 200px;" onchange="filterOrdersRealtime()">
                             <option value="">Tất cả nhân viên đảm nhiệm</option>
-                            <option value="SYSTEM">Hệ thống tự động / Chưa nhận đơn</option>
+                            <option value="SYSTEM">Chờ nhận đơn / Online</option>
                             <c:forEach var="nv" items="${employees}">
                                 <option value="${nv.maNv}"><c:out value="${nv.hoTen}"/> (${nv.maNv})</option>
                             </c:forEach>
@@ -72,7 +76,8 @@
                     </form>
                 </div>
 
-                <div class="table-responsive">
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="ordersTable">
                         <thead>
                         <tr class="table-light text-center">
@@ -155,25 +160,137 @@
                     </table>
                 </div>
 
-                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                <div class="d-block d-lg-none" id="ordersMobileCards">
+                    <c:choose>
+                        <c:when test="${not empty orders}">
+                            <c:forEach var="item" items="${orders}" varStatus="loop">
+                                <div class="order-card-col mb-3" data-manv="${not empty item.maNv ? item.maNv : 'SYSTEM'}">
+                                    <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
+                                        <!-- Expand/Collapse Chevron -->
+                                        <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
+                                            <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
+                                                <i class="bi bi-chevron-down fs-6"></i>
+                                            </span>
+                                        </div>
+
+                                        <!-- Card Header: STT, Mã hóa đơn, Thực thu -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
+                                                        ${loop.index + 1}
+                                                </span>
+                                                <code class="fw-bold text-dark fs-6 font-monospace">${item.maDh}</code>
+                                            </div>
+                                            <strong class="text-success font-monospace fs-5">
+                                                <fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
+                                            </strong>
+                                        </div>
+
+                                        <!-- Card Body: Các thuộc tính chính -->
+                                        <div class="small text-muted" style="line-height: 1.6;">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Khách CRM:</span>
+                                                <strong class="text-dark">
+                                                    <c:choose>
+                                                        <c:when test="${not empty item.maKh}">
+                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success">${item.maKh}</span>
+                                                        </c:when>
+                                                        <c:otherwise><span class="text-muted small">Khách lẻ vãng lai</span></c:otherwise>
+                                                    </c:choose>
+                                                </strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <span>Thời gian tạo:</span>
+                                                <span class="text-dark"><fmt:formatDate value="${item.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <span>Thanh toán:</span>
+                                                <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success-subtle text-success border-success' : 'bg-warning-subtle text-warning border-warning'} border px-2 py-0.5" style="font-size: 10px;">
+                                                        ${item.trangThaiThanhToan == 1 ? 'Đã thanh toán' : 'Chưa trả'}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <span>Trạng thái đơn:</span>
+                                                <span>
+                                                    <c:choose>
+                                                        <c:when test="${item.trangThaiDon == 0}"><span class="badge bg-secondary text-white px-2 py-0.5" style="font-size: 10px;">Chờ duyệt</span></c:when>
+                                                        <c:when test="${item.trangThaiDon == 1}"><span class="badge bg-info text-white px-2 py-0.5" style="font-size: 10px;">Đã XN</span></c:when>
+                                                        <c:when test="${item.trangThaiDon == 2}"><span class="badge bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">Pha chế</span></c:when>
+                                                        <c:when test="${item.trangThaiDon == 3}"><span class="badge bg-primary text-white px-2 py-0.5" style="font-size: 10px;">Chờ lấy</span></c:when>
+                                                        <c:when test="${item.trangThaiDon == 4}"><span class="badge bg-success text-white px-2 py-0.5" style="font-size: 10px;">Hoàn thành</span></c:when>
+                                                        <c:when test="${item.trangThaiDon == 5}"><span class="badge bg-danger text-white px-2 py-0.5" style="font-size: 10px;">Đã hủy</span></c:when>
+                                                    </c:choose>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card Expandable Details -->
+                                        <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
+                                            <div class="text-muted d-flex justify-content-between">
+                                                <span>Tiền cốc nước gốc:</span>
+                                                <strong class="text-dark font-monospace"><fmt:formatNumber value="${item.tongTienHang}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</strong>
+                                            </div>
+                                            <div class="text-muted d-flex justify-content-between mt-1">
+                                                <span>Khấu trừ Khuyến mãi:</span>
+                                                <strong class="text-danger font-monospace">-<fmt:formatNumber value="${item.tienGiamGia + item.tienTruDiem}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</strong>
+                                            </div>
+                                            <div class="text-muted d-flex justify-content-between mt-1">
+                                                <span>Nhân viên phục vụ:</span>
+                                                <strong class="text-dark">
+                                                    <c:choose>
+                                                        <c:when test="${not empty item.maNv}">
+                                                            <c:set var="matchedStaffName" value="${item.maNv}" />
+                                                            <c:forEach var="nv" items="${employees}">
+                                                                <c:if test="${nv.maNv eq item.maNv}">
+                                                                    <c:set var="matchedStaffName" value="${nv.hoTen}" />
+                                                                </c:if>
+                                                            </c:forEach>
+                                                            <c:out value="${matchedStaffName}"/>
+                                                        </c:when>
+                                                        <c:otherwise>Chờ nhận đơn / Online</c:otherwise>
+                                                    </c:choose>
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <!-- Card Actions -->
+                                        <div class="d-flex gap-2 border-top pt-2 mt-2">
+                                            <button class="btn btn-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;" onclick="showReceiptDetail('${item.maDh}')">
+                                                <i class="bi bi-eye"></i> Xem chi tiết hóa đơn
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm border">
+                                <i class="bi bi-receipt fs-1 text-secondary opacity-30 d-block mb-2"></i>
+                                Chưa ghi nhận hóa đơn nào!
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <!-- PHÂN TRANG ĐỒNG BỘ CHO DESKTOP VÀ DI ĐỘNG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
-                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 đơn hàng</span>
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
-<!-- POPUP CHI TIẾT HÓA ĐƠN & IN BILL POS -->
+<!-- POPUP HOÁ ĐƠN CHI TIẾT ĐIỆN TỬ -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
             <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1 text-success"></i> HOÁ ĐƠN THANH TOÁN</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-printer-fill me-1 text-success"></i> HOÁ ĐƠN THANH TOÁN CHI TIẾT</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 bg-white text-dark text-start" id="billPrintArea" style="font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4;">
@@ -195,7 +312,7 @@
                 <hr class="border-secondary border-dashed my-2">
                 <div class="small">
                     <div class="d-flex justify-content-between">
-                        <span>Tổng tiền hàng & Topping:</span>
+                        <span>Tổng tiền cốc & Toppings:</span>
                         <strong id="billRawPrice"></strong>
                     </div>
                     <div class="d-flex justify-content-between text-danger" id="billDiscountRow">
@@ -216,20 +333,20 @@
                 </div>
             </div>
             <div class="modal-footer bg-light border-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="bi bi-printer"></i> In hóa đơn</button>
+                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-success btn-sm px-3 fw-bold" onclick="printReceipt()"><i class="bi bi-printer"></i> In hoá đơn</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
 
     function showReceiptDetail(maDh) {
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
+        receiptModal.show();
         fetch('${pageContext.request.contextPath}/admin/hoadon?action=detailJson&id=' + maDh)
             .then(res => res.json())
             .then(data => {
@@ -271,14 +388,15 @@
                         html += '</div>';
                         container.innerHTML += html;
                     });
-                    receiptModal.show();
                 } else {
-                    showToast('error', 'Không tìm thấy hóa đơn!');
+                    Swal.fire({ icon: 'error', title: 'Thất bại', text: 'Không tìm thấy hóa đơn!' });
+                    receiptModal.hide();
                 }
             })
             .catch(err => {
                 console.error("Lỗi:", err);
-                showToast('error', 'Không thể nạp dữ liệu từ máy chủ!');
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể nạp dữ liệu từ máy chủ!' });
+                receiptModal.hide();
             });
     }
 
@@ -291,35 +409,65 @@
         location.reload();
     }
 
+    // EXPAND/COLLAPSE MOBILE CARD DETAILS
+    function toggleMobileCardDetails(element) {
+        const card = element.closest('.card');
+        const details = card.querySelector('.mobile-card-details');
+        const icon = element.querySelector('i');
+        if (details.classList.contains('d-none')) {
+            details.classList.remove('d-none');
+            icon.className = 'bi bi-chevron-up fs-6';
+        } else {
+            details.classList.add('d-none');
+            icon.className = 'bi bi-chevron-down fs-6';
+        }
+    }
+
     // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CLIENT SIDE ĐỒNG BỘ 100%
+    // FILTER AND PAGINATION CLIENT SIDE (SYNCED DESKTOP & MOBILE)
     // ==========================================
     let currentPage = 1;
     const pageSize = 10;
-    let filteredRows = [];
+    let filteredDesktopRows = [];
+    let filteredMobileCards = [];
 
     function filterOrdersRealtime() {
         const selectedNv = document.getElementById("filterNhanVien").value;
-        const allRows = document.querySelectorAll("#ordersTableBody .order-row");
-        filteredRows = [];
 
-        allRows.forEach(row => {
+        // 1. Filter Desktop Rows
+        const allDesktopRows = document.querySelectorAll("#ordersTableBody .order-row");
+        filteredDesktopRows = [];
+        allDesktopRows.forEach(row => {
             const rowNv = row.getAttribute("data-manv");
             if (selectedNv === "" || rowNv === selectedNv) {
-                filteredRows.push(row);
+                filteredDesktopRows.push(row);
             } else {
                 row.style.display = "none";
             }
         });
+
+        // 2. Filter Mobile Cards
+        const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
+        filteredMobileCards = [];
+        allMobileCards.forEach(card => {
+            const cardNv = card.getAttribute("data-manv");
+            if (selectedNv === "" || cardNv === selectedNv) {
+                filteredMobileCards.push(card);
+            } else {
+                card.style.setProperty('display', 'none', 'important');
+            }
+        });
+
         currentPage = 1;
         renderTableRows();
     }
 
     function renderTableRows() {
-        const allRows = document.querySelectorAll("#ordersTableBody .order-row");
-        allRows.forEach(row => row.style.display = "none");
+        // Render Desktop view
+        const allDesktopRows = document.querySelectorAll("#ordersTableBody .order-row");
+        allDesktopRows.forEach(row => row.style.display = "none");
 
-        const totalRows = filteredRows.length;
+        const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
 
         if (currentPage < 1) currentPage = 1;
@@ -328,42 +476,50 @@
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
 
-        const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach((row, idx) => {
+        const pageDesktopRows = filteredDesktopRows.slice(startIdx, endIdx);
+        pageDesktopRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
+        });
+
+        // Render Mobile view
+        const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
+        allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
+
+        const pageMobileCards = filteredMobileCards.slice(startIdx, endIdx);
+        pageMobileCards.forEach(card => {
+            card.style.setProperty('display', 'block', 'important');
         });
 
         updatePaginationControls();
     }
 
     function updatePaginationControls() {
-        const totalRows = filteredRows.length;
+        const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
 
         const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
         const end = Math.min(currentPage * pageSize, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' hóa đơn';
-
         btnContainer.innerHTML = "";
+
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
 
-        // Nút Trước
+        // Prev button
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
 
-        // Trang số
+        // Page numbers
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
@@ -371,7 +527,7 @@
             btnContainer.appendChild(li);
         }
 
-        // Nút Sau
+        // Next button
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
@@ -379,7 +535,7 @@
     }
 
     function changePage(page) {
-        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
@@ -387,12 +543,18 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         const allRows = document.querySelectorAll("#ordersTableBody .order-row");
-        filteredRows = Array.from(allRows);
+        filteredDesktopRows = Array.from(allRows);
+
+        const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
+        filteredMobileCards = Array.from(allMobileCards);
+
         renderTableRows();
 
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
-        if (msg === 'updatesuccess') showToast('success', 'Cập nhật trạng thái đơn hàng thành công!');
+        if (msg === 'updatesuccess') {
+            Swal.fire({ icon: 'success', title: 'Thành công', text: 'Cập nhật trạng thái đơn hàng thành công!', confirmButtonColor: '#10b981' });
+        }
     });
 </script>
 </body>

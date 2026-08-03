@@ -13,6 +13,23 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <style>
+        .progress-voucher {
+            height: 8px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #cbd5e1;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <c:set var="maKm" value="" />
@@ -32,6 +49,7 @@
 <c:set var="loaiVoucher" value="1" />
 <c:set var="formattedStart" value=""/>
 <c:set var="formattedEnd" value=""/>
+
 <c:if test="${not empty voucher}">
     <c:set var="maKm" value="${voucher.maKm}" />
     <c:set var="maCode" value="${voucher.maCode}" />
@@ -55,6 +73,7 @@
         <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
     </c:if>
 </c:if>
+
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
@@ -62,6 +81,7 @@
         <div class="p-4">
             <div class="card card-teapos p-4 shadow-sm border-0" style="border-radius: 12px; background-color: #ffffff;">
                 <c:choose>
+                    <%-- CASE 1: CREATE / EDIT VOUCHER FORM VIEW --%>
                     <c:when test="${not empty formTitle}">
                         <div class="mb-3 border-start border-success border-3 ps-2 text-start">
                             <a href="${pageContext.request.contextPath}/admin/voucher" class="btn btn-sm btn-outline-secondary fw-bold" style="border-radius: 6px;">
@@ -163,11 +183,13 @@
                             </div>
                         </form>
                     </c:when>
+
+                    <%-- CASE 2: LIST VIEW IN DEKSTOP & MOBILE SYNCED --%>
                     <c:otherwise>
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                             <div>
                                 <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-ticket-perforated-fill me-2"></i>QUẢN LÝ VOUCHER</h3>
-                                <p class="text-muted small mb-0">Cấu hình các chiến dịch Marketing, băm mã giảm giá, kiểm soát bật/tắt và quản trị số lượng chốt đơn thực tế</p>
+                                <p class="text-muted small mb-0">Cấu hình các chiến dịch khuyến mãi, băm mã giảm giá, kiểm soát trạng thái và số lượng Voucher đã dùng thực tế</p>
                             </div>
                             <div class="d-flex gap-2 align-items-end">
                                 <div class="input-group input-group-sm" style="width: 250px;">
@@ -179,7 +201,9 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="table-responsive">
+
+                        <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                        <div class="d-none d-lg-block table-responsive">
                             <table class="table table-hover align-middle admin-table" id="voucherTable">
                                 <thead>
                                 <tr class="table-light text-center">
@@ -226,9 +250,9 @@
                                                 </td>
                                                 <td class="fw-bold text-dark"><span class="text-success">${item.soLuongDaDung}</span> / ${item.soLuong}</td>
                                                 <td>
-<span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
-        ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
-</span>
+                                                        <span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2.5 py-1.5">
+                                                                ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
+                                                        </span>
                                                 </td>
                                                 <td>
                                                     <c:choose>
@@ -240,14 +264,14 @@
                                                     </c:choose>
                                                 </td>
                                                 <td>
-<span class="badge bg-light text-dark border px-2.5 py-1.5">
-        ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
-</span>
+                                                        <span class="badge bg-light text-dark border px-2.5 py-1.5">
+                                                                ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
+                                                        </span>
                                                 </td>
                                                 <td>
-<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-        ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
-</span>
+                                                        <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                                ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
+                                                        </span>
                                                 </td>
                                                 <td class="text-end">
                                                     <div class="d-flex justify-content-end gap-1.5 align-items-center">
@@ -273,6 +297,130 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                        <div class="d-block d-lg-none" id="vouchersMobileCards">
+                            <c:choose>
+                                <c:when test="${not empty vouchers}">
+                                    <c:forEach var="item" items="${vouchers}" varStatus="loop">
+                                        <div class="voucher-card-col mb-3" data-id="${item.maKm}" data-code="<c:out value='${item.maCode}'/>" data-name="<c:out value='${item.tenKm}'/>">
+                                            <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
+                                                <!-- Chevron Button for expansion -->
+                                                <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
+                                                    <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
+                                                        <i class="bi bi-chevron-down fs-6"></i>
+                                                    </span>
+                                                </div>
+
+                                                <!-- Header: STT, Mã CODE, và Trạng thái -->
+                                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
+                                                                ${loop.index + 1}
+                                                        </span>
+                                                        <span class="badge bg-dark text-white fw-bold font-monospace" style="font-size: 11px;">${item.maCode}</span>
+                                                    </div>
+                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-2 py-0.5" style="font-size: 10px;">
+                                                            ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Body: Tên chương trình & Hình thức giảm -->
+                                                <div class="text-start mb-2">
+                                                    <h6 class="fw-bold text-dark mb-1"><c:out value="${item.tenKm}"/></h6>
+                                                    <div class="text-muted small">
+                                                        <c:choose>
+                                                            <c:when test="${item.loaiGiam == 1}">
+                                                                Giảm thẳng: <strong class="text-success"><fmt:formatNumber value="${item.giaTriGiam}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</strong>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                Giảm %: <strong class="text-success">${item.giaTriGiam}%</strong> <small>(Chặn: <fmt:formatNumber value="${item.giamToiDa}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ)</small>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Card Expandable Details -->
+                                                <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
+                                                    <div class="text-muted d-flex justify-content-between">
+                                                        <span>Mã Khuyến Mãi:</span>
+                                                        <strong class="text-dark">${item.maKm}</strong>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Điều kiện đơn tối thiểu:</span>
+                                                        <strong class="text-dark font-monospace"><fmt:formatNumber value="${item.donToiThieu}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</strong>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Quỹ số lượng (Đã dùng/Tổng):</span>
+                                                        <strong class="text-success">${item.soLuongDaDung} / ${item.soLuong}</strong>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Phân loại Voucher:</span>
+                                                        <span class="badge ${item.loaiVoucher == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary'} border px-2 py-0.5" style="font-size: 10px;">
+                                                                ${item.loaiVoucher == 1 ? 'CRM HỘI VIÊN' : 'VOUCHER GIẤY 📄'}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Hạng áp dụng tối thiểu:</span>
+                                                        <strong class="text-dark">
+                                                            <c:choose>
+                                                                <c:when test="${item.loaiVoucher == 2}">Mọi đối tượng</c:when>
+                                                                <c:when test="${item.hangApDung == 1}">ĐỒNG trở lên</c:when>
+                                                                <c:when test="${item.hangApDung == 2}">BẠC trở lên</c:when>
+                                                                <c:when test="${item.hangApDung == 3}">VÀNG trở lên 👑</c:when>
+                                                                <c:when test="${item.hangApDung == 4}">VIP 💎</c:when>
+                                                            </c:choose>
+                                                        </strong>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Giới hạn / Khách hàng:</span>
+                                                        <strong class="text-dark">
+                                                                ${item.loaiVoucher == 2 ? 'Vô hạn' : (item.soLuotDungCaNhan == 0 ? 'Vô hạn' : item.soLuotDungCaNhan += ' lần')}
+                                                        </strong>
+                                                    </div>
+                                                    <div class="text-muted d-flex justify-content-between mt-1">
+                                                        <span>Thời gian hiệu lực:</span>
+                                                        <span class="text-dark fw-semibold">
+                                                            <fmt:formatDate value="${item.ngayBatDau}" pattern="dd/MM/yyyy HH:mm"/> - <fmt:formatDate value="${item.ngayKetThuc}" pattern="dd/MM/yyyy HH:mm"/>
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Card Actions -->
+                                                <div class="d-flex gap-2 border-top pt-2 mt-2">
+                                                    <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-outline-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
+                                                        <i class="bi bi-pencil-square"></i> Sửa
+                                                    </a>
+                                                    <c:choose>
+                                                        <c:when test="${item.trangThai}">
+                                                            <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=0" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
+                                                                <i class="bi bi-toggle2-off"></i> Ẩn
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="${pageContext.request.contextPath}/admin/voucher?action=toggle&id=${item.maKm}&status=1" class="btn btn-outline-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
+                                                                <i class="bi bi-toggle2-on"></i> Bật
+                                                            </a>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <button class="btn btn-outline-danger btn-sm w-100 fw-bold py-2" style="border-radius: 8px;" onclick="confirmDeleteVoucher('${item.maKm}')">
+                                                        <i class="bi bi-trash3-fill"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="text-center py-5 text-muted bg-white rounded-3 shadow-sm border">
+                                        <i class="bi bi-ticket-perforated fs-1 text-secondary opacity-30 d-block mb-2"></i>
+                                        Chưa tạo voucher khuyến mãi nào!
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <!-- PHÂN TRANG ĐỒNG BỘ -->
                         <div class="pagination-container" id="paginationWrapper" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
@@ -285,12 +433,12 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     function toggleVoucherScopeUI() {
         const loaiVoucherEl = document.getElementById("loaiVoucher");
-        if (!loaiVoucherEl) return; // FIX TRÁNH LỖI NULL KHI Ở TRANG LIST VOUCHER
+        if (!loaiVoucherEl) return;
         const loaiVoucher = loaiVoucherEl.value;
         const hangApDungGroup = document.getElementById("hangApDungGroup");
         const soLuotDungCaNhanGroup = document.getElementById("soLuotDungCaNhanGroup");
@@ -302,6 +450,7 @@
             if (soLuotDungCaNhanGroup) soLuotDungCaNhanGroup.style.setProperty('display', 'block', 'important');
         }
     }
+
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
             title: 'Hủy/Xóa bỏ Voucher này?',
@@ -317,67 +466,125 @@
             }
         });
     }
+
+    // EXPAND/COLLAPSE MOBILE CARD DETAILS
+    function toggleMobileCardDetails(element) {
+        const card = element.closest('.card');
+        const details = card.querySelector('.mobile-card-details');
+        const icon = element.querySelector('i');
+        if (details.classList.contains('d-none')) {
+            details.classList.remove('d-none');
+            icon.className = 'bi bi-chevron-up fs-6';
+        } else {
+            details.classList.add('d-none');
+            icon.className = 'bi bi-chevron-down fs-6';
+        }
+    }
+
+    // ==========================================
+    // CLIENT-SIDE FILTER AND PAGINATION (SYNCED DESKTOP & MOBILE)
+    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
-    let filteredRows = [];
+    let filteredVouchersList = [];
+    let filteredMobileCards = [];
+
     function filterAndPaginateVouchers() {
         const searchInput = document.getElementById("voucherSearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-        const allRows = Array.from(document.querySelectorAll("#voucherTableBody .voucher-row"));
-        filteredRows = allRows.filter(row => {
+
+        // Filter Desktop Rows
+        const allDesktopRows = Array.from(document.querySelectorAll("#voucherTableBody .voucher-row"));
+        filteredVouchersList = allDesktopRows.filter(row => {
             const code = row.dataset.code.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return code.includes(searchVal) || name.includes(searchVal);
         });
+
+        // Filter Mobile Cards
+        const allMobileCards = Array.from(document.querySelectorAll("#vouchersMobileCards .voucher-card-col"));
+        filteredMobileCards = allMobileCards.filter(card => {
+            const code = card.dataset.code.toLowerCase();
+            const name = card.dataset.name.toLowerCase();
+            return code.includes(searchVal) || name.includes(searchVal);
+        });
+
         currentPage = 1;
         renderTableRows();
     }
+
     function renderTableRows() {
-        const allRows = document.querySelectorAll("#voucherTableBody .voucher-row");
-        allRows.forEach(row => row.style.display = "none");
-        const totalRows = filteredRows.length;
+        // Desktop Render
+        const allDesktopRows = document.querySelectorAll("#voucherTableBody .voucher-row");
+        allDesktopRows.forEach(row => row.style.display = "none");
+
+        const totalRows = filteredVouchersList.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
+
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-        const pageRows = filteredRows.slice(startIdx, endIdx);
+
+        const pageRows = filteredVouchersList.slice(startIdx, endIdx);
         pageRows.forEach(row => row.style.display = "table-row");
+
+        // Mobile Render
+        const allMobileCards = document.querySelectorAll("#vouchersMobileCards .voucher-card-col");
+        allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
+
+        const pageCards = filteredMobileCards.slice(startIdx, endIdx);
+        pageCards.forEach(card => {
+            card.style.setProperty('display', 'block', 'important');
+        });
+
+        // Pagination Panel Update
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
+
         const start = totalRows > 0 ? startIdx + 1 : 0;
         const end = endIdx;
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng Voucher';
         btnContainer.innerHTML = "";
+
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
+
+        // Prev btn
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
+
+        // Pages
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
+
+        // Next btn
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
+
     function changePage(page) {
-        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        const totalPages = Math.ceil(filteredVouchersList.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -387,6 +594,7 @@
         if (msg === 'softdeletesuccess') showToast('success', 'Voucher đã có giao dịch lịch sử, tự động đưa về tạm tắt!');
         if (msg === 'togglesuccess') showToast('success', 'Đã thay đổi trạng thái Voucher thành công!');
         if (msg === 'togglefailed') showToast('error', 'Cập nhật trạng thái Voucher thất bại!');
+
         toggleVoucherScopeUI();
         filterAndPaginateVouchers();
     });
