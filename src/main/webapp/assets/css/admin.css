@@ -1,470 +1,390 @@
 /* =========================================================================
-   COZY MATCHA-CREAM THEME & ENTERPRISE SaaS ADMIN ESSENTIALS
+   TEA POS - SYSTEM ADMIN COMPREHENSIVE RESPONSIVE STYLESHEET
    ========================================================================= */
+
 :root {
-    --primary: #059669;            /* Cozy Matcha Dark Green */
-    --primary-hover: #047857;
-    --primary-light: #f0fdf4;      /* Matcha milk background */
-    --primary-glow: rgba(5, 150, 105, 0.15);
-    --secondary: #d97706;          /* Amber Sweet Tea */
-    --secondary-hover: #b45309;
-    --secondary-light: #fef3c7;
-    --dark-slate: #0f172a;         /* Charcoal black for readable text */
-    --text-main: #0f172a;          /* Pure dark charcoal */
-    --text-muted: #334155;         /* Dark gray (Slate-700) for subtext */
-    --text-white: #ffffff;
-    --bg-main: #fcfbfa;            /* Warm Cream milk-tea background */
-    --bg-card: #ffffff;
-    --border-color: #cbd5e1;       /* Gray-300 for visible borders */
-
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    --radius-pill: 50px;
-
-    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --primary-light: #ecfdf5;
+    --primary-dark: #065f46;
+    --border-color: #e2e8f0;
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
 }
 
-/* --- MASTER VIEWPORT LOCK & LAYOUT RULES --- */
-html, body {
-    height: 100vh !important;
-    height: 100dvh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important; /* Block master page scrolling */
-    background-color: var(--bg-main) !important;
-    color: var(--text-main) !important;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+/* Base resets & layouts */
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
+/* Sidebar layout adjustments with dvh & safe area support */
 .admin-wrapper {
     display: flex !important;
-    flex-direction: row !important;
     width: 100vw !important;
-    height: 100vh !important;
     height: 100dvh !important;
     overflow: hidden !important;
 }
 
-.admin-content {
-    flex-grow: 1 !important;
-    min-width: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow-y: auto !important; /* ONLY SCROLLABLE AREA */
-    background-color: var(--bg-main) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* --- HIGH-PERFORMANCE ELITE SIDEBAR (STICKY SAFE) --- */
 .admin-sidebar {
     width: 260px !important;
-    height: 100vh !important;
+    min-width: 260px !important;
     height: 100dvh !important;
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
-    color: #f8fafc !important;
+    background-color: #0f172a !important;
     display: flex !important;
     flex-direction: column !important;
-    flex-shrink: 0 !important;
-    z-index: 1030 !important;
-    overflow: hidden !important; /* Hide sidebar scroll container */
-    border-right: 1px solid #334155 !important;
-    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden !important;
+    transition: transform 0.3s ease !important;
+    z-index: 1040 !important;
 }
 
 .sidebar-header {
     padding: 24px 20px !important;
-    border-bottom: 1px solid #334155 !important;
-    background-color: #0b0f19 !important;
-    text-align: center !important;
-    flex-shrink: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    background-color: #0f172a !important;
 }
 
 .sidebar-menu {
-    list-style: none !important;
-    padding: 16px 12px !important;
-    margin: 0 !important;
     flex-grow: 1 !important;
-    overflow-y: auto !important; /* ONLY menu items scroll */
-    -webkit-overflow-scrolling: touch;
+    overflow-y: auto !important;
+    padding: 15px 10px !important;
 }
 
-.sidebar-item {
-    margin-bottom: 6px !important;
+/* Sidebar scrollbar customization */
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
 }
 
-.sidebar-item a {
+/* Sticky sidebar footer containing POS button */
+.admin-sidebar > .border-top {
+    margin-top: auto !important;
+    background-color: #0f172a !important;
+    padding: 16px !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+/* Main Content Area */
+.admin-content {
+    flex-grow: 1 !important;
+    width: calc(100vw - 260px) !important;
+    height: 100dvh !important;
     display: flex !important;
-    align-items: center !important;
-    padding: 12px 16px !important;
-    color: #94a3b8 !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    gap: 12px !important;
-    transition: all 0.2s ease !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
 
-.sidebar-item a:hover {
-    color: #ffffff !important;
-    background-color: rgba(16, 185, 129, 0.08) !important;
-    padding-left: 20px !important;
+.admin-content > div:last-child {
+    flex-grow: 1 !important;
+    overflow-y: auto !important;
 }
-
-.sidebar-item.active a {
-    color: #ffffff !important;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-    font-weight: 600 !important;
-}
-
-/* Fixed POS Entrance at the bottom of Sidebar */
-.admin-sidebar .p-3.border-top {
-    flex-shrink: 0 !important;
-    background-color: #0c101f !important;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important; /* Dynamic iOS Safe Area */
-}
-
-/* --- KPI GRID & CARDS --- */
-.kpi-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
-    gap: 24px !important;
-    padding: 24px !important;
-}
-.kpi-card {
-    background-color: #ffffff !important;
-    border-radius: var(--radius-md) !important;
-    padding: 20px !important;
-    border: 1.5px solid var(--border-color) !important;
-    box-shadow: var(--shadow-sm) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    transition: all 0.2s ease !important;
-}
-.kpi-card:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: var(--shadow-md) !important;
-    border-color: var(--primary) !important;
-}
-
-/* --- TABLE WRAPPERS --- */
-.admin-table-container {
-    background-color: #ffffff !important;
-    border-radius: var(--radius-md) !important;
-    border: 1.5px solid var(--border-color) !important;
-    box-shadow: var(--shadow-sm) !important;
-    margin-bottom: 24px !important;
-}
-.admin-table, .table-audit {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    font-size: 14px !important;
-}
-.admin-table th, .table-audit th {
-    background-color: #f8fafc !important;
-    color: var(--text-main) !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    font-size: 11.5px !important;
-    letter-spacing: 0.75px !important;
-    padding: 16px 20px !important;
-    border-bottom: 2px solid var(--border-color) !important;
-}
-.admin-table td, .table-audit td {
-    padding: 14px 20px !important;
-    border-bottom: 1.5px solid var(--border-color) !important;
-    color: var(--text-main) !important;
-    vertical-align: middle !important;
-}
-
-/* Custom badges */
-.btn-action-edit, .btn-action-delete, .btn-action-warning, .btn-action-info {
-    font-weight: 700 !important;
-    font-size: 12px !important;
-    padding: 6px 12px !important;
-    border-radius: 6px !important;
-    text-decoration: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-.btn-action-edit { color: var(--primary) !important; background-color: var(--primary-light) !important; border: 1px solid rgba(5, 150, 105, 0.2); }
-.btn-action-edit:hover { background-color: var(--primary) !important; color: white !important; }
-.btn-action-delete { color: var(--danger) !important; background-color: rgba(220, 38, 38, 0.05) !important; border: 1px solid rgba(220, 38, 38, 0.15); }
-.btn-action-delete:hover { background-color: var(--danger) !important; color: white !important; }
 
 /* =========================================================================
-   ADAPTIVE COLUMN MORPHING (ACM v7.0) - THE ULTIMATE GRID-CARD SYSTEM
+   BULLETPROOF RESPONSIVE MOBILE TABLES (ACM v7.5)
    ========================================================================= */
 
-/* Safe hides for pagination/filtered rows in collapsed card state */
-.table-collapsed-cards tbody tr.pos-row-hidden {
-    display: none !important;
-}
-
-/* Active Collapsed Table Body Grid */
-.table-collapsed-cards {
-    border: none !important;
-    background: transparent !important;
-}
-.table-collapsed-cards thead {
-    display: none !important; /* Completely hide header rows */
-}
-.table-collapsed-cards tbody {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 8px !important;
-}
-
-/* Card Wrapper Layout */
-.table-collapsed-cards tbody tr {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    background-color: #ffffff !important;
-    border: 1.5px solid var(--border-color) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 16px 48px 16px 16px !important; /* Room on right for floating chevron */
-    position: relative !important;
-    box-shadow: var(--shadow-sm) !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    cursor: pointer !important;
-    text-align: left !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.table-collapsed-cards tbody tr:hover {
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-md) !important;
-}
-
-.table-collapsed-cards tbody tr.expanded {
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-md) !important;
-}
-
-/* --- CARD HEADER CELLS (ORDER: 1) --- */
-.table-collapsed-cards tbody tr td {
-    display: none !important; /* Hide unassigned details cells */
-    border: none !important;
-    padding: 0 !important;
-    background: transparent !important;
-}
-
-.table-collapsed-cards tbody tr td.card-header-col {
-    display: flex !important;
-    align-items: center !important;
-    order: 1 !important;
-    padding: 6px 0 !important;
-    margin-right: 12px !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-}
-
-/* PAGE-SPECIFIC OPTIMIZED HEADER CELL WIDTHS */
-
-/* Voucher Code Styling */
-.table-collapsed-cards tbody tr td.card-header-col.row-code-badge {
-    width: 110px !important;
-    flex-shrink: 0 !important;
-}
-
-/* Image Column */
-.table-collapsed-cards tbody tr td.card-header-col.row-img {
-    width: 44px !important;
-    height: 44px !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-}
-.table-collapsed-cards tbody tr td.card-header-col.row-img img {
-    width: 40px !important;
-    height: 40px !important;
-    object-fit: cover !important;
-    border-radius: 50% !important;
-}
-
-/* STT Column */
-.table-collapsed-cards tbody tr td.card-header-col.row-stt {
-    width: 32px !important;
-    flex-shrink: 0 !important;
-    font-weight: 800 !important;
-    color: var(--primary) !important;
-}
-
-/* ID Column (monospace) */
-.table-collapsed-cards tbody tr td.card-header-col.row-id {
-    width: 90px !important;
-    flex-shrink: 0 !important;
-    font-family: 'Consolas', 'Courier New', monospace !important;
-    font-weight: 700 !important;
-}
-
-/* Name/Main text - GRABS ALL REMAINING HEADER ROW SPACE */
-.table-collapsed-cards tbody tr td.card-header-col.row-name {
-    flex: 1 1 180px !important; /* Perfect grow-wrap ratio */
-    font-weight: 800 !important;
-    color: var(--text-main) !important;
-    font-size: 14.5px !important;
-}
-
-/* Status cell on card header */
-.table-collapsed-cards tbody tr td.card-header-col.row-status-main {
-    flex-shrink: 0 !important;
-    margin-left: auto !important; /* Push to the right end of header */
-    margin-right: 16px !important;
-}
-
-/* --- CARD EXPANDABLE DETAILS CELLS (ORDER: 2) --- */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    order: 2 !important;
-
-    /* Perfect side-by-side double column flow on larger mobile screens */
-    flex: 1 0 48% !important;
-    margin: 6px 1% 0 1% !important;
-    padding: 8px 12px !important;
-
-    background-color: var(--primary-light) !important;
-    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
-    border-radius: var(--radius-sm) !important;
-    box-sizing: border-box !important;
-    text-align: left !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-}
-
-/* Dynamic attribute label prefix injection */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
-    content: attr(data-label) !important;
-    font-weight: 800 !important;
-    color: #047857 !important;
-    font-size: 10px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-bottom: 2px !important;
-    display: block !important;
-}
-
-/* HEAVY DETAILS BLOCK (e.g. Compare Boxes or Descriptions) - ORDER: 2.5 */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
-    display: block !important;
-    order: 2 !important;
-    flex: 1 0 98% !important; /* Force near full-width wrap */
-    margin: 8px 1% 0 1% !important;
-    padding: 10px 14px !important;
-    background-color: var(--primary-light) !important;
-    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
-    border-radius: var(--radius-sm) !important;
-    box-sizing: border-box !important;
-    text-align: left !important;
-}
-
-.table-collapsed-cards tbody tr.expanded td.card-detail-col-full::before {
-    content: attr(data-label) !important;
-    display: block !important;
-    font-weight: 800 !important;
-    color: #047857 !important;
-    font-size: 10px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-bottom: 6px !important;
-}
-
-/* --- CARD ACTIONS PANEL FOOTER (ORDER: 3) --- */
-.table-collapsed-cards tbody tr.expanded td.card-action-col {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
-    order: 3 !important;
-    flex: 1 0 100% !important; /* Force to take up entire footer */
-    margin-top: 12px !important;
-    padding-top: 12px !important;
-    border-top: 1.5px solid #f1f5f9 !important;
-    width: 100% !important;
-    gap: 8px !important;
-}
-
-/* --- FIXED CORNER FLOATING CHEVRON BUTTON --- */
-.table-collapsed-cards tbody tr td.row-chevron {
-    display: flex !important;
-    position: absolute !important;
-    top: 16px !important;
-    right: 16px !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important;
-    max-width: 28px !important;
-    border-radius: 50% !important;
-    background-color: var(--primary-light) !important;
-    color: var(--primary) !important;
-    border: 1px solid rgba(5, 150, 105, 0.15) !important;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    z-index: 5 !important;
-    padding: 0 !important;
-}
-
-.table-collapsed-cards tbody tr.expanded td.row-chevron {
-    transform: rotate(180deg) !important;
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-}
-
-/* Standard empty placeholders styling */
-.empty-placeholder-row {
-    display: block !important;
-    text-align: center !important;
-    padding: 40px !important;
-    color: var(--text-muted) !important;
-    background-color: #ffffff !important;
-    border: 1.5px dashed var(--border-color) !important;
-    border-radius: var(--radius-md) !important;
-    width: 100% !important;
-}
-
-/* --- MOBILE SPECIFIC OVERRIDES --- */
-@media (max-width: 768px) {
-    /* Stack details vertically to avoid squishing on narrow screens */
-    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
-        flex: 1 0 98% !important;
+@media (max-width: 991px) {
+    /* Overlay background for mobile sidebar */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: 1030;
+        display: none;
+    }
+    .sidebar-overlay.show {
+        display: block;
     }
 
     .admin-sidebar {
         position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        bottom: 0 !important;
-        z-index: 1050 !important;
-        transform: translateX(-100%) !important;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1) !important;
     }
     .admin-sidebar.show {
-        transform: translateX(0) !important;
+        transform: translateX(0);
     }
-    .sidebar-overlay {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        background: rgba(15, 23, 42, 0.6) !important;
-        backdrop-filter: blur(4px) !important;
-        z-index: 1040 !important;
+
+    .admin-content {
+        width: 100vw !important;
+    }
+
+    /* Convert Table Grid into Modern Adaptive Cards */
+    .table-collapsed-cards {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .table-collapsed-cards thead {
+        display: none !important; /* Hide traditional headers */
+    }
+
+    .table-collapsed-cards tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        padding: 4px !important;
+    }
+
+    /* Each Row becomes a Card */
+    .table-collapsed-cards tbody tr {
+        display: flex !important;
+        flex-direction: column !important;
+        background: #ffffff !important;
+        border: 1.5px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03) !important;
+        position: relative !important;
+        margin: 0 !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .table-collapsed-cards tbody tr:hover {
+        border-color: var(--primary) !important;
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.08) !important;
+    }
+
+    /* CARD HEADER: Horizontal core fields aligned without overlap */
+    .acm-card-header {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+        border-bottom: 1.5px dashed var(--border-color) !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 12px !important;
+        flex-wrap: wrap !important;
+    }
+
+    /* STT styled nicely */
+    .acm-card-header .row-stt {
+        min-width: 32px !important;
+        max-width: 32px !important;
+        height: 32px !important;
+        background-color: var(--bg-main) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: bold !important;
+        color: var(--primary) !important;
+        border: 1px solid var(--border-color) !important;
+        font-size: 13px !important;
+    }
+
+    /* Target Identification fields - No overlap */
+    .acm-card-header .row-id {
+        min-width: 90px !important;
+        max-width: 155px !important;
+        background-color: var(--bg-main) !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-family: monospace !important;
+        font-weight: bold !important;
+        color: var(--text-main) !important;
+        text-align: center !important;
+        font-size: 12px !important;
+    }
+
+    /* Rounded Avatar */
+    .acm-card-header .row-img {
+        min-width: 44px !important;
+        max-width: 44px !important;
+        height: 44px !important;
+        border-radius: 50% !important;
+        border: 2px solid var(--primary) !important;
+        object-fit: cover !important;
+    }
+
+    /* Flexible Name Container - Wrapping natively, no vertical single-character lists */
+    .acm-card-header .row-name {
+        flex-grow: 1 !important;
+        flex-shrink: 1 !important;
+        flex-basis: 150px !important;
+        text-align: left !important;
+        font-weight: bold !important;
+        color: var(--text-main) !important;
+        font-size: 14.5px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    /* Arrow icon for Chevron */
+    .acm-chevron-btn {
+        position: absolute !important;
+        top: 16px !important;
+        right: 16px !important;
+        width: 32px !important;
+        height: 32px !important;
+        background-color: var(--primary-light) !important;
+        border: 1.5px solid var(--primary) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: var(--primary) !important;
+        cursor: pointer !important;
+        transition: transform 0.3s ease, background-color 0.2s !important;
+        z-index: 5 !important;
+    }
+
+    tr.expanded .acm-chevron-btn {
+        transform: rotate(180deg) !important;
+        background-color: var(--primary) !important;
+        color: #ffffff !important;
+    }
+
+    /* DETAILS PANEL (Mặc định ẩn) */
+    .acm-card-details {
         display: none !important;
-        opacity: 0 !important;
-        transition: opacity 0.3s ease !important;
+        width: 100% !important;
+        background-color: var(--bg-main) !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
     }
-    .sidebar-overlay.show {
-        display: block !important;
-        opacity: 1 !important;
+
+    tr.expanded .acm-card-details {
+        display: flex !important;
     }
+
+    /* Key-Value detail grid pairs inside expanded panel */
+    .detail-item-box {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+        font-size: 13px !important;
+    }
+
+    .detail-item-box:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+
+    .detail-label {
+        font-weight: 600 !important;
+        color: var(--text-muted) !important;
+        text-transform: uppercase !important;
+        font-size: 11px !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .detail-value {
+        font-weight: 500 !important;
+        color: var(--text-main) !important;
+        text-align: right !important;
+        max-width: 60% !important;
+        word-break: break-word !important;
+    }
+
+    /* Large content like audit logs takes full-width */
+    .detail-col-full {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+
+    .detail-col-full .detail-value {
+        text-align: left !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* CARD FOOTER: Actions grouped at the bottom of panel */
+    .acm-card-actions {
+        display: none !important;
+        width: 100% !important;
+        border-top: 1.5px solid var(--border-color) !important;
+        padding-top: 12px !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    tr.expanded .acm-card-actions {
+        display: flex !important;
+    }
+
+    .acm-card-actions .btn {
+        padding: 8px 14px !important;
+        font-size: 12.5px !important;
+        border-radius: 6px !important;
+        font-weight: bold !important;
+        flex-grow: 1 !important;
+        text-align: center !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+    }
+}
+
+/* =========================================================================
+   BULLETPROOF PAGINATION RULES (MOBILE & DESKTOP SYNCED)
+   ========================================================================= */
+
+/* Pagination layout wrapping nicely on mobile screens */
+.pagination-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 20px !important;
+    padding: 10px 4px !important;
+}
+
+.pagination {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    margin-bottom: 0 !important;
+}
+
+@media (max-width: 576px) {
+    .pagination-container {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .pagination {
+        width: 100% !important;
+    }
+
+    .pagination .page-item .page-link {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* THE ULTIMATE PAGINATION OVERRIDE RULES:
+   Ensures that rows/cards hidden by JSTL or JS pagination are STRICTLY HIDDEN on mobile!
+   This solves the specificity issue where card layout styles override inline style="display: none" */
+.table-collapsed-cards tbody tr.pos-row-hidden,
+.table-collapsed-cards tbody tr.d-none,
+.table-collapsed-cards tbody tr[style*="display: none" i],
+.table-collapsed-cards tbody tr[style*="display:none" i],
+.table-collapsed-cards tbody tr[style*="display:  none" i] {
+    display: none !important;
 }

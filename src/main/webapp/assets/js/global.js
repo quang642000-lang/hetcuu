@@ -1,295 +1,223 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - ACM ENGINE v7.0 (BULLETPROOF TABLE ACCORDION)
- * Designed by CodeDevSquad 2026. Resolved infinite observer recursion loops.
+ * TEA POS SYSTEM - HIGH-PERFORMANCE RESPONSIVE & ADAPTIVE COMPANION (USTS v7.5)
  * =========================================================================
  */
 
-// Safe lazy-initialization of SweetAlert Toast
-function getSweetToast() {
-    if (typeof Swal !== 'undefined') {
-        return Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer);
-                toast.addEventListener('mouseleave', Swal.resumeTimer);
+document.addEventListener("DOMContentLoaded", function() {
+    let activeObserver = null;
+    let isTableOptimizing = false;
+
+    // Core AMT Responsive Orchestrator
+    function optimizeAdminTables() {
+        if (isTableOptimizing) return;
+        isTableOptimizing = true;
+
+        const tables = document.querySelectorAll(".admin-table-container table, .audit-card table");
+        const isMobile = window.innerWidth < 992;
+
+        tables.forEach(table => {
+            // Apply card styling structure if on mobile view
+            if (isMobile) {
+                table.classList.add("table-collapsed-cards");
+            } else {
+                table.classList.remove("table-collapsed-cards");
+                // Reset expanded rows on resizing back to desktop
+                table.querySelectorAll("tbody tr.expanded").forEach(r => r.classList.remove("expanded"));
+                table.querySelectorAll(".acm-chevron-btn, .acm-card-header, .acm-card-details, .acm-card-actions").forEach(el => el.remove());
+                table.querySelectorAll("td").forEach(td => td.style.display = "");
+                isTableOptimizing = false;
+                return;
             }
-        });
-    }
-    return null;
-}
 
-function showToast(icon, message) {
-    const toast = getSweetToast();
-    if (toast) {
-        toast.fire({ icon: icon, title: message });
-    } else {
-        console.log(`[TEA POS TOAST - ${icon.toUpperCase()}]: ${message}`);
-    }
-}
+            const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.innerText.trim());
+            const rows = table.querySelectorAll("tbody tr");
 
-function formatVND(amount) {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-}
+            rows.forEach(row => {
+                // Prevent duplicate elements from being injected
+                if (row.querySelector(".acm-chevron-btn")) return;
 
-function formatPhone(phone) {
-    if (!phone) return "";
-    const cleaned = ('' + phone).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{4})(\d{3})(\d{3})$/);
-    if (match) return match[1] + ' ' + match[2] + ' ' + match[3];
-    return phone;
-}
+                // Sync the pagination hidden state
+                syncPaginationHiddenState(row);
 
-// Global flag to prevent MutationObserver recursive cascades
-let isTableOptimizing = false;
+                // Build a modern, semantic grid layout
+                let headerContent = document.createElement("div");
+                headerContent.className = "acm-card-header";
 
-/**
- * Core Adaptive Column Morphing (ACM v7.0) Table Engine
- */
-function optimizeAdminTables() {
-    if (isTableOptimizing) return;
+                let detailsContent = document.createElement("div");
+                detailsContent.className = "acm-card-details";
 
-    const tables = document.querySelectorAll('.admin-table, .table-audit');
-    if (tables.length === 0) return;
+                let actionsContent = document.createElement("div");
+                actionsContent.className = "acm-card-actions";
 
-    isTableOptimizing = true;
+                let chevronBtn = document.createElement("div");
+                chevronBtn.className = "acm-chevron-btn";
+                chevronBtn.innerHTML = '<i class="bi bi-chevron-down"></i>';
 
-    // Check viewport widths
-    const isMobile = window.innerWidth <= 1200;
+                // Categorize each table cell into Header, Detail, or Footer
+                Array.from(row.cells).forEach((cell, idx) => {
+                    const headerName = headers[idx] || "";
 
-    tables.forEach(table => {
-        const container = table.closest('.admin-table-container, .table-responsive');
-        if (!container) return;
+                    // Identify if this cell represents an Action button col
+                    const isActionCol = cell.classList.contains("text-end") && (
+                        cell.querySelector("a, button, .btn") || idx === row.cells.length - 1
+                    );
 
-        // Measure naturally by temporarily removing classes
-        table.classList.remove('table-collapsed-cards');
-        container.classList.remove('has-collapsed-cards');
+                    // Map semantic structures based on columns
+                    if (idx === 0) {
+                        // STT
+                        let clone = cell.cloneNode(true);
+                        clone.className = "row-stt";
+                        headerContent.appendChild(clone);
+                        cell.style.display = "none";
+                    } else if (headerName.toUpperCase().includes("MÃ") || headerName.toUpperCase().includes("CODE")) {
+                        // IDs
+                        let clone = cell.cloneNode(true);
+                        clone.className = "row-id";
+                        headerContent.appendChild(clone);
+                        cell.style.display = "none";
+                    } else if (cell.querySelector("img")) {
+                        // Images
+                        let clone = cell.querySelector("img").cloneNode(true);
+                        clone.className = "row-img";
+                        headerContent.appendChild(clone);
+                        cell.style.display = "none";
+                    } else if (headerName.toUpperCase().includes("TÊN") || headerName.toUpperCase().includes("NHÂN VIÊN") || headerName.toUpperCase().includes("KHÁCH HÀNG")) {
+                        // Primary target names
+                        let clone = cell.cloneNode(true);
+                        clone.className = "row-name";
+                        headerContent.appendChild(clone);
+                        cell.style.display = "none";
+                    } else if (isActionCol) {
+                        // Render all actions to footer
+                        Array.from(cell.children).forEach(btn => {
+                            let clone = btn.cloneNode(true);
+                            actionsContent.appendChild(clone);
+                        });
+                        cell.style.display = "none";
+                    } else {
+                        // All other columns go to details
+                        let itemBox = document.createElement("div");
+                        itemBox.className = "detail-item-box";
 
-        const doesOverflow = table.scrollWidth > container.clientWidth;
-
-        if (isMobile || doesOverflow) {
-            table.classList.add('table-collapsed-cards');
-            container.classList.add('has-collapsed-cards');
-
-            // Build index of column headers (sanitized)
-            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim().replace(/:/g, ''));
-            const allRows = table.querySelectorAll('tbody tr');
-
-            // Tailor columns based on current page URL/ID
-            const pageId = table.id || window.location.pathname;
-
-            allRows.forEach(row => {
-                // Ignore empty list placeholders
-                if (row.cells.length === 1 && row.cells[0].colSpan > 1) {
-                    row.classList.add('empty-placeholder-row');
-                    return;
-                }
-
-                // Track style visibility to match JSTL/Pagination display status
-                const isHidden = row.style.display === 'none';
-                if (isHidden) {
-                    row.classList.add('pos-row-hidden');
-                } else {
-                    row.classList.remove('pos-row-hidden');
-                }
-
-                // Bind touch Accordion Row event listener once
-                if (!row.dataset.accordionBound) {
-                    row.dataset.accordionBound = "true";
-                    row.addEventListener('click', function(e) {
-                        if (e.target.closest('a, button, input, select, textarea, .btn')) {
-                            return; // Bypass interactive controls
+                        // Check if it's heavy content like Audit variables
+                        if (headerName.toUpperCase().includes("ĐỐI SOÁT") || headerName.toUpperCase().includes("BIẾN ĐỘNG") || headerName.toUpperCase().includes("CHI TIẾT") || headerName.toUpperCase().includes("MÔ TẢ")) {
+                            itemBox.classList.add("detail-col-full");
                         }
 
-                        // Accordion: close all other active cards
-                        allRows.forEach(r => {
-                            if (r !== this && r.classList.contains('expanded')) {
-                                r.classList.remove('expanded');
-                                const otherChevron = r.querySelector('.row-chevron i');
-                                if (otherChevron) otherChevron.className = 'bi bi-chevron-down';
-                            }
-                        });
+                        let labelSpan = document.createElement("span");
+                        labelSpan.className = "detail-label";
+                        labelSpan.innerText = headerName;
 
-                        this.classList.toggle('expanded');
-                        const chevron = this.querySelector('.row-chevron i');
-                        if (chevron) {
-                            chevron.className = this.classList.contains('expanded') ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+                        let valueSpan = document.createElement("span");
+                        valueSpan.className = "detail-value";
+                        valueSpan.innerHTML = cell.innerHTML;
+
+                        itemBox.appendChild(labelSpan);
+                        itemBox.appendChild(valueSpan);
+                        detailsContent.appendChild(itemBox);
+                        cell.style.display = "none";
+                    }
+                });
+
+                // Assemble the card layout
+                row.appendChild(chevronBtn);
+                row.appendChild(headerContent);
+                row.appendChild(detailsContent);
+                row.appendChild(actionsContent);
+
+                // Setup click toggle events
+                row.addEventListener("click", function(e) {
+                    if (e.target.closest("a") || e.target.closest("button") || e.target.closest(".acm-card-actions")) {
+                        return; // Prevent click propagation from buttons
+                    }
+
+                    const isExpanded = row.classList.contains("expanded");
+
+                    // Close any other expanded rows on the current table (Accordion)
+                    table.querySelectorAll("tbody tr.expanded").forEach(r => {
+                        if (r !== row) {
+                            r.classList.remove("expanded");
+                            const icon = r.querySelector(".acm-chevron-btn i");
+                            if (icon) icon.className = "bi bi-chevron-down";
                         }
                     });
-                }
 
-                // Classify individual cell nodes based on Page Rules
-                Array.from(row.cells).forEach((cell, idx) => {
-                    const label = headers[idx] || '';
-                    if (label && !cell.dataset.labelApplied) {
-                        cell.setAttribute('data-label', label);
-                        cell.dataset.labelApplied = "true";
-                    }
-
-                    if (cell.classList.contains('row-chevron')) return; // Avoid styling chevron cell
-
-                    // Clear older classes
-                    cell.className = cell.className.replace(/\b(card-header-col|card-detail-col|card-detail-col-full|card-action-col|row-stt|row-id|row-img|row-name|row-code-badge|row-status-main)\b/g, '').trim();
-
-                    // Universal Actions matcher
-                    const isActionCol = idx === row.cells.length - 1 ||
-                        cell.querySelector('.btn-action-edit, .btn-action-delete, .btn-action-warning, .btn-action-info') ||
-                        (idx > 4 && cell.querySelector('a, button'));
-
-                    // PAGE SPECIFIC RULES
-                    if (pageId.includes('voucher') || pageId.includes('KhuyenMai')) {
-                        // Voucher structure:
-                        // Core Header: STT (0), Mã Code (2), Tên CT (3), Trạng Thái (10 - mapped to top)
-                        // Actions: 11
-                        // Details: others
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 2) {
-                            cell.classList.add('card-header-col', 'row-code-badge');
-                        } else if (idx === 3) {
-                            cell.classList.add('card-header-col', 'row-name');
-                        } else if (idx === 10) {
-                            cell.classList.add('card-header-col', 'row-status-main');
-                        } else if (isActionCol) {
-                            cell.classList.add('card-action-col');
-                        } else {
-                            const isHeavy = label.includes('Mô tả') || label.includes('Điều kiện');
-                            cell.classList.add(isHeavy ? 'card-detail-col-full' : 'card-detail-col');
-                        }
-                    }
-                    else if (pageId.includes('san_pham') || pageId.includes('sanpham')) {
-                        // Product structure:
-                        // Core Header: STT (0), Mã SP (1), Hình Ảnh (2), Tên Đồ Uống (3), Trạng Thái (8)
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 1) {
-                            cell.classList.add('card-header-col', 'row-id');
-                        } else if (idx === 2) {
-                            cell.classList.add('card-header-col', 'row-img');
-                        } else if (idx === 3) {
-                            cell.classList.add('card-header-col', 'row-name');
-                        } else if (idx === 8) {
-                            cell.classList.add('card-header-col', 'row-status-main');
-                        } else if (isActionCol) {
-                            cell.classList.add('card-action-col');
-                        } else {
-                            cell.classList.add('card-detail-col');
-                        }
-                    }
-                    else if (pageId.includes('khach_hang') || pageId.includes('khachhang')) {
-                        // Customer CRM:
-                        // Core Header: STT (0), Mã KH (1), Tên (2), Trạng Thái (7)
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 1) {
-                            cell.classList.add('card-header-col', 'row-id');
-                        } else if (idx === 2) {
-                            cell.classList.add('card-header-col', 'row-name'); // Contains avatar + name inline
-                        } else if (idx === 7) {
-                            cell.classList.add('card-header-col', 'row-status-main');
-                        } else if (isActionCol) {
-                            cell.classList.add('card-action-col');
-                        } else {
-                            cell.classList.add('card-detail-col');
-                        }
-                    }
-                    else if (pageId.includes('hoa_don') || pageId.includes('hoadon')) {
-                        // Invoice structure:
-                        // Core Header: STT (0), Mã HD (1), Khách (2), Thành Tiền (6), Trạng Thái Đơn (8)
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 1) {
-                            cell.classList.add('card-header-col', 'row-id');
-                        } else if (idx === 2) {
-                            cell.classList.add('card-header-col', 'row-name');
-                        } else if (idx === 6) {
-                            cell.classList.add('card-header-col', 'row-stt'); // Show amount cleanly
-                        } else if (idx === 8) {
-                            cell.classList.add('card-header-col', 'row-status-main');
-                        } else if (isActionCol) {
-                            cell.classList.add('card-action-col');
-                        } else {
-                            cell.classList.add('card-detail-col');
-                        }
-                    }
-                    else if (pageId.includes('nhat_ky') || pageId.includes('auditlog') || pageId.includes('nhatky')) {
-                        // Audit Log:
-                        // Core Header: Mã Log (0), Thời Gian (1), Nhân Viên (2), Hành Động (3)
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-id');
-                        } else if (idx === 1) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 2) {
-                            cell.classList.add('card-header-col', 'row-name');
-                        } else if (idx === 3) {
-                            cell.classList.add('card-header-col', 'row-status-main');
-                        } else {
-                            cell.classList.add('card-detail-col-full'); // Span full for JSON compare boxes
-                        }
-                    }
-                    else {
-                        // Default Fallback mapping
-                        if (idx === 0) {
-                            cell.classList.add('card-header-col', 'row-stt');
-                        } else if (idx === 1) {
-                            cell.classList.add('card-header-col', 'row-id');
-                        } else if (idx < 4) {
-                            cell.classList.add('card-header-col', 'row-name');
-                        } else if (isActionCol) {
-                            cell.classList.add('card-action-col');
-                        } else {
-                            cell.classList.add('card-detail-col');
-                        }
+                    // Toggle self
+                    if (isExpanded) {
+                        row.classList.remove("expanded");
+                        chevronBtn.innerHTML = '<i class="bi bi-chevron-down"></i>';
+                    } else {
+                        row.classList.add("expanded");
+                        chevronBtn.innerHTML = '<i class="bi bi-chevron-up"></i>';
                     }
                 });
-
-                // Inject the responsive touch floating chevron
-                if (!row.querySelector('.row-chevron')) {
-                    const chevronTd = document.createElement('td');
-                    chevronTd.className = 'row-chevron';
-                    chevronTd.innerHTML = '<i class="bi bi-chevron-down"></i>';
-                    row.appendChild(chevronTd);
-                }
             });
-        } else {
-            // Restore regular flat table state on desktop/un-collapsed width
-            table.classList.remove('table-collapsed-cards');
-            container.classList.remove('has-collapsed-cards');
-            const allRows = table.querySelectorAll('tbody tr');
-            allRows.forEach(row => {
-                row.classList.remove('expanded');
-                row.classList.remove('pos-row-hidden');
-                const chevron = row.querySelector('.row-chevron');
-                if (chevron) chevron.remove();
-                Array.from(row.cells).forEach(cell => {
-                    cell.className = cell.className.replace(/\b(card-header-col|card-detail-col|card-detail-col-full|card-action-col|row-stt|row-id|row-img|row-name|row-code-badge|row-status-main)\b/g, '').trim();
-                });
-            });
-        }
-    });
-
-    // Clear and restore observer safety lock in next task event loop (macro-task)
-    setTimeout(() => {
-        isTableOptimizing = false;
-    }, 50);
-}
-
-// 4. Initial execution on page load
-document.addEventListener("DOMContentLoaded", () => {
-    optimizeAdminTables();
-    window.addEventListener("resize", optimizeAdminTables);
-
-    // Safe Dynamic Mutations Monitoring (for search logs and pagination events)
-    const tableBodies = document.querySelectorAll('.admin-table tbody, .table-audit tbody');
-    tableBodies.forEach(tbody => {
-        const observer = new MutationObserver((mutations) => {
-            if (isTableOptimizing) return;
-            optimizeAdminTables();
         });
-        observer.observe(tbody, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
-    });
+
+        isTableOptimizing = false;
+    }
+
+    // Support pagination hidden syncing dynamically
+    function syncPaginationHiddenState(row) {
+        // If hidden inline or has display: none set, add pos-row-hidden class
+        const currentStyle = row.style.display;
+        if (currentStyle === "none" || row.classList.contains("d-none")) {
+            row.classList.add("pos-row-hidden");
+        } else {
+            row.classList.remove("pos-row-hidden");
+        }
+    }
+
+    // Set up high-performance MutationObserver at tbody level to guard against loops
+    function initAcmObserver() {
+        const tbodies = document.querySelectorAll(".admin-table-container tbody, .audit-card tbody");
+
+        tbodies.forEach(tbody => {
+            const observer = new MutationObserver(function(mutations) {
+                let paginationChanged = false;
+
+                mutations.forEach(mutation => {
+                    // Check if children (rows) or style attributes changed
+                    if (mutation.type === "childList" || mutation.type === "attributes") {
+                        paginationChanged = true;
+                    }
+                });
+
+                if (paginationChanged && !isTableOptimizing) {
+                    // Temporarily disconnect to prevent infinite loops
+                    observer.disconnect();
+
+                    // Re-run syncing on all rows to ensure JSTL pagination is strictly respected
+                    tbody.querySelectorAll("tr").forEach(row => {
+                        syncPaginationHiddenState(row);
+                    });
+
+                    optimizeAdminTables();
+
+                    // Re-connect safely
+                    observer.observe(tbody, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ["style", "class"]
+                    });
+                }
+            });
+
+            observer.observe(tbody, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["style", "class"]
+            });
+        });
+    }
+
+    // Execute setup
+    optimizeAdminTables();
+    initAcmObserver();
+
+    // Trigger optimized redraw on resize
+    window.addEventListener("resize", optimizeAdminTables);
 });
