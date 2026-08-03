@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,17 +12,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .auth-card { width: 100%; max-width: 480px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1); overflow: hidden; }
-        .brand-banner { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; padding: 30px; }
+        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .auth-card { width: 100%; max-width: 460px; background-color: #ffffff; border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; border: 1px solid var(--border-color); }
+        .brand-banner { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-align: center; padding: 35px 25px; }
     </style>
 </head>
 <body>
 <div class="auth-card">
     <div class="brand-banner">
-        <div class="fs-1 mb-2"><i class="bi bi-person-check-fill"></i></div>
+        <div class="fs-1 mb-2 text-white animate-pulse"><i class="bi bi-person-check-fill"></i></div>
         <h4 class="fw-bold mb-1 text-uppercase">KÍCH HOẠT THẺ THÀNH VIÊN</h4>
-        <p class="mb-0 small text-white-50">Kích hoạt tài khoản quầy POS để đăng nhập, nhận Voucher VIP</p>
+        <p class="mb-0 small text-white-50">Kích hoạt tài khoản quầy POS để đặt nước online, tích lũy điểm CRM</p>
     </div>
     <div class="p-4 text-start">
         <c:if test="${not empty requestScope.error}">
@@ -30,11 +30,11 @@
         </c:if>
         <form action="${pageContext.request.contextPath}/activate" method="POST">
             <div class="mb-4">
-                <label class="form-label fw-bold text-dark small">Nhập Số điện thoại hoặc Email đã cung cấp tại quầy</label>
-                <input type="text" class="form-control form-control-teapos" name="username" placeholder="Nhập SĐT hoặc Email..." required autocomplete="off">
+                <label class="form-label fw-bold text-dark small">Số điện thoại hoặc Email đăng ký tại quầy</label>
+                <input type="text" class="form-control form-control-teapos py-2.5" name="username" placeholder="Ví dụ: 0912345678..." required autocomplete="off">
             </div>
-            <button type="submit" class="btn btn-primary-teapos w-100 py-2.5 fw-bold text-uppercase"><i class="bi bi-send-fill me-1"></i> Gửi mã OTP xác thực</button>
-            <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary-teapos w-100 py-3 fw-bold text-uppercase shadow-sm"><i class="bi bi-send-fill me-1"></i> Gửi mã OTP xác thực</button>
+            <div class="text-center mt-4 border-top pt-3">
                 <a href="${pageContext.request.contextPath}/customer/login" class="text-success text-decoration-none fw-bold small"><i class="bi bi-arrow-left"></i> Quay lại đăng nhập</a>
             </div>
         </form>

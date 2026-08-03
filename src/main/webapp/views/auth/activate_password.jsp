@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,31 +12,34 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .reset-card { width: 100%; max-width: 480px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1); }
+        body { background-color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .reset-card { width: 100%; max-width: 480px; background-color: #ffffff; border-radius: 16px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); }
+        .reset-header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 35px 25px; border-radius: 16px 16px 0 0; text-align: center; }
     </style>
 </head>
 <body>
-<div class="reset-card p-4 p-md-5">
-    <div class="text-center mb-4">
-        <div class="text-success fs-1 mb-2"><i class="bi bi-shield-lock-fill"></i></div>
-        <h4 class="fw-bold mb-1">TẠO MẬT KHẨU ĐĂNG NHẬP</h4>
-        <p class="text-muted small">Cảm ơn bạn đã kích hoạt thẻ thành viên! Hãy tạo mật khẩu riêng tư để bảo vệ điểm tích lũy và sử dụng các tính năng đặt hàng online.</p>
+<div class="reset-card">
+    <div class="reset-header">
+        <div class="fs-1 mb-2 text-white"><i class="bi bi-shield-lock-fill"></i></div>
+        <h4 class="fw-bold mb-1 text-uppercase">TẠO MẬT KHẨU ĐĂNG NHẬP</h4>
+        <p class="mb-0 small text-white-50">Cảm ơn bạn đã kích hoạt thẻ thành viên! Hãy bảo vệ tài khoản của bạn.</p>
     </div>
-    <c:if test="${not empty requestScope.error}">
-        <div class="alert alert-danger small text-center mb-3"><i class="bi bi-exclamation-triangle-fill"></i> ${requestScope.error}</div>
-    </c:if>
-    <form action="${pageContext.request.contextPath}/activate/password" method="POST" id="resetForm">
-        <div class="mb-3 text-start">
-            <label for="newPassword" class="form-label fw-semibold text-dark small">Tạo mật khẩu mới</label>
-            <input type="password" class="form-control form-control-teapos py-2" id="newPassword" name="newPassword" placeholder="Nhập mật khẩu..." required>
-        </div>
-        <div class="mb-4 text-start">
-            <label for="confirmPassword" class="form-label fw-semibold text-dark small">Xác nhận mật khẩu mới</label>
-            <input type="password" class="form-control form-control-teapos py-2" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu..." required>
-        </div>
-        <button type="submit" class="btn btn-primary-teapos w-100 py-2.5 fw-bold text-uppercase"><i class="bi bi-check-circle-fill me-1"></i> Hoàn thành kích hoạt</button>
-    </form>
+    <div class="p-4 p-md-5">
+        <c:if test="${not empty requestScope.error}">
+            <div class="alert alert-danger small text-center mb-3"><i class="bi bi-exclamation-triangle-fill"></i> ${requestScope.error}</div>
+        </c:if>
+        <form action="${pageContext.request.contextPath}/activate/password" method="POST" id="resetForm">
+            <div class="mb-3 text-start">
+                <label for="newPassword" class="form-label fw-semibold text-dark small">Tạo mật khẩu mới</label>
+                <input type="password" class="form-control form-control-teapos py-2.5" id="newPassword" name="newPassword" placeholder="Nhập mật khẩu..." required>
+            </div>
+            <div class="mb-4 text-start">
+                <label for="confirmPassword" class="form-label fw-semibold text-dark small">Xác nhận mật khẩu mới</label>
+                <input type="password" class="form-control form-control-teapos py-2.5" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu..." required>
+            </div>
+            <button type="submit" class="btn btn-primary-teapos w-100 py-3 fw-bold text-uppercase shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Hoàn thành kích hoạt</button>
+        </form>
+    </div>
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {

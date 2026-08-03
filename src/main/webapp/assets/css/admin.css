@@ -1,30 +1,38 @@
 /* =========================================================================
-   TEA POS - SYSTEM ADMIN COMPREHENSIVE RESPONSIVE STYLESHEET
-   ========================================================================= */
-
+ * TEA POS SYSTEM - COMPREHENSIVE RESPONSIVE ADMIN STYLESHEET (USTS v8.5)
+ * ========================================================================= */
 :root {
-    --primary: #10b981;
-    --primary-hover: #059669;
-    --primary-light: #ecfdf5;
+    --primary: #059669;            /* Cozy Matcha Dark Green */
+    --primary-hover: #047857;
+    --primary-light: #f0fdf4;      /* Matcha milk background */
     --primary-dark: #065f46;
-    --border-color: #e2e8f0;
+    --border-color: #cbd5e1;
     --bg-main: #f8fafc;
     --text-main: #0f172a;
     --text-muted: #64748b;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-pill: 50px;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
 }
 
-/* Base resets & layouts */
-body {
+/* Master viewport lock with dvh and safe area support */
+html, body {
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    font-family: system-ui, -apple-system, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-main);
-    font-family: system-ui, -apple-system, sans-serif;
-    margin: 0;
-    padding: 0;
 }
 
-/* Sidebar layout adjustments with dvh & safe area support */
 .admin-wrapper {
     display: flex !important;
+    flex-direction: row !important;
     width: 100vw !important;
     height: 100dvh !important;
     overflow: hidden !important;
@@ -34,45 +42,46 @@ body {
     width: 260px !important;
     min-width: 260px !important;
     height: 100dvh !important;
-    background-color: #0f172a !important;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
-    transition: transform 0.3s ease !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     z-index: 1040 !important;
+    border-right: 1px solid #334155 !important;
 }
 
 .sidebar-header {
     padding: 24px 20px !important;
-    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-    background-color: #0f172a !important;
+    border-bottom: 1px solid #334155 !important;
+    background-color: #0b0f19 !important;
 }
 
 .sidebar-menu {
     flex-grow: 1 !important;
     overflow-y: auto !important;
     padding: 15px 10px !important;
+    list-style: none !important;
+    margin: 0 !important;
 }
 
-/* Sidebar scrollbar customization */
 .sidebar-menu::-webkit-scrollbar {
     width: 4px;
 }
+
 .sidebar-menu::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
 
-/* Sticky sidebar footer containing POS button */
 .admin-sidebar > .border-top {
     margin-top: auto !important;
-    background-color: #0f172a !important;
+    background-color: #0b0f19 !important;
     padding: 16px !important;
     padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-    border-top: 1px solid rgba(255,255,255,0.05) !important;
+    border-top: 1px solid #334155 !important;
 }
 
-/* Main Content Area */
 .admin-content {
     flex-grow: 1 !important;
     width: calc(100vw - 260px) !important;
@@ -85,306 +94,235 @@ body {
 .admin-content > div:last-child {
     flex-grow: 1 !important;
     overflow-y: auto !important;
+    background-color: var(--bg-main) !important;
 }
 
-/* =========================================================================
-   BULLETPROOF RESPONSIVE MOBILE TABLES (ACM v7.5)
-   ========================================================================= */
+/* Header layout rules */
+.admin-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    height: 70px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 30px !important;
+    flex-shrink: 0 !important;
+}
 
+/* Custom Card-based tables for mobile */
 @media (max-width: 991px) {
-    /* Overlay background for mobile sidebar */
     .sidebar-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(0,0,0,0.5);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
         z-index: 1030;
         display: none;
     }
     .sidebar-overlay.show {
         display: block;
     }
-
     .admin-sidebar {
         position: fixed !important;
         transform: translateX(-100%);
-        box-shadow: 4px 0 15px rgba(0,0,0,0.1) !important;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.15) !important;
     }
     .admin-sidebar.show {
         transform: translateX(0);
     }
-
     .admin-content {
         width: 100vw !important;
     }
-
-    /* Convert Table Grid into Modern Adaptive Cards */
-    .table-collapsed-cards {
-        border: none !important;
-        background: transparent !important;
-    }
-
-    .table-collapsed-cards thead {
-        display: none !important; /* Hide traditional headers */
-    }
-
-    .table-collapsed-cards tbody {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 16px !important;
-        padding: 4px !important;
-    }
-
-    /* Each Row becomes a Card */
-    .table-collapsed-cards tbody tr {
-        display: flex !important;
-        flex-direction: column !important;
-        background: #ffffff !important;
-        border: 1.5px solid var(--border-color) !important;
-        border-radius: 12px !important;
-        padding: 16px !important;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03) !important;
-        position: relative !important;
-        margin: 0 !important;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
-    }
-
-    .table-collapsed-cards tbody tr:hover {
-        border-color: var(--primary) !important;
-        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.08) !important;
-    }
-
-    /* CARD HEADER: Horizontal core fields aligned without overlap */
-    .acm-card-header {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 12px !important;
-        width: 100% !important;
-        border-bottom: 1.5px dashed var(--border-color) !important;
-        padding-bottom: 12px !important;
-        margin-bottom: 12px !important;
-        flex-wrap: wrap !important;
-    }
-
-    /* STT styled nicely */
-    .acm-card-header .row-stt {
-        min-width: 32px !important;
-        max-width: 32px !important;
-        height: 32px !important;
-        background-color: var(--bg-main) !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-weight: bold !important;
-        color: var(--primary) !important;
-        border: 1px solid var(--border-color) !important;
-        font-size: 13px !important;
-    }
-
-    /* Target Identification fields - No overlap */
-    .acm-card-header .row-id {
-        min-width: 90px !important;
-        max-width: 155px !important;
-        background-color: var(--bg-main) !important;
-        border: 1px solid var(--border-color) !important;
-        padding: 4px 8px !important;
-        border-radius: 6px !important;
-        font-family: monospace !important;
-        font-weight: bold !important;
-        color: var(--text-main) !important;
-        text-align: center !important;
-        font-size: 12px !important;
-    }
-
-    /* Rounded Avatar */
-    .acm-card-header .row-img {
-        min-width: 44px !important;
-        max-width: 44px !important;
-        height: 44px !important;
-        border-radius: 50% !important;
-        border: 2px solid var(--primary) !important;
-        object-fit: cover !important;
-    }
-
-    /* Flexible Name Container - Wrapping natively, no vertical single-character lists */
-    .acm-card-header .row-name {
-        flex-grow: 1 !important;
-        flex-shrink: 1 !important;
-        flex-basis: 150px !important;
-        text-align: left !important;
-        font-weight: bold !important;
-        color: var(--text-main) !important;
-        font-size: 14.5px !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-    }
-
-    /* Arrow icon for Chevron */
-    .acm-chevron-btn {
-        position: absolute !important;
-        top: 16px !important;
-        right: 16px !important;
-        width: 32px !important;
-        height: 32px !important;
-        background-color: var(--primary-light) !important;
-        border: 1.5px solid var(--primary) !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        color: var(--primary) !important;
-        cursor: pointer !important;
-        transition: transform 0.3s ease, background-color 0.2s !important;
-        z-index: 5 !important;
-    }
-
-    tr.expanded .acm-chevron-btn {
-        transform: rotate(180deg) !important;
-        background-color: var(--primary) !important;
-        color: #ffffff !important;
-    }
-
-    /* DETAILS PANEL (Mặc định ẩn) */
-    .acm-card-details {
-        display: none !important;
-        width: 100% !important;
-        background-color: var(--bg-main) !important;
-        border-radius: 8px !important;
-        padding: 12px !important;
-        border: 1px solid var(--border-color) !important;
-        flex-direction: column !important;
-        gap: 10px !important;
-        margin-bottom: 12px !important;
-    }
-
-    tr.expanded .acm-card-details {
-        display: flex !important;
-    }
-
-    /* Key-Value detail grid pairs inside expanded panel */
-    .detail-item-box {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding-bottom: 6px !important;
-        border-bottom: 1px solid rgba(0,0,0,0.03) !important;
-        font-size: 13px !important;
-    }
-
-    .detail-item-box:last-child {
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-    }
-
-    .detail-label {
-        font-weight: 600 !important;
-        color: var(--text-muted) !important;
-        text-transform: uppercase !important;
-        font-size: 11px !important;
-        letter-spacing: 0.5px !important;
-    }
-
-    .detail-value {
-        font-weight: 500 !important;
-        color: var(--text-main) !important;
-        text-align: right !important;
-        max-width: 60% !important;
-        word-break: break-word !important;
-    }
-
-    /* Large content like audit logs takes full-width */
-    .detail-col-full {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 6px !important;
-    }
-
-    .detail-col-full .detail-value {
-        text-align: left !important;
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    /* CARD FOOTER: Actions grouped at the bottom of panel */
-    .acm-card-actions {
-        display: none !important;
-        width: 100% !important;
-        border-top: 1.5px solid var(--border-color) !important;
-        padding-top: 12px !important;
-        justify-content: flex-end !important;
-        gap: 8px !important;
-        flex-wrap: wrap !important;
-    }
-
-    tr.expanded .acm-card-actions {
-        display: flex !important;
-    }
-
-    .acm-card-actions .btn {
-        padding: 8px 14px !important;
-        font-size: 12.5px !important;
-        border-radius: 6px !important;
-        font-weight: bold !important;
-        flex-grow: 1 !important;
-        text-align: center !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-    }
 }
 
-/* =========================================================================
-   BULLETPROOF PAGINATION RULES (MOBILE & DESKTOP SYNCED)
-   ========================================================================= */
+/* Elegant card styled blocks for portable viewports (ACM PRO Dual Layout) */
+.acm-mobile-card {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    position: relative !important;
+}
 
-/* Pagination layout wrapping nicely on mobile screens */
-.pagination-container {
+.acm-card-header {
     display: flex !important;
-    flex-wrap: wrap !important;
-    justify-content: space-between !important;
+    flex-direction: row !important;
     align-items: center !important;
     gap: 12px !important;
-    margin-top: 20px !important;
-    padding: 10px 4px !important;
-}
-
-.pagination {
-    display: flex !important;
+    border-bottom: 1.5px dashed var(--border-color) !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 12px !important;
     flex-wrap: wrap !important;
+    width: 100% !important;
+}
+
+.acm-card-header .row-stt {
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    background-color: var(--bg-main) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
-    gap: 4px !important;
-    margin-bottom: 0 !important;
+    font-weight: bold !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--border-color) !important;
+    font-size: 13px !important;
 }
 
-@media (max-width: 576px) {
-    .pagination-container {
-        flex-direction: column !important;
-        text-align: center !important;
-    }
-
-    .pagination {
-        width: 100% !important;
-    }
-
-    .pagination .page-item .page-link {
-        padding: 8px 12px !important;
-        font-size: 12px !important;
-    }
+.acm-card-header .row-id {
+    min-width: 90px !important;
+    max-width: 160px !important;
+    background-color: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    font-family: monospace !important;
+    font-weight: bold !important;
+    color: var(--text-main) !important;
+    text-align: center !important;
+    font-size: 12px !important;
 }
 
-/* THE ULTIMATE PAGINATION OVERRIDE RULES:
-   Ensures that rows/cards hidden by JSTL or JS pagination are STRICTLY HIDDEN on mobile!
-   This solves the specificity issue where card layout styles override inline style="display: none" */
-.table-collapsed-cards tbody tr.pos-row-hidden,
-.table-collapsed-cards tbody tr.d-none,
-.table-collapsed-cards tbody tr[style*="display: none" i],
-.table-collapsed-cards tbody tr[style*="display:none" i],
-.table-collapsed-cards tbody tr[style*="display:  none" i] {
+.acm-card-header .row-img {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid var(--primary) !important;
+}
+
+.acm-card-header .row-name {
+    font-weight: 800 !important;
+    color: var(--text-main) !important;
+    font-size: 14.5px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    flex-grow: 1 !important;
+    text-align: left !important;
+}
+
+.acm-chevron-btn {
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    width: 32px !important;
+    height: 32px !important;
+    background-color: var(--primary-light) !important;
+    border: 1.5px solid var(--primary) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--primary) !important;
+    cursor: pointer !important;
+    transition: transform 0.3s ease, background-color 0.2s !important;
+    z-index: 5 !important;
+}
+
+.acm-mobile-card.expanded .acm-chevron-btn {
+    transform: rotate(180deg) !important;
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+.acm-card-details {
+    display: none !important;
+    width: 100% !important;
+    background-color: var(--bg-main) !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    border: 1px solid var(--border-color) !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+}
+
+.acm-mobile-card.expanded .acm-card-details {
+    display: flex !important;
+}
+
+.detail-item-box {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding-bottom: 6px !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.04) !important;
+    font-size: 13px !important;
+}
+
+.detail-item-box:last-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+.detail-label {
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+}
+
+.detail-value {
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
+    text-align: right !important;
+    max-width: 60% !important;
+    word-break: break-word !important;
+}
+
+.detail-col-full {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+}
+
+.detail-col-full .detail-value {
+    text-align: left !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.acm-card-actions {
+    display: none !important;
+    width: 100% !important;
+    border-top: 1.5px solid var(--border-color) !important;
+    padding-top: 12px !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.acm-mobile-card.expanded .acm-card-actions {
+    display: flex !important;
+}
+
+.acm-card-actions .btn {
+    padding: 8px 14px !important;
+    font-size: 12.5px !important;
+    border-radius: 6px !important;
+    font-weight: bold !important;
+    flex-grow: 1 !important;
+    text-align: center !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+/* Bulletproof hidden class for pagination on card level */
+.acm-card-hidden {
     display: none !important;
 }
