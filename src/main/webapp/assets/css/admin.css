@@ -108,7 +108,23 @@
     background-color: #f8fafc !important;
 }
 
-/* Action buttons styling */
+/* Beautiful custom status pills in admin tables */
+.badge-role-admin {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #fca5a5 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+}
+.badge-role-staff {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+}
+
+/* Action buttons */
 .btn-action-edit, .btn-action-delete, .btn-action-warning, .btn-action-info {
     font-weight: 700 !important;
     font-size: 12px !important;
@@ -175,16 +191,144 @@
 }
 
 /* =========================================================================
-   ULTIMATE ACM - TABLE-ACCORDION GẬP MỞ THÍCH ỨNG CHỐNG CHÈN NÚT
+   BULLETPROOF LAYOUT LOCKING & ELITE EMERALD-SLATE DESIGN FOR SIDEBAR
    ========================================================================= */
 
-/* Trạng thái bảng co lột xác thành danh sách các Card */
+/* 1. SIDEBAR ANCHORING - LOCK IT SOLID AND PREVENT VIEWPORT OVERFLOW */
+.admin-sidebar {
+    width: 260px !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport height to prevent iOS address bar cut-off */
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+    color: #f8fafc !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    z-index: 1030 !important;
+    overflow: hidden !important; /* CRUCIAL: Hide sidebar container scroll to pin header & footer */
+    border-right: 1px solid #334155 !important;
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 2. FIXED HEADER AND FOOTER IN SIDEBAR */
+.sidebar-header {
+    padding: 24px 20px !important;
+    border-bottom: 1px solid #334155 !important;
+    background-color: #0b0f19 !important;
+    text-align: center !important;
+    flex-shrink: 0 !important; /* Do not shrink header */
+}
+
+/* 3. INDEPENDENT SCROLL FOR MENU ITEMS */
+.sidebar-menu {
+    list-style: none !important;
+    padding: 16px 12px !important;
+    margin: 0 !important;
+    flex-grow: 1 !important;
+    overflow-y: auto !important; /* ONLY this part inside the sidebar is scrollable */
+    -webkit-overflow-scrolling: touch; /* Slick elastic scrolling on mobile browsers */
+}
+
+/* 4. PINNED FOOTER CONTROLLER */
+.admin-sidebar > div.border-top {
+    flex-shrink: 0 !important; /* Pin footer at the very bottom */
+    background-color: #0f172a !important;
+    padding: 16px !important;
+    /* Extra padding at the bottom of the sidebar to support safe-areas on bezel-less phones (notches) */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid #334155 !important;
+}
+
+/* 5. GORGEOUS SIDEBAR HOVERS AND GLOWS */
+.sidebar-item {
+    margin-bottom: 6px !important;
+}
+.sidebar-item a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    gap: 12px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.sidebar-item a:hover {
+    color: #ffffff !important;
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    padding-left: 20px !important;
+}
+.sidebar-item.active a {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+    font-weight: 600 !important;
+}
+.sidebar-item i {
+    font-size: 1.15rem !important;
+    transition: transform 0.2s ease !important;
+}
+.sidebar-item a:hover i {
+    transform: scale(1.1) rotate(5deg) !important;
+}
+.sidebar-item.active i {
+    color: #ffffff !important;
+}
+
+/* 6. MOBILE SIDEBAR DRAWER STYLING */
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        z-index: 1050 !important;
+        transform: translateX(-100%) !important;
+        width: 260px !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+    }
+    .admin-sidebar.show {
+        transform: translateX(0) !important;
+    }
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        z-index: 1040 !important;
+        display: none !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+    }
+    .sidebar-overlay.show {
+        display: block !important;
+        opacity: 1 !important;
+    }
+}
+
+/* =========================================================================
+   ULTIMATE ACM - TABLE-ACCORDION GẬP MỞ THÍCH ỨNG CHỐNG CHÈN NÚT (ACM v6)
+   ========================================================================= */
+
+/* Safe overrides to respect JSTL/JavaScript client-side hidden row styles */
+.table-collapsed-cards tbody tr[style*="display: none"],
+.table-collapsed-cards tbody tr[style*="display:none"],
+.table-collapsed-cards tbody tr.pos-row-hidden {
+    display: none !important;
+}
+
 .table-collapsed-cards {
     border: none !important;
     background: transparent !important;
 }
 .table-collapsed-cards thead {
-    display: none !important; /* Ẩn toàn bộ header cột phẳng */
+    display: none !important; /* Hide column headers completely */
 }
 .table-collapsed-cards tbody {
     display: flex !important;
@@ -197,7 +341,7 @@
     background-color: #ffffff !important;
     border: 1.5px solid var(--border-color) !important;
     border-radius: var(--radius-md) !important;
-    padding: 16px 48px 16px 16px !important; /* Dành chỗ trống biên phải cho mũi tên */
+    padding: 16px 48px 16px 16px !important; /* Extra right padding for absolute chevron button */
     position: relative !important;
     box-shadow: var(--shadow-sm) !important;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -206,6 +350,7 @@
     margin-bottom: 0 !important;
 }
 .table-collapsed-cards tbody tr:hover {
+    background-color: #ffffff !important;
     border-color: var(--primary) !important;
     box-shadow: var(--shadow-md) !important;
 }
@@ -215,7 +360,7 @@
     padding-bottom: 20px !important;
 }
 
-/* Cột Nhận Diện (Core Identity) hiển thị nổi bật ở Header Card */
+/* Header visible cells in card state (STT, ID, Image, Name) */
 .table-collapsed-cards tbody tr td.card-header-col {
     display: inline-flex !important;
     align-items: center !important;
@@ -229,24 +374,56 @@
     color: var(--text-main) !important;
     font-size: 14px !important;
 }
-.table-collapsed-cards tbody tr td.card-header-col strong,
-.table-collapsed-cards tbody tr td.card-header-col b {
+
+/* Give Golden Ratio Width to Core Identity Columns to avoid wrap chaos */
+.table-collapsed-cards tbody tr td.card-header-col.row-stt {
+    width: 45px !important;
+    flex-shrink: 0 !important;
+}
+.table-collapsed-cards tbody tr td.card-header-col:nth-child(2) { /* ID Column */
+    width: 110px !important;
+    font-family: monospace !important;
+    flex-shrink: 0 !important;
+}
+.table-collapsed-cards tbody tr td.card-header-col:nth-child(3) { /* Avatar/Img Column */
+    width: 65px !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+.table-collapsed-cards tbody tr td.card-header-col:nth-child(4) { /* Name/Main Info Column */
+    flex: 1 1 250px !important; /* Grabs all remaining spaces beautifully! */
     font-weight: 700 !important;
 }
 
-/* Cột chi tiết tùy chọn ẩn đi khi gập - chỉ hiện khi Expanded */
+/* Actions cell wrapper inside Card Header (Hidden on collapse, pinned on expand) */
+.table-collapsed-cards tbody tr td.card-action-col {
+    display: none !important;
+}
+.table-collapsed-cards tbody tr.expanded td.card-action-col {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    padding: 12px 0 0 0 !important;
+    border-top: 1.5px solid #f1f5f9 !important;
+    width: 100% !important;
+}
+
+/* Details cells (hidden by default) */
 .table-collapsed-cards tbody tr td.card-detail-col {
     display: none !important;
 }
 
-/* Khi bấm mở rộng (Expanded State): Xổ dọc chi tiết đẹp mắt */
+/* Expanded State: Slide-down Details */
 .table-collapsed-cards tbody tr.expanded td.card-detail-col {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     padding: 12px 14px !important;
     background-color: var(--primary-light) !important;
-    border: 1.5px dashed rgba(5, 150, 105, 0.15) !important;
+    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
+    border-bottom: none !important;
     margin-top: 8px !important;
     border-radius: 8px !important;
     width: 100% !important;
@@ -255,8 +432,26 @@
     word-break: break-word !important;
     text-align: left !important;
 }
+.table-collapsed-cards tbody tr.expanded td.card-detail-col:last-child {
+    border-bottom: none !important;
+}
 
-/* Tiêm nhãn tiêu đề động ở bên trái cột chi tiết gập */
+/* Special full width detail row for Audit Logs / heavy content */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
+    display: block !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    background-color: var(--primary-light) !important;
+    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
+    margin-top: 8px !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: left !important;
+}
+
+/* Self-injection data-label for details columns */
 .table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
     content: attr(data-label) ": " !important;
     font-weight: 700 !important;
@@ -268,21 +463,16 @@
     flex-shrink: 0 !important;
 }
 
-/* Cột Thao Tác Hành Động (Actions Block) ghim ở đáy Card gập */
-.table-collapsed-cards tbody tr td.card-action-col {
-    display: none !important; /* Mặc định giấu kín khi đóng */
-}
-
-.table-collapsed-cards tbody tr.expanded td.card-action-col {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
-    padding: 12px 0 0 0 !important;
-    border-top: 1.5px solid #f1f5f9 !important;
-    margin-top: 14px !important;
-    width: 100% !important;
-    background: transparent !important;
-    border-bottom: none !important;
+/* Full column label display block */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col-full::before {
+    content: attr(data-label) !important;
+    display: block !important;
+    font-weight: 700 !important;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 8px !important;
 }
 
 /* Expanded Details Desktop Optimization: Double Column Layout */
@@ -296,17 +486,21 @@
         width: auto !important;
     }
     .table-collapsed-cards tbody tr.expanded td.card-detail-col {
-        width: 49% !important; /* Chia 2 cột cực kỳ đối xứng cân đối trên máy tính */
+        width: 49% !important;
         margin: 6px 0.5% 0 0.5% !important;
         display: flex !important;
     }
+    .table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
+        width: 99% !important;
+        margin: 6px 0.5% 0 0.5% !important;
+    }
     .table-collapsed-cards tbody tr.expanded td.card-action-col {
         width: 100% !important;
-        display: flex !important;
+        margin-top: 14px !important;
     }
 }
 
-/* Mobile Stack View: Safeguard 100% no overflow / no horizontal scroll */
+/* Mobile Stack View: Safeguard 100% no overflow */
 @media (max-width: 768px) {
     .table-collapsed-cards tbody tr {
         padding-right: 40px !important;
@@ -316,30 +510,52 @@
         width: 100% !important;
         margin-right: 0 !important;
         padding: 6px 0 !important;
-        border-bottom: 1.5px solid #f1f5f9 !important;
+        border-bottom: 1px solid #f1f5f9 !important;
     }
     .table-collapsed-cards tbody tr td.card-header-col:last-of-type {
         border-bottom: none !important;
+    }
+
+    /* Specific overrides to avoid wrap issues on very narrow screens */
+    .table-collapsed-cards tbody tr td.card-header-col.row-stt {
+        width: 100% !important;
+    }
+    .table-collapsed-cards tbody tr td.card-header-col:nth-child(2) {
+        width: 100% !important;
+    }
+    .table-collapsed-cards tbody tr td.card-header-col:nth-child(3) {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+
+    .table-collapsed-cards tbody tr.expanded td.card-action-col {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #f1f5f9 !important;
+        margin-top: 6px !important;
     }
     .table-collapsed-cards tbody tr.expanded td.card-detail-col {
         width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        flex-direction: column !important; /* Xếp dọc hoàn toàn trên điện thoại */
+        flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 4px !important;
+        gap: 6px !important;
     }
     .table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
         margin-right: 0 !important;
         margin-bottom: 2px !important;
     }
-    .table-collapsed-cards tbody tr.expanded td.card-action-col {
+
+    /* Responsive compare-boxes inside cards */
+    .compare-box {
         width: 100% !important;
-        justify-content: flex-start !important; /* Căn trái dễ chạm bấm nút trên Mobile */
+        box-sizing: border-box !important;
     }
 }
 
-/* Floating Accordion Chevron Trigger */
+/* Floating Accordion Chevron Trigger - STRICTLY LOCKED IN POSITION */
 .table-collapsed-cards tbody tr td.row-chevron {
     position: absolute !important;
     top: 20px !important;
@@ -349,6 +565,8 @@
     justify-content: center !important;
     width: 28px !important;
     height: 28px !important;
+    min-width: 28px !important; /* Hard lock width */
+    max-width: 28px !important;
     border-radius: 50% !important;
     background-color: var(--primary-light) !important;
     color: var(--primary) !important;
