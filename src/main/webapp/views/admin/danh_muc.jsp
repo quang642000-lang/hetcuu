@@ -43,7 +43,8 @@
                     </div>
                 </c:if>
 
-                <div class="table-responsive admin-table-container">
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="categoryTable">
                         <thead>
                         <tr class="table-light text-center">
@@ -82,21 +83,18 @@
                                         <td class="text-start"><span class="fw-bold text-dark"><c:out value="${item.tenDm}"/></span></td>
                                         <td><span class="badge bg-secondary px-2.5 py-1.5" style="border-radius: 6px;">${item.thuTuHienThi}</span></td>
                                         <td>
-                                                    <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
-                                                            ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
-                                                    </span>
+                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-3 py-1.5" style="border-radius: 50px;">
+                                                        ${item.trangThai ? 'Đang hoạt động' : 'Ngừng bán'}
+                                                </span>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-flex justify-content-end gap-1.5 align-items-center">
-                                                <!-- NÚT BẬT/TẮT TRẠNG THÁI NHANH ĐỒNG BỘ -->
+                                            <div class="d-flex justify-content-end gap-2 align-items-center">
                                                 <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}"
                                                    class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}"
                                                    title="${item.trangThai ? 'Tạm ngưng hoạt động' : 'Kích hoạt hoạt động'}">
                                                     <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i>
                                                         ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
                                                 </a>
-
-                                                <!-- NÚT SỬA ĐỒNG BỘ ICON -->
                                                 <button class="btn btn-sm btn-action-edit"
                                                         data-id="${item.maDm}"
                                                         data-name="<c:out value='${item.tenDm}'/>"
@@ -106,8 +104,6 @@
                                                         onclick="handleEditDanhMucClick(this)">
                                                     <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </button>
-
-                                                <!-- NÚT XÓA ĐỒNG BỘ ICON -->
                                                 <button class="btn btn-sm btn-action-delete"
                                                         onclick="confirmDeleteDanhMuc('${item.maDm}')">
                                                     <i class="bi bi-trash3-fill me-1"></i> Xóa
@@ -125,6 +121,102 @@
                     </table>
                 </div>
 
+                <!-- ==================== VIEW 2: MOBILE LAYOUT (Màn hình điện thoại < 992px) ==================== -->
+                <div class="d-block d-lg-none" id="categoryMobileCards">
+                    <c:choose>
+                        <c:when test="${not empty categories}">
+                            <c:forEach var="item" items="${categories}" varStatus="loop">
+                                <div class="category-card-col mb-3"
+                                     data-id="${item.maDm}"
+                                     data-name="<c:out value='${item.tenDm}'/>"
+                                     data-sort="${item.thuTuHienThi}"
+                                     data-status="${item.trangThai ? 1 : 0}">
+                                    <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
+
+                                        <!-- Arrow Icon for expanding card info on mobile -->
+                                        <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
+                                            <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
+                                                <i class="bi bi-chevron-down fs-6"></i>
+                                            </span>
+                                        </div>
+
+                                        <!-- Header: STT, Mã danh mục, Trạng thái -->
+                                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
+                                                        ${loop.index + 1}
+                                                </span>
+                                                <code class="fw-bold text-dark font-monospace">${item.maDm}</code>
+                                            </div>
+                                            <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-2.5 py-1" style="border-radius: 50px; font-size: 11px;">
+                                                    ${item.trangThai ? 'Đang bán' : 'Tạm dừng'}
+                                            </span>
+                                        </div>
+
+                                        <!-- Body: Ảnh & Tên danh mục -->
+                                        <div class="d-flex align-items-center gap-3">
+                                            <c:choose>
+                                                <c:when test="${not empty item.hinhAnh}">
+                                                    <img src="${item.hinhAnh}" class="rounded border" style="width: 50px; height: 50px; object-fit: cover;">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center rounded border" style="width: 50px; height: 50px;">
+                                                        <i class="bi bi-image fs-4"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div>
+                                                <h6 class="fw-bold text-dark mb-0"><c:out value="${item.tenDm}"/></h6>
+                                                <small class="text-muted">Ưu tiên hiển thị: <b>${item.thuTuHienThi}</b></small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Expandable panel (hidden by default) -->
+                                        <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
+                                            <div class="text-muted d-flex justify-content-between">
+                                                <span>Mã nhóm danh mục:</span>
+                                                <strong class="text-dark">${item.maDm}</strong>
+                                            </div>
+                                            <div class="text-muted d-flex justify-content-between mt-1">
+                                                <span>Thứ tự hiển thị:</span>
+                                                <strong class="text-dark">${item.thuTuHienThi}</strong>
+                                            </div>
+                                            <div class="text-muted d-flex justify-content-between mt-1">
+                                                <span>Trạng thái hoạt động:</span>
+                                                <strong class="${item.trangThai ? 'text-success' : 'text-danger'}">${item.trangThai ? 'Đang hoạt động' : 'Đang tạm dừng'}</strong>
+                                            </div>
+                                        </div>
+
+                                        <!-- Footer Actions -->
+                                        <div class="d-flex gap-2 border-top pt-2 mt-2">
+                                            <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}"
+                                               class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-bold flex-grow-1" style="border-radius: 8px;">
+                                                <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
+                                            </a>
+                                            <button class="btn btn-outline-primary btn-sm fw-bold flex-grow-1" style="border-radius: 8px;"
+                                                    data-id="${item.maDm}"
+                                                    data-name="<c:out value='${item.tenDm}'/>"
+                                                    data-img="${item.hinhAnh}"
+                                                    data-sort="${item.thuTuHienThi}"
+                                                    data-status="${item.trangThai ? 1 : 0}"
+                                                    onclick="handleEditDanhMucClick(this)">
+                                                <i class="bi bi-pencil-square"></i> Sửa
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" onclick="confirmDeleteDanhMuc('${item.maDm}')">
+                                                <i class="bi bi-trash3-fill"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="text-center py-5 text-muted bg-white rounded-3 border">Chưa có thông tin danh mục!</div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <!-- PHÂN TRANG ĐỒNG BỘ -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng dữ liệu</span>
                     <nav>
@@ -272,45 +364,94 @@
         });
     }
 
+    // EXPAND/COLLAPSE MOBILE CARD DETAILS
+    function toggleMobileCardDetails(element) {
+        const card = element.closest('.card');
+        const details = card.querySelector('.mobile-card-details');
+        const icon = element.querySelector('i');
+        if (details.classList.contains('d-none')) {
+            details.classList.remove('d-none');
+            icon.className = 'bi bi-chevron-up fs-6';
+        } else {
+            details.classList.add('d-none');
+            icon.className = 'bi bi-chevron-down fs-6';
+        }
+    }
+
     let currentPage = 1;
     const pageSize = 10;
-    let filteredRows = [];
+    let filteredDesktopRows = [];
+    let filteredMobileCards = [];
 
     function filterAndPaginateCategories() {
         const searchInput = document.getElementById("categorySearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-        const allRows = Array.from(document.querySelectorAll("#categoryTableBody .category-row"));
-        filteredRows = allRows.filter(row => {
+
+        // Filter Desktop Rows
+        const allDesktopRows = Array.from(document.querySelectorAll("#categoryTableBody .category-row"));
+        filteredDesktopRows = allDesktopRows.filter(row => {
             const id = row.dataset.id.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
+
+        // Filter Mobile Cards
+        const allMobileCards = Array.from(document.querySelectorAll("#categoryMobileCards .category-card-col"));
+        filteredMobileCards = allMobileCards.filter(card => {
+            const id = card.dataset.id.toLowerCase();
+            const name = card.dataset.name.toLowerCase();
+            return id.includes(searchVal) || name.includes(searchVal);
+        });
+
         currentPage = 1;
         renderTableRows();
     }
 
     function renderTableRows() {
-        const allRows = document.querySelectorAll("#categoryTableBody .category-row");
-        allRows.forEach(row => row.style.display = "none");
-        const totalRows = filteredRows.length;
+        // Render Desktop view
+        const allDesktopRows = document.querySelectorAll("#categoryTableBody .category-row");
+        allDesktopRows.forEach(row => row.style.display = "none");
+        const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
+
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-        const pageRows = filteredRows.slice(startIdx, endIdx);
-        pageRows.forEach(row => row.style.display = "table-row");
 
+        const pageDesktopRows = filteredDesktopRows.slice(startIdx, endIdx);
+        pageDesktopRows.forEach((row, idx) => {
+            row.style.display = "table-row";
+            row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
+        });
+
+        // Render Mobile view
+        const allMobileCards = document.querySelectorAll("#categoryMobileCards .category-card-col");
+        allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
+        const pageMobileCards = filteredMobileCards.slice(startIdx, endIdx);
+        pageMobileCards.forEach(card => {
+            card.style.setProperty('display', 'block', 'important');
+        });
+
+        updatePaginationControls();
+    }
+
+    function updatePaginationControls() {
+        const totalRows = filteredDesktopRows.length;
+        const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-        if (!infoEl || !btnContainer || !wrapper) return;
 
-        const start = totalRows > 0 ? startIdx + 1 : 0;
-        const end = endIdx;
+        if (!infoEl || !btnContainer || !wrapper) return;
+        const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(currentPage * pageSize, totalRows);
+
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng danh mục';
         btnContainer.innerHTML = "";
+
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
@@ -336,7 +477,7 @@
     }
 
     function changePage(page) {
-        const totalPages = Math.ceil(filteredRows.length / pageSize) || 1;
+        const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
