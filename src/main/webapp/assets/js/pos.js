@@ -32,6 +32,7 @@ function resetVoucherAndPoints() {
     const sumDiscRow = document.getElementById("summaryDiscountRow");
     const sumPtsRow = document.getElementById("summaryPointsRow");
     const manualVoucherEl = document.getElementById("manualVoucherInput");
+
     if (maKmEl) maKmEl.value = "";
     if (valGiamEl) valGiamEl.value = "0";
     if (dsuDungEl) dsuDungEl.value = "0";
@@ -48,16 +49,20 @@ function clearFullPosCart() {
     const custSearchEl = document.getElementById('customerPhoneSearch');
     if (submitMaKhEl) submitMaKhEl.value = "";
     if (custSearchEl) custSearchEl.value = "";
+
     const nameResult = document.getElementById('customerNameResult');
     if (nameResult) nameResult.innerText = "Khách lẻ vãng lai";
     const ptsResult = document.getElementById("customerPoints");
     if (ptsResult) ptsResult.innerText = "Hạng: Mới | 0 Điểm";
+
     const crmLoyaltyArea = document.getElementById("crmLoyaltyArea");
     if (crmLoyaltyArea) crmLoyaltyArea.style.setProperty('display', 'none', 'important');
     const posAddCustomerArea = document.getElementById("posAddCustomerArea");
     if (posAddCustomerArea) posAddCustomerArea.style.setProperty('display', 'none', 'important');
+
     const manualVoucherInput = document.getElementById("manualVoucherInput");
     if (manualVoucherInput) manualVoucherInput.value = "";
+
     resetVoucherAndPoints();
     renderPosCart();
 }
@@ -193,6 +198,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '    </button>';
     html += '  </div>';
     html += '</div>';
+
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
@@ -217,6 +223,7 @@ function addCustomizedToCart() {
     const iceEl = document.querySelector('input[name="popup_ice"]:checked');
     const ice = iceEl ? iceEl.value : '100% Đá';
     const note = document.getElementById('popup_note').value.trim() || 'Normal';
+
     let toppings = [];
     document.querySelectorAll('.topping-check:checked').forEach(chk => {
         let tpPrice = parseInt(chk.dataset.price) || 0;
@@ -230,6 +237,7 @@ function addCustomizedToCart() {
             giaTp: tpPrice
         });
     });
+
     let duplicateItem = posCart.find(item =>
         item.maSp === maSp &&
         item.maSize === maSize &&
@@ -238,6 +246,7 @@ function addCustomizedToCart() {
         item.ghiChuMon === note &&
         isSameToppingsList(item.toppings, toppings)
     );
+
     if (duplicateItem) {
         duplicateItem.soLuong += 1;
     } else {
@@ -272,27 +281,32 @@ function renderPosCart() {
     const container = document.getElementById('posCartItems');
     if (!container) return;
     container.innerHTML = '';
+
     if (posCart.length === 0) {
         container.innerHTML = '<div class="text-center text-muted py-5 my-5">' +
             '  <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>' +
             '  <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>' +
             '</div>';
         recalculatePOSBill(0);
+
         const mobileBadge = document.getElementById("posMobileCartCount");
         if (mobileBadge) mobileBadge.innerText = "0";
         return;
     }
+
     let tongTienHang = 0;
     posCart.forEach((item, idx) => {
         let toppingsPrice = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let lineTotal = (item.giaBan + toppingsPrice) * item.soLuong;
         tongTienHang += lineTotal;
+
         let toppingsText = '';
         if (item.toppings.length > 0) {
             toppingsText = '<div class="text-success small" style="font-size: 10px; font-weight:600;">Toppings: ' +
                 item.toppings.map(t => t.tenTopping + ' (x' + t.soLuongTp + ')').join(', ') + '</div>';
         }
         let noteText = item.ghiChuMon !== 'Normal' ? ' | Ghi chú: <span class="text-danger fw-semibold">' + item.ghiChuMon + '</span>' : '';
+
         let cardHtml = '<div class="pos-cart-item p-2.5 bg-white border border-secondary border-opacity-10 rounded-3 mb-2 shadow-sm">' +
             '  <div class="d-flex justify-content-between align-items-start">' +
             '    <div class="text-start">' +
@@ -314,7 +328,9 @@ function renderPosCart() {
             '</div>';
         container.insertAdjacentHTML('beforeend', cardHtml);
     });
+
     recalculatePOSBill(tongTienHang);
+
     const mobileBadge = document.getElementById("posMobileCartCount");
     if (mobileBadge) {
         mobileBadge.innerText = posCart.reduce((sum, item) => sum + item.soLuong, 0);
@@ -337,6 +353,7 @@ function removeCartItem(idx) {
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     if (!sdt || sdt.length < 10) return;
+
     fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
@@ -344,17 +361,21 @@ function searchCustomerCRM() {
                 customerInfo = data;
                 document.getElementById('submit_maKh').value = data.maKh;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
+
                 let rankName = 'MỚI';
                 if (data.maHang === 1) rankName = 'ĐỒNG';
                 else if (data.maHang === 2) rankName = 'BẠC';
                 else if (data.maHang === 3) rankName = 'VÀNG 👑';
                 else if (data.maHang === 4) rankName = 'VIP 💎';
+
                 document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
+
                 resetVoucherAndPoints();
                 renderPosCart();
-                Swal.fire({ icon: 'success', title: 'Thành viên', text: 'Đã nhận diện: ' + data.tenKh, confirmButtonColor: '#10b981', timer: 1500 });
+
+                Swal.fire({ icon: 'success', title: 'Thành viên', text: 'Tìm thấy: ' + data.tenKh, confirmButtonColor: '#10b981', timer: 1500 });
             } else {
                 customerInfo = null;
                 document.getElementById('submit_maKh').value = "";
@@ -362,14 +383,15 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'none', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'block', 'important');
+
                 Swal.fire({
-                    title: 'Đăng ký hội viên',
-                    text: 'Số điện thoại này chưa đăng ký. Tạo tài khoản hội viên mới?',
+                    title: 'Hội viên chưa đăng ký',
+                    text: 'Số điện thoại này chưa liên kết thẻ. Đăng ký nhanh CRM?',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#10b981',
                     cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Đăng ký',
+                    confirmButtonText: 'Đăng ký ngay',
                     cancelButtonText: 'Để sau'
                 }).then((res) => {
                     if (res.isConfirmed) {
@@ -397,6 +419,7 @@ function openQuickRegisterModal(sdt) {
     html += '    <input type="email" class="form-control" id="reg_email" placeholder="example@gmail.com..." required>';
     html += '  </div>';
     html += '</div>';
+
     Swal.fire({
         title: 'ĐĂNG KÝ HỘI VIÊN NHANH',
         html: html,
@@ -431,6 +454,7 @@ function openQuickRegisterModal(sdt) {
                         document.getElementById('customerPoints').innerText = 'Hạng: ĐỒNG | 0 Điểm';
                         document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
                         document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
+
                         Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng ký thành công hội viên CRM!', confirmButtonColor: '#10b981' });
                         resetVoucherAndPoints();
                         renderPosCart();
@@ -445,9 +469,12 @@ function openQuickRegisterModal(sdt) {
 function applyManualVoucherCode() {
     const code = document.getElementById("manualVoucherInput").value.trim().toUpperCase();
     if (!code) return;
+
     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
     if (totalRaw === 0) return;
+
     const maKh = document.getElementById("submit_maKh").value;
+
     fetch(getContextPath() + '/pos/apply-voucher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -479,6 +506,7 @@ function showVoucherSelectionModal() {
 
 function applyPointsDiscount() {
     if (!customerInfo || customerInfo.diemTichLuy <= 0) return;
+
     Swal.fire({
         title: 'QUY ĐỔI ĐIỂM CRM TÍCH LŨY',
         text: 'Hội viên đang có ' + customerInfo.diemTichLuy + ' điểm. Quy đổi điểm (1đ = 1.000đ):',
@@ -507,6 +535,7 @@ function applyPointsDiscount() {
 function recalculatePOSBill(tongTienHang) {
     let rawSum = tongTienHang;
     let discount = 0;
+
     if (appliedVoucher) {
         if (rawSum >= appliedVoucher.donToiThieu) {
             if (appliedVoucher.loaiGiam === 1) {
@@ -529,10 +558,12 @@ function recalculatePOSBill(tongTienHang) {
             document.getElementById("submit_tienGiamGia").value = "0";
         }
     }
+
     let pointsDiscount = appliedPoints * 1000;
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
+
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.setProperty('display', 'flex', 'important');
         document.getElementById("txtUsedPoints").innerText = appliedPoints.toString();
@@ -544,15 +575,18 @@ function recalculatePOSBill(tongTienHang) {
         document.getElementById("submit_diemSuDung").value = "0";
         document.getElementById("submit_tienTruDiem").value = "0";
     }
+
     let billBeforeTax = rawSum - discount - pointsDiscount;
     if (billBeforeTax < 0) billBeforeTax = 0;
     let vatPrice = Math.round(billBeforeTax * 0.08);
     let finalPayable = billBeforeTax + vatPrice;
+
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
+
     calculateChangeRefund();
 }
 
@@ -562,6 +596,7 @@ function calculateChangeRefund() {
     let refund = khachDua - phaiTra;
     let txtCashRefundEl = document.getElementById('txtCashRefund');
     if (!txtCashRefundEl) return;
+
     if (refund < 0) {
         txtCashRefundEl.innerText = 'Khách đưa thiếu';
         txtCashRefundEl.className = 'text-danger fw-bold';
@@ -590,6 +625,7 @@ function changePaymentMethod(maPt) {
     const qrRadio = document.getElementById('pt_qr');
     if (maPt === 1 && cashRadio) cashRadio.checked = true;
     if (maPt === 2 && qrRadio) qrRadio.checked = true;
+
     if (maPt === 2) {
         if (cashSection) cashSection.style.setProperty('display', 'none', 'important');
     } else {
@@ -603,11 +639,14 @@ function showPosQrCodeModal(orderId, payable) {
     document.getElementById("posQrAmount").innerText = formatVND(parseInt(payable));
     document.getElementById("posQrCodeDisplay").innerText = orderId;
     document.getElementById("posQrImage").src = `https://img.vietqr.io/image/TPB-0346406405-compact2.png?amount=${payable}&addInfo=${orderId}`;
+
     let qrModalEl = document.getElementById("posQrModal");
     let qrModalInstance = new bootstrap.Modal(qrModalEl);
     qrModalInstance.show();
+
     let leftTime = 120;
     document.getElementById("posQrCountdownText").innerText = leftTime;
+
     clearInterval(posQrCountdownInterval);
     posQrCountdownInterval = setInterval(() => {
         leftTime--;
@@ -619,6 +658,7 @@ function showPosQrCodeModal(orderId, payable) {
             document.getElementById("posQrLoadingStatus").style.setProperty("display", "none", "important");
         }
     }, 1000);
+
     clearInterval(posQrPollInterval);
     posQrPollInterval = setInterval(() => {
         if (!isPosQrActive) return;
@@ -652,12 +692,12 @@ function cancelQRPayment() {
 function forceSubmitCheckout() {
     Swal.fire({
         title: 'Bỏ qua chuyển khoản?',
-        text: 'Xác nhận thu tiền mặt thủ công?',
+        text: 'Chốt đơn hàng thủ công (ghi nhận đã chuyển khoản ngoài)?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Xác nhận',
+        confirmButtonText: 'Xác nhận thu tiền',
         cancelButtonText: 'Hủy bỏ'
     }).then((res) => {
         if (res.isConfirmed) {
@@ -679,6 +719,7 @@ function loadAndShowPrintReceipt(orderId) {
         '  <div class="spinner-border text-success" role="status"></div>' +
         '  <p class="small text-muted mt-2">Đang nạp thông tin hóa đơn...</p>' +
         '</div>';
+
     fetch(getContextPath() + '/pos/bill-detail?id=' + orderId)
         .then(res => res.json())
         .then(data => {
@@ -689,25 +730,30 @@ function loadAndShowPrintReceipt(orderId) {
                 document.getElementById("billTenNv").innerText = data.tenNhanVien ? data.tenNhanVien : 'Đặt mua Online';
                 document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
+
                 if (parseInt(data.tienGiamGia) > 0) {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'flex', 'important');
                 } else {
                     document.getElementById("billDiscountRow").style.setProperty('display', 'none', 'important');
                 }
+
                 if (data.diemSuDung > 0) {
                     document.getElementById("billPointsRow").style.setProperty('display', 'flex', 'important');
                     document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                 } else {
                     document.getElementById("billPointsRow").style.setProperty('display', 'none', 'important');
                 }
+
                 let rawSum = parseInt(data.tongTienHang) || 0;
                 let disc = parseInt(data.tienGiamGia) || 0;
                 let ptsDisc = parseInt(data.tienTruDiem) || 0;
                 let billBeforeTax = rawSum - disc - ptsDisc;
                 if (billBeforeTax < 0) billBeforeTax = 0;
                 let vatPrice = Math.round(billBeforeTax * 0.08);
+
                 document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                 document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
+
                 let cashGiven = parseInt(localStorage.getItem('last_cash_given_' + orderId)) || 0;
                 if (cashGiven > 0) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'flex', 'important');
@@ -723,6 +769,7 @@ function loadAndShowPrintReceipt(orderId) {
                     document.getElementById("billCashGivenRow").style.setProperty('display', 'none', 'important');
                     document.getElementById("billCashRefundRow").style.setProperty('display', 'none', 'important');
                 }
+
                 container.innerHTML = '';
                 data.items.forEach(item => {
                     let html = '<div class="mb-2 border-bottom pb-1 text-start">';
@@ -741,6 +788,7 @@ function loadAndShowPrintReceipt(orderId) {
                     html += '</div>';
                     container.insertAdjacentHTML('beforeend', html);
                 });
+
                 if (typeof bootstrap !== 'undefined') {
                     const printModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
                     printModal.show();
@@ -764,6 +812,7 @@ function submitPosProfile() {
     const hoTen = document.getElementById('profile_hoTen').value.trim();
     const sdt = document.getElementById('profile_sdt').value.trim();
     const email = document.getElementById('profile_email').value.trim();
+
     if (!hoTen || !sdt || !email) {
         Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các trường thông tin!', confirmButtonColor: '#10b981' });
         return;
@@ -772,6 +821,7 @@ function submitPosProfile() {
     params.append('hoTen', hoTen);
     params.append('soDienThoai', sdt);
     params.append('email', email);
+
     fetch(getContextPath() + '/pos/update-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -796,6 +846,7 @@ function submitPosPassword() {
     const oldPass = document.getElementById('password_old').value;
     const newPass = document.getElementById('password_new').value;
     const confirmPass = document.getElementById('password_confirm').value;
+
     if (!oldPass || !newPass || !confirmPass) {
         Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đủ 3 mốc mật khẩu!', confirmButtonColor: '#10b981' });
         return;
@@ -805,12 +856,14 @@ function submitPosPassword() {
         return;
     }
     if (newPass.length < 8) {
-        Swal.fire({ icon: 'warning', title: 'Mật khẩu yếu', text: 'Mật khẩu phải từ 8 ký tự trở lên!', confirmButtonColor: '#10b981' });
+        Swal.fire({ icon: 'warning', title: 'Mật khẩu yếu', text: 'Mật khẩu mới bắt buộc phải chứa tối thiểu từ 8 ký tự!', confirmButtonColor: '#10b981' });
         return;
     }
+
     const params = new URLSearchParams();
     params.append('oldPassword', oldPass);
     params.append('newPassword', newPass);
+
     fetch(getContextPath() + '/pos/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -861,12 +914,14 @@ function submitPOSOrderTransaction() {
     } else {
         localStorage.removeItem('temp_last_cash_given');
     }
+
     const container = document.getElementById('posFormItemsContainer');
     if (!container) {
         showToast('error', 'Lỗi cấu trúc trang: Không tìm thấy posFormItemsContainer!');
         return;
     }
     container.innerHTML = '';
+
     posCart.forEach(item => {
         container.innerHTML += '<input type="hidden" name="item_maSp[]" value="' + item.maSp + '">';
         container.innerHTML += '<input type="hidden" name="item_maSize[]" value="' + item.maSize + '">';
@@ -878,14 +933,15 @@ function submitPOSOrderTransaction() {
         let toppingKeys = item.toppings.map(t => t.maTp + "_" + t.soLuongTp + "_" + t.giaTp).join("|");
         container.innerHTML += '<input type="hidden" name="item_toppingKeys[]" value="' + toppingKeys + '">';
     });
+
     Swal.fire({
-        title: 'Xác nhận chốt đơn?',
-        text: 'Bạn có chắc chắn muốn chốt đơn hàng?',
+        title: 'Chốt giao dịch quầy POS',
+        text: 'Xác nhận xuất hóa đơn tài chính và tiến hành giao dịch?',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Chốt đơn'
+        confirmButtonText: 'Xác nhận & Chốt đơn'
     }).then((result) => {
         if (result.isConfirmed) {
             const form = document.getElementById('posOrderForm');
@@ -894,14 +950,20 @@ function submitPOSOrderTransaction() {
     });
 }
 
+/* =========================================================================
+ * PURE DYNAMIC DOM INJECTION FOR TABLET & MOBILE VIEWPORTS
+ * ========================================================================= */
 document.addEventListener("DOMContentLoaded", function() {
+    // 1. Inject POS Cart sliding drawer Backdrop overlay
     if (!document.getElementById("posCartBackdrop")) {
         const backdrop = document.createElement("div");
         backdrop.id = "posCartBackdrop";
         backdrop.className = "pos-cart-backdrop";
-        backdrop.onclick = toggleMobileCart;
+        backdrop.onclick = toggleMobileCart; // Clicking backdrop closes offcanvas drawer
         document.body.appendChild(backdrop);
     }
+
+    // 2. Inject floating circle action button with counter badge
     if (!document.getElementById("posMobileCartToggleBtn")) {
         const toggleBtn = document.createElement("button");
         toggleBtn.id = "posMobileCartToggleBtn";
@@ -919,6 +981,8 @@ function toggleMobileCart() {
     if (sidebar && backdrop) {
         sidebar.classList.toggle('show');
         backdrop.classList.toggle('show');
+
+        // Lock body scrolling when drawer is open
         if (sidebar.classList.contains('show')) {
             document.body.style.overflow = 'hidden';
         } else {
