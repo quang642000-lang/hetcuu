@@ -1,19 +1,135 @@
-/* --- ADMIN LAYOUT AND DASHBOARD ENHANCEMENTS --- */
+/* =========================================================================
+   COZY MATCHA-CREAM THEME & ENTERPRISE SaaS ADMIN ESSENTIALS
+   ========================================================================= */
+:root {
+    --primary: #059669;            /* Cozy Matcha Dark Green */
+    --primary-hover: #047857;
+    --primary-light: #f0fdf4;      /* Matcha milk background */
+    --primary-glow: rgba(5, 150, 105, 0.15);
+    --secondary: #d97706;          /* Amber Sweet Tea */
+    --secondary-hover: #b45309;
+    --secondary-light: #fef3c7;
+    --dark-slate: #0f172a;         /* Charcoal black for readable text */
+    --text-main: #0f172a;          /* Pure dark charcoal */
+    --text-muted: #334155;         /* Dark gray (Slate-700) for subtext */
+    --text-white: #ffffff;
+    --bg-main: #fcfbfa;            /* Warm Cream milk-tea background */
+    --bg-card: #ffffff;
+    --border-color: #cbd5e1;       /* Gray-300 for visible borders */
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-pill: 50px;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+/* --- MASTER VIEWPORT LOCK & LAYOUT RULES --- */
+html, body {
+    height: 100vh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important; /* Block master page scrolling */
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
 .admin-wrapper {
     display: flex !important;
+    flex-direction: row !important;
     width: 100vw !important;
     height: 100vh !important;
+    height: 100dvh !important;
     overflow: hidden !important;
 }
+
 .admin-content {
     flex-grow: 1 !important;
     min-width: 0 !important;
     height: 100vh !important;
-    overflow-y: auto !important;
+    height: 100dvh !important;
+    overflow-y: auto !important; /* ONLY SCROLLABLE AREA */
     background-color: var(--bg-main) !important;
     display: flex !important;
     flex-direction: column !important;
+    -webkit-overflow-scrolling: touch;
 }
+
+/* --- HIGH-PERFORMANCE ELITE SIDEBAR (STICKY SAFE) --- */
+.admin-sidebar {
+    width: 260px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+    color: #f8fafc !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    z-index: 1030 !important;
+    overflow: hidden !important; /* Hide sidebar scroll container */
+    border-right: 1px solid #334155 !important;
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sidebar-header {
+    padding: 24px 20px !important;
+    border-bottom: 1px solid #334155 !important;
+    background-color: #0b0f19 !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-menu {
+    list-style: none !important;
+    padding: 16px 12px !important;
+    margin: 0 !important;
+    flex-grow: 1 !important;
+    overflow-y: auto !important; /* ONLY menu items scroll */
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-item {
+    margin-bottom: 6px !important;
+}
+
+.sidebar-item a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    gap: 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-item a:hover {
+    color: #ffffff !important;
+    background-color: rgba(16, 185, 129, 0.08) !important;
+    padding-left: 20px !important;
+}
+
+.sidebar-item.active a {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+    font-weight: 600 !important;
+}
+
+/* Fixed POS Entrance at the bottom of Sidebar */
+.admin-sidebar .p-3.border-top {
+    flex-shrink: 0 !important;
+    background-color: #0c101f !important;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important; /* Dynamic iOS Safe Area */
+}
+
+/* --- KPI GRID & CARDS --- */
 .kpi-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
@@ -23,60 +139,27 @@
 .kpi-card {
     background-color: #ffffff !important;
     border-radius: var(--radius-md) !important;
-    padding: 24px !important;
+    padding: 20px !important;
     border: 1.5px solid var(--border-color) !important;
-    box-shadow: var(--shadow-md) !important;
+    box-shadow: var(--shadow-sm) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.2s ease !important;
 }
 .kpi-card:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: var(--shadow-md) !important;
     border-color: var(--primary) !important;
 }
-.kpi-info h3 {
-    font-size: 12px !important;
-    color: var(--text-muted) !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
-    margin-bottom: 8px !important;
-}
-.kpi-info p {
-    font-size: 26px !important;
-    font-weight: 800 !important;
-    color: var(--text-main) !important;
-    line-height: 1 !important;
-}
-.kpi-icon {
-    width: 52px !important;
-    height: 52px !important;
-    border-radius: var(--radius-sm) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 24px !important;
-}
-.filter-toolbar {
-    background-color: #ffffff !important;
-    border: 1.5px solid var(--border-color) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 24px !important;
-    box-shadow: var(--shadow-sm) !important;
-    margin-bottom: 24px !important;
-}
 
-/* TABLE STYLING - MAXIMUM CONTRAST & ACCESSIBILITY */
+/* --- TABLE WRAPPERS --- */
 .admin-table-container {
     background-color: #ffffff !important;
     border-radius: var(--radius-md) !important;
     border: 1.5px solid var(--border-color) !important;
-    box-shadow: var(--shadow-md) !important;
-    overflow-x: auto !important;
+    box-shadow: var(--shadow-sm) !important;
     margin-bottom: 24px !important;
-    -webkit-overflow-scrolling: touch;
 }
 .admin-table, .table-audit {
     width: 100% !important;
@@ -88,197 +171,274 @@
     color: var(--text-main) !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
-    font-size: 12px !important;
+    font-size: 11.5px !important;
     letter-spacing: 0.75px !important;
-    padding: 18px 20px !important;
+    padding: 16px 20px !important;
     border-bottom: 2px solid var(--border-color) !important;
 }
 .admin-table td, .table-audit td {
-    padding: 16px 20px !important;
+    padding: 14px 20px !important;
     border-bottom: 1.5px solid var(--border-color) !important;
     color: var(--text-main) !important;
-    font-size: 14px !important;
     vertical-align: middle !important;
-    font-weight: 500 !important;
-}
-.admin-table tbody tr, .table-audit tbody tr {
-    transition: background-color 0.15s ease !important;
-}
-.admin-table tbody tr:hover, .table-audit tbody tr:hover {
-    background-color: #f8fafc !important;
 }
 
-/* Beautiful custom status pills in admin tables */
-.badge-role-admin {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border: 1px solid #fca5a5 !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-}
-.badge-role-staff {
-    background-color: #e0f2fe !important;
-    color: #0369a1 !important;
-    border: 1px solid #bae6fd !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-}
-
-/* Action buttons */
+/* Custom badges */
 .btn-action-edit, .btn-action-delete, .btn-action-warning, .btn-action-info {
     font-weight: 700 !important;
     font-size: 12px !important;
-    padding: 8px 16px !important;
-    border-radius: var(--radius-sm) !important;
-    transition: all 0.2s ease !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 4px !important;
-    text-decoration: none !important;
 }
-.btn-action-edit {
-    color: var(--primary) !important;
-    background-color: var(--primary-light) !important;
-    border: 1.5px solid rgba(5, 150, 105, 0.25) !important;
-}
-.btn-action-edit:hover {
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px var(--primary-glow) !important;
-}
-.btn-action-delete {
-    color: var(--danger) !important;
-    background-color: rgba(220, 38, 38, 0.05) !important;
-    border: 1.5px solid rgba(220, 38, 38, 0.2) !important;
-}
-.btn-action-delete:hover {
-    background-color: var(--danger) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2) !important;
-}
-.btn-action-warning {
-    color: var(--warning) !important;
-    background-color: var(--secondary-light) !important;
-    border: 1.5px solid rgba(217, 119, 6, 0.2) !important;
-}
-.btn-action-warning:hover {
-    background-color: var(--secondary) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2) !important;
-}
-
-/* Compare Box inside Audit Logs */
-.compare-box {
-    font-family: 'Consolas', 'Courier New', monospace !important;
-    font-size: 11.5px !important;
-    border-radius: 6px !important;
-    padding: 10px 14px !important;
-    max-height: 120px !important;
-    overflow-y: auto !important;
-    white-space: pre-wrap !important;
-    word-break: break-all !important;
-    background-color: #f8fafc !important;
-    border: 1px solid var(--border-color) !important;
-    text-align: left !important;
-}
-.compare-old {
-    border-left: 3px solid #f59e0b !important;
-    color: #64748b !important;
-}
-.compare-new {
-    border-left: 3px solid #10b981 !important;
-    color: #0f172a !important;
-}
+.btn-action-edit { color: var(--primary) !important; background-color: var(--primary-light) !important; border: 1px solid rgba(5, 150, 105, 0.2); }
+.btn-action-edit:hover { background-color: var(--primary) !important; color: white !important; }
+.btn-action-delete { color: var(--danger) !important; background-color: rgba(220, 38, 38, 0.05) !important; border: 1px solid rgba(220, 38, 38, 0.15); }
+.btn-action-delete:hover { background-color: var(--danger) !important; color: white !important; }
 
 /* =========================================================================
-   BULLETPROOF LAYOUT LOCKING & ELITE EMERALD-SLATE DESIGN FOR SIDEBAR
+   ADAPTIVE COLUMN MORPHING (ACM v7.0) - THE ULTIMATE GRID-CARD SYSTEM
    ========================================================================= */
 
-/* 1. SIDEBAR ANCHORING - LOCK IT SOLID AND PREVENT VIEWPORT OVERFLOW */
-.admin-sidebar {
-    width: 260px !important;
-    height: 100vh !important;
-    height: 100dvh !important; /* Dynamic viewport height to prevent iOS address bar cut-off */
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
-    color: #f8fafc !important;
+/* Safe hides for pagination/filtered rows in collapsed card state */
+.table-collapsed-cards tbody tr.pos-row-hidden {
+    display: none !important;
+}
+
+/* Active Collapsed Table Body Grid */
+.table-collapsed-cards {
+    border: none !important;
+    background: transparent !important;
+}
+.table-collapsed-cards thead {
+    display: none !important; /* Completely hide header rows */
+}
+.table-collapsed-cards tbody {
     display: flex !important;
     flex-direction: column !important;
-    flex-shrink: 0 !important;
-    z-index: 1030 !important;
-    overflow: hidden !important; /* CRUCIAL: Hide sidebar container scroll to pin header & footer */
-    border-right: 1px solid #334155 !important;
-    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.15) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    gap: 16px !important;
+    padding: 8px !important;
 }
 
-/* 2. FIXED HEADER AND FOOTER IN SIDEBAR */
-.sidebar-header {
-    padding: 24px 20px !important;
-    border-bottom: 1px solid #334155 !important;
-    background-color: #0b0f19 !important;
-    text-align: center !important;
-    flex-shrink: 0 !important; /* Do not shrink header */
+/* Card Wrapper Layout */
+.table-collapsed-cards tbody tr {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 16px 48px 16px 16px !important; /* Room on right for floating chevron */
+    position: relative !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* 3. INDEPENDENT SCROLL FOR MENU ITEMS */
-.sidebar-menu {
-    list-style: none !important;
-    padding: 16px 12px !important;
-    margin: 0 !important;
-    flex-grow: 1 !important;
-    overflow-y: auto !important; /* ONLY this part inside the sidebar is scrollable */
-    -webkit-overflow-scrolling: touch; /* Slick elastic scrolling on mobile browsers */
+.table-collapsed-cards tbody tr:hover {
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
-/* 4. PINNED FOOTER CONTROLLER */
-.admin-sidebar > div.border-top {
-    flex-shrink: 0 !important; /* Pin footer at the very bottom */
-    background-color: #0f172a !important;
-    padding: 16px !important;
-    /* Extra padding at the bottom of the sidebar to support safe-areas on bezel-less phones (notches) */
-    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
-    border-top: 1px solid #334155 !important;
+.table-collapsed-cards tbody tr.expanded {
+    border-color: var(--primary) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
-/* 5. GORGEOUS SIDEBAR HOVERS AND GLOWS */
-.sidebar-item {
-    margin-bottom: 6px !important;
+/* --- CARD HEADER CELLS (ORDER: 1) --- */
+.table-collapsed-cards tbody tr td {
+    display: none !important; /* Hide unassigned details cells */
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
 }
-.sidebar-item a {
+
+.table-collapsed-cards tbody tr td.card-header-col {
     display: flex !important;
     align-items: center !important;
-    padding: 12px 16px !important;
-    color: #94a3b8 !important;
-    text-decoration: none !important;
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    gap: 12px !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    order: 1 !important;
+    padding: 6px 0 !important;
+    margin-right: 12px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
 }
-.sidebar-item a:hover {
-    color: #ffffff !important;
-    background-color: rgba(16, 185, 129, 0.08) !important;
-    padding-left: 20px !important;
+
+/* PAGE-SPECIFIC OPTIMIZED HEADER CELL WIDTHS */
+
+/* Voucher Code Styling */
+.table-collapsed-cards tbody tr td.card-header-col.row-code-badge {
+    width: 110px !important;
+    flex-shrink: 0 !important;
 }
-.sidebar-item.active a {
-    color: #ffffff !important;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-    font-weight: 600 !important;
+
+/* Image Column */
+.table-collapsed-cards tbody tr td.card-header-col.row-img {
+    width: 44px !important;
+    height: 44px !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
 }
-.sidebar-item i {
-    font-size: 1.15rem !important;
-    transition: transform 0.2s ease !important;
+.table-collapsed-cards tbody tr td.card-header-col.row-img img {
+    width: 40px !important;
+    height: 40px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
 }
-.sidebar-item a:hover i {
-    transform: scale(1.1) rotate(5deg) !important;
+
+/* STT Column */
+.table-collapsed-cards tbody tr td.card-header-col.row-stt {
+    width: 32px !important;
+    flex-shrink: 0 !important;
+    font-weight: 800 !important;
+    color: var(--primary) !important;
 }
-.sidebar-item.active i {
+
+/* ID Column (monospace) */
+.table-collapsed-cards tbody tr td.card-header-col.row-id {
+    width: 90px !important;
+    flex-shrink: 0 !important;
+    font-family: 'Consolas', 'Courier New', monospace !important;
+    font-weight: 700 !important;
+}
+
+/* Name/Main text - GRABS ALL REMAINING HEADER ROW SPACE */
+.table-collapsed-cards tbody tr td.card-header-col.row-name {
+    flex: 1 1 180px !important; /* Perfect grow-wrap ratio */
+    font-weight: 800 !important;
+    color: var(--text-main) !important;
+    font-size: 14.5px !important;
+}
+
+/* Status cell on card header */
+.table-collapsed-cards tbody tr td.card-header-col.row-status-main {
+    flex-shrink: 0 !important;
+    margin-left: auto !important; /* Push to the right end of header */
+    margin-right: 16px !important;
+}
+
+/* --- CARD EXPANDABLE DETAILS CELLS (ORDER: 2) --- */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    order: 2 !important;
+
+    /* Perfect side-by-side double column flow on larger mobile screens */
+    flex: 1 0 48% !important;
+    margin: 6px 1% 0 1% !important;
+    padding: 8px 12px !important;
+
+    background-color: var(--primary-light) !important;
+    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
+    border-radius: var(--radius-sm) !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+/* Dynamic attribute label prefix injection */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
+    content: attr(data-label) !important;
+    font-weight: 800 !important;
+    color: #047857 !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+}
+
+/* HEAVY DETAILS BLOCK (e.g. Compare Boxes or Descriptions) - ORDER: 2.5 */
+.table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
+    display: block !important;
+    order: 2 !important;
+    flex: 1 0 98% !important; /* Force near full-width wrap */
+    margin: 8px 1% 0 1% !important;
+    padding: 10px 14px !important;
+    background-color: var(--primary-light) !important;
+    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
+    border-radius: var(--radius-sm) !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
+}
+
+.table-collapsed-cards tbody tr.expanded td.card-detail-col-full::before {
+    content: attr(data-label) !important;
+    display: block !important;
+    font-weight: 800 !important;
+    color: #047857 !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 6px !important;
+}
+
+/* --- CARD ACTIONS PANEL FOOTER (ORDER: 3) --- */
+.table-collapsed-cards tbody tr.expanded td.card-action-col {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    order: 3 !important;
+    flex: 1 0 100% !important; /* Force to take up entire footer */
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    border-top: 1.5px solid #f1f5f9 !important;
+    width: 100% !important;
+    gap: 8px !important;
+}
+
+/* --- FIXED CORNER FLOATING CHEVRON BUTTON --- */
+.table-collapsed-cards tbody tr td.row-chevron {
+    display: flex !important;
+    position: absolute !important;
+    top: 16px !important;
+    right: 16px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    border-radius: 50% !important;
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    border: 1px solid rgba(5, 150, 105, 0.15) !important;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 5 !important;
+    padding: 0 !important;
+}
+
+.table-collapsed-cards tbody tr.expanded td.row-chevron {
+    transform: rotate(180deg) !important;
+    background-color: var(--primary) !important;
     color: #ffffff !important;
 }
 
-/* 6. MOBILE SIDEBAR DRAWER STYLING */
-@media (max-width: 991.98px) {
+/* Standard empty placeholders styling */
+.empty-placeholder-row {
+    display: block !important;
+    text-align: center !important;
+    padding: 40px !important;
+    color: var(--text-muted) !important;
+    background-color: #ffffff !important;
+    border: 1.5px dashed var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    width: 100% !important;
+}
+
+/* --- MOBILE SPECIFIC OVERRIDES --- */
+@media (max-width: 768px) {
+    /* Stack details vertically to avoid squishing on narrow screens */
+    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
+        flex: 1 0 98% !important;
+    }
+
     .admin-sidebar {
         position: fixed !important;
         left: 0 !important;
@@ -286,9 +446,6 @@
         bottom: 0 !important;
         z-index: 1050 !important;
         transform: translateX(-100%) !important;
-        width: 260px !important;
-        height: 100vh !important;
-        height: 100dvh !important;
     }
     .admin-sidebar.show {
         transform: translateX(0) !important;
@@ -310,301 +467,4 @@
         display: block !important;
         opacity: 1 !important;
     }
-}
-
-/* =========================================================================
-   ULTIMATE ACM - TABLE-ACCORDION GẬP MỞ THÍCH ỨNG CHỐNG CHÈN NÚT (ACM v6)
-   ========================================================================= */
-
-/* Safe overrides to respect JSTL/JavaScript client-side hidden row styles */
-.table-collapsed-cards tbody tr[style*="display: none"],
-.table-collapsed-cards tbody tr[style*="display:none"],
-.table-collapsed-cards tbody tr.pos-row-hidden {
-    display: none !important;
-}
-
-.table-collapsed-cards {
-    border: none !important;
-    background: transparent !important;
-}
-.table-collapsed-cards thead {
-    display: none !important; /* Hide column headers completely */
-}
-.table-collapsed-cards tbody {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 4px !important;
-}
-.table-collapsed-cards tbody tr {
-    display: block !important;
-    background-color: #ffffff !important;
-    border: 1.5px solid var(--border-color) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 16px 48px 16px 16px !important; /* Extra right padding for absolute chevron button */
-    position: relative !important;
-    box-shadow: var(--shadow-sm) !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    cursor: pointer !important;
-    text-align: left !important;
-    margin-bottom: 0 !important;
-}
-.table-collapsed-cards tbody tr:hover {
-    background-color: #ffffff !important;
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-md) !important;
-}
-.table-collapsed-cards tbody tr.expanded {
-    border-color: var(--primary) !important;
-    box-shadow: var(--shadow-md) !important;
-    padding-bottom: 20px !important;
-}
-
-/* Header visible cells in card state (STT, ID, Image, Name) */
-.table-collapsed-cards tbody tr td.card-header-col {
-    display: inline-flex !important;
-    align-items: center !important;
-    border-bottom: none !important;
-    padding: 6px 0 !important;
-    margin-right: 18px !important;
-    vertical-align: middle !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    background: transparent !important;
-    color: var(--text-main) !important;
-    font-size: 14px !important;
-}
-
-/* Give Golden Ratio Width to Core Identity Columns to avoid wrap chaos */
-.table-collapsed-cards tbody tr td.card-header-col.row-stt {
-    width: 45px !important;
-    flex-shrink: 0 !important;
-}
-.table-collapsed-cards tbody tr td.card-header-col:nth-child(2) { /* ID Column */
-    width: 110px !important;
-    font-family: monospace !important;
-    flex-shrink: 0 !important;
-}
-.table-collapsed-cards tbody tr td.card-header-col:nth-child(3) { /* Avatar/Img Column */
-    width: 65px !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-}
-.table-collapsed-cards tbody tr td.card-header-col:nth-child(4) { /* Name/Main Info Column */
-    flex: 1 1 250px !important; /* Grabs all remaining spaces beautifully! */
-    font-weight: 700 !important;
-}
-
-/* Actions cell wrapper inside Card Header (Hidden on collapse, pinned on expand) */
-.table-collapsed-cards tbody tr td.card-action-col {
-    display: none !important;
-}
-.table-collapsed-cards tbody tr.expanded td.card-action-col {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center !important;
-    margin-left: auto !important;
-    margin-right: 0 !important;
-    padding: 12px 0 0 0 !important;
-    border-top: 1.5px solid #f1f5f9 !important;
-    width: 100% !important;
-}
-
-/* Details cells (hidden by default) */
-.table-collapsed-cards tbody tr td.card-detail-col {
-    display: none !important;
-}
-
-/* Expanded State: Slide-down Details */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 12px 14px !important;
-    background-color: var(--primary-light) !important;
-    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
-    border-bottom: none !important;
-    margin-top: 8px !important;
-    border-radius: 8px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    text-align: left !important;
-}
-.table-collapsed-cards tbody tr.expanded td.card-detail-col:last-child {
-    border-bottom: none !important;
-}
-
-/* Special full width detail row for Audit Logs / heavy content */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
-    display: block !important;
-    width: 100% !important;
-    padding: 12px 14px !important;
-    background-color: var(--primary-light) !important;
-    border: 1px dashed rgba(5, 150, 105, 0.15) !important;
-    margin-top: 8px !important;
-    border-radius: 8px !important;
-    box-sizing: border-box !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    text-align: left !important;
-}
-
-/* Self-injection data-label for details columns */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
-    content: attr(data-label) ": " !important;
-    font-weight: 700 !important;
-    color: var(--text-muted) !important;
-    font-size: 11px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-right: 16px !important;
-    flex-shrink: 0 !important;
-}
-
-/* Full column label display block */
-.table-collapsed-cards tbody tr.expanded td.card-detail-col-full::before {
-    content: attr(data-label) !important;
-    display: block !important;
-    font-weight: 700 !important;
-    color: var(--text-muted) !important;
-    font-size: 11px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
-    margin-bottom: 8px !important;
-}
-
-/* Expanded Details Desktop Optimization: Double Column Layout */
-@media (min-width: 769px) {
-    .table-collapsed-cards tbody tr.expanded {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-content: flex-start !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-header-col {
-        width: auto !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
-        width: 49% !important;
-        margin: 6px 0.5% 0 0.5% !important;
-        display: flex !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-detail-col-full {
-        width: 99% !important;
-        margin: 6px 0.5% 0 0.5% !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-action-col {
-        width: 100% !important;
-        margin-top: 14px !important;
-    }
-}
-
-/* Mobile Stack View: Safeguard 100% no overflow */
-@media (max-width: 768px) {
-    .table-collapsed-cards tbody tr {
-        padding-right: 40px !important;
-    }
-    .table-collapsed-cards tbody tr td.card-header-col {
-        display: flex !important;
-        width: 100% !important;
-        margin-right: 0 !important;
-        padding: 6px 0 !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-    .table-collapsed-cards tbody tr td.card-header-col:last-of-type {
-        border-bottom: none !important;
-    }
-
-    /* Specific overrides to avoid wrap issues on very narrow screens */
-    .table-collapsed-cards tbody tr td.card-header-col.row-stt {
-        width: 100% !important;
-    }
-    .table-collapsed-cards tbody tr td.card-header-col:nth-child(2) {
-        width: 100% !important;
-    }
-    .table-collapsed-cards tbody tr td.card-header-col:nth-child(3) {
-        width: 100% !important;
-        justify-content: flex-start !important;
-    }
-
-    .table-collapsed-cards tbody tr.expanded td.card-action-col {
-        width: 100% !important;
-        justify-content: flex-start !important;
-        padding-top: 10px !important;
-        border-top: 1px solid #f1f5f9 !important;
-        margin-top: 6px !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-detail-col {
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 6px !important;
-    }
-    .table-collapsed-cards tbody tr.expanded td.card-detail-col::before {
-        margin-right: 0 !important;
-        margin-bottom: 2px !important;
-    }
-
-    /* Responsive compare-boxes inside cards */
-    .compare-box {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
-
-/* Floating Accordion Chevron Trigger - STRICTLY LOCKED IN POSITION */
-.table-collapsed-cards tbody tr td.row-chevron {
-    position: absolute !important;
-    top: 20px !important;
-    right: 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 28px !important;
-    height: 28px !important;
-    min-width: 28px !important; /* Hard lock width */
-    max-width: 28px !important;
-    border-radius: 50% !important;
-    background-color: var(--primary-light) !important;
-    color: var(--primary) !important;
-    transition: transform 0.2s ease, background-color 0.2s ease !important;
-    border: 1px solid rgba(5, 150, 105, 0.15) !important;
-    padding: 0 !important;
-    cursor: pointer !important;
-    z-index: 4 !important;
-}
-.table-collapsed-cards tbody tr:hover td.row-chevron {
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-}
-.table-collapsed-cards tbody tr.expanded td.row-chevron {
-    transform: rotate(180deg) !important;
-    background-color: var(--primary) !important;
-    color: #ffffff !important;
-}
-
-/* Standard empty placeholders styling */
-.empty-placeholder-row {
-    display: block !important;
-    text-align: center !important;
-    padding: 40px !important;
-    color: var(--text-muted) !important;
-    background-color: #ffffff !important;
-    border: 1.5px dashed var(--border-color) !important;
-    border-radius: var(--radius-md) !important;
-    width: 100% !important;
-}
-
-@media (max-width: 992px) {
-    .kpi-grid { gap: 16px !important; padding: 16px !important; grid-template-columns: repeat(2, 1fr) !important; }
-    .kpi-info p { font-size: 22px !important; }
-    .kpi-icon { width: 44px !important; height: 44px !important; font-size: 20px !important; }
-    .admin-table-container { border-radius: 8px !important; border: none !important; box-shadow: none !important; }
-    .filter-toolbar { padding: 16px !important; }
-}
-@media (max-width: 576px) {
-    .kpi-grid { grid-template-columns: 1fr !important; }
 }
