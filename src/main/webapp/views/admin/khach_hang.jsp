@@ -82,7 +82,7 @@
         <jsp:include page="/views/layout/header_admin.jsp" />
         <div class="p-4">
             <c:choose>
-                <%-- ==================== TRƯỜNG HỢP 1: CHI TIẾT TABS KHÁCH HÀNG CRM ==================== --%>
+                <%-- ==================== CASE 1: CRM DETAILS VIEW ==================== --%>
                 <c:when test="${not empty requestScope.customer}">
                     <div class="mb-3 text-start">
                         <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1.5 fw-bold" style="border-radius: 6px;">
@@ -90,11 +90,9 @@
                         </a>
                     </div>
                     <div class="row g-4 text-start">
-                        <!-- Khung thông tin nhanh bên trái -->
                         <div class="col-12 col-lg-4">
                             <div class="card card-teapos p-4 text-center bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
-                                <img src="${not empty hinhAnhUrl && hinhAnhUrl ne 'None' ? hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
-                                     class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                                <img src="${not empty hinhAnhUrl && hinhAnhUrl ne 'None' ? hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="rounded-circle border border-4 border-success mx-auto mb-3" style="width: 120px; height: 120px; object-fit: cover;">
                                 <h4 class="fw-bold mb-1 text-dark"><c:out value="${tenKh}"/></h4>
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-1.5 fs-6 mb-3" style="border-radius: 50px;">
                                     👑 Hạng:
@@ -124,10 +122,8 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Khối thông tin chi tiết Tabs bên phải -->
                         <div class="col-12 col-lg-8">
                             <div class="card card-teapos p-4 bg-white shadow-sm" style="border-radius: 12px; border: 1px solid var(--border-color);">
-                                <!-- Tabs điều phối -->
                                 <ul class="nav nav-tabs nav-tabs-teapos mb-4" id="crmDetailTab" role="tablist">
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link active fw-bold text-success border-0 bg-transparent" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">Hồ sơ cá nhân</button>
@@ -140,7 +136,6 @@
                                     </li>
                                 </ul>
                                 <div class="tab-content text-start" id="crmDetailTabContent">
-                                    <!-- TAB 1: HOÀN THIỆN HỒ SƠ -->
                                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                                         <form action="${pageContext.request.contextPath}/admin/khachhang" method="POST">
                                             <input type="hidden" name="action" value="edit">
@@ -200,7 +195,6 @@
                                             </button>
                                         </form>
                                     </div>
-                                    <!-- TAB 2: LỊCH SỬ HÓA ĐƠN -->
                                     <div class="tab-pane fade" id="orders" role="tabpanel">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle text-center" id="customerOrdersTable">
@@ -259,7 +253,6 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <!-- Bộ phân trang con (Sub-pagination 5 dòng/trang) -->
                                         <div class="pagination-container" id="orderSubPaginationBlock" style="display: none;">
                                             <span class="small text-muted" id="orderSubPaginationInfo">Hiển thị từ 1 đến 5 của 5 hóa đơn</span>
                                             <nav>
@@ -267,7 +260,6 @@
                                             </nav>
                                         </div>
                                     </div>
-                                    <!-- TAB 3: VOUCHER VIP KHẢ DỤNG -->
                                     <div class="tab-pane fade" id="vouchers" role="tabpanel">
                                         <div class="row g-3">
                                             <c:choose>
@@ -300,18 +292,15 @@
                         </div>
                     </div>
                 </c:when>
-
-                <%-- ==================== TRƯỜNG HỢP 2: HIỂN THỊ DANH SÁCH KHÁCH HÀNG (LIST) ĐỒNG BỘ PHÂN TRANG ==================== --%>
+                <%-- ==================== CASE 2: MAIN LIST VIEW ==================== --%>
                 <c:otherwise>
                     <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
                         <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                             <div>
                                 <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
-                                <p class="text-muted small mb-0">Quản lý cơ sở dữ liệu thành viên, theo dõi ví điểm thưởng Loyalty và phân hạng khách hàng</p>
+                                <p class="text-muted small mb-0">Quản lý hội viên CRM và ví điểm tích lũy.</p>
                             </div>
                         </div>
-
-                        <!-- BỘ LỌC TÌM KIẾM KHÁCH HÀNG CRM -->
                         <div class="filter-wrapper mb-4 text-start">
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
@@ -341,8 +330,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                        <!-- VIEW 1: DESKTOP LAYOUT -->
                         <div class="d-none d-lg-block table-responsive admin-table-container">
                             <table class="table table-hover align-middle text-center admin-table" id="customerTable">
                                 <thead>
@@ -362,19 +350,12 @@
                                 <c:choose>
                                     <c:when test="${not empty customers}">
                                         <c:forEach var="item" items="${customers}" varStatus="loop">
-                                            <tr class="customer-row text-center"
-                                                data-id="${item.maKh}"
-                                                data-name="<c:out value="${item.tenKh}"/>"
-                                                data-phone="${item.soDienThoai}"
-                                                data-email="${item.email}"
-                                                data-rank="${item.maHang}"
-                                                data-status="${item.trangThai ? '1' : '0'}">
+                                            <tr class="customer-row text-center" data-id="${item.maKh}" data-name="<c:out value="${item.tenKh}"/>" data-phone="${item.soDienThoai}" data-email="${item.email}" data-rank="${item.maHang}" data-status="${item.trangThai ? '1' : '0'}">
                                                 <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                                 <td><strong>${item.maKh}</strong></td>
                                                 <td class="text-start">
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <img src="${not empty item.hinhAnhUrl && item.hinhAnhUrl ne 'None' ? item.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
-                                                             class="customer-img-circle shadow-sm" alt="Pic">
+                                                        <img src="${not empty item.hinhAnhUrl && item.hinhAnhUrl ne 'None' ? item.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="customer-img-circle shadow-sm" alt="Pic">
                                                         <strong><c:out value="${item.tenKh}"/></strong>
                                                     </div>
                                                 </td>
@@ -412,29 +393,18 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- ==================== VIEW 2: MOBILE LAYOUT (Màn hình điện thoại < 992px) ==================== -->
+                        <!-- VIEW 2: MOBILE LAYOUT -->
                         <div class="d-block d-lg-none" id="customerMobileCards">
                             <c:choose>
                                 <c:when test="${not empty customers}">
                                     <c:forEach var="item" items="${customers}" varStatus="loop">
-                                        <div class="customer-card-col mb-3"
-                                             data-id="${item.maKh}"
-                                             data-name="<c:out value="${item.tenKh}"/>"
-                                             data-phone="${item.soDienThoai}"
-                                             data-email="${item.email}"
-                                             data-rank="${item.maHang}"
-                                             data-status="${item.trangThai ? '1' : '0'}">
+                                        <div class="customer-card-col mb-3" data-id="${item.maKh}" data-name="<c:out value="${item.tenKh}"/>" data-phone="${item.soDienThoai}" data-email="${item.email}" data-rank="${item.maHang}" data-status="${item.trangThai ? '1' : '0'}">
                                             <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-
-                                                <!-- Expand/Collapse Chevron -->
                                                 <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                                     <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                                         <i class="bi bi-chevron-down fs-6"></i>
                                                     </span>
                                                 </div>
-
-                                                <!-- Header: STT, Mã Khách Hàng, Trạng Thái -->
                                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
@@ -446,11 +416,8 @@
                                                             ${item.trangThai ? 'Hoạt động' : 'Đã khóa'}
                                                     </span>
                                                 </div>
-
-                                                <!-- Body: Avatar, Họ Tên, Hạng & Điểm -->
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <img src="${not empty item.hinhAnhUrl && item.hinhAnhUrl ne 'None' ? item.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}"
-                                                         class="customer-img-circle shadow-sm" alt="Pic">
+                                                    <img src="${not empty item.hinhAnhUrl && item.hinhAnhUrl ne 'None' ? item.hinhAnhUrl : 'https://cdn-icons-png.flaticon.com/512/3177/3177440.png'}" class="customer-img-circle shadow-sm" alt="Pic">
                                                     <div>
                                                         <h6 class="fw-bold text-dark mb-1"><c:out value="${item.tenKh}"/></h6>
                                                         <div>
@@ -464,8 +431,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                <!-- Expandable panel (hidden by default) -->
                                                 <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
                                                     <div class="text-muted d-flex justify-content-between">
                                                         <span>Số điện thoại:</span>
@@ -480,8 +445,6 @@
                                                         <strong class="text-dark text-wrap text-end" style="max-width: 60%;">${not empty item.diaChiLienHe ? item.diaChiLienHe : 'Chưa thiết lập'}</strong>
                                                     </div>
                                                 </div>
-
-                                                <!-- Footer Actions -->
                                                 <div class="d-flex gap-2 border-top pt-2 mt-2">
                                                     <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
                                                         <i class="bi bi-eye-fill"></i> Xem chi tiết hồ sơ CRM
@@ -496,7 +459,6 @@
                                 </c:otherwise>
                             </c:choose>
                         </div>
-
                         <!-- PHÂN TRANG -->
                         <div class="pagination-container" id="paginationWrapper" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng khách hàng</span>
@@ -511,7 +473,7 @@
     </div>
 </div>
 
-<!-- POPUP CHI TIẾT HÓA ĐƠN -->
+<!-- RECEIPT MODAL -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
@@ -576,7 +538,6 @@
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
     const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-
     function showReceiptDetail(maDh) {
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
         receiptModal.show();
@@ -593,26 +554,22 @@
                     document.getElementById("billLoaiDon").innerText = data.loaiDonHang ? data.loaiDonHang : 'Tại quầy';
                     document.getElementById("billRawPrice").innerText = parseInt(data.tongTienHang).toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billDiscount").innerText = '-' + parseInt(data.tienGiamGia).toLocaleString('vi-VN') + ' đ';
-
                     if (data.tienGiamGia > 0) {
                         document.getElementById("billDiscountRow").style.display = 'flex';
                     } else {
                         document.getElementById("billDiscountRow").style.display = 'none';
                     }
-
                     if (data.diemSuDung > 0) {
                         document.getElementById("billPointsRow").style.display = 'flex';
                         document.getElementById("billPointsDiscount").innerText = '-' + parseInt(data.tienTruDiem).toLocaleString('vi-VN') + ' đ';
                     } else {
                         document.getElementById("billPointsRow").style.display = 'none';
                     }
-
                     let billBeforeTax = data.tongTienHang - data.tienGiamGia - data.tienTruDiem;
                     if (billBeforeTax < 0) billBeforeTax = 0;
                     let vatPrice = Math.round(billBeforeTax * 0.08);
                     document.getElementById("billVatPrice").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
                     document.getElementById("billFinalPayable").innerText = parseInt(data.tongPhaiTra).toLocaleString('vi-VN') + ' đ';
-
                     let container = document.getElementById("billItemsContainer");
                     container.innerHTML = '';
                     data.items.forEach(item => {
@@ -643,7 +600,6 @@
                 receiptModal.hide();
             });
     }
-
     function printReceipt() {
         const printContent = document.getElementById("billPrintArea").innerHTML;
         const originalContent = document.body.innerHTML;
@@ -652,8 +608,6 @@
         document.body.innerHTML = originalContent;
         location.reload();
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -666,26 +620,18 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
-
-    // ==========================================
-    // PHÂN TRANG VÀ BỘ LỌC CRM KHÁCH HÀNG (MAIN LIST)
-    // ==========================================
     let currentCrmPage = 1;
     const ROWS_PER_PAGE_CRM = 10;
     let filteredCrmRows = [];
     let filteredCrmCards = [];
-
     function filterAndPaginateCustomers() {
         const searchInput = document.getElementById("customerSearchInput");
-        if (!searchInput) return; // Không nằm ở trang danh sách
+        if (!searchInput) return;
         const filterRank = document.getElementById("filterRank");
         const filterStatus = document.getElementById("filterStatus");
-
         const searchVal = searchInput.value.trim().toLowerCase();
         const rankVal = filterRank.value;
         const statusVal = filterStatus.value;
-
-        // Filter Desktop Table Rows
         const allRows = Array.from(document.querySelectorAll("#customerTableBody .customer-row"));
         filteredCrmRows = allRows.filter(row => {
             const name = row.dataset.name.toLowerCase();
@@ -694,14 +640,11 @@
             const id = row.dataset.id.toLowerCase();
             const rank = row.dataset.rank;
             const status = row.dataset.status;
-
             const matchSearch = name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal) || id.includes(searchVal);
             const matchRank = rankVal === "" || rank === rankVal;
             const matchStatus = statusVal === "" || status === statusVal;
             return matchSearch && matchRank && matchStatus;
         });
-
-        // Filter Mobile Cards
         const allCards = Array.from(document.querySelectorAll("#customerMobileCards .customer-card-col"));
         filteredCrmCards = allCards.filter(card => {
             const name = card.dataset.name.toLowerCase();
@@ -710,55 +653,42 @@
             const id = card.dataset.id.toLowerCase();
             const rank = card.dataset.rank;
             const status = card.dataset.status;
-
             const matchSearch = name.includes(searchVal) || phone.includes(searchVal) || email.includes(searchVal) || id.includes(searchVal);
             const matchRank = rankVal === "" || rank === rankVal;
             const matchStatus = statusVal === "" || status === statusVal;
             return matchSearch && matchRank && matchStatus;
         });
-
         currentCrmPage = 1;
         renderCrmTableRows();
     }
-
     function renderCrmTableRows() {
-        // Desktop Table rows update
         const allRows = document.querySelectorAll("#customerTableBody .customer-row");
         allRows.forEach(row => row.style.display = "none");
-
         const startIdx = (currentCrmPage - 1) * ROWS_PER_PAGE_CRM;
         const endIdx = startIdx + ROWS_PER_PAGE_CRM;
-
         const pageRows = filteredCrmRows.slice(startIdx, endIdx);
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
-        // Mobile Cards list update
         const allCards = document.querySelectorAll("#customerMobileCards .customer-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
         const pageCards = filteredCrmCards.slice(startIdx, endIdx);
         pageCards.forEach(card => {
             card.style.setProperty('display', 'block', 'important');
         });
-
         updateCrmPaginationControls();
     }
-
     function updateCrmPaginationControls() {
         const totalRows = filteredCrmRows.length;
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_CRM) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
-
         if (!infoEl || !btnContainer) return;
         const start = totalRows > 0 ? (currentCrmPage - 1) * ROWS_PER_PAGE_CRM + 1 : 0;
         const end = Math.min(currentCrmPage * ROWS_PER_PAGE_CRM, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng khách hàng';
         btnContainer.innerHTML = "";
-
         const wrapper = document.getElementById("paginationWrapper");
         if (wrapper) {
             if (totalPages <= 1) {
@@ -767,58 +697,44 @@
             }
             wrapper.style.setProperty('display', 'flex', 'important');
         }
-
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentCrmPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentCrmPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentCrmPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeCrmPage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentCrmPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeCrmPage(' + (currentCrmPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changeCrmPage(page) {
         const totalPages = Math.ceil(filteredCrmRows.length / ROWS_PER_PAGE_CRM) || 1;
         if (page < 1 || page > totalPages) return;
         currentCrmPage = page;
         renderCrmTableRows();
     }
-
     function resetCustomerFilters() {
         document.getElementById("customerSearchInput").value = "";
         document.getElementById("filterRank").selectedIndex = 0;
         document.getElementById("filterStatus").selectedIndex = 0;
         filterAndPaginateCustomers();
     }
-
-    // ==========================================
-    // PHÂN TRANG PHỤ CHO LỊCH SỬ ĐƠN CON (TAB VIEW DETAILED)
-    // ==========================================
     let currentSubPage = 1;
-    const ROWS_PER_PAGE_SUB = 5; // Khóa cứng 5 dòng lịch sử mua hàng con
+    const ROWS_PER_PAGE_SUB = 5;
     let subOrderRows = [];
-
     function initOrderPagination() {
         const orderTable = document.getElementById("customerOrdersTable");
-        if (!orderTable) return; // Bảo vệ an toàn tránh lỗi crash JS
+        if (!orderTable) return;
         const orderRows = orderTable.querySelectorAll("tbody .order-sub-row");
         subOrderRows = Array.from(orderRows);
         currentSubPage = 1;
         renderSubOrderRows();
     }
-
     function renderSubOrderRows() {
         subOrderRows.forEach(row => row.style.display = "none");
         const startIdx = (currentSubPage - 1) * ROWS_PER_PAGE_SUB;
@@ -827,20 +743,16 @@
         pageRows.forEach(row => row.style.display = "table-row");
         updateSubPaginationControls();
     }
-
     function updateSubPaginationControls() {
         const totalRows = subOrderRows.length;
         const totalPages = Math.ceil(totalRows / ROWS_PER_PAGE_SUB) || 1;
         const infoEl = document.getElementById("orderSubPaginationInfo");
         const btnContainer = document.getElementById("orderSubPaginationButtons");
-
         if (!infoEl || !btnContainer) return;
         const start = totalRows > 0 ? (currentSubPage - 1) * ROWS_PER_PAGE_SUB + 1 : 0;
         const end = Math.min(currentSubPage * ROWS_PER_PAGE_SUB, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' trong tổng số ' + totalRows + ' hóa đơn đặt';
         btnContainer.innerHTML = "";
-
         const subBlock = document.getElementById("orderSubPaginationBlock");
         if (subBlock) {
             if (totalPages <= 1) {
@@ -849,35 +761,27 @@
             }
             subBlock.style.setProperty('display', 'flex', 'important');
         }
-
-        // Nút Trước
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentSubPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeSubPage(' + (currentSubPage - 1) + ')">&laquo;</a>';
         btnContainer.appendChild(prevLi);
-
-        // Trang số
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentSubPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentSubPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changeSubPage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Nút Sau
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentSubPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changeSubPage(' + (currentSubPage + 1) + ')">&raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changeSubPage(page) {
         const totalPages = Math.ceil(subOrderRows.length / ROWS_PER_PAGE_SUB) || 1;
         if (page < 1 || page > totalPages) return;
         currentSubPage = page;
         renderSubOrderRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const isDetailView = ${not empty requestScope.customer ? 'true' : 'false'};
         if (isDetailView) {

@@ -115,7 +115,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                 <div>
                     <h3 class="fw-bold text-success m-0"><i class="bi bi-shield-shaded text-success me-2"></i>Nhật Ký Hoạt Động & Kiểm Toán</h3>
-                    <p class="text-muted small mb-0">Hộp đen bảo mật ghi nhận toàn bộ hoạt động đăng nhập, sửa đổi dữ liệu hệ thống TEA POS.</p>
+                    <p class="text-muted small mb-0">Ghi nhận lịch sử kiểm toán hệ thống.</p>
                 </div>
                 <div>
                     <button class="btn btn-outline-secondary btn-sm fw-bold px-3 me-2" onclick="location.reload()">
@@ -123,7 +123,6 @@
                     </button>
                 </div>
             </div>
-
             <!-- SEARCH & FILTERS PANEL -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background-color: #ffffff;">
                 <form action="${pageContext.request.contextPath}/admin/auditlog" method="GET" id="filterForm">
@@ -174,7 +173,6 @@
                     </div>
                 </form>
             </div>
-
             <!-- AUDIT TRAIL DATA CARD -->
             <div class="audit-card">
                 <div class="audit-header">
@@ -183,8 +181,7 @@
                         Tìm thấy ${totalLogs} mốc biến động
                     </span>
                 </div>
-
-                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                 <div class="d-none d-lg-block table-responsive">
                     <table class="table table-audit mb-0" id="auditLogTable">
                         <thead>
@@ -255,12 +252,10 @@
                                         </td>
                                         <td class="text-start">
                                             <div class="row g-2">
-                                                <!-- COLUMN CŨ -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
                                                     <div class="compare-box compare-old" style="font-family: monospace; font-size: 11px; max-height: 80px; overflow-y: auto; background: #fafafa; border-radius: 4px; padding: 4px; border-left: 3px solid #f59e0b; color: #64748b;"><c:choose><c:when test="${not empty log.duLieuCu}"><c:out value="${log.duLieuCu}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
                                                 </div>
-                                                <!-- COLUMN MỚI -->
                                                 <div class="col-md-6">
                                                     <div class="text-muted small fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU MỚI SAU BIẾN ĐỘNG:</div>
                                                     <div class="compare-box compare-new" style="font-family: monospace; font-size: 11px; max-height: 80px; overflow-y: auto; background: #fafafa; border-radius: 4px; padding: 4px; border-left: 3px solid #10b981; color: #0f172a;"><c:choose><c:when test="${not empty log.duLieuMoi}"><c:out value="${log.duLieuMoi}"/></c:when><c:otherwise><span class="text-muted font-monospace italic">[TRỐNG]</span></c:otherwise></c:choose></div>
@@ -281,7 +276,7 @@
                             <c:otherwise>
                                 <tr>
                                     <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bi bi-shield-slash fs-1 text-secondary opacity-30 d-block mb-2"></i>
+                                        <i class="bi bi-badge-ad fs-1 text-secondary opacity-30 d-block mb-2"></i>
                                         <span class="fw-semibold">Hộp đen trống trơn! Chưa có nhật ký hoạt động nào khớp với bộ lọc tìm kiếm.</span>
                                     </td>
                                 </tr>
@@ -290,21 +285,17 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                 <div class="d-block d-lg-none" id="auditLogMobileCards">
                     <c:choose>
                         <c:when test="${not empty logsList}">
                             <c:forEach var="log" items="${logsList}">
                                 <div class="card mb-3 p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-                                    <!-- Expand/Collapse Chevron -->
                                     <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                         <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                             <i class="bi bi-chevron-down fs-6"></i>
                                         </span>
                                     </div>
-
-                                    <!-- Card Header: Mã Log, Thời gian, Badge hành động -->
                                     <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="font-monospace fw-bold text-success" style="font-size: 13px;">#${log.maLog}</span>
@@ -335,8 +326,6 @@
                                             </c:choose>
                                         </span>
                                     </div>
-
-                                    <!-- Card Body: Nhân viên & Vùng tác động -->
                                     <div class="small text-muted" style="line-height: 1.6;">
                                         <div class="d-flex justify-content-between">
                                             <span>Nhân viên:</span>
@@ -358,8 +347,6 @@
                                             <span class="font-monospace text-dark">${not empty log.ipAddress ? log.ipAddress : '127.0.0.1'}</span>
                                         </div>
                                     </div>
-
-                                    <!-- Card Expandable Details: Old & New JSON comparison -->
                                     <div class="mobile-card-details border-top pt-2 mt-2 d-none">
                                         <div class="mb-2">
                                             <div class="text-muted fw-bold mb-1" style="font-size: 10px;">DỮ LIỆU CŨ TRƯỚC BIẾN ĐỘNG:</div>
@@ -391,7 +378,6 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
-
                 <!-- SERVER-SIDE PAGINATION CONTROLS -->
                 <c:if test="${totalPages > 1}">
                     <div class="pagination-container" id="paginationWrapper">
@@ -400,11 +386,9 @@
                         </span>
                         <nav>
                             <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons">
-                                <!-- Previous -->
                                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                                     <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage - 1})">&laquo; Trước</a>
                                 </li>
-                                <!-- Pages list -->
                                 <c:forEach var="i" begin="1" end="${totalPages}">
                                     <c:if test="${i >= currentPage - 2 && i <= currentPage + 2}">
                                         <li class="page-item ${currentPage == i ? 'active' : ''}">
@@ -412,7 +396,6 @@
                                         </li>
                                     </c:if>
                                 </c:forEach>
-                                <!-- Next -->
                                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                                     <a class="page-link text-success" href="javascript:void(0)" onclick="changePage(${currentPage + 1})">Sau &raquo;</a>
                                 </li>
@@ -424,15 +407,12 @@
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     function changePage(page) {
         document.getElementById('pageField').value = page;
         document.getElementById('filterForm').submit();
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');

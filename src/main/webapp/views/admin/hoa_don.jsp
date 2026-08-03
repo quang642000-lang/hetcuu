@@ -10,9 +10,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
-    <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
     <style>
         :root {
             --primary: #10b981;
@@ -37,10 +34,6 @@
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
         }
-        /* Mobile Card Styles */
-        .mobile-card-details {
-            transition: all 0.3s ease;
-        }
     </style>
 </head>
 <body class="bg-light">
@@ -53,7 +46,7 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-receipt me-2"></i>LỊCH SỬ HÓA ĐƠN</h3>
-                        <p class="text-muted small mb-0">Tra cứu thông tin hóa đơn bán lẻ tại quầy POS và đơn đặt hàng online Click & Collect</p>
+                        <p class="text-muted small mb-0">Tra cứu lịch sử đơn hàng tại quầy và online.</p>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/hoadon" method="GET" class="d-flex flex-wrap gap-2">
                         <select name="status" class="form-select form-select-sm" style="max-width: 200px;">
@@ -75,8 +68,7 @@
                         <button type="submit" class="btn btn-sm btn-primary-teapos px-3"><i class="bi bi-funnel"></i> Lọc đơn</button>
                     </form>
                 </div>
-
-                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                 <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="ordersTable">
                         <thead>
@@ -159,22 +151,18 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                 <div class="d-block d-lg-none" id="ordersMobileCards">
                     <c:choose>
                         <c:when test="${not empty orders}">
                             <c:forEach var="item" items="${orders}" varStatus="loop">
                                 <div class="order-card-col mb-3" data-manv="${not empty item.maNv ? item.maNv : 'SYSTEM'}">
                                     <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-                                        <!-- Expand/Collapse Chevron -->
                                         <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                             <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                                 <i class="bi bi-chevron-down fs-6"></i>
                                             </span>
                                         </div>
-
-                                        <!-- Card Header: STT, Mã hóa đơn, Thực thu -->
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
@@ -186,8 +174,6 @@
                                                 <fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ
                                             </strong>
                                         </div>
-
-                                        <!-- Card Body: Các thuộc tính chính -->
                                         <div class="small text-muted" style="line-height: 1.6;">
                                             <div class="d-flex justify-content-between">
                                                 <span>Khách CRM:</span>
@@ -224,8 +210,6 @@
                                                 </span>
                                             </div>
                                         </div>
-
-                                        <!-- Card Expandable Details -->
                                         <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
                                             <div class="text-muted d-flex justify-content-between">
                                                 <span>Tiền cốc nước gốc:</span>
@@ -253,8 +237,6 @@
                                                 </strong>
                                             </div>
                                         </div>
-
-                                        <!-- Card Actions -->
                                         <div class="d-flex gap-2 border-top pt-2 mt-2">
                                             <button class="btn btn-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;" onclick="showReceiptDetail('${item.maDh}')">
                                                 <i class="bi bi-eye"></i> Xem chi tiết hóa đơn
@@ -272,8 +254,7 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
-
-                <!-- PHÂN TRANG ĐỒNG BỘ CHO DESKTOP VÀ DI ĐỘNG -->
+                <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
@@ -285,7 +266,7 @@
     </div>
 </div>
 
-<!-- POPUP HOÁ ĐƠN CHI TIẾT ĐIỆN TỬ -->
+<!-- POPUP HOÁ ĐƠN -->
 <div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -343,7 +324,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const receiptModal = new bootstrap.Modal(document.getElementById('receiptDetailModal'));
-
     function showReceiptDetail(maDh) {
         document.getElementById("billItemsContainer").innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="small text-muted mt-2">Đang tải hóa đơn...</p></div>';
         receiptModal.show();
@@ -399,7 +379,6 @@
                 receiptModal.hide();
             });
     }
-
     function printReceipt() {
         const printContent = document.getElementById("billPrintArea").innerHTML;
         const originalContent = document.body.innerHTML;
@@ -408,8 +387,6 @@
         document.body.innerHTML = originalContent;
         location.reload();
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -422,19 +399,12 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
-
-    // ==========================================
-    // FILTER AND PAGINATION CLIENT SIDE (SYNCED DESKTOP & MOBILE)
-    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
     let filteredDesktopRows = [];
     let filteredMobileCards = [];
-
     function filterOrdersRealtime() {
         const selectedNv = document.getElementById("filterNhanVien").value;
-
-        // 1. Filter Desktop Rows
         const allDesktopRows = document.querySelectorAll("#ordersTableBody .order-row");
         filteredDesktopRows = [];
         allDesktopRows.forEach(row => {
@@ -445,8 +415,6 @@
                 row.style.display = "none";
             }
         });
-
-        // 2. Filter Mobile Cards
         const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
         filteredMobileCards = [];
         allMobileCards.forEach(card => {
@@ -457,43 +425,31 @@
                 card.style.setProperty('display', 'none', 'important');
             }
         });
-
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
-        // Render Desktop view
         const allDesktopRows = document.querySelectorAll("#ordersTableBody .order-row");
         allDesktopRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageDesktopRows = filteredDesktopRows.slice(startIdx, endIdx);
         pageDesktopRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
-        // Render Mobile view
         const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
         allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
-
         const pageMobileCards = filteredMobileCards.slice(startIdx, endIdx);
         pageMobileCards.forEach(card => {
             card.style.setProperty('display', 'block', 'important');
         });
-
         updatePaginationControls();
     }
-
     function updatePaginationControls() {
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
@@ -501,55 +457,42 @@
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
-
         const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
         const end = Math.min(currentPage * pageSize, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' hóa đơn';
         btnContainer.innerHTML = "";
-
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
-        // Prev button
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
-        // Page numbers
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Next button
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const allRows = document.querySelectorAll("#ordersTableBody .order-row");
         filteredDesktopRows = Array.from(allRows);
-
         const allMobileCards = document.querySelectorAll("#ordersMobileCards .order-card-col");
         filteredMobileCards = Array.from(allMobileCards);
-
         renderTableRows();
-
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
         if (msg === 'updatesuccess') {

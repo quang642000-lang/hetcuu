@@ -24,7 +24,7 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3 text-start">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-person-badge-fill me-2"></i>HỒ SƠ NHÂN VIÊN</h3>
-                        <p class="text-muted small mb-0">Thiết lập tài khoản làm việc, phân chia quyền truy cập POS và kiểm soát trạng thái nhân viên</p>
+                        <p class="text-muted small mb-0">Quản lý tài khoản nhân viên và phân quyền làm việc.</p>
                     </div>
                     <div class="d-flex gap-2 align-items-end">
                         <div class="input-group input-group-sm" style="width: 250px;">
@@ -36,8 +36,7 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                 <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table admin-table align-middle" id="employeeTable">
                         <thead>
@@ -76,25 +75,13 @@
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5 align-items-center">
-                                                <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
-                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}"
-                                                   title="${item.trangThai ? 'Khóa ca' : 'Mở ca'}">
+                                                <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}" class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}" title="${item.trangThai ? 'Khóa ca' : 'Mở ca'}">
                                                     <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-action-info"
-                                                        data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>"
-                                                        onclick="handleResetPasswordClick(this)">
+                                                <button type="button" class="btn btn-sm btn-action-info" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>" onclick="handleResetPasswordClick(this)">
                                                     <i class="bi bi-key-fill me-1"></i> Reset
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-action-edit"
-                                                        data-id="${item.maNv}"
-                                                        data-name="<c:out value='${item.hoTen}'/>"
-                                                        data-phone="${item.soDienThoai}"
-                                                        data-email="${item.email}"
-                                                        data-user="${item.tenDangNhap}"
-                                                        data-role="${item.maVt}"
-                                                        data-status="${item.trangThai ? 1 : 0}"
-                                                        onclick="handleEditEmployeeClick(this)">
+                                                <button type="button" class="btn btn-sm btn-action-edit" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>" data-phone="${item.soDienThoai}" data-email="${item.email}" data-user="${item.tenDangNhap}" data-role="${item.maVt}" data-status="${item.trangThai ? 1 : 0}" onclick="handleEditEmployeeClick(this)">
                                                     <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-action-delete" onclick="confirmDeleteEmployee('${item.maNv}')">
@@ -112,23 +99,18 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- ==================== VIEW 2: MOBILE LAYOUT (Màn hình điện thoại < 992px) ==================== -->
+                <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                 <div class="d-block d-lg-none" id="employeeMobileCards">
                     <c:choose>
                         <c:when test="${not empty employees}">
                             <c:forEach var="item" items="${employees}" varStatus="loop">
                                 <div class="employee-card-col mb-3" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>">
                                     <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-
-                                        <!-- Expand/Collapse Chevron -->
                                         <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                             <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                                 <i class="bi bi-chevron-down fs-6"></i>
                                             </span>
                                         </div>
-
-                                        <!-- Header: STT, Mã NV, Vai Trò -->
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
@@ -140,8 +122,6 @@
                                                     ${item.maVt == 1 ? 'Quản lý' : 'Thu ngân'}
                                             </span>
                                         </div>
-
-                                        <!-- Body: Tên & Trạng Thái -->
                                         <div>
                                             <h6 class="fw-bold text-dark mb-1"><c:out value="${item.hoTen}"/></h6>
                                             <small class="text-muted">Trạng thái:
@@ -150,8 +130,6 @@
                                                 </span>
                                             </small>
                                         </div>
-
-                                        <!-- Expandable panel (hidden by default) -->
                                         <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
                                             <div class="text-muted d-flex justify-content-between">
                                                 <span>Số điện thoại:</span>
@@ -166,27 +144,14 @@
                                                 <strong class="text-dark"><code><c:out value="${item.tenDangNhap}"/></code></strong>
                                             </div>
                                         </div>
-
-                                        <!-- Footer Actions -->
                                         <div class="d-flex flex-wrap gap-2 border-top pt-2 mt-2">
-                                            <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}"
-                                               class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-bold flex-grow-1" style="border-radius: 8px;">
+                                            <a href="${pageContext.request.contextPath}/admin/nhanvien?action=toggle&id=${item.maNv}&status=${item.trangThai ? 0 : 1}" class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-bold flex-grow-1" style="border-radius: 8px;">
                                                 <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Khóa Ca' : 'Mở Ca'}
                                             </a>
-                                            <button type="button" class="btn btn-outline-info btn-sm fw-bold flex-grow-1" style="border-radius: 8px;"
-                                                    data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>"
-                                                    onclick="handleResetPasswordClick(this)">
+                                            <button type="button" class="btn btn-outline-info btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>" onclick="handleResetPasswordClick(this)">
                                                 <i class="bi bi-key-fill"></i> Reset
                                             </button>
-                                            <button type="button" class="btn btn-outline-primary btn-sm fw-bold flex-grow-1" style="border-radius: 8px;"
-                                                    data-id="${item.maNv}"
-                                                    data-name="<c:out value='${item.hoTen}'/>"
-                                                    data-phone="${item.soDienThoai}"
-                                                    data-email="${item.email}"
-                                                    data-user="${item.tenDangNhap}"
-                                                    data-role="${item.maVt}"
-                                                    data-status="${item.trangThai ? 1 : 0}"
-                                                    onclick="handleEditEmployeeClick(this)">
+                                            <button type="button" class="btn btn-outline-primary btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>" data-phone="${item.soDienThoai}" data-email="${item.email}" data-user="${item.tenDangNhap}" data-role="${item.maVt}" data-status="${item.trangThai ? 1 : 0}" onclick="handleEditEmployeeClick(this)">
                                                 <i class="bi bi-pencil-square"></i> Sửa
                                             </button>
                                             <button type="button" class="btn btn-outline-danger btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" onclick="confirmDeleteEmployee('${item.maNv}')">
@@ -202,7 +167,6 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
-
                 <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -220,7 +184,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
             <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">
-                <h5 class="modal-title fw-bold" id="empModalTitle">THÊM NHÂN VIÊN MỚI</h5>
+                <h5 class="modal-title fw-bold" id="empModalTitle">THÊM MỚI NHÂN VIÊN</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="employeeForm" action="${pageContext.request.contextPath}/admin/nhanvien" method="POST">
@@ -305,112 +269,86 @@
 <script>
     const empModal = new bootstrap.Modal(document.getElementById('employeeFormModal'));
     const passModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-
     let currentPage = 1;
     const pageSize = 10;
     let filteredDesktopRows = [];
     let filteredMobileCards = [];
-
     function filterAndPaginateEmployees() {
-        const searchInput = document.getElementById("employeeSearchInput");
-        if (!searchInput) return;
-        const searchVal = searchInput.value.trim().toLowerCase();
-
-        // Filter Desktop Table Rows
-        const allDesktopRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
-        filteredDesktopRows = allDesktopRows.filter(row => {
+        const searchVal = document.getElementById("employeeSearchInput").value.trim().toLowerCase();
+        const allRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
+        filteredDesktopRows = allRows.filter(row => {
             const id = row.dataset.id.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
-        // Filter Mobile Cards list
-        const allMobileCards = Array.from(document.querySelectorAll("#employeeMobileCards .employee-card-col"));
-        filteredMobileCards = allMobileCards.filter(card => {
+        const allCards = Array.from(document.querySelectorAll("#employeeMobileCards .employee-card-col"));
+        filteredMobileCards = allCards.filter(card => {
             const id = card.dataset.id.toLowerCase();
             const name = card.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
-        // Desktop Table Rows
         const allRows = document.querySelectorAll("#employeeTableBody .employee-row");
         allRows.forEach(row => row.style.display = "none");
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageRows = filteredDesktopRows.slice(startIdx, endIdx);
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
-        // Mobile Cards list
         const allCards = document.querySelectorAll("#employeeMobileCards .employee-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
         const pageCards = filteredMobileCards.slice(startIdx, endIdx);
         pageCards.forEach(card => {
             card.style.setProperty('display', 'block', 'important');
         });
-
         updatePaginationControls();
     }
-
     function updatePaginationControls() {
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
         const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
         const end = Math.min(currentPage * pageSize, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhân viên';
         btnContainer.innerHTML = "";
-
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     function openCreateEmployeeModal() {
         document.getElementById("employeeForm").reset();
         document.getElementById("empModalTitle").innerText = "THÊM MỚI NHÂN VIÊN";
@@ -420,7 +358,6 @@
         document.getElementById("matKhau").required = true;
         empModal.show();
     }
-
     function handleResetPasswordClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -428,7 +365,6 @@
         document.getElementById("resetTenNv").innerText = hoTen;
         passModal.show();
     }
-
     function handleEditEmployeeClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -437,7 +373,6 @@
         const username = button.getAttribute("data-user");
         const maVt = button.getAttribute("data-role");
         const trangThai = parseInt(button.getAttribute("data-status"));
-
         document.getElementById("empModalTitle").innerText = "CẬP NHẬT NHÂN VIÊN: " + maNv;
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaNv").value = maNv;
@@ -451,25 +386,22 @@
         document.getElementById("matKhau").required = false;
         empModal.show();
     }
-
     function confirmDeleteEmployee(maNv) {
         Swal.fire({
             title: 'Xóa tài khoản nhân viên?',
-            text: "Nếu tài khoản đã có lịch sử hóa đơn bán nước, hệ thống tự động gạt về trạng thái Khóa ca (Soft Delete). Nếu chưa từng lập bill, hệ thống cho phép xóa cứng vĩnh viễn khỏi CSDL!",
+            text: "Bạn có chắc chắn muốn xóa nhân viên này?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý xóa',
-            cancelButtonText: 'Hủy bỏ'
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = '${pageContext.request.contextPath}/admin/nhanvien?action=delete&id=' + maNv;
             }
         });
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -482,7 +414,9 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
-
+    function getContextPath() {
+        return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
+    }
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

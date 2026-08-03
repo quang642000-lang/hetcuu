@@ -49,7 +49,6 @@
 <c:set var="loaiVoucher" value="1" />
 <c:set var="formattedStart" value=""/>
 <c:set var="formattedEnd" value=""/>
-
 <c:if test="${not empty voucher}">
     <c:set var="maKm" value="${voucher.maKm}" />
     <c:set var="maCode" value="${voucher.maCode}" />
@@ -73,7 +72,6 @@
         <c:set var="formattedEnd" value="${voucher.ngayKetThuc.toString().substring(0, 10)}T${voucher.ngayKetThuc.toString().substring(11, 16)}"/>
     </c:if>
 </c:if>
-
 <div class="admin-wrapper">
     <jsp:include page="/views/layout/sidebar_admin.jsp" />
     <div class="admin-content">
@@ -131,7 +129,7 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-3">
-                                    <label for="giaTriGiam" class="form-label fw-bold small">Giá trị giảm <span class="text-danger">*</span></label>
+                                    <label safeguard for="giaTriGiam" class="form-label fw-bold small">Giá trị giảm <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control form-control-teapos text-end fw-bold" id="giaTriGiam" name="giaTriGiam" value="${giaTriGiam}" min="0" required>
                                 </div>
                                 <div class="col-12 col-md-3">
@@ -183,13 +181,12 @@
                             </div>
                         </form>
                     </c:when>
-
-                    <%-- CASE 2: LIST VIEW IN DEKSTOP & MOBILE SYNCED --%>
+                    <%-- CASE 2: LIST VIEW IN DESKTOP & MOBILE --%>
                     <c:otherwise>
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                             <div>
                                 <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-ticket-perforated-fill me-2"></i>QUẢN LÝ VOUCHER</h3>
-                                <p class="text-muted small mb-0">Cấu hình các chiến dịch khuyến mãi, băm mã giảm giá, kiểm soát trạng thái và số lượng Voucher đã dùng thực tế</p>
+                                <p class="text-muted small mb-0">Quản lý mã giảm giá và chương trình khuyến mãi.</p>
                             </div>
                             <div class="d-flex gap-2 align-items-end">
                                 <div class="input-group input-group-sm" style="width: 250px;">
@@ -201,8 +198,7 @@
                                 </a>
                             </div>
                         </div>
-
-                        <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                        <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                         <div class="d-none d-lg-block table-responsive">
                             <table class="table table-hover align-middle admin-table" id="voucherTable">
                                 <thead>
@@ -297,22 +293,18 @@
                                 </tbody>
                             </table>
                         </div>
-
-                        <!-- ==================== VIEW 2: MOBILE LAYOUT (Điện thoại < 992px) ==================== -->
+                        <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                         <div class="d-block d-lg-none" id="vouchersMobileCards">
                             <c:choose>
                                 <c:when test="${not empty vouchers}">
                                     <c:forEach var="item" items="${vouchers}" varStatus="loop">
                                         <div class="voucher-card-col mb-3" data-id="${item.maKm}" data-code="<c:out value='${item.maCode}'/>" data-name="<c:out value='${item.tenKm}'/>">
                                             <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-                                                <!-- Chevron Button for expansion -->
                                                 <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                                     <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                                         <i class="bi bi-chevron-down fs-6"></i>
                                                     </span>
                                                 </div>
-
-                                                <!-- Header: STT, Mã CODE, và Trạng thái -->
                                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
@@ -324,8 +316,6 @@
                                                             ${item.trangThai ? 'Đang chạy' : 'Ngừng chạy'}
                                                     </span>
                                                 </div>
-
-                                                <!-- Body: Tên chương trình & Hình thức giảm -->
                                                 <div class="text-start mb-2">
                                                     <h6 class="fw-bold text-dark mb-1"><c:out value="${item.tenKm}"/></h6>
                                                     <div class="text-muted small">
@@ -339,8 +329,6 @@
                                                         </c:choose>
                                                     </div>
                                                 </div>
-
-                                                <!-- Card Expandable Details -->
                                                 <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
                                                     <div class="text-muted d-flex justify-content-between">
                                                         <span>Mã Khuyến Mãi:</span>
@@ -385,8 +373,6 @@
                                                         </span>
                                                     </div>
                                                 </div>
-
-                                                <!-- Card Actions -->
                                                 <div class="d-flex gap-2 border-top pt-2 mt-2">
                                                     <a href="${pageContext.request.contextPath}/admin/voucher?action=edit&id=${item.maKm}" class="btn btn-outline-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
                                                         <i class="bi bi-pencil-square"></i> Sửa
@@ -419,8 +405,7 @@
                                 </c:otherwise>
                             </c:choose>
                         </div>
-
-                        <!-- PHÂN TRANG ĐỒNG BỘ -->
+                        <!-- PHÂN TRANG -->
                         <div class="pagination-container" id="paginationWrapper" style="display: none;">
                             <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 Voucher</span>
                             <nav>
@@ -450,24 +435,22 @@
             if (soLuotDungCaNhanGroup) soLuotDungCaNhanGroup.style.setProperty('display', 'block', 'important');
         }
     }
-
     function confirmDeleteVoucher(maKm) {
         Swal.fire({
-            title: 'Hủy/Xóa bỏ Voucher này?',
-            text: "Dữ liệu Voucher sẽ được đưa về ngừng hoạt động vĩnh viễn (hoặc xóa sạch khỏi CSDL nếu chưa phát sinh đơn hàng nào) để bảo lưu báo cáo hóa đơn cũ!",
+            title: 'Xác nhận xóa voucher?',
+            text: "Bạn có chắc chắn muốn xóa voucher này?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Xác nhận xóa'
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = '${pageContext.request.contextPath}/admin/voucher?action=delete&id=' + maKm;
             }
         });
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -480,111 +463,79 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
-
-    // ==========================================
-    // CLIENT-SIDE FILTER AND PAGINATION (SYNCED DESKTOP & MOBILE)
-    // ==========================================
     let currentPage = 1;
     const pageSize = 10;
     let filteredVouchersList = [];
     let filteredMobileCards = [];
-
     function filterAndPaginateVouchers() {
         const searchInput = document.getElementById("voucherSearchInput");
         if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-
-        // Filter Desktop Rows
         const allDesktopRows = Array.from(document.querySelectorAll("#voucherTableBody .voucher-row"));
         filteredVouchersList = allDesktopRows.filter(row => {
             const code = row.dataset.code.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return code.includes(searchVal) || name.includes(searchVal);
         });
-
-        // Filter Mobile Cards
         const allMobileCards = Array.from(document.querySelectorAll("#vouchersMobileCards .voucher-card-col"));
         filteredMobileCards = allMobileCards.filter(card => {
             const code = card.dataset.code.toLowerCase();
             const name = card.dataset.name.toLowerCase();
             return code.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
-        // Desktop Render
         const allDesktopRows = document.querySelectorAll("#voucherTableBody .voucher-row");
         allDesktopRows.forEach(row => row.style.display = "none");
-
         const totalRows = filteredVouchersList.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageRows = filteredVouchersList.slice(startIdx, endIdx);
         pageRows.forEach(row => row.style.display = "table-row");
-
-        // Mobile Render
         const allMobileCards = document.querySelectorAll("#vouchersMobileCards .voucher-card-col");
         allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
-
         const pageCards = filteredMobileCards.slice(startIdx, endIdx);
         pageCards.forEach(card => {
             card.style.setProperty('display', 'block', 'important');
         });
-
-        // Pagination Panel Update
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
-
         const start = totalRows > 0 ? startIdx + 1 : 0;
-        const end = endIdx;
-        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng Voucher';
+        infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + endIdx + ' dòng trên tổng số ' + totalRows + ' dòng Voucher';
         btnContainer.innerHTML = "";
-
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
-        // Prev btn
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
-        // Pages
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
-        // Next btn
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredVouchersList.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -594,7 +545,6 @@
         if (msg === 'softdeletesuccess') showToast('success', 'Voucher đã có giao dịch lịch sử, tự động đưa về tạm tắt!');
         if (msg === 'togglesuccess') showToast('success', 'Đã thay đổi trạng thái Voucher thành công!');
         if (msg === 'togglefailed') showToast('error', 'Cập nhật trạng thái Voucher thất bại!');
-
         toggleVoucherScopeUI();
         filterAndPaginateVouchers();
     });

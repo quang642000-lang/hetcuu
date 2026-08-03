@@ -1,7 +1,6 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - GLOBAL PREMIUM STYLE SHEET
- * High contrast, modern typography, cozy Matcha & Amber palette, WCAG AA compliant.
+ * TEA POS SYSTEM - GLOBAL STYLE SHEET WITH WCAG AA COMPLIANT CONTRAST (v9.6)
  * =========================================================================
  */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -12,13 +11,11 @@
     --primary-hover: #047857;
     --primary-light: #f0fdf4;      /* Matcha milk background */
     --primary-glow: rgba(5, 150, 105, 0.15);
-    --secondary: #d97706;          /* Amber Sweet Tea */
-    --secondary-hover: #b45309;
-    --secondary-light: #fef3c7;
-    --dark-slate: #0f172a;         /* Charcoal black for readable text */
-    --text-main: #0f172a;          /* Pure dark charcoal */
-    --text-muted: #334155;         /* Dark gray (Slate-700) for subtext - high contrast */
+
+    --text-main: #1e293b;          /* Charcoal Slate for high contrast */
+    --text-muted: #475569;         /* Medium Gray Slate (> 4.5:1 on light backgrounds) */
     --text-white: #ffffff;
+
     --bg-main: #fcfbfa;            /* Warm Cream milk-tea background */
     --bg-card: #ffffff;
     --border-color: #cbd5e1;       /* Gray-300 for visible borders */
@@ -36,56 +33,105 @@
     --radius-pill: 50px;
     --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
     --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
 }
 
-/* Base resets & configurations */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+/* =========================================================================
+ * CORE TYPOGRAPHY & RESET - PREVENTING HEADINGS FROM INHERITING INTRUSIVE COLOR
+ * ========================================================================= */
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    color: var(--text-main);
-    background-color: var(--bg-main);
-    line-height: 1.6;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    background: #f8fafc;
-}
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Typography elements with high contrast */
-h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif !important;
+    background-color: var(--bg-main) !important;
     color: var(--text-main) !important;
-    font-weight: 800 !important;
 }
 
-p {
-    color: var(--text-muted) !important;
+/* Heading Defaults: MUST NOT use !important globally on the base tag to allow override classes like text-white */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main);
+    font-weight: 700;
 }
 
-/* Button & Form overrides with high contrast */
+/* Utility Override Classes with Absolute Specificity */
+.text-white {
+    color: #ffffff !important;
+}
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+.text-light {
+    color: #f8fafc !important;
+}
+.text-success {
+    color: var(--primary) !important;
+}
+.text-muted-custom {
+    color: #cbd5e1 !important;
+}
+
+/* =========================================================================
+ * ELITE OVERRIDES FOR DARK BACKGROUND HEADERS/BANNERS (WCAG AA SHIELD)
+ * ========================================================================= */
+.brand-banner,
+.card-header-teapos,
+.reset-header,
+.otp-header,
+.hero-banner,
+.sidebar-header,
+.portal-footer,
+.bg-success,
+.bg-dark {
+    color: #ffffff !important;
+}
+
+/* Force all headings in dark banners to be absolute white, overriding body/global rule */
+.brand-banner h1, .brand-banner h2, .brand-banner h3, .brand-banner h4, .brand-banner h5, .brand-banner h6,
+.card-header-teapos h1, .card-header-teapos h2, .card-header-teapos h3, .card-header-teapos h4, .card-header-teapos h5, .card-header-teapos h6,
+.reset-header h1, .reset-header h2, .reset-header h3, .reset-header h4, .reset-header h5, .reset-header h6,
+.otp-header h1, .otp-header h2, .otp-header h3, .otp-header h4, .otp-header h5, .otp-header h6,
+.hero-banner h1, .hero-banner h2, .hero-banner h3, .hero-banner h4, .hero-banner h5, .hero-banner h6,
+.sidebar-header h1, .sidebar-header h2, .sidebar-header h3, .sidebar-header h4, .sidebar-header h5, .sidebar-header h6,
+.portal-footer h1, .portal-footer h2, .portal-footer h3, .portal-footer h4, .portal-footer h5, .portal-footer h6,
+.bg-success h1, .bg-success h2, .bg-success h3, .bg-success h4, .bg-success h5, .bg-success h6,
+.bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6 {
+    color: #ffffff !important;
+}
+
+/* Force all text/paragraphs/small tags in dark backgrounds to have high-contrast whites */
+.brand-banner p, .brand-banner small, .brand-banner span,
+.card-header-teapos p, .card-header-teapos small, .card-header-teapos span,
+.reset-header p, .reset-header small, .reset-header span,
+.otp-header p, .otp-header small, .otp-header span,
+.hero-banner p, .hero-banner small, .hero-banner span,
+.sidebar-header p, .sidebar-header small, .sidebar-header span,
+.portal-footer p, .portal-footer small, .portal-footer span,
+.bg-success p, .bg-success small, .bg-success span,
+.bg-dark p, .bg-dark small, .bg-dark span {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Differentiate smaller meta text in dark banners with high-contrast light grays */
+.brand-banner small,
+.card-header-teapos small,
+.reset-header small,
+.otp-header small,
+.sidebar-header small,
+.portal-footer small,
+.bg-success small,
+.bg-dark small {
+    color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* Specific fix for top promotion/announcement banner in Portal */
+.bg-success.text-white.text-center {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+
+/* =========================================================================
+ * FORMS & TEXTFIELDS WITH PERFECT ACCESSIBLE SENSITIVITY
+ * ========================================================================= */
 .form-control-teapos {
     width: 100%;
-    padding: 11px 16px;
-    font-size: 14px;
+    padding: 10px 14px;
     border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
     background-color: #ffffff;
@@ -102,6 +148,25 @@ p {
     color: #64748b;
 }
 
+/* Disabled & Readonly Input Fields with Slate Charcoal contrast text */
+.form-control-teapos[readonly], .form-control-teapos:disabled {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important; /* Bold Slate Charcoal for high contrast text */
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+/* Input group seamless focus effect */
+.input-group:focus-within .input-group-text {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    background-color: var(--primary-light) !important;
+}
+
+/* =========================================================================
+ * SEAMLESS PREMIUM DESIGN ELEMENTS & BUTTONS
+ * ========================================================================= */
 .btn-primary-teapos {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
     color: var(--text-white) !important;
@@ -118,46 +183,32 @@ p {
     transform: translateY(-1.5px) !important;
     box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35) !important;
 }
-.btn-primary-teapos:active {
-    transform: translateY(0.5px) !important;
+
+/* Cozy Matcha Checkboxes and Radios */
+.form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+.form-check-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px var(--primary-glow) !important;
 }
 
-.btn-secondary-teapos {
-    background-color: #ffffff !important;
+/* High Contrast Digital OTP Digits Inputs */
+.otp-digit-input {
+    width: 44px !important;
+    height: 48px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
     color: var(--text-main) !important;
-    border: 1.5px solid var(--border-color) !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    border-radius: var(--radius-sm) !important;
-    padding: 11px 24px !important;
-    box-shadow: var(--shadow-sm) !important;
-    transition: all 0.2s ease !important;
+    background-color: #ffffff !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    margin: 0 5px !important;
 }
-.btn-secondary-teapos:hover {
-    background-color: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: var(--primary) !important;
-    transform: translateY(-1px) !important;
-}
-
-/* Custom Status Badges */
-.badge-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    border-radius: var(--radius-pill);
-    font-size: 12px;
-    font-weight: 700;
-    gap: 6px;
-    border: 1px solid transparent;
-}
-.status-active {
-    background-color: #d1fae5 !important;
-    color: #065f46 !important;
-    border-color: #a7f3d0 !important;
-}
-.status-inactive {
-    background-color: #fee2e2 !important;
-    color: #991b1b !important;
-    border-color: #fca5a5 !important;
+.otp-digit-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px var(--primary-glow) !important;
+    outline: none !important;
 }

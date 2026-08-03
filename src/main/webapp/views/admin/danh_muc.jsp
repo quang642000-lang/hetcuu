@@ -23,7 +23,7 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 text-start">
                     <div>
                         <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-grid-1x2-fill me-2"></i>QUẢN LÝ DANH MỤC</h3>
-                        <p class="text-muted small mb-0">Thiết lập nhóm phân loại đồ uống cho Menu bán hàng POS tại quầy và Website Portal đặt online</p>
+                        <p class="text-muted small mb-0">Quản lý nhóm phân loại thực đơn đồ uống.</p>
                     </div>
                     <div class="d-flex gap-2 align-items-end">
                         <div class="input-group input-group-sm" style="width: 250px;">
@@ -35,15 +35,13 @@
                         </button>
                     </div>
                 </div>
-
                 <c:if test="${not empty error}">
                     <div class="alert alert-danger d-flex align-items-center gap-2" style="border-radius: 8px;">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <span>${error}</span>
                     </div>
                 </c:if>
-
-                <!-- ==================== VIEW 1: DESKTOP LAYOUT (Màn hình lớn) ==================== -->
+                <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                 <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table table-hover align-middle admin-table" id="categoryTable">
                         <thead>
@@ -61,11 +59,7 @@
                         <c:choose>
                             <c:when test="${not empty categories}">
                                 <c:forEach var="item" items="${categories}" varStatus="loop">
-                                    <tr class="category-row text-center"
-                                        data-id="${item.maDm}"
-                                        data-name="<c:out value='${item.tenDm}'/>"
-                                        data-sort="${item.thuTuHienThi}"
-                                        data-status="${item.trangThai ? 1 : 0}">
+                                    <tr class="category-row text-center" data-id="${item.maDm}" data-name="<c:out value='${item.tenDm}'/>" data-sort="${item.thuTuHienThi}" data-status="${item.trangThai ? 1 : 0}">
                                         <td class="row-stt"><strong>${loop.index + 1}</strong></td>
                                         <td><code class="fw-bold text-dark">${item.maDm}</code></td>
                                         <td>
@@ -89,23 +83,13 @@
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-2 align-items-center">
-                                                <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}"
-                                                   class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}"
-                                                   title="${item.trangThai ? 'Tạm ngưng hoạt động' : 'Kích hoạt hoạt động'}">
-                                                    <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i>
-                                                        ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
+                                                <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}" class="btn btn-sm ${item.trangThai ? 'btn-action-warning' : 'btn-action-edit'}" title="${item.trangThai ? 'Tạm ngưng hoạt động' : 'Kích hoạt hoạt động'}">
+                                                    <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
                                                 </a>
-                                                <button class="btn btn-sm btn-action-edit"
-                                                        data-id="${item.maDm}"
-                                                        data-name="<c:out value='${item.tenDm}'/>"
-                                                        data-img="${item.hinhAnh}"
-                                                        data-sort="${item.thuTuHienThi}"
-                                                        data-status="${item.trangThai ? 1 : 0}"
-                                                        onclick="handleEditDanhMucClick(this)">
+                                                <button class="btn btn-sm btn-action-edit" data-id="${item.maDm}" data-name="<c:out value='${item.tenDm}'/>" data-img="${item.hinhAnh}" data-sort="${item.thuTuHienThi}" data-status="${item.trangThai ? 1 : 0}" onclick="handleEditDanhMucClick(this)">
                                                     <i class="bi bi-pencil-square me-1"></i> Sửa
                                                 </button>
-                                                <button class="btn btn-sm btn-action-delete"
-                                                        onclick="confirmDeleteDanhMuc('${item.maDm}')">
+                                                <button class="btn btn-sm btn-action-delete" onclick="confirmDeleteDanhMuc('${item.maDm}')">
                                                     <i class="bi bi-trash3-fill me-1"></i> Xóa
                                                 </button>
                                             </div>
@@ -120,27 +104,18 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- ==================== VIEW 2: MOBILE LAYOUT (Màn hình điện thoại < 992px) ==================== -->
+                <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                 <div class="d-block d-lg-none" id="categoryMobileCards">
                     <c:choose>
                         <c:when test="${not empty categories}">
                             <c:forEach var="item" items="${categories}" varStatus="loop">
-                                <div class="category-card-col mb-3"
-                                     data-id="${item.maDm}"
-                                     data-name="<c:out value='${item.tenDm}'/>"
-                                     data-sort="${item.thuTuHienThi}"
-                                     data-status="${item.trangThai ? 1 : 0}">
+                                <div class="category-card-col mb-3" data-id="${item.maDm}" data-name="<c:out value='${item.tenDm}'/>" data-sort="${item.thuTuHienThi}" data-status="${item.trangThai ? 1 : 0}">
                                     <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
-
-                                        <!-- Arrow Icon for expanding card info on mobile -->
                                         <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
                                             <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
                                                 <i class="bi bi-chevron-down fs-6"></i>
                                             </span>
                                         </div>
-
-                                        <!-- Header: STT, Mã danh mục, Trạng thái -->
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
@@ -152,8 +127,6 @@
                                                     ${item.trangThai ? 'Đang bán' : 'Tạm dừng'}
                                             </span>
                                         </div>
-
-                                        <!-- Body: Ảnh & Tên danh mục -->
                                         <div class="d-flex align-items-center gap-3">
                                             <c:choose>
                                                 <c:when test="${not empty item.hinhAnh}">
@@ -170,8 +143,6 @@
                                                 <small class="text-muted">Ưu tiên hiển thị: <b>${item.thuTuHienThi}</b></small>
                                             </div>
                                         </div>
-
-                                        <!-- Expandable panel (hidden by default) -->
                                         <div class="mobile-card-details border-top pt-2 mt-2 text-start small d-none" style="line-height: 1.6;">
                                             <div class="text-muted d-flex justify-content-between">
                                                 <span>Mã nhóm danh mục:</span>
@@ -181,25 +152,12 @@
                                                 <span>Thứ tự hiển thị:</span>
                                                 <strong class="text-dark">${item.thuTuHienThi}</strong>
                                             </div>
-                                            <div class="text-muted d-flex justify-content-between mt-1">
-                                                <span>Trạng thái hoạt động:</span>
-                                                <strong class="${item.trangThai ? 'text-success' : 'text-danger'}">${item.trangThai ? 'Đang hoạt động' : 'Đang tạm dừng'}</strong>
-                                            </div>
                                         </div>
-
-                                        <!-- Footer Actions -->
                                         <div class="d-flex gap-2 border-top pt-2 mt-2">
-                                            <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}"
-                                               class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-bold flex-grow-1" style="border-radius: 8px;">
+                                            <a href="${pageContext.request.contextPath}/admin/danhmuc?action=toggle&id=${item.maDm}&status=${item.trangThai ? 0 : 1}" class="btn btn-sm ${item.trangThai ? 'btn-outline-warning' : 'btn-outline-success'} fw-bold flex-grow-1" style="border-radius: 8px;">
                                                 <i class="bi ${item.trangThai ? 'bi-toggle2-off' : 'bi-toggle2-on'}"></i> ${item.trangThai ? 'Tạm ẩn' : 'Bật bán'}
                                             </a>
-                                            <button class="btn btn-outline-primary btn-sm fw-bold flex-grow-1" style="border-radius: 8px;"
-                                                    data-id="${item.maDm}"
-                                                    data-name="<c:out value='${item.tenDm}'/>"
-                                                    data-img="${item.hinhAnh}"
-                                                    data-sort="${item.thuTuHienThi}"
-                                                    data-status="${item.trangThai ? 1 : 0}"
-                                                    onclick="handleEditDanhMucClick(this)">
+                                            <button class="btn btn-outline-primary btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" data-id="${item.maDm}" data-name="<c:out value='${item.tenDm}'/>" data-img="${item.hinhAnh}" data-sort="${item.thuTuHienThi}" data-status="${item.trangThai ? 1 : 0}" onclick="handleEditDanhMucClick(this)">
                                                 <i class="bi bi-pencil-square"></i> Sửa
                                             </button>
                                             <button class="btn btn-outline-danger btn-sm fw-bold flex-grow-1" style="border-radius: 8px;" onclick="confirmDeleteDanhMuc('${item.maDm}')">
@@ -215,10 +173,9 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
-
-                <!-- PHÂN TRANG ĐỒNG BỘ -->
+                <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
-                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 của 10 dòng dữ liệu</span>
+                    <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-end" id="paginationButtons"></ul>
                     </nav>
@@ -295,7 +252,6 @@
 <script>
     const modalElement = document.getElementById('danhMucFormModal');
     const bsModal = new bootstrap.Modal(modalElement);
-
     function switchCatUploadType(type) {
         document.getElementById('uploadType').value = type;
         if (type === 'file') {
@@ -306,7 +262,6 @@
             document.getElementById('catUrlPanel').style.setProperty('display', 'block', 'important');
         }
     }
-
     function openCreateModal() {
         document.getElementById("danhMucForm").reset();
         document.getElementById("modalTitle").innerText = "THÊM DANH MỤC MỚI";
@@ -319,7 +274,6 @@
         switchCatUploadType('file');
         bsModal.show();
     }
-
     function handleEditDanhMucClick(button) {
         const id = button.getAttribute("data-id");
         const name = button.getAttribute("data-name");
@@ -328,7 +282,6 @@
         const status = parseInt(button.getAttribute("data-status"));
         openEditModal(id, name, img, sort, status);
     }
-
     function openEditModal(maDm, tenDm, hinhAnh, thuTu, trangThai) {
         document.getElementById("modalTitle").innerText = "CẬP NHẬT DANH MỤC: " + maDm;
         document.getElementById("formAction").value = "edit";
@@ -346,25 +299,22 @@
         switchCatUploadType(hinhAnh && hinhAnh.startsWith('http') ? 'url' : 'file');
         bsModal.show();
     }
-
     function confirmDeleteDanhMuc(maDm) {
         Swal.fire({
             title: 'Xác nhận xóa?',
-            text: "Dữ liệu danh mục sẽ bị xóa vĩnh viễn khỏi CSDL và không thể hoàn tác!",
+            text: "Bạn có chắc chắn muốn xóa danh mục này?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Đồng ý xóa',
-            cancelButtonText: 'Hủy bỏ'
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = '${pageContext.request.contextPath}/admin/danhmuc?action=delete&id=' + maDm;
             }
         });
     }
-
-    // EXPAND/COLLAPSE MOBILE CARD DETAILS
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -377,112 +327,87 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
-
     let currentPage = 1;
     const pageSize = 10;
     let filteredDesktopRows = [];
     let filteredMobileCards = [];
-
     function filterAndPaginateCategories() {
         const searchInput = document.getElementById("categorySearchInput");
-        if (!searchInput) return;
         const searchVal = searchInput.value.trim().toLowerCase();
-
-        // Filter Desktop Rows
         const allDesktopRows = Array.from(document.querySelectorAll("#categoryTableBody .category-row"));
         filteredDesktopRows = allDesktopRows.filter(row => {
             const id = row.dataset.id.toLowerCase();
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
-        // Filter Mobile Cards
         const allMobileCards = Array.from(document.querySelectorAll("#categoryMobileCards .category-card-col"));
         filteredMobileCards = allMobileCards.filter(card => {
             const id = card.dataset.id.toLowerCase();
             const name = card.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
-
         currentPage = 1;
         renderTableRows();
     }
-
     function renderTableRows() {
-        // Render Desktop view
         const allDesktopRows = document.querySelectorAll("#categoryTableBody .category-row");
         allDesktopRows.forEach(row => row.style.display = "none");
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
-
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
-
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
-
         const pageDesktopRows = filteredDesktopRows.slice(startIdx, endIdx);
         pageDesktopRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
-
-        // Render Mobile view
         const allMobileCards = document.querySelectorAll("#categoryMobileCards .category-card-col");
         allMobileCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
         const pageMobileCards = filteredMobileCards.slice(startIdx, endIdx);
         pageMobileCards.forEach(card => {
             card.style.setProperty('display', 'block', 'important');
         });
-
         updatePaginationControls();
     }
-
     function updatePaginationControls() {
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
         const infoEl = document.getElementById("paginationInfo");
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
-
         if (!infoEl || !btnContainer || !wrapper) return;
         const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
         const end = Math.min(currentPage * pageSize, totalRows);
-
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng danh mục';
         btnContainer.innerHTML = "";
-
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
-
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
-
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
-
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
-
     function changePage(page) {
         const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
-
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');

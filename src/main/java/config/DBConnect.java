@@ -11,6 +11,7 @@ import java.util.Properties;
  * =========================================================================
  * TEA POS SYSTEM - HIGH-PERFORMANCE DATABASE CONNECTION POOL (HikariCP)
  * Optimized and fully synchronized with application.properties
+ * Supported environment variables resolution to ensure strict production security.
  * =========================================================================
  */
 public class DBConnect {
@@ -20,7 +21,6 @@ public class DBConnect {
         try {
             System.out.println("[TEA POS INFO] Đang khởi tạo Connection Pool...");
             Properties properties = new Properties();
-
             // Nạp động cấu hình từ application.properties
             try (InputStream input = DBConnect.class.getClassLoader().getResourceAsStream("application.properties")) {
                 if (input != null) {
@@ -33,10 +33,10 @@ public class DBConnect {
                 System.err.println("[TEA POS WARNING] Gặp lỗi khi đọc file application.properties: " + ex.getMessage());
             }
 
-            // Trích xuất các tham số cấu hình
-            String dbUrl = properties.getProperty("db.url");
-            String dbUser = properties.getProperty("db.user");
-            String dbPass = properties.getProperty("db.password");
+            // Trích xuất các tham số cấu hình và xử lý các mốc biến môi trường Placeholder nâng cao
+            String dbUrl = resolvePlaceholder(properties.getProperty("db.url"));
+            String dbUser = resolvePlaceholder(properties.getProperty("db.user"));
+            String dbPass = resolvePlaceholder(properties.getProperty("db.password"));
 
             HikariConfig config = new HikariConfig();
             config.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -69,6 +69,29 @@ public class DBConnect {
 
     // Chặn khởi tạo thực thể bừa bãi bằng private constructor
     private DBConnect() {}
+
+    /**
+     * Giải quyết các dải Placeholder dạng ${ENV_VAR:defaultValue} cho cấu hình kết nối CSDL
+     */
+    private static String resolvePlaceholder(String value) {
+        if (value == null) return null;
+        if (value.startsWith("${") && value.endsWith("}")) {
+            String content = value.substring(2, value.length() - 1);
+            int colonIdx = content.indexOf(":");
+            String envName = content;
+            String defaultValue = "";
+            if (colonIdx != -1) {
+                envName = content.substring(0, colonIdx);
+                defaultValue = content.substring(colonIdx + 1);
+            }
+            String envValue = System.getenv(envName);
+            if (envValue != null && !envValue.trim().isEmpty()) {
+                return envValue.trim();
+            }
+            return defaultValue.trim();
+        }
+        return value;
+    }
 
     /**
      * Lấy kết nối từ Connection Pool
