@@ -11,250 +11,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/pos.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #ecfdf5;
-            --bg-main: #f1f5f9;
-            --border-color: #cbd5e1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --radius-md: 8px;
-            --radius-sm: 4px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        body {
-            background-color: var(--bg-main);
-        }
-        .pos-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        .pos-main-container {
-            display: flex;
-            height: calc(100vh - 60px);
-            overflow: hidden;
-            flex-grow: 1;
-        }
-        .pos-category-sidebar {
-            width: 110px;
-            background-color: #ffffff;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        .pos-category-btn {
-            width: 100%;
-            padding: 15px 8px;
-            background: transparent;
-            border: none;
-            border-left: 3px solid transparent;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            gap: 4px;
-        }
-        .pos-category-btn:hover {
-            color: var(--primary);
-            background-color: #f8fafc;
-        }
-        .pos-category-btn.active {
-            color: var(--primary);
-            background-color: var(--primary-light);
-            border-left-color: var(--primary);
-        }
-        .pos-menu-area {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .pos-menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .pos-search-wrapper {
-            position: relative;
-            flex-grow: 1;
-            max-width: 400px;
-        }
-        .pos-search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-        .pos-search-input {
-            width: 100%;
-            padding: 8px 12px 8px 36px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            outline: none;
-            font-size: 13px;
-            background-color: #ffffff;
-        }
-        .pos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 16px;
-        }
-        .pos-product-card {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.25s ease;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        .pos-product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--primary);
-        }
-        .pos-product-img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: var(--radius-sm);
-            margin-bottom: 8px;
-        }
-        .pos-card-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-main);
-            height: 36px;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            margin-bottom: 4px;
-        }
-        .pos-card-price {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-top: auto;
-        }
-        .pos-checkout-sidebar {
-            width: 390px;
-            background-color: #ffffff;
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.02);
-        }
-        .pos-checkout-header {
-            height: 60px;
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            background-color: #ffffff;
-        }
-        .pos-cart-items-wrapper {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background-color: #f8fafc;
-        }
-        .pos-crm-panel {
-            padding: 12px 15px;
-            border-top: 1px solid var(--border-color);
-            background-color: #ffffff;
-            flex-shrink: 0;
-        }
-        .pos-summary-panel {
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-            background-color: #ffffff;
-            flex-shrink: 0;
-        }
-        .pos-line-price {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-        .pos-total-row {
-            display: flex;
-            justify-content: space-between;
-            font-weight: 800;
-            font-size: 17px;
-            color: var(--text-main);
-            border-top: 1px dashed var(--border-color);
-            padding-top: 10px;
-            margin-top: 10px;
-            margin-bottom: 12px;
-        }
-        .pos-cash-suggest-btn {
-            background-color: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 4px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            border-radius: 4px;
-            color: #475569;
-            flex: 1;
-            transition: all 0.15s;
-        }
-        .pos-cash-suggest-btn:hover {
-            background-color: #e2e8f0;
-            color: #0f172a;
-        }
-        .active-filter {
-            background-color: #f1f5f9 !important;
-            border: 1px solid #cbd5e1 !important;
-        }
-        .receipt-container {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #000000;
-            background-color: #ffffff;
-        }
-    </style>
 </head>
 <body>
 <div class="pos-wrapper">
+    <!-- POS TOP NAVBAR -->
     <nav class="navbar navbar-dark bg-dark px-3" style="height: 60px; flex-shrink: 0; z-index: 1040;">
-        <div class="container-fluid d-flex align-items-center">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
                 <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
                     <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i> TEA POS PRO
                 </a>
-                <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary d-none d-sm-flex" style="height: 30px;">
+                <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
                     <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-success fw-bold px-3">
                         <i class="bi bi-cart-fill me-1 text-warning"></i> BÁN TẠI QUẦY
                     </a>
@@ -263,7 +32,7 @@
                     </a>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-3 text-white ms-auto">
+            <div class="d-flex align-items-center gap-3 text-white">
                 <div class="dropdown border-end pe-3 border-secondary d-none d-md-inline">
                     <a class="dropdown-toggle text-decoration-none text-white small fw-semibold" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
@@ -274,9 +43,9 @@
                     </ul>
                 </div>
                 <span class="small border-end pe-3 border-secondary font-monospace d-none d-md-inline">
-<i class="bi bi-calendar3 text-success me-1"></i>
-<span id="posCurrentClock">--:--:--</span>
-</span>
+                    <i class="bi bi-calendar3 text-success me-1"></i>
+                    <span id="posCurrentClock">--:--:--</span>
+                </span>
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
                     <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
                 </a>
@@ -286,7 +55,10 @@
             </div>
         </div>
     </nav>
+
+    <!-- POS MAIN WORKSPACE -->
     <div class="pos-main-container" id="posMainContainer">
+        <!-- CATEGORIES SIDEBAR -->
         <div class="pos-category-sidebar">
             <button class="pos-category-btn active" id="btn_cat_all" onclick="filterCategory('all')">
                 <i class="bi bi-grid-fill fs-4 mb-1"></i>
@@ -299,6 +71,8 @@
                 </button>
             </c:forEach>
         </div>
+
+        <!-- MAIN PRODUCTS MENU GRID -->
         <div class="pos-menu-area">
             <div class="pos-menu-header">
                 <div class="pos-search-wrapper">
@@ -311,6 +85,7 @@
                     <button class="btn btn-sm px-3 border-0 rounded-pill text-danger fw-bold" id="f_hot" onclick="filterBadge('hot')">Bán chạy 🔥</button>
                 </div>
             </div>
+
             <div class="pos-product-container">
                 <div class="pos-grid" id="posProductGrid">
                     <c:forEach var="sp" items="${products}">
@@ -319,7 +94,7 @@
                                  onclick="openCustomizePopup('${sp.maSp}', '<c:out value="${sp.tenSp}"/>', encodeURIComponent(JSON.stringify(window['sp_opt_' + '${sp.maSp}'])))">
                                 <c:choose>
                                     <c:when test="${not empty sp.hinhAnh}">
-                                        <img src="${sp.hinhAnh}" class="pos-product-img rounded" alt="Pic">
+                                        <img src="${sp.hinhAnh}" class="pos-product-img" alt="Pic">
                                     </c:when>
                                     <c:otherwise>
                                         <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 100%; height: 90px;">
@@ -341,19 +116,25 @@
                 </div>
             </div>
         </div>
-        <div class="pos-checkout-sidebar">
+
+        <!-- RIGHT CHECKOUT SIDEBAR (PERMANENT ON DESKTOP, DRAWER ON MOBILE) -->
+        <div class="pos-checkout-sidebar" id="posCheckoutSidebar">
             <div class="pos-checkout-header">
-                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1.5"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
-                <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()">
-                    <i class="bi bi-trash3-fill"></i> Hủy đơn
-                </button>
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><i class="bi bi-receipt-cutoff text-success"></i> GIỎ HÀNG</h5>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" onclick="toggleMobileCart()"><i class="bi bi-x-lg"></i> Đóng</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="clearFullPosCart()"><i class="bi bi-trash3-fill"></i> Hủy đơn</button>
+                </div>
             </div>
+
             <div class="pos-cart-items-wrapper" id="posCartItems">
                 <div class="text-center text-muted py-5 my-5">
                     <i class="bi bi-cart-x fs-1 text-secondary opacity-30"></i>
-                    <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>
+                    <p class="small mt-2 fw-semibold">Giỏ hàng trống.<br>Hãy chọn đồ uống ở bên để thêm vào đơn hàng.</p>
                 </div>
             </div>
+
+            <!-- CRM MEMBERSHIP PANEL -->
             <div class="pos-crm-panel border-bottom">
                 <div class="d-flex gap-2 mb-2">
                     <input type="text" id="customerPhoneSearch" class="form-control form-control-sm" placeholder="Nhập SĐT tìm hội viên CRM..." onkeyup="restrictPhoneInputAndSearch(this)">
@@ -375,8 +156,10 @@
                     <button type="button" class="btn btn-xs btn-outline-success w-100 fw-bold py-1.5" style="font-size: 11px;" onclick="openQuickRegisterModal(document.getElementById('customerPhoneSearch').value)"><i class="bi bi-person-plus-fill"></i> ĐĂNG KÝ HỘI VIÊN NHANH</button>
                 </div>
             </div>
+
+            <!-- BILL SUMMARY & PAYMENT PANEL -->
             <div class="pos-summary-panel">
-                <div class="d-flex gap-1.5 mb-3">
+                <div class="d-flex gap-1.5 mb-2">
                     <input type="text" id="manualVoucherInput" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã Voucher..." style="height: 32px; letter-spacing:0.5px;">
                     <button type="button" class="btn btn-sm btn-dark fw-bold" style="height: 32px; font-size:11px;" onclick="applyManualVoucherCode()">ÁP MÃ</button>
                 </div>
@@ -398,38 +181,44 @@
                 </div>
                 <div class="pos-total-row">
                     <span>TỔNG THỰC THU:</span>
-                    <span class="text-success" id="totalPayablePrice">0 đ</span>
+                    <span class="text-success fs-5" id="totalPayablePrice">0 đ</span>
                 </div>
-                <div class="mt-2 text-start p-2.5 rounded bg-light border mb-3" id="cashCalculatorSection">
+
+                <!-- CASH SUGGESTION SECTION -->
+                <div class="mt-2 text-start p-2 rounded bg-light border mb-2" id="cashCalculatorSection">
                     <div class="d-flex justify-content-between align-items-center mb-1.5">
-                        <small class="fw-bold text-muted small"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
-                        <input type="number" class="form-control form-control-sm text-end fw-bold text-primary font-monospace bg-white" id="inputCustomerCash" placeholder="Nhập số tiền..." style="width: 130px; height: 30px;" oninput="calculateChangeRefund()">
+                        <small class="fw-bold text-muted" style="font-size: 11px;"><i class="bi bi-cash-stack"></i> KHÁCH ĐƯA (VNĐ):</small>
+                        <input type="number" class="form-control form-control-sm text-end fw-bold text-primary font-monospace bg-white" id="inputCustomerCash" placeholder="Nhập số tiền..." style="width: 120px; height: 28px;" oninput="calculateChangeRefund()">
                     </div>
-                    <div class="d-flex justify-content-between gap-1 mb-2">
+                    <div class="d-flex justify-content-between gap-1 mb-1.5">
                         <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(50000)">50k</button>
                         <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(100000)">100k</button>
                         <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(200000)">200k</button>
                         <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(500000)">500k</button>
                         <button type="button" class="pos-cash-suggest-btn" onclick="suggestCashAmount(0)">ĐỦ</button>
                     </div>
-                    <div class="d-flex justify-content-between text-dark fw-bold border-top pt-2 small">
+                    <div class="d-flex justify-content-between text-dark fw-bold border-top pt-1.5 small" style="font-size: 11.5px;">
                         <span>TIỀN THỐI LẠI:</span>
                         <span id="txtCashRefund" class="text-success font-monospace fw-bold">0 đ</span>
                     </div>
                 </div>
-                <div class="mb-3 text-start">
-                    <label class="form-label text-muted small fw-bold mb-1"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
+
+                <!-- PAYMENT METHODS SELECTOR -->
+                <div class="mb-2 text-start">
+                    <label class="form-label text-muted small fw-bold mb-1" style="font-size: 10px;"><i class="bi bi-wallet2"></i> PHƯƠNG THỨC THANH TOÁN:</label>
                     <div class="btn-group w-100" role="group">
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_cash" value="1" checked onchange="changePaymentMethod(1)">
-                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_cash">
+                        <label class="btn btn-outline-success py-1.5 fw-semibold small" for="pt_cash">
                             <i class="bi bi-cash-coin me-1"></i> TIỀN MẶT
                         </label>
                         <input type="radio" class="btn-check" name="payment_method_group" id="pt_qr" value="2" onchange="changePaymentMethod(2)">
-                        <label class="btn btn-outline-success py-2 fw-semibold" for="pt_qr">
+                        <label class="btn btn-outline-success py-1.5 fw-semibold small" for="pt_qr">
                             <i class="bi bi-qr-code-scan me-1"></i> CHUYỂN KHOẢN QR
                         </label>
                     </div>
                 </div>
+
+                <!-- HIDDEN ORDER SUBMIT FORM -->
                 <form id="posOrderForm" action="${pageContext.request.contextPath}/pos/checkout" method="POST" style="display: none;">
                     <input type="hidden" name="maKh" id="submit_maKh" value="">
                     <input type="hidden" name="loaiDonHang" id="submit_loaiDonHang" value="1">
@@ -440,177 +229,21 @@
                     <input type="hidden" name="diemSuDung" id="submit_diemSuDung" value="0">
                     <input type="hidden" name="tienTruDiem" id="submit_tienTruDiem" value="0">
                     <input type="hidden" name="tongPhaiTra" id="submit_tongPhaiTra" value="0">
-                    <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_OFFLINE">
+                    <input type="hidden" name="ghiChuDon" id="submit_ghiChuDon" value="POS_IN_STORE">
                     <div id="posFormItemsContainer"></div>
                 </form>
-                <button type="button" class="btn btn-primary-teapos w-100 py-3 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
+
+                <button type="button" class="btn btn-primary-teapos w-100 py-2.5 fs-5 fw-bold" onclick="submitPOSOrderTransaction()">
                     <i class="bi bi-printer me-1"></i> CHỐT ĐƠN & GIAO DỊCH
                 </button>
             </div>
         </div>
     </div>
 </div>
-<!-- PROFILE MODAL -->
-<div class="modal fade" id="posProfileModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-success text-white py-3">
-                <h5 class="modal-title fw-bold m-0"><i class="bi bi-person-circle me-1"></i> THÔNG TIN CÁ NHÂN</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-start bg-light">
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Họ và tên nhân viên</label>
-                    <input type="text" id="profile_hoTen" class="form-control" value="<c:out value='${sessionScope.user.hoTen}'/>" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Số điện thoại liên hệ</label>
-                    <input type="text" id="profile_sdt" class="form-control" value="${sessionScope.user.soDienThoai}" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Địa chỉ Email</label>
-                    <input type="email" id="profile_email" class="form-control" value="${sessionScope.user.email}" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Tên đăng nhập hệ thống</label>
-                    <input type="text" class="form-control bg-light text-muted" value="<c:out value='${sessionScope.user.tenDangNhap}'/>" readonly>
-                </div>
-            </div>
-            <div class="modal-footer bg-light border-top p-2.5">
-                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-success btn-sm px-3" onclick="submitPosProfile()"><i class="bi bi-save me-1"></i> Lưu thay đổi</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- PASSWORD MODAL -->
-<div class="modal fade" id="posPasswordModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-warning text-dark py-3">
-                <h5 class="modal-title fw-bold m-0"><i class="bi bi-key-fill me-1"></i> ĐỔI MẬT KHẨU BẢO MẬT</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-start bg-light">
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Mật khẩu cũ hiện tại <span class="text-danger">*</span></label>
-                    <input type="password" id="password_old" class="form-control" placeholder="Nhập mật khẩu cũ..." required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Mật khẩu mới bảo mật <span class="text-danger">*</span></label>
-                    <input type="password" id="password_new" class="form-control" placeholder="Tối thiểu từ 8 ký tự..." required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label text-muted small fw-bold">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
-                    <input type="password" id="password_confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." required>
-                </div>
-            </div>
-            <div class="modal-footer bg-light border-top p-2.5">
-                <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" onclick="submitPosPassword()"><i class="bi bi-save me-1"></i> Lưu mật khẩu mới</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- RECEIPT MODAL -->
-<div class="modal fade" id="receiptDetailModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 340px;">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 8px;">
-            <div class="modal-body p-3 bg-white text-dark text-start receipt-container" id="billPrintArea">
-                <div class="text-center mb-2">
-                    <strong style="font-size: 15px; letter-spacing: 1px; text-align: center; display: block;">TEA POS CAFÉ</strong>
-                    <span style="font-size: 9px; color: #555; text-align: center; display: block;">Địa chỉ: 123 Đường Trà Sữa, Phường 10, Gò Vấp</span>
-                    <span style="font-size: 9px; color: #555; text-align: center; display: block;">Hotline: (+84) 123 456 789</span>
-                    <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                    <strong style="font-size: 11px; text-align: center; display: block;">HÓA ĐƠN BÁN LẺ TẠI QUẦY</strong>
-                    <span style="font-size: 10px; text-align: center; display: block;" id="billThoiGian"></span>
-                </div>
-                <div class="mb-2" style="font-size: 10px;">
-                    <div>Mã đơn: <strong id="billMaDh"></strong></div>
-                    <div>Thu ngân: <span id="billTenNv"></span></div>
-                    <div>Khách hàng: <span id="billTenKh"></span></div>
-                </div>
-                <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div id="billItemsContainer" style="font-size: 10.5px;"></div>
-                <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div class="d-flex justify-content-between" style="font-size: 10px; margin-bottom: 2px;">
-                    <span>Tổng tiền nước gốc:</span>
-                    <strong id="billRawPrice"></strong>
-                </div>
-                <div class="d-flex justify-content-between text-danger" id="billDiscountRow" style="display: none; font-size: 10px; margin-bottom: 2px;">
-                    <span>Khấu trừ Voucher:</span>
-                    <strong id="billDiscount"></strong>
-                </div>
-                <div class="d-flex justify-content-between text-primary" id="billPointsRow" style="display: none; font-size: 10px; margin-bottom: 2px;">
-                    <span>Tiêu điểm CRM:</span>
-                    <strong id="billPointsDiscount"></strong>
-                </div>
-                <div class="d-flex justify-content-between" style="font-size: 10px; margin-bottom: 2px;">
-                    <span>Thuế VAT (8%):</span>
-                    <strong id="billVatPrice"></strong>
-                </div>
-                <div style="border-bottom: 1px dashed #333; margin: 4px 0;"></div>
-                <div class="d-flex justify-content-between fw-bold text-success" style="font-size: 12px; margin-bottom: 4px;">
-                    <span>CẦN THANH TOÁN:</span>
-                    <span id="billFinalPayable"></span>
-                </div>
-                <div class="d-flex justify-content-between text-muted" id="billCashGivenRow" style="font-size: 10px; margin-bottom: 2px; display: none;">
-                    <span>Tiền mặt khách đưa:</span>
-                    <span id="billCashGiven" class="fw-bold text-dark"></span>
-                </div>
-                <div class="d-flex justify-content-between text-muted" id="billCashRefundRow" style="font-size: 10px; margin-bottom: 2px; display: none;">
-                    <span>Tiền thối lại:</span>
-                    <span id="billCashRefund" class="fw-bold text-success"></span>
-                </div>
-                <div style="border-bottom: 1px dashed #333; margin: 6px 0;"></div>
-                <div class="text-center mt-3" style="font-size: 9px; color: #444; text-align: center;">
-                    Cảm ơn quý khách hàng và hẹn gặp lại!<br><i>Powered by CodeDevSquad</i>
-                </div>
-            </div>
-            <div class="modal-footer p-2 bg-light d-flex justify-content-between">
-                <button type="button" class="btn btn-sm btn-secondary fw-bold" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-sm btn-success fw-bold" onclick="printReceipt()"><i class="bi bi-printer"></i> In Hóa Đơn</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- VIETQR MODAL -->
-<div class="modal fade" id="posQrModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" style="z-index: 1065;">
-    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 320px;">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header bg-dark text-white py-2.5">
-                <h6 class="modal-title fw-bold m-0"><i class="bi bi-qr-code-scan me-2 text-success"></i> QUÉT MÃ CHUYỂN KHOẢN</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cancelQRPayment()"></button>
-            </div>
-            <div class="modal-body text-center bg-white p-4">
-                <h3 class="text-danger fw-bold mb-1" id="posQrAmount">0 đ</h3>
-                <p class="text-muted small mb-3">Mã đơn: <span class="fw-bold text-dark font-monospace" id="posQrCodeDisplay"></span></p>
-                <div class="bg-light p-3 rounded-4 d-inline-block mb-3 position-relative border" style="border-radius: 12px !important;">
-                    <img id="posQrImage" src="" alt="VietQR Payment Code" class="img-fluid" style="max-width: 200px; height: 200px; object-fit: contain;">
-                    <div id="posQrSuccessOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3.5rem;"></i>
-                        <h6 class="text-success mt-2 fw-bold mb-0">Đã Khớp Số Dư!</h6>
-                    </div>
-                    <div id="posQrExpiredOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-flex flex-column justify-content-center align-items-center" style="display: none !important; z-index: 10; backdrop-filter: blur(2px); border-radius: 12px;">
-                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 3.5rem;"></i>
-                        <h6 class="text-danger mt-2 fw-bold mb-0">Mã Đã Hết Hạn</h6>
-                    </div>
-                </div>
-                <div class="text-danger fw-bold small mb-2 text-uppercase">
-                    <i class="bi bi-clock-history"></i> Có hiệu lực trong <span id="posQrCountdownText" class="fs-5">120</span> giây
-                </div>
-                <div id="posQrLoadingStatus" class="text-success fw-bold small mb-0 d-flex align-items-center justify-content-center">
-                    <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                    <span style="font-size: 11px;">Hệ thống đang chờ tiền vào...</span>
-                </div>
-            </div>
-            <div class="modal-footer border-0 p-2 bg-light d-flex justify-content-between rounded-bottom-4">
-                <button type="button" class="btn btn-sm btn-outline-danger fw-bold rounded-pill px-3" onclick="cancelQRPayment()">Hủy bỏ</button>
-                <button type="button" class="btn btn-sm btn-success fw-bold rounded-pill px-3" onclick="forceSubmitCheckout()">Bỏ qua <i class="bi bi-arrow-right"></i></button>
-            </div>
-        </div>
-    </div>
-</div>
+
+<!-- INCLUDES ALL THE REQUISITE MODALS (PROFILE, PASSWORD, RECEIPT, VIETQR) -->
+<jsp:include page="/views/pos/pos_modals.jsp" />
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/assets/js/global.js"></script>
 <script>
@@ -627,12 +260,14 @@
     }
     setInterval(updatePOSClock, 1000);
     updatePOSClock();
+
     function restrictPhoneInputAndSearch(el) {
         el.value = el.value.replace(/[^0-9]/g, '');
         if (el.value.length >= 10) {
             searchCustomerCRM();
         }
     }
+
     function filterCategory(maDm) {
         document.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
         if (maDm === 'all') {
@@ -652,6 +287,7 @@
             });
         }
     }
+
     function filterBadge(tag) {
         document.querySelectorAll('#f_all, #f_new, #f_hot').forEach(btn => btn.classList.remove('active-filter', 'btn-light'));
         const activeBtn = document.getElementById('f_' + tag);
@@ -671,6 +307,7 @@
             }
         });
     }
+
     function searchPOSProduct() {
         const keyword = document.getElementById("posSearchProductInput").value.trim().toLowerCase();
         document.querySelectorAll('#posProductGrid .pos-product-card').forEach(card => {
@@ -684,6 +321,7 @@
             }
         });
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
@@ -699,6 +337,7 @@
         }
     });
 </script>
+
 <c:forEach var="sp" items="${products}">
     <script>
         window['sp_opt_' + '${sp.maSp}'] = {

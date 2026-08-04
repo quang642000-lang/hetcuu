@@ -1,7 +1,7 @@
 /**
  * =========================================================================
- * TEA POS SYSTEM - HIGH-PERFORMANCE TOUCH-FRIENDLY POS INTERFACE SCRIPT
- * Manages offcanvas drawers, responsive backdrops, total syncing & VNĐ formatting.
+ * TEA POS PRO - COMPREHENSIVE RESPONSIVE INTERFACE SCRIPT (v9.0)
+ * Handles offcanvas drawer triggers, dynamic totals, cash suggestion & polling
  * =========================================================================
  */
 let posCart = [];
@@ -134,6 +134,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     }
     html += '    </div>';
     html += '  </div>';
+
     if (rawOptions.choPhepDoiDa) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">2. MỨC ĐỘ ĐÁ LẠNH</label>';
@@ -146,6 +147,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
+
     if (rawOptions.choPhepDoiDuong) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 text-secondary">3. MỨC ĐỘ ĐƯỜNG NGỌT</label>';
@@ -158,6 +160,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    </div>';
         html += '  </div>';
     }
+
     if (rawOptions.choPhepTopping && rawOptions.allToppings && rawOptions.allToppings.length > 0) {
         html += '  <div class="mb-3">';
         html += '    <label class="fw-semibold small mb-2 d-block text-secondary">4. THÊM TOPPING DAI GIÒN SẦN SẬT</label>';
@@ -184,6 +187,7 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
         html += '    <span class="text-muted small fw-semibold"><i class="bi bi-info-circle text-warning"></i> Sản phẩm này không áp dụng Topping!</span>';
         html += '  </div>';
     }
+
     html += '  <div class="mb-3">';
     html += '    <label class="fw-semibold small mb-2 text-secondary">5. GHI CHÚ PHA CHẾ</label>';
     html += '    <textarea class="form-control" id="popup_note" rows="2" placeholder="Ít đá, mang ly đá riêng..."></textarea>';
@@ -200,11 +204,12 @@ function openCustomizePopup(maSp, tenSp, encodedOptions) {
     html += '</div>';
 
     if (typeof Swal !== 'undefined') {
+        const swalWidth = window.innerWidth < 480 ? '95%' : '460px';
         Swal.fire({
             title: 'TÙY BIẾN PHA CHẾ ĐỒ UỐNG',
             html: html,
             showConfirmButton: false,
-            width: '460px',
+            width: swalWidth,
             didOpen: () => { recalculatePopupPrice(); }
         });
     }
@@ -263,8 +268,17 @@ function addCustomizedToCart() {
             soLuong: 1
         });
     }
+
     Swal.close();
     renderPosCart();
+
+    // Automatically open slide-out cart on mobile after adding to help waiters
+    if (window.innerWidth <= 1024) {
+        const sidebar = document.querySelector('.pos-checkout-sidebar');
+        if (sidebar && !sidebar.classList.contains('show')) {
+            toggleMobileCart();
+        }
+    }
 }
 
 function isSameToppingsList(arr1, arr2) {
@@ -288,7 +302,6 @@ function renderPosCart() {
             '  <p class="small mt-2 fw-semibold">Quầy POS chưa có sản phẩm nào.<br>Vui lòng chạm chọn món uống ở lưới bên.</p>' +
             '</div>';
         recalculatePOSBill(0);
-
         const mobileBadge = document.getElementById("posMobileCartCount");
         if (mobileBadge) mobileBadge.innerText = "0";
         return;
@@ -299,14 +312,12 @@ function renderPosCart() {
         let toppingsPrice = item.toppings.reduce((sum, t) => sum + (t.giaTp * t.soLuongTp), 0);
         let lineTotal = (item.giaBan + toppingsPrice) * item.soLuong;
         tongTienHang += lineTotal;
-
         let toppingsText = '';
         if (item.toppings.length > 0) {
             toppingsText = '<div class="text-success small" style="font-size: 10px; font-weight:600;">Toppings: ' +
                 item.toppings.map(t => t.tenTopping + ' (x' + t.soLuongTp + ')').join(', ') + '</div>';
         }
         let noteText = item.ghiChuMon !== 'Normal' ? ' | Ghi chú: <span class="text-danger fw-semibold">' + item.ghiChuMon + '</span>' : '';
-
         let cardHtml = '<div class="pos-cart-item p-2.5 bg-white border border-secondary border-opacity-10 rounded-3 mb-2 shadow-sm">' +
             '  <div class="d-flex justify-content-between align-items-start">' +
             '    <div class="text-start">' +
@@ -315,7 +326,7 @@ function renderPosCart() {
             '        Đá: ' + item.mucDa + ' | Đường: ' + item.mucDuong + noteText + toppingsText +
             '      </div>' +
             '    </div>' +
-            '    <button type="button" class="btn btn-link text-danger p-0 border-0 ms-2" onclick="removeCartItem(' + idx + ')"><i class="bi bi-trash3-fill"></i></button>' +
+            '    <button type="button" class="btn btn-link text-danger p-0 border-0 ms-2 animate-pulse-hover" onclick="removeCartItem(' + idx + ')"><i class="bi bi-trash3-fill"></i></button>' +
             '  </div>' +
             '  <div class="d-flex justify-content-between align-items-center mt-2">' +
             '    <div class="fw-bold text-success font-monospace">' + formatVND(lineTotal) + '</div>' +
@@ -330,7 +341,6 @@ function renderPosCart() {
     });
 
     recalculatePOSBill(tongTienHang);
-
     const mobileBadge = document.getElementById("posMobileCartCount");
     if (mobileBadge) {
         mobileBadge.innerText = posCart.reduce((sum, item) => sum + item.soLuong, 0);
@@ -353,7 +363,6 @@ function removeCartItem(idx) {
 function searchCustomerCRM() {
     const sdt = document.getElementById('customerPhoneSearch').value.trim();
     if (!sdt || sdt.length < 10) return;
-
     fetch(getContextPath() + '/pos/search-customer?sdt=' + sdt)
         .then(res => res.json())
         .then(data => {
@@ -361,20 +370,16 @@ function searchCustomerCRM() {
                 customerInfo = data;
                 document.getElementById('submit_maKh').value = data.maKh;
                 document.getElementById('customerNameResult').innerText = data.tenKh;
-
                 let rankName = 'MỚI';
                 if (data.maHang === 1) rankName = 'ĐỒNG';
                 else if (data.maHang === 2) rankName = 'BẠC';
                 else if (data.maHang === 3) rankName = 'VÀNG 👑';
                 else if (data.maHang === 4) rankName = 'VIP 💎';
-
                 document.getElementById('customerPoints').innerText = 'Hạng: ' + rankName + ' | ' + data.diemTichLuy + ' Điểm';
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
-
                 resetVoucherAndPoints();
                 renderPosCart();
-
                 Swal.fire({ icon: 'success', title: 'Thành viên', text: 'Tìm thấy: ' + data.tenKh, confirmButtonColor: '#10b981', timer: 1500 });
             } else {
                 customerInfo = null;
@@ -383,7 +388,6 @@ function searchCustomerCRM() {
                 document.getElementById('customerPoints').innerText = "Hạng: Mới | 0 Điểm";
                 document.getElementById("crmLoyaltyArea").style.setProperty('display', 'none', 'important');
                 document.getElementById("posAddCustomerArea").style.setProperty('display', 'block', 'important');
-
                 Swal.fire({
                     title: 'Hội viên chưa đăng ký',
                     text: 'Số điện thoại này chưa liên kết thẻ. Đăng ký nhanh CRM?',
@@ -454,7 +458,6 @@ function openQuickRegisterModal(sdt) {
                         document.getElementById('customerPoints').innerText = 'Hạng: ĐỒNG | 0 Điểm';
                         document.getElementById("crmLoyaltyArea").style.setProperty('display', 'block', 'important');
                         document.getElementById("posAddCustomerArea").style.setProperty('display', 'none', 'important');
-
                         Swal.fire({ icon: 'success', title: 'Thành công', text: 'Đăng ký thành công hội viên CRM!', confirmButtonColor: '#10b981' });
                         resetVoucherAndPoints();
                         renderPosCart();
@@ -469,10 +472,8 @@ function openQuickRegisterModal(sdt) {
 function applyManualVoucherCode() {
     const code = document.getElementById("manualVoucherInput").value.trim().toUpperCase();
     if (!code) return;
-
     const totalRaw = parseInt(document.getElementById('totalRawPrice').innerText.replace(/\D/g, '')) || 0;
     if (totalRaw === 0) return;
-
     const maKh = document.getElementById("submit_maKh").value;
 
     fetch(getContextPath() + '/pos/apply-voucher', {
@@ -500,13 +501,8 @@ function applyManualVoucherCode() {
         });
 }
 
-function showVoucherSelectionModal() {
-    Swal.fire({ icon: 'warning', title: 'Bảo mật nghiêm ngặt', text: 'Vì lý do bảo mật, nhân sự thu ngân không được phép xem kho Voucher của khách. Khách hàng vui lòng tự đọc mã Voucher hiển thị trên Portal di động của mình để áp dụng!', confirmButtonColor: '#10b981' });
-}
-
 function applyPointsDiscount() {
     if (!customerInfo || customerInfo.diemTichLuy <= 0) return;
-
     Swal.fire({
         title: 'QUY ĐỔI ĐIỂM CRM TÍCH LŨY',
         text: 'Hội viên đang có ' + customerInfo.diemTichLuy + ' điểm. Quy đổi điểm (1đ = 1.000đ):',
@@ -563,7 +559,6 @@ function recalculatePOSBill(tongTienHang) {
     if (pointsDiscount > (rawSum - discount)) {
         pointsDiscount = rawSum - discount;
     }
-
     if (appliedPoints > 0) {
         document.getElementById("summaryPointsRow").style.setProperty('display', 'flex', 'important');
         document.getElementById("txtUsedPoints").innerText = appliedPoints.toString();
@@ -584,9 +579,9 @@ function recalculatePOSBill(tongTienHang) {
     document.getElementById('totalRawPrice').innerText = formatVND(rawSum);
     document.getElementById('totalTaxPrice').innerText = formatVND(vatPrice);
     document.getElementById('totalPayablePrice').innerText = formatVND(finalPayable);
+
     document.getElementById('submit_tongTienHang').value = rawSum.toString();
     document.getElementById('submit_tongPhaiTra').value = finalPayable.toString();
-
     calculateChangeRefund();
 }
 
@@ -623,6 +618,7 @@ function changePaymentMethod(maPt) {
     const cashSection = document.getElementById('cashCalculatorSection');
     const cashRadio = document.getElementById('pt_cash');
     const qrRadio = document.getElementById('pt_qr');
+
     if (maPt === 1 && cashRadio) cashRadio.checked = true;
     if (maPt === 2 && qrRadio) qrRadio.checked = true;
 
@@ -646,7 +642,6 @@ function showPosQrCodeModal(orderId, payable) {
 
     let leftTime = 120;
     document.getElementById("posQrCountdownText").innerText = leftTime;
-
     clearInterval(posQrCountdownInterval);
     posQrCountdownInterval = setInterval(() => {
         leftTime--;
@@ -812,7 +807,6 @@ function submitPosProfile() {
     const hoTen = document.getElementById('profile_hoTen').value.trim();
     const sdt = document.getElementById('profile_sdt').value.trim();
     const email = document.getElementById('profile_email').value.trim();
-
     if (!hoTen || !sdt || !email) {
         Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các trường thông tin!', confirmButtonColor: '#10b981' });
         return;
@@ -859,7 +853,6 @@ function submitPosPassword() {
         Swal.fire({ icon: 'warning', title: 'Mật khẩu yếu', text: 'Mật khẩu mới bắt buộc phải chứa tối thiểu từ 8 ký tự!', confirmButtonColor: '#10b981' });
         return;
     }
-
     const params = new URLSearchParams();
     params.append('oldPassword', oldPass);
     params.append('newPassword', newPass);
@@ -914,14 +907,13 @@ function submitPOSOrderTransaction() {
     } else {
         localStorage.removeItem('temp_last_cash_given');
     }
-
     const container = document.getElementById('posFormItemsContainer');
     if (!container) {
         showToast('error', 'Lỗi cấu trúc trang: Không tìm thấy posFormItemsContainer!');
         return;
     }
-    container.innerHTML = '';
 
+    container.innerHTML = '';
     posCart.forEach(item => {
         container.innerHTML += '<input type="hidden" name="item_maSp[]" value="' + item.maSp + '">';
         container.innerHTML += '<input type="hidden" name="item_maSize[]" value="' + item.maSize + '">';
@@ -944,26 +936,41 @@ function submitPOSOrderTransaction() {
         confirmButtonText: 'Xác nhận & Chốt đơn'
     }).then((result) => {
         if (result.isConfirmed) {
+            const lastCash = localStorage.getItem('temp_last_cash_given');
+            if (lastCash) {
+                const submit_phaiTra = document.getElementById('submit_tongPhaiTra').value;
+                const active_maDh = 'TEA-' + new Date().toISOString().slice(0,10).replace(/-/g,"") + '-PENDING';
+                localStorage.setItem('last_cash_given_' + active_maDh, lastCash);
+            }
             const form = document.getElementById('posOrderForm');
             if (form) form.submit();
         }
     });
 }
 
-/* =========================================================================
- * PURE DYNAMIC DOM INJECTION FOR TABLET & MOBILE VIEWPORTS
- * ========================================================================= */
+function toggleMobileCart() {
+    const sidebar = document.getElementById('posCheckoutSidebar');
+    const backdrop = document.getElementById('posCartBackdrop');
+    if (sidebar && backdrop) {
+        sidebar.classList.toggle('show');
+        backdrop.classList.toggle('show');
+        if (sidebar.classList.contains('show')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Inject POS Cart sliding drawer Backdrop overlay
     if (!document.getElementById("posCartBackdrop")) {
         const backdrop = document.createElement("div");
         backdrop.id = "posCartBackdrop";
         backdrop.className = "pos-cart-backdrop";
-        backdrop.onclick = toggleMobileCart; // Clicking backdrop closes offcanvas drawer
+        backdrop.onclick = toggleMobileCart;
         document.body.appendChild(backdrop);
     }
 
-    // 2. Inject floating circle action button with counter badge
     if (!document.getElementById("posMobileCartToggleBtn")) {
         const toggleBtn = document.createElement("button");
         toggleBtn.id = "posMobileCartToggleBtn";
@@ -973,20 +980,6 @@ document.addEventListener("DOMContentLoaded", function() {
         toggleBtn.onclick = toggleMobileCart;
         document.body.appendChild(toggleBtn);
     }
+
+    clearFullPosCart();
 });
-
-function toggleMobileCart() {
-    const sidebar = document.querySelector('.pos-checkout-sidebar');
-    const backdrop = document.getElementById('posCartBackdrop');
-    if (sidebar && backdrop) {
-        sidebar.classList.toggle('show');
-        backdrop.classList.toggle('show');
-
-        // Lock body scrolling when drawer is open
-        if (sidebar.classList.contains('show')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }
-}
