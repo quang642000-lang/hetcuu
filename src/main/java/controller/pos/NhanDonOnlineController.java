@@ -16,10 +16,11 @@ import java.util.List;
 
 /**
  * =========================================================================
- * TEA POS SYSTEM - ONLINE ORDER RECEIVING CONTROLLER
+ * TEA POS SYSTEM - ONLINE ORDER RECEIVING CONTROLLER (v2 - Refund Aware)
  * Optimized to filter and ONLY display online orders (loai_don_hang = 3),
  * preventing POS in-store orders from cluttering the online dispatch UI.
  * Fully pre-loads all product details and toppings dynamically.
+ * Supported manual refund operation on canceled paid orders.
  * =========================================================================
  */
 @WebServlet(name = "NhanDonOnlineController", urlPatterns = {"/pos/nhandon"})
@@ -54,7 +55,6 @@ public class NhanDonOnlineController extends HttpServlet {
                 }
             }
         }
-
         request.setAttribute("onlineOrders", onlineOrders);
         request.setAttribute("currentStatus", filterStatus);
         request.getRequestDispatcher("/views/pos/nhan_don.jsp").forward(request, response);
@@ -67,13 +67,34 @@ public class NhanDonOnlineController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
         NhanVien currentStaff = (NhanVien) session.getAttribute("user");
         String maDh = request.getParameter("maDh");
+        String action = request.getParameter("action");
+
+        // NGHIỆP VỤ HOÀN TIỀN ĐƠN HỦY
+        if ("refund".equals(action)) {
+            boolean success = donHangService.updateTrangThaiThanhToan(maDh, 2); // 2: Đã hoàn tiền
+            if (success) {
+                String ip = util.WebUtil.getRemoteIP(request);
+                repository.impl.NhatKyRepoImpl.recordActivity(
+                        currentStaff.getMaNv(),
+                        "HOÀN_TIỀN_ĐƠN_HỦY",
+                        "DON_HANG",
+                        maDh,
+                        "Trạng thái thanh toán: 1 (Đã thanh toán)",
+                        "Trạng thái thanh toán: 2 (Đã hoàn tiền)",
+                        ip
+                );
+                response.sendRedirect(request.getContextPath() + "/pos/nhandon?status=5&msg=updatesuccess");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/pos/nhandon?status=5&msg=updatefailed");
+            }
+            return;
+        }
+
+        // NGHIỆP VỤ CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG THÔNG THƯỜNG
         int trangThaiMoi = Integer.parseInt(request.getParameter("trangThaiMoi"));
         String lyDoHuy = request.getParameter("lyDoHuy");
-
-        // Thực hiện cập nhật trạng thái đơn hàng kèm lưu nhật ký kiểm toán hệ thống
         boolean success = donHangService.updateTrangThaiDon(maDh, trangThaiMoi, currentStaff.getMaNv(), lyDoHuy);
         if (success) {
             response.sendRedirect(request.getContextPath() + "/pos/nhandon?status=" + trangThaiMoi + "&msg=updatesuccess");

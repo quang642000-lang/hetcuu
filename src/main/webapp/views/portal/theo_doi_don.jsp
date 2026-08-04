@@ -1,32 +1,33 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <title>TEA POS - Danh Sách Đơn Hàng Đặt Lấy</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/portal.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-
+<!-- NAV HEADER -->
 <jsp:include page="/views/layout/header_portal.jsp" />
 
-<div class="container py-5">
+<div class="container py-4 py-lg-5">
     <div class="row g-4">
         <!-- Sidebar Menu Trái -->
         <jsp:include page="/views/portal/profile-sidebar.jsp" />
 
         <!-- Cột Phải: Danh Sách Đơn Hàng -->
         <div class="col-12 col-md-9">
-            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px;">
-                <h4 class="fw-bold mb-4 text-dark"><i class="bi bi-clock-history text-success me-2"></i>LỊCH SỬ ĐƠN HÀNG</h4>
+            <div class="card border-0 p-4 shadow-sm" style="border-radius: 16px; border: 1px solid var(--border-color) !important;">
+                <h4 class="fw-bold mb-4 text-dark text-start"><i class="bi bi-clock-history text-success me-2"></i>LỊCH SỬ ĐƠN HÀNG</h4>
 
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle text-center">
                         <thead>
                         <tr class="table-light">
                             <th>Mã Đơn</th>
@@ -43,14 +44,14 @@
                             <c:when test="${not empty orders}">
                                 <c:forEach var="item" items="${orders}">
                                     <tr>
-                                        <td><strong>${item.maDh}</strong></td>
+                                        <td><strong class="font-monospace text-success">${item.maDh}</strong></td>
                                         <td class="small"><fmt:formatDate value="${item.thoiGianTao}" pattern="dd/MM/yyyy HH:mm"/></td>
                                         <td class="small fw-semibold text-danger"><fmt:formatDate value="${item.thoiGianHenLay}" pattern="HH:mm dd/MM"/></td>
                                         <td class="text-end fw-bold text-success"><fmt:formatNumber value="${item.tongPhaiTra}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning'} border px-2.5 py-1">
-                                                        ${item.trangThaiThanhToan == 1 ? 'Đã Trả' : 'Chờ Trả'}
-                                                </span>
+                                                    <span class="badge ${item.trangThaiThanhToan == 1 ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning'} border px-2.5 py-1">
+                                                            ${item.trangThaiThanhToan == 1 ? 'Đã Trả' : 'Chờ Trả'}
+                                                    </span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -63,7 +64,7 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-end">
-                                            <a href="${pageContext.request.contextPath}/portal/order/detail?id=${item.maDh}" class="btn btn-sm btn-outline-success">
+                                            <a href="${pageContext.request.contextPath}/portal/order/detail?id=${item.maDh}" class="btn btn-sm btn-outline-success fw-bold px-2.5" style="border-radius: 6px;">
                                                 <i class="bi bi-eye"></i> Xem
                                             </a>
                                         </td>
@@ -84,7 +85,7 @@
     </div>
 </div>
 
+<!-- FOOTER -->
 <jsp:include page="/views/layout/footer_portal.jsp" />
-
 </body>
 </html>

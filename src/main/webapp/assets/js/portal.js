@@ -1,8 +1,7 @@
 /**
  * =========================================================================
- * TEA PORTAL CUSTOMER RESPONSIVE INTERFACE SCRIPT
- * Dynamically injects Offcanvas drawer triggers, sticky checkout bars,
- * and sticky buy bars on mobile devices.
+ * TEA PORTAL CUSTOMER RESPONSIVE INTERFACE SCRIPT (v2.0)
+ * Handles offcanvas category sidebars, sticky purchase bars, and clipboard copying.
  * =========================================================================
  */
 document.addEventListener("DOMContentLoaded", function() {
@@ -173,29 +172,21 @@ function quickAddToCart(maSp, tenSp) {
         });
 }
 
-/* =========================================================================
- * STICKY CHECKOUT BAR INJECTION FOR /cart PAGE ON MOBILE
- * ========================================================================= */
 function injectMobileCheckoutBar() {
     const totalEl = document.getElementById("finalPayableCart");
     if (!totalEl) return;
-
     const bar = document.createElement("div");
     bar.id = "portalMobileCheckoutBar";
     bar.className = "portal-mobile-checkout-bar";
-
     const info = document.createElement("div");
     info.className = "portal-mobile-checkout-info";
-    info.innerHTML = `<span>Tổng thanh toán (VAT 8%):</span><strong id="mobileTotalDisplay">${totalEl.innerText}</strong>`;
-
+    info.innerHTML = `<span>Tổng thanh toán:</span><strong id="mobileTotalDisplay">${totalEl.innerText}</strong>`;
     const checkoutBtn = document.getElementById("checkoutBtn");
     const isBtnDisabled = checkoutBtn ? checkoutBtn.classList.contains("disabled") : true;
-
     const actionBtn = document.createElement("button");
     actionBtn.type = "button";
     actionBtn.className = "btn " + (isBtnDisabled ? "btn-secondary disabled" : "btn-success") + " portal-mobile-checkout-btn";
     actionBtn.innerText = isBtnDisabled ? "Chưa chọn món" : "Đặt nước ngay";
-
     actionBtn.onclick = function() {
         if (!isBtnDisabled && checkoutBtn) {
             checkoutBtn.click();
@@ -206,37 +197,30 @@ function injectMobileCheckoutBar() {
     bar.appendChild(actionBtn);
     document.body.appendChild(bar);
 
-    // Sync price changes dynamically from JSTL/AJAX actions
+    // Observer price change
     const observer = new MutationObserver(function() {
         document.getElementById("mobileTotalDisplay").innerText = totalEl.innerText;
         const currentCheckoutBtn = document.getElementById("checkoutBtn");
         const isDisabledNow = currentCheckoutBtn ? currentCheckoutBtn.classList.contains("disabled") : true;
-
         actionBtn.className = "btn " + (isDisabledNow ? "btn-secondary disabled" : "btn-success") + " portal-mobile-checkout-btn";
         actionBtn.innerText = isDisabledNow ? "Chưa chọn món" : "Đặt nước ngay";
     });
     observer.observe(totalEl, { childList: true, characterData: true, subtree: true });
 }
 
-/* =========================================================================
- * STICKY BUY BAR INJECTION FOR /product/detail PAGE ON MOBILE
- * ========================================================================= */
 function injectMobileBuyBar() {
     const totalEl = document.getElementById("displayTotal");
     if (!totalEl) return;
-
     const bar = document.createElement("div");
     bar.id = "portalMobileBuyBar";
     bar.className = "portal-mobile-buy-bar";
-
     const info = document.createElement("div");
     info.className = "portal-mobile-buy-info";
     info.innerHTML = `<span>Tổng tạm tính:</span><strong id="mobileBuyTotalDisplay">${totalEl.innerText}</strong>`;
-
     const btnGroup = document.createElement("div");
     btnGroup.className = "portal-mobile-buy-btn-group";
 
-    // Create Add To Cart Button
+    // Add To Cart Button
     const addBtn = document.createElement("button");
     addBtn.type = "button";
     addBtn.className = "btn btn-outline-success";
@@ -247,7 +231,7 @@ function injectMobileBuyBar() {
         }
     };
 
-    // Create Buy Now Button
+    // Buy Now Button
     const buyBtn = document.createElement("button");
     buyBtn.type = "button";
     buyBtn.className = "btn btn-success";
@@ -264,9 +248,15 @@ function injectMobileBuyBar() {
     bar.appendChild(btnGroup);
     document.body.appendChild(bar);
 
-    // Sync price changes dynamically from radio sizes and checkbox toppings
+    // Observer price changes
     const observer = new MutationObserver(function() {
         document.getElementById("mobileBuyTotalDisplay").innerText = totalEl.innerText;
     });
     observer.observe(totalEl, { childList: true, characterData: true, subtree: true });
+}
+
+function copyVoucherCode(code) {
+    navigator.clipboard.writeText(code).then(() => {
+        showToast('success', 'Đã sao chép mã giảm giá: ' + code);
+    });
 }

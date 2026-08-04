@@ -16,34 +16,51 @@
 <body>
 <div class="pos-wrapper">
     <!-- NAV HEADER -->
-    <nav class="navbar navbar-dark bg-dark px-3 sticky-top" style="height: 60px; z-index: 1040; flex-shrink: 0;">
-        <div class="container-fluid d-flex align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 18px;">
-                    <i class="bi bi-cup-hot-fill me-2 fs-4 text-success animate-pulse"></i>
-                    <span>TEA POS PRO</span>
+    <nav class="navbar navbar-dark bg-dark px-2 px-sm-3 sticky-top" style="height: 60px; z-index: 1040; flex-shrink: 0;">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-1 gap-sm-3">
+                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 16px; font-size: 18px;">
+                    <i class="bi bi-cup-hot-fill me-1 me-sm-2 fs-4 text-success animate-pulse"></i>
+                    <span class="d-none d-sm-inline">TEA POS PRO</span>
+                    <span class="d-inline d-sm-none">TEA POS</span>
                 </a>
-                <div class="d-flex align-items-center gap-2 border-start ps-3 border-secondary" style="height: 30px;">
-                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-3">
-                        <i class="bi bi-cart-fill me-1"></i> BÁN TẠI QUẦY
+                <div class="d-flex align-items-center gap-1 gap-sm-2 border-start ps-1.5 ps-sm-3 border-secondary" style="height: 30px;">
+                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
+                        <i class="bi bi-cart-fill text-warning"></i>
+                        <span class="d-none d-sm-inline">TẠI QUẦY</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-3">
-                        <i class="bi bi-bell-fill me-1 text-warning animate-pulse"></i> ĐƠN ONLINE
+                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
+                        <i class="bi bi-bell-fill me-1 text-warning animate-pulse"></i>
+                        <span class="d-none d-sm-inline">ONLINE</span>
                     </a>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-3 text-white ms-auto">
-                <span class="badge p-2 px-3 fw-bold live-polling-badge">
-                    🔴 LIVE POLLING (5S/LẦN)
+
+            <div class="d-flex align-items-center gap-1.5 gap-sm-3 text-white ms-auto">
+                <span class="badge p-1.5 p-sm-2 px-sm-3 fw-bold live-polling-badge d-flex align-items-center gap-1" style="font-size: 10px; font-size: 11px;">
+                    <span class="animate-pulse">🔴</span>
+                    <span class="d-none d-sm-inline">LIVE POLLING</span>
                 </span>
-                <span class="small fw-semibold border-end pe-3 border-secondary d-none d-md-inline">
-                    <i class="bi bi-person-badge-fill me-1 text-success"></i> Thu ngân: <c:out value="${sessionScope.user.hoTen}"/>
-                </span>
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-none d-sm-inline" style="font-size: 11px;">
-                    <i class="bi bi-shield-lock-fill me-1"></i> Quản trị Admin
+
+                <div class="dropdown border-end pe-1.5 pe-sm-3 border-secondary">
+                    <a class="dropdown-toggle text-decoration-none text-white small fw-semibold d-flex align-items-center gap-1" href="#" role="button" id="adminProfileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-badge-fill text-success fs-5"></i>
+                        <span class="d-none d-md-inline">Thu ngân: <c:out value="${sessionScope.user.hoTen}"/></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posProfileModal"><i class="bi bi-person-circle me-2 text-success"></i>Cài đặt cá nhân</a></li>
+                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#posPasswordModal"><i class="bi bi-key-fill me-2 text-warning"></i>Đổi mật khẩu</a></li>
+                    </ul>
+                </div>
+
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-success border-2 fw-bold text-uppercase d-flex align-items-center gap-1 px-1.5 px-sm-2.5" style="font-size: 11px;" title="Quản trị Admin">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span class="d-none d-md-inline">Admin</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm" style="font-size: 12px; border-radius: 6px;">
-                    <i class="bi bi-box-arrow-right me-1"></i> ĐĂNG XUẤT
+
+                <a href="${pageContext.request.contextPath}/logout" class="btn btn-sm btn-danger fw-bold px-2 px-sm-3 shadow-sm d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px; border-radius: 6px;" title="Đăng xuất">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-md-inline">ĐĂNG XUẤT</span>
                 </a>
             </div>
         </div>
@@ -128,6 +145,24 @@
                 </div>
             </div>
 
+            <c:if test="${currentStatus == 5}">
+                <div class="mb-3 d-flex flex-wrap gap-2 justify-content-start animate-fade-in">
+                    <button type="button" class="btn btn-sm btn-secondary active-sub-filter px-3 py-1.5 fw-bold rounded-pill shadow-sm" id="sub_filter_all" onclick="filterCanceledByPayment('all')">
+                        Tất cả đơn hủy (${onlineOrders != null ? onlineOrders.size() : 0})
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-dark px-3 py-1.5 fw-bold rounded-pill shadow-sm" id="sub_filter_paid" onclick="filterCanceledByPayment('paid')">
+                        <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 8px; height: 8px; vertical-align: middle;"></span>
+                        Đã thanh toán (Chờ hoàn tiền)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1.5 fw-bold rounded-pill shadow-sm" id="sub_filter_unpaid" onclick="filterCanceledByPayment('unpaid')">
+                        Chưa thanh toán
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success px-3 py-1.5 fw-bold rounded-pill shadow-sm" id="sub_filter_refunded" onclick="filterCanceledByPayment('refunded')">
+                        Đã hoàn tiền ✓
+                    </button>
+                </div>
+            </c:if>
+
             <!-- ORDERS LIST - DUAL PANEL SYSTEM FOR DESKTOP, FLUID LIST FOR MOBILE -->
             <div class="orders-grid-wrapper">
                 <div class="row g-3" id="ordersGrid">
@@ -138,7 +173,8 @@
                                      data-madh="${dh.maDh}"
                                      data-makh="${dh.maKh}"
                                      data-sdt="${dh.maKh}"
-                                     data-date="<fmt:formatDate value="${dh.thoiGianTao}" pattern="yyyy-MM-dd"/>">
+                                     data-date="<fmt:formatDate value="${dh.thoiGianTao}" pattern="yyyy-MM-dd"/>"
+                                     data-paymentstatus="${dh.trangThaiThanhToan}">
                                     <div class="order-card p-3">
                                         <!-- Header đơn hàng -->
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
@@ -244,9 +280,23 @@
                                                         <button type="button" class="btn btn-success btn-sm fw-bold px-2.5" onclick="updateOrderStatus('${dh.maDh}', 4)">HOÀN TẤT</button>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <div class="text-center text-muted small py-1 px-2 bg-light rounded border" style="font-size: 10px;">
-                                                            Đã đóng 🔒
-                                                        </div>
+                                                        <c:choose>
+                                                            <c:when test="${dh.trangThaiDon == 5 && dh.trangThaiThanhToan == 1}">
+                                                                <button type="button" class="btn btn-danger btn-sm fw-bold px-2.5 d-flex align-items-center gap-1 shadow-sm" onclick="refundOnlineOrder('${dh.maDh}', '${dh.tongPhaiTra}')">
+                                                                    <i class="bi bi-arrow-counterclockwise animate-spin"></i> HOÀN TIỀN
+                                                                </button>
+                                                            </c:when>
+                                                            <c:when test="${dh.trangThaiDon == 5 && dh.trangThaiThanhToan == 2}">
+                                                                <div class="text-center text-success small py-1 px-2.5 bg-success bg-opacity-10 border border-success rounded fw-bold" style="font-size: 10px;">
+                                                                    Đã hoàn tiền ✓
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="text-center text-muted small py-1 px-2 bg-light rounded border" style="font-size: 10px;">
+                                                                    Đã đóng 🔒
+                                                                </div>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </div>
@@ -281,6 +331,7 @@
         <input type="hidden" name="maDh" id="action_maDh">
         <input type="hidden" name="trangThaiMoi" id="action_trangThaiMoi">
         <input type="hidden" name="lyDoHuy" id="action_lyDoHuy">
+        <input type="hidden" name="action" id="action_type" value="updateStatus">
     </form>
 </div>
 
@@ -379,10 +430,22 @@
             const cardId = card.getAttribute("data-madh").toLowerCase();
             const cardPhone = card.getAttribute("data-sdt").toLowerCase();
             const cardDate = card.getAttribute("data-date");
+            const paymentStatus = card.getAttribute("data-paymentstatus");
             const matchSearch = searchKeyword === "" || cardId.includes(searchKeyword) || cardPhone.includes(searchKeyword);
             const matchDate = dateKeyword === "" || cardDate === dateKeyword;
 
-            if (matchSearch && matchDate) {
+            let matchPayment = true;
+            if (${currentStatus == 5}) {
+                if (currentPaymentFilter === 'paid') {
+                    matchPayment = (paymentStatus === '1');
+                } else if (currentPaymentFilter === 'unpaid') {
+                    matchPayment = (paymentStatus === '0');
+                } else if (currentPaymentFilter === 'refunded') {
+                    matchPayment = (paymentStatus === '2');
+                }
+            }
+
+            if (matchSearch && matchDate && matchPayment) {
                 filteredOrdersList.push(card);
             } else {
                 card.style.setProperty('display', 'none', 'important');
@@ -449,15 +512,55 @@
         filterAndPaginateOnlineOrders();
     }
 
+    let currentPaymentFilter = 'all';
+
+    function filterCanceledByPayment(filterType) {
+        currentPaymentFilter = filterType;
+        document.querySelectorAll('[id^="sub_filter_"]').forEach(btn => {
+            btn.classList.remove('btn-secondary', 'btn-warning', 'btn-success', 'active-sub-filter', 'text-white', 'text-dark');
+            btn.classList.add('btn-outline-secondary');
+        });
+
+        const activeBtn = document.getElementById('sub_filter_' + filterType);
+        if (activeBtn) {
+            activeBtn.classList.remove('btn-outline-secondary');
+            if (filterType === 'all') {
+                activeBtn.classList.add('btn-secondary', 'text-white', 'active-sub-filter');
+            } else if (filterType === 'paid') {
+                activeBtn.classList.add('btn-warning', 'text-dark', 'active-sub-filter');
+            } else if (filterType === 'unpaid') {
+                activeBtn.classList.add('btn-secondary', 'text-white', 'active-sub-filter');
+            } else if (filterType === 'refunded') {
+                activeBtn.classList.add('btn-success', 'text-white', 'active-sub-filter');
+            }
+        }
+
+        filterAndPaginateOnlineOrders();
+    }
+
+    function refundOnlineOrder(maDh, amount) {
+        Swal.fire({
+            title: 'Xác nhận hoàn tiền?',
+            html: 'Đơn hàng <strong>' + maDh + '</strong> đã thanh toán <strong class="text-danger">' + parseInt(amount).toLocaleString('vi-VN') + ' đ</strong>.<br>Bạn có chắc chắn đã chuyển hoàn tiền thủ công cho khách và muốn đánh dấu đơn này là <strong>Đã hoàn tiền</strong>?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Xác nhận đã hoàn',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('action_maDh').value = maDh;
+                document.getElementById('action_trangThaiMoi').value = 5;
+                document.getElementById('action_type').value = "refund";
+                document.getElementById('action_lyDoHuy').value = "Đã chuyển trả lại tiền cho khách hàng.";
+                document.getElementById('actionStatusForm').submit();
+            }
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         filterAndPaginateOnlineOrders();
-        const urlParams = new URLSearchParams(window.location.search);
-        const msg = urlParams.get('msg');
-        if (msg === 'updatesuccess') {
-            showToast('success', 'Cập nhật trạng thái đơn hàng thành công!');
-        } else if (msg === 'updatefailed') {
-            showToast('error', 'Cập nhật trạng thái đơn thất bại!');
-        }
     });
 
     setInterval(function() {
