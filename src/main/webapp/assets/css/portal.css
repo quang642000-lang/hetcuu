@@ -11,13 +11,31 @@
     --primary-hover: #047857;
     --primary-light: #f0fdf4;      /* Matcha milk background */
     --primary-glow: rgba(5, 150, 105, 0.15);
-    --bg-main: #f8fafc;
-    --text-main: #0f172a;          /* Slate Dark */
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
+
+    --secondary: #d97706;          /* Amber Sweet Tea */
+    --secondary-hover: #b45309;
+    --secondary-light: #fef3c7;
+
+    --dark-slate: #0f172a;         /* Charcoal black for readable text */
+    --text-main: #1e293b;          /* Slate Charcoal for high contrast */
+    --text-muted: #475569;         /* Slate Medium Gray (>4.5:1 contrast) */
+    --text-white: #ffffff;
+
+    --bg-main: #fcfbfa;            /* Warm Cream milk-tea background */
+    --bg-card: #ffffff;
+    --border-color: #cbd5e1;       /* Gray-300 for visible borders */
+
+    /* Semantic Status */
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #0284c7;
+
+    /* Theme Specs */
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 18px;
+    --radius-pill: 50px;
     --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
     --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
     --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
@@ -666,4 +684,150 @@ body {
     .portal-mobile-checkout-bar, .portal-mobile-buy-bar {
         display: none !important;
     }
+}
+
+
+/* =========================================================================
+ * PORTAL FOOTER - ELITE EMERALD-CHARCOAL THEME (WCAG AA SHIELD)
+ * Resolves invisible text (white text on transparent/light background)
+ * ========================================================================= */
+.portal-footer {
+    background-color: #0b0f19 !important; /* Elegant slate/charcoal very dark background */
+    color: #94a3b8 !important; /* Silver gray for base text */
+    padding: 60px 0 30px 0 !important;
+    border-top: 1px solid #1e293b !important;
+    font-size: 13.5px !important;
+}
+
+.portal-footer h5,
+.portal-footer h6 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    margin-bottom: 20px !important;
+}
+
+.portal-footer p {
+    color: #94a3b8 !important;
+    font-size: 13.5px !important;
+}
+
+.portal-footer .text-success-custom {
+    color: #10b981 !important; /* Vibrant Cozy Matcha Green */
+}
+
+.portal-footer .text-muted-custom {
+    color: #94a3b8 !important;
+}
+
+.portal-footer .footer-link {
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    font-size: 13px !important;
+}
+
+.portal-footer .footer-link:hover {
+    color: #10b981 !important;
+    padding-left: 4px !important; /* Subtle slider slide-to-right */
+}
+
+.portal-footer .social-icon {
+    width: 36px !important;
+    height: 36px !important;
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+}
+
+.portal-footer .social-icon:hover {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+}
+
+.portal-footer hr {
+    border-color: #1e293b !important;
+    opacity: 1 !important;
+}
+
+.portal-footer .footer-bottom-text {
+    color: #64748b !important;
+    font-size: 11.5px !important;
+}
+
+/* =========================================================================
+ * PROMOTION BAR - PREMIUM GRADIENT MATCH MILK THEME
+ * Resolves invisible text on transparent/light background
+ * ========================================================================= */
+.portal-promo-bar {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; /* Cozy Matcha Dark Green */
+    color: #ffffff !important;
+    font-size: 12px !important;
+    letter-spacing: 0.5px !important;
+    z-index: 1050 !important;
+    position: relative !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* =========================================================================
+ * TOP NAVBAR NAVIGATION LINK STYLE AND HOVERS
+ * ========================================================================= */
+.navbar-nav .nav-link {
+    color: #1e293b !important; /* Charcoal Slate for high contrast */
+    font-size: 14.5px !important;
+    transition: all 0.2s ease !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #059669 !important; /* Cozy Matcha hover */
+}
+
+.navbar-brand {
+    transition: all 0.2s ease !important;
+}
+
+.navbar-brand:hover {
+    opacity: 0.95;
+    transform: scale(1.02);
+}
+
+
+/* =========================================================================
+ * ACTIVE CATEGORY & MOBILE SCROLLBAR ENHANCEMENTS
+ * ========================================================================= */
+.active-category {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 12px var(--primary-glow) !important;
+}
+
+.list-group-item.active-category:hover {
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+.list-group-item-action {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.list-group-item-action:hover:not(.active-category) {
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    transform: translateX(4px) !important;
+}
+
+/* Hide scrollbars for premium horizontal bars */
+.scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+}
+.scrollbar-none {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }

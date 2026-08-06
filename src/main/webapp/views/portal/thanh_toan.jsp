@@ -337,7 +337,7 @@
         let finalPayable = billBeforeTax + vatPrice;
 
         document.getElementById("display_vat").innerText = vatPrice.toLocaleString('vi-VN') + ' đ';
-        document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN) + ' đ';
+        document.getElementById("display_finalPrice").innerText = finalPayable.toLocaleString('vi-VN') + ' đ';
         document.getElementById("param_tongPhaiTra").value = finalPayable;
     }
 </script>

@@ -80,6 +80,18 @@
                 </div>
             </div>
 
+            <!-- MOBILE HORIZONTAL CATEGORY SELECTOR (ELITE SWIPE FILTER) -->
+            <div class="d-flex d-lg-none overflow-x-auto gap-2 mb-4 pb-2.5 scrollbar-none" style="scrollbar-width: none; -webkit-overflow-scrolling: touch; border-bottom: 1.5px solid var(--border-color);">
+                <a href="${pageContext.request.contextPath}/products" class="btn btn-sm rounded-pill px-3 py-2 fw-bold text-nowrap d-flex align-items-center gap-1.5 ${empty selectedCategory ? 'active-category text-white' : 'text-muted bg-white border border-secondary border-opacity-10'}" style="font-size: 11px; transition: all 0.2s;">
+                    <i class="bi bi-grid-fill"></i> Tất cả
+                </a>
+                <c:forEach var="cat" items="${categories}">
+                    <a href="${pageContext.request.contextPath}/products?category=${cat.maDm}" class="btn btn-sm rounded-pill px-3 py-2 fw-bold text-nowrap d-flex align-items-center gap-1.5 ${selectedCategory eq cat.maDm ? 'active-category text-white' : 'text-muted bg-white border border-secondary border-opacity-10'}" style="font-size: 11px; transition: all 0.2s;">
+                        <c:out value="${cat.tenDm}"/>
+                    </a>
+                </c:forEach>
+            </div>
+
             <!-- LƯỚI SẢN PHẨM - TỐI ƯU SONG HÀNH 2 CỘT TRÊN DI ĐỘNG (row-cols-2) -->
             <div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-3 g-md-4">
                 <c:choose>
