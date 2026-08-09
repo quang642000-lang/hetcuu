@@ -1,89 +1,81 @@
 @charset "UTF-8";
 /**
- * =========================================================================
- * TEA POS PRO - COMPREHENSIVE RESPONSIVE DESIGN FOR POS MACHINE & WAITERS MOBILE
- * =========================================================================
- */
+* =========================================================================
+* TEA POS SYSTEM - POWERFUL TOUCH-FRIENDLY POS LAYOUT (v9.0 Mobile Premium)
+* Optimized for high-fidelity mobile & tablet screen sizes.
+* =========================================================================
+*/
 :root {
-    --primary: #059669;            /* Cozy Matcha Dark Green */
-    --primary-hover: #047857;
-    --primary-light: #f0fdf4;      /* Matcha milk background */
-    --primary-glow: rgba(5, 150, 105, 0.15);
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --primary-light: #ecfdf5;
     --bg-main: #f1f5f9;
-    --border-color: #e2e8f0;
+    --border-color: #cbd5e1;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --radius-lg: 12px;
     --radius-md: 8px;
     --radius-sm: 4px;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 }
 
-/* Base wrapper */
-.pos-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-}
-
-/* POS Desktop Main Workspace */
-.pos-main-container {
+.pos-container {
     display: flex;
     height: calc(100vh - 60px);
     overflow: hidden;
-    flex-grow: 1;
+    background-color: #f1f5f9;
 }
 
-/* Category Sidebar Left */
-.pos-category-sidebar {
-    width: 110px;
+.pos-categories-col {
+    width: 120px;
     background-color: #ffffff;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     flex-shrink: 0;
+    scrollbar-width: none; /* Hide standard scrollbar */
 }
+.pos-categories-col::-webkit-scrollbar {
+    display: none;
+}
+
 .pos-category-btn {
-    width: 100%;
-    padding: 15px 8px;
-    background: transparent;
-    border: none;
-    border-left: 3px solid transparent;
-    color: var(--text-muted);
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 20px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 700;
+    gap: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    gap: 4px;
-}
-.pos-category-btn:hover {
-    color: var(--primary);
-    background-color: #f8fafc;
-}
-.pos-category-btn.active {
-    color: var(--primary);
-    background-color: var(--primary-light);
-    border-left-color: var(--primary);
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
 }
 
-/* Product Area */
+.pos-category-btn i {
+    font-size: 24px;
+}
+
+.pos-category-btn.active, .pos-category-btn:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-left: 4px solid var(--primary);
+}
+
 .pos-menu-area {
     flex-grow: 1;
-    padding: 20px;
+    padding: 24px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    background-color: #f8fafc;
+    gap: 20px;
 }
+
 .pos-menu-header {
     display: flex;
     justify-content: space-between;
@@ -91,11 +83,13 @@
     gap: 16px;
     flex-wrap: wrap;
 }
+
 .pos-search-wrapper {
     position: relative;
     flex-grow: 1;
     max-width: 400px;
 }
+
 .pos-search-icon {
     position: absolute;
     left: 12px;
@@ -103,114 +97,131 @@
     transform: translateY(-50%);
     color: var(--text-muted);
 }
+
 .pos-search-input {
     width: 100%;
-    padding: 8px 12px 8px 36px;
+    padding: 10px 12px 10px 38px;
     border: 1px solid var(--border-color);
     border-radius: 20px;
     outline: none;
-    font-size: 13px;
+    font-size: 13.5px;
     background-color: #ffffff;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s;
 }
 .pos-search-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
-.pos-product-container {
-    flex-grow: 1;
-}
 .pos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
 }
+
 .pos-product-card {
     background-color: #ffffff;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 12px;
+    padding: 16px;
     text-align: center;
     cursor: pointer;
     position: relative;
     box-shadow: var(--shadow-sm);
-    transition: all 0.25s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
     display: flex;
     flex-direction: column;
 }
+
 .pos-product-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
     border-color: var(--primary);
 }
+
 .pos-product-img {
     width: 100%;
-    height: 100px;
+    height: 110px;
     object-fit: cover;
+    margin-bottom: 12px;
     border-radius: var(--radius-sm);
-    margin-bottom: 8px;
 }
+
 .pos-card-name {
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 700;
     color: var(--text-main);
-    height: 36px;
+    margin-bottom: 6px;
+    height: 40px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    margin-bottom: 4px;
+    text-align: center;
 }
+
 .pos-card-price {
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 14px;
+    font-weight: 850;
     color: var(--primary);
     margin-top: auto;
 }
 
-/* Right Checkout Sidebar */
 .pos-checkout-sidebar {
-    width: 390px;
+    width: 420px;
     background-color: #ffffff;
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.02);
-    z-index: 1000;
+    box-shadow: -4px 0 16px rgba(15, 23, 42, 0.04);
 }
-.pos-checkout-header {
-    height: 60px;
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    background-color: #ffffff;
-}
+
 .pos-cart-items-wrapper {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 12px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     background-color: #f8fafc;
 }
+
 .pos-cart-item {
     display: flex;
     flex-direction: column;
+    padding: 14px;
     background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 10px;
+    border-radius: var(--radius-sm);
+    gap: 12px;
+    border: 1.5px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
-/* CRM Panel */
+.cart-item-details {
+    flex-grow: 1;
+    text-align: left;
+}
+
+.cart-item-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.cart-item-options {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 2px;
+}
+
+.cart-item-price {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-top: 6px;
+}
+
 .pos-crm-panel {
     padding: 12px 15px;
     border-top: 1px solid var(--border-color);
@@ -218,13 +229,13 @@
     flex-shrink: 0;
 }
 
-/* Summary Panel */
 .pos-summary-panel {
     padding: 15px;
     border-top: 1px solid var(--border-color);
     background-color: #ffffff;
     flex-shrink: 0;
 }
+
 .pos-line-price {
     display: flex;
     justify-content: space-between;
@@ -232,6 +243,7 @@
     color: var(--text-muted);
     margin-bottom: 6px;
 }
+
 .pos-total-row {
     display: flex;
     justify-content: space-between;
@@ -243,102 +255,40 @@
     margin-top: 10px;
     margin-bottom: 12px;
 }
+
 .pos-cash-suggest-btn {
     background-color: #f1f5f9;
     border: 1px solid #cbd5e1;
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 6px 8px;
+    font-size: 11.5px;
     font-weight: 700;
     border-radius: 4px;
     color: #475569;
     flex: 1;
     transition: all 0.15s;
+    cursor: pointer;
 }
 .pos-cash-suggest-btn:hover {
     background-color: #e2e8f0;
     color: #0f172a;
 }
+
 .active-filter {
     background-color: #f1f5f9 !important;
     border: 1px solid #cbd5e1 !important;
 }
 
-/* Online Order receiving screen */
-.nhandon-layout {
-    display: flex;
-    height: calc(100vh - 60px);
-    overflow: hidden;
-    background-color: #f8fafc;
-}
-.nd-sidebar {
-    width: 280px;
+.receipt-container {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #000000;
     background-color: #ffffff;
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    padding-top: 20px;
-    overflow-y: auto;
-    flex-shrink: 0;
-}
-.status-tab {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 13px;
-    text-decoration: none;
-    border-left: 4px solid transparent;
-    transition: all 0.2s ease;
-}
-.status-tab:hover {
-    background-color: #f1f5f9;
-    color: var(--primary);
-}
-.status-tab.active {
-    background-color: var(--primary-light);
-    color: var(--primary);
-    border-left-color: var(--primary);
-}
-.nd-content {
-    flex-grow: 1;
-    padding: 24px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-.orders-grid-wrapper {
-    flex-grow: 1;
-}
-.order-card {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s ease;
-}
-.order-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary);
-}
-.topping-tag {
-    display: inline-block;
-    background-color: #f0fdf4;
-    color: #047857;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-right: 4px;
-    margin-top: 4px;
-    border: 1px solid rgba(4, 120, 87, 0.15);
 }
 
 /* =========================================================================
- * TABLET & MOBILE RESPONSIVE DRAWER (< 1024px)
- * ========================================================================= */
+TABLET & MOBILE RESPONSIVE DRAWER (< 1024px)
+========================================================================= */
 @media (max-width: 1024px) {
     .pos-main-container {
         flex-direction: column !important;
@@ -348,24 +298,34 @@
     /* Horizontal scrolling categories bar */
     .pos-category-sidebar {
         width: 100% !important;
-        height: 75px !important;
+        height: auto !important;
         flex-direction: row !important;
         overflow-x: auto !important;
         border-right: none !important;
-        border-bottom: 1px solid var(--border-color);
-        background-color: #ffffff;
+        border-bottom: 1.5px solid var(--border-color) !important;
+        background-color: #ffffff !important;
+        flex-shrink: 0 !important;
+        scrollbar-width: none;
+        padding: 4px !important;
     }
+    .pos-category-sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
     .pos-category-btn {
+        min-width: 100px !important;
         width: auto !important;
-        min-width: 90px !important;
-        padding: 10px 15px !important;
-        border-left: none !important;
-        border-bottom: 3px solid transparent !important;
-        height: 100% !important;
-        justify-content: center !important;
+        padding: 10px 14px !important;
+        border-bottom: none !important;
+        border-top: 4px solid transparent !important;
+        flex-shrink: 0 !important;
+        gap: 2px !important;
     }
+
     .pos-category-btn.active {
-        border-bottom-color: var(--primary) !important;
+        border-top-color: var(--primary) !important;
+        border-left: none !important;
+        background-color: var(--primary-light) !important;
     }
 
     /* Product Grid Sizing adjustments */
@@ -373,37 +333,52 @@
         flex-grow: 1 !important;
         padding: 12px !important;
     }
+
     .pos-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
         gap: 12px !important;
     }
+
     .pos-product-card {
         padding: 10px !important;
     }
+
     .pos-product-img {
-        height: 80px !important;
+        width: 100% !important;
+        height: 85px !important;
+        margin-bottom: 6px !important;
     }
+
     .pos-card-name {
         font-size: 12px !important;
         height: 32px !important;
     }
 
+    .pos-card-price {
+        font-size: 12.5px !important;
+    }
+
     /* Transforms Checkout Sidebar into Offcanvas sliding Drawer */
     .pos-checkout-sidebar {
         position: fixed !important;
-        top: 60px !important;
+        top: 60px !important; /* Right below POS Navbar */
         right: 0 !important;
         bottom: 0 !important;
         width: 390px !important;
         max-width: 85vw !important;
         z-index: 1050 !important;
-        transform: translateX(100%) !important;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transform: translateX(100%) !important; /* Hide to the right */
+        visibility: hidden !important; /* Completely hide from touch & layout when closed */
+        pointer-events: none !important; /* Prevent capturing clicks when off-screen */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s !important;
         border-left: 1.5px solid var(--border-color) !important;
         height: calc(100vh - 60px) !important;
     }
+
     .pos-checkout-sidebar.show {
         transform: translateX(0) !important;
+        visibility: visible !important; /* Restore when open */
+        pointer-events: auto !important; /* Restore clicks when open */
     }
 
     /* Dark translucent backdrop when cart drawer opens */
@@ -418,6 +393,7 @@
         opacity: 0 !important;
         transition: opacity 0.3s ease !important;
     }
+
     .pos-cart-backdrop.show {
         display: block !important;
         opacity: 1 !important;
@@ -428,22 +404,31 @@
         position: fixed !important;
         bottom: 20px !important;
         right: 20px !important;
-        width: 56px !important;
-        height: 56px !important;
+        width: 60px !important;
+        height: 60px !important;
         border-radius: 50% !important;
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
         border: none !important;
         box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
-        z-index: 1000 !important;
+        z-index: 999999 !important;
+        pointer-events: auto !important;
         display: flex !important;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: transform 0.2s ease !important;
     }
-    .pos-mobile-cart-toggle i {
-        font-size: 22px !important;
+
+    .pos-mobile-cart-toggle:hover {
+        transform: scale(1.05) !important;
     }
+
+    .pos-mobile-cart-toggle i {
+        font-size: 24px !important;
+        color: #ffffff;
+    }
+
+    /* Cart Count Badge on Floating Button */
     .pos-mobile-cart-toggle .badge {
         position: absolute !important;
         top: -4px !important;
@@ -461,24 +446,170 @@
         padding: 0 !important;
     }
 
-    /* Mobile Online order receiving adjustments */
+    /* Prevent overflow issues in drawer content */
+    .pos-cart-items-wrapper {
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+    }
+
+    .pos-crm-panel {
+        flex-shrink: 0 !important;
+        padding: 10px 12px !important;
+    }
+
+    .pos-summary-panel {
+        flex-shrink: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 12px !important;
+    }
+
+    /* Scrollable customizer SweetAlert modal on short mobile viewports */
+    .swal2-html-container {
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 575px) {
+    /* Full-screen drawer on very small devices for optimal usability */
+    .pos-checkout-sidebar {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .pos-cart-backdrop, .pos-mobile-cart-toggle {
+        display: none !important;
+    }
+}
+
+
+/* =========================================================================
+ * ONLINE ORDER RECEIVING SCREEN & WAITER DISPATCH WORKSPACE
+ * ========================================================================= */
+.nhandon-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+    background-color: #f8fafc;
+}
+
+.nd-sidebar {
+    width: 280px;
+    background-color: #ffffff;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    transition: transform 0.3s ease !important;
+}
+
+.status-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.status-tab:hover {
+    background-color: #f1f5f9;
+    color: var(--primary);
+}
+
+.status-tab.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+.nd-content {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.orders-grid-wrapper {
+    flex-grow: 1;
+}
+
+.order-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.order-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.topping-tag {
+    display: inline-block;
+    background-color: #f0fdf4;
+    color: #047857;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    border: 1px solid rgba(4, 120, 87, 0.15);
+}
+
+.live-polling-badge {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.25) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    border-radius: 50px !important;
+    letter-spacing: 0.5px !important;
+    animation: pulse 1.8s infinite !important;
+}
+
+/* =========================================================================
+ * ONLINE RECEIVING PORTRAIT MOBILE DRAWER RESPONSIVE OVERRIDES (< 1024px)
+ * ========================================================================= */
+@media (max-width: 1024px) {
     .nhandon-layout {
         position: relative !important;
     }
+
     .nd-sidebar {
         position: fixed !important;
-        top: 60px !important;
+        top: 60px !important; /* Underneath Nav Bar */
         left: 0 !important;
         bottom: 0 !important;
         width: 260px !important;
         z-index: 1050 !important;
-        transform: translateX(-100%) !important;
-        transition: transform 0.3s ease !important;
-        box-shadow: 4px 0 15px rgba(0,0,0,0.05) !important;
+        transform: translateX(-100%) !important; /* Slide Out to Left */
+        box-shadow: 4px 0 15px rgba(15, 23, 42, 0.08) !important;
+        border-right: 1px solid var(--border-color) !important;
+        padding-top: 15px !important;
     }
+
     .nd-sidebar.show {
         transform: translateX(0) !important;
     }
+
+    /* Dark overlay backdrop for sliding mobile receiving sidebar */
     .nd-sidebar-backdrop {
         position: fixed !important;
         top: 60px !important;
@@ -490,17 +621,13 @@
         opacity: 0 !important;
         transition: opacity 0.3s ease !important;
     }
+
     .nd-sidebar-backdrop.show {
         display: block !important;
         opacity: 1 !important;
     }
+
     .nd-content {
         padding: 12px !important;
-    }
-}
-
-@media (min-width: 1025px) {
-    .pos-cart-backdrop, .pos-mobile-cart-toggle, .nd-sidebar-backdrop {
-        display: none !important;
     }
 }

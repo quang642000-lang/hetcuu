@@ -12,20 +12,19 @@ import repository.impl.KhachHangRepoImpl;
 import service.IDonHangService;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * =========================================================================
- * TEA POS SYSTEM - ORDER SERVICE IMPLEMENTATION (OPTIMIZED WORKFLOW)
+ * TEA POS SYSTEM - ORDER SERVICE IMPLEMENTATION (CRM UPGRADE BUG RESOLVED)
  * Fully synchronized with in-memory pending orders cache, ACID transactions,
  * and SePay Webhook dual-layered lookups.
  *
- * SỬA ĐỔI NGHIỆP VỤ: Khi khách chuyển khoản thành công qua SePay, đơn hàng
- * được cập nhật trạng thái đã thanh toán nhưng sẽ giữ ở trạng thái
- * "0 - Chờ xác nhận" (Chờ duyệt) thay vì nhảy thẳng sang "2 - Đang pha chế".
- * Điều này cho phép nhân viên quầy POS chủ động rà soát, kiểm kho nguyên liệu
- * và click "Duyệt đơn" thủ công trước khi Barista pha chế.
+ * SỬA LỖI LỚN THĂNG HẠNG CRM: Thay thế việc gọi trực tiếp khachHangRepository.congDiemTichLuy
+ * bằng việc đi qua KhachHangServiceImpl.getInstance().updateDiemTichLuy, giúp tự động kích hoạt
+ * cơ chế thăng hạng đồng bộ (updateHangThanhVienDongBo), chữa dứt điểm lỗi cộng điểm nhưng không thăng hạng.
  * =========================================================================
  */
 public class DonHangServiceImpl implements IDonHangService {
@@ -83,6 +82,7 @@ public class DonHangServiceImpl implements IDonHangService {
     public boolean checkoutPOS(DonHang donHang, List<ChiTietDonHang> items, String maNv) {
         donHang.setMaNv(maNv);
         donHang.setChiTietDonHangList(items);
+
         // Nếu thanh toán chuyển khoản QR, lưu tạm thời vào Cache chờ khớp tiền, KHÔNG ghi nhận DB ngay
         if (donHang.getMaPt() == 2) {
             donHang.setTrangThaiThanhToan(0); // Chưa thanh toán
@@ -92,6 +92,7 @@ public class DonHangServiceImpl implements IDonHangService {
             System.out.println("💾 [TEA POS] Đơn hàng QR tại quầy " + donHang.getMaDh() + " được lưu tạm thời vào Cache.");
             return true;
         }
+
         // Với Tiền mặt, ghi nhận DB trực tiếp
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
@@ -103,13 +104,15 @@ public class DonHangServiceImpl implements IDonHangService {
         if (donHang.getMaKh() != null && donHang.getDiemSuDung() > 0) {
             khachHangRepository.truDiemTichLuy(donHang.getMaKh(), donHang.getDiemSuDung());
         }
+
         boolean success = donHangRepository.add(donHang);
         if (success) {
             donHangRepository.updateTrangThaiDon(donHang.getMaDh(), donHang.getTrangThaiDon());
             if (donHang.getMaKh() != null) {
                 int diemCong = donHang.getTongPhaiTra() / 10000;
                 if (diemCong > 0) {
-                    khachHangRepository.congDiemTichLuy(donHang.getMaKh(), diemCong);
+                    // SỬA LỖI: Đi qua Service để kích hoạt thăng hạng tự động (updateHangThanhVienDongBo)
+                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(donHang.getMaKh(), diemCong, true);
                 }
             }
         }
@@ -123,6 +126,7 @@ public class DonHangServiceImpl implements IDonHangService {
         }
         donHang.setChiTietDonHangList(items);
         donHang.setTrangThaiDon(0); // Chờ duyệt
+
         // Nếu thanh toán bằng QR trực tuyến, đưa vào Cache, không lưu DB rác
         if (donHang.getMaPt() == 2) {
             donHang.setTrangThaiThanhToan(0);
@@ -130,6 +134,7 @@ public class DonHangServiceImpl implements IDonHangService {
             System.out.println("💾 [TEA PORTAL] Đơn hàng Online QR " + donHang.getMaDh() + " được lưu tạm thời vào Cache.");
             return true;
         }
+
         // Với Tiền mặt khi đến lấy, lưu trực tiếp
         if (donHang.getMaKm() != null) {
             boolean voucherDecremented = khuyenMaiRepository.giamSoLuongVoucher(donHang.getMaKm());
@@ -168,7 +173,8 @@ public class DonHangServiceImpl implements IDonHangService {
                 if (cachedOrder.getMaKh() != null) {
                     int diemCong = cachedOrder.getTongPhaiTra() / 10000;
                     if (diemCong > 0) {
-                        khachHangRepository.congDiemTichLuy(cachedOrder.getMaKh(), diemCong);
+                        // SỬA LỖI: Đi qua Service để kích hoạt thăng hạng tự động
+                        KhachHangServiceImpl.getInstance().updateDiemTichLuy(cachedOrder.getMaKh(), diemCong, true);
                     }
                 }
                 util.PaymentStore.transactions.put(maDh, true);
@@ -183,22 +189,26 @@ public class DonHangServiceImpl implements IDonHangService {
         if (maNv != null && !maNv.trim().isEmpty() && !maNv.equalsIgnoreCase("SYSTEM") && !maNv.equalsIgnoreCase("CUSTOMER")) {
             dh.setMaNv(maNv.trim());
         }
+
         // Buộc trạng thái thanh toán = 1 khi đơn chuyển thành Hoàn thành (status = 4)
         if (trangThaiMoi == 4) {
             dh.setTrangThaiThanhToan(1);
             donHangRepository.updateTrangThaiThanhToan(maDh, 1);
         }
+
         if (trangThaiMoi == 5) { // Đã hủy
             dh.setLyDoHuy(lyDoHuy);
             dh.setTrangThaiDon(5);
             donHangRepository.update(dh);
             if (dh.getMaKh() != null && dh.getDiemSuDung() > 0) {
-                khachHangRepository.congDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung());
+                // Hoàn lại điểm CRM đã tiêu
+                KhachHangServiceImpl.getInstance().updateDiemTichLuy(dh.getMaKh(), dh.getDiemSuDung(), true);
             }
             if (dh.getMaKh() != null) {
                 int diemCongDaNhan = dh.getTongPhaiTra() / 10000;
                 if (diemCongDaNhan > 0) {
-                    khachHangRepository.truDiemTichLuy(dh.getMaKh(), diemCongDaNhan);
+                    // Trừ bớt điểm tích lũy đã cộng của đơn bị hủy
+                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(dh.getMaKh(), diemCongDaNhan, false);
                 }
             }
             if (dh.getMaKm() != null) {
@@ -206,13 +216,16 @@ public class DonHangServiceImpl implements IDonHangService {
             }
             return donHangRepository.updateTrangThaiDon(maDh, 5);
         }
+
         dh.setTrangThaiDon(trangThaiMoi);
         donHangRepository.update(dh);
+
         if (trangThaiMoi == 4) {
             if (dh.getMaKh() != null) {
                 int diemCong = dh.getTongPhaiTra() / 10000;
                 if (diemCong > 0) {
-                    khachHangRepository.congDiemTichLuy(dh.getMaKh(), diemCong);
+                    // SỬA LỖI: Đi qua Service để kích hoạt thăng hạng tự động khi hoàn tất đơn
+                    KhachHangServiceImpl.getInstance().updateDiemTichLuy(dh.getMaKh(), diemCong, true);
                 }
             }
         }
@@ -270,7 +283,8 @@ public class DonHangServiceImpl implements IDonHangService {
                         if (cachedOrder.getMaKh() != null) {
                             int diemCong = cachedOrder.getTongPhaiTra() / 10000;
                             if (diemCong > 0) {
-                                khachHangRepository.congDiemTichLuy(cachedOrder.getMaKh(), diemCong);
+                                // SỬA LỖI: Đi qua Service để kích hoạt thăng hạng tự động
+                                KhachHangServiceImpl.getInstance().updateDiemTichLuy(cachedOrder.getMaKh(), diemCong, true);
                             }
                         }
                         // Đánh dấu giao dịch thành công để Front-end Polling nhận biết

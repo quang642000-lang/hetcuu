@@ -19,17 +19,17 @@
     <nav class="navbar navbar-dark bg-dark px-2 px-sm-3 sticky-top" style="height: 60px; z-index: 1040; flex-shrink: 0;">
         <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-1 gap-sm-3">
-                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 16px; font-size: 18px;">
+                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 16px; font-size:18px;">
                     <i class="bi bi-cup-hot-fill me-1 me-sm-2 fs-4 text-success animate-pulse"></i>
                     <span class="d-none d-sm-inline">TEA POS PRO</span>
                     <span class="d-inline d-sm-none">TEA POS</span>
                 </a>
                 <div class="d-flex align-items-center gap-1 gap-sm-2 border-start ps-1.5 ps-sm-3 border-secondary" style="height: 30px;">
-                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
+                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size:12px;">
                         <i class="bi bi-cart-fill text-warning"></i>
                         <span class="d-none d-sm-inline">TẠI QUẦY</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
+                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size:12px;">
                         <i class="bi bi-bell-fill me-1 text-warning animate-pulse"></i>
                         <span class="d-none d-sm-inline">ONLINE</span>
                     </a>
@@ -37,7 +37,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-1.5 gap-sm-3 text-white ms-auto">
-                <span class="badge p-1.5 p-sm-2 px-sm-3 fw-bold live-polling-badge d-flex align-items-center gap-1" style="font-size: 10px; font-size: 11px;">
+                <span class="badge p-1.5 p-sm-2 px-sm-3 fw-bold live-polling-badge d-flex align-items-center gap-1" style="font-size: 10px; font-size:11px;">
                     <span class="animate-pulse">🔴</span>
                     <span class="d-none d-sm-inline">LIVE POLLING</span>
                 </span>
@@ -207,6 +207,12 @@
 
                                             <div class="order-items-mobile-content d-none border rounded p-2 mb-2 bg-white">
                                                 <c:forEach var="item" items="${dh.chiTietDonHangList}">
+                                                    <c:set var="itemToppingSum" value="0"/>
+                                                    <c:forEach var="tp" items="${item.toppingsList}">
+                                                        <c:set var="itemToppingSum" value="${itemToppingSum + (tp.giaChotTp * tp.soLuong)}"/>
+                                                    </c:forEach>
+                                                    <c:set var="itemUnitTotal" value="${item.giaChot + itemToppingSum}"/>
+                                                    <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
                                                     <div class="mb-2 border-bottom pb-1">
                                                         <div class="d-flex justify-content-between align-items-start">
                                                             <div>
@@ -214,9 +220,15 @@
                                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 ms-1" style="font-size: 9px; padding: 2px 4px;">Size <c:out value="${item.tenSize}"/></span>
                                                                 <span class="text-muted fw-bold font-monospace ms-1.5" style="font-size:11px;">x<c:out value="${item.soLuong}"/></span>
                                                             </div>
-                                                            <span class="fw-bold text-secondary font-monospace" style="font-size:12px;">
-                                                                <fmt:formatNumber value="${item.giaChot * item.soLuong}" type="currency" currencySymbol=""/>đ
-                                                            </span>
+                                                            <div class="text-end">
+                                                                <div class="text-muted" style="font-size: 9px; line-height:1.2;">Cốc: <fmt:formatNumber value="${item.giaChot}" type="currency" currencySymbol=""/>đ</div>
+                                                                <c:if test="${itemToppingSum > 0}">
+                                                                    <div class="text-success" style="font-size: 9px; line-height:1.2;">+Topping: <fmt:formatNumber value="${itemToppingSum}" type="currency" currencySymbol=""/>đ</div>
+                                                                </c:if>
+                                                                <span class="fw-bold text-secondary font-monospace" style="font-size:12px;">
+                                                                    Thành: <fmt:formatNumber value="${itemRowTotal}" type="currency" currencySymbol=""/>đ
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                         <div class="text-muted" style="font-size: 10.5px; margin-top:2px;">
                                                             <c:choose>
@@ -233,7 +245,7 @@
                                                         <c:if test="${not empty item.toppingsList}">
                                                             <div class="mt-1 flex-wrap d-flex gap-1">
                                                                 <c:forEach var="tp" items="${item.toppingsList}">
-                                                                    <span class="topping-tag" style="font-size: 9px; padding: 2px 6px;">+ <c:out value="${tp.tenTopping}"/> (x<c:out value="${tp.soLuong}"/>)</span>
+                                                                    <span class="topping-tag" style="font-size: 9px; padding: 2px 6px;">+ <c:out value="${tp.tenTopping}"/> (x<c:out value="${tp.soLuong}"/> x <fmt:formatNumber value="${tp.giaChotTp}" type="currency" currencySymbol=""/>đ)</span>
                                                                 </c:forEach>
                                                             </div>
                                                         </c:if>

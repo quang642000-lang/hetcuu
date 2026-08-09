@@ -6,10 +6,21 @@ import repository.impl.KhachHangRepoImpl;
 import service.IKhachHangService;
 import util.SecurityUtil;
 import util.EmailSenderUtil;
+import config.DBConnect;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - CLIENT CRM SERVICE IMPLEMENTATION (LIFETIME SPENT RANK LOGIC V2)
+ * Fully synchronized with application database, supporting secure email OTP codes,
+ * salted SHA-256 password validations, and true lifetimespent-based loyalty tiers.
+ * =========================================================================
+ */
 public class KhachHangServiceImpl implements IKhachHangService {
     private static KhachHangServiceImpl instance;
     private final IKhachHangRepository khachHangRepository;
@@ -66,16 +77,16 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setTenKh(tenKh);
         kh.setSoDienThoai(sdt);
         kh.setEmail(email);
-        // FIX: Đăng ký mới băm mật khẩu kèm muối Email để đồng bộ bảo mật 100%
         kh.setMatKhau(SecurityUtil.hashWithSalt(password, email));
         kh.setDiemTichLuy(0);
         kh.setMaHang(1);
         kh.setTrangThai(false);
+
         boolean success = khachHangRepository.add(kh);
         if (success) {
             boolean otpSent = sendActivationOTP(email);
             if (!otpSent) {
-                System.err.println("[TEA POS WARNING] Tạo được tài khoản nhưng không gửi được mail kích hoạt OTP cho email: " + email);
+                System.err.println("[TEA POS WARNING] Gửi mail kích hoạt OTP thất bại cho: " + email);
             }
             return kh;
         }
@@ -95,6 +106,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
         kh.setDiemTichLuy(0);
         kh.setMaHang(1);
         kh.setTrangThai(true);
+
         boolean success = khachHangRepository.add(kh);
         if (success) {
             return khachHangRepository.getBySdt(sdt);
@@ -109,7 +121,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
             kh = khachHangRepository.getByEmail(usernameOrSdtOrEmail);
         }
         if (kh != null && kh.isTrangThai() && kh.getMatKhau() != null) {
-            // FIX CHÍ MẠNG: Băm mật khẩu kèm muối Email để đối soát khớp 100% với CSDL mới
             String hashedInput = SecurityUtil.hashWithSalt(password, kh.getEmail());
             if (kh.getMatKhau().equals(hashedInput)) {
                 return kh;
@@ -184,7 +195,7 @@ public class KhachHangServiceImpl implements IKhachHangService {
             forgotPasswordOtpCache.remove(email);
             return false;
         }
-        if (info.code.equals(otp)) {
+        if (info.code.equals(otp.trim())) {
             forgotPasswordOtpCache.remove(email);
             return true;
         }
@@ -196,7 +207,6 @@ public class KhachHangServiceImpl implements IKhachHangService {
         if (verifyForgotPasswordOTP(email, otp)) {
             KhachHang kh = khachHangRepository.getByEmail(email);
             if (kh != null) {
-                // FIX: resetPassword băm mật khẩu kèm muối Email chuẩn
                 kh.setMatKhau(SecurityUtil.hashWithSalt(newPassword, kh.getEmail()));
                 kh.setTrangThai(true);
                 return khachHangRepository.update(kh);
@@ -237,25 +247,53 @@ public class KhachHangServiceImpl implements IKhachHangService {
             if (success) updateHangThanhVienDongBo(maKh);
             return success;
         } else {
-            return khachHangRepository.truDiemTichLuy(maKh, diem);
+            boolean success = khachHangRepository.truDiemTichLuy(maKh, diem);
+            // SỬA LỖI CRM LOGIC: Luôn cập nhật lại hạng thành viên đồng bộ khi trừ điểm
+            if (success) updateHangThanhVienDongBo(maKh);
+            return success;
         }
     }
 
-    private void updateHangThanhVienDongBo(String maKh) {
+    /**
+     * Tính toán tổng số tiền tích lũy từ các đơn hàng thành công (trang_thai_don = 4) của khách hàng
+     */
+    public int getTongChiTieu(String maKh) {
+        if (maKh == null || maKh.trim().isEmpty()) return 0;
+        String sql = "SELECT COALESCE(SUM(tong_phai_tra), 0) FROM DON_HANG WHERE ma_kh = ? AND trang_thai_don = 4";
+        try (Connection conn = DBConnect.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maKh);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Đồng bộ hóa hạng thành viên dựa trên tổng số tiền tích lũy thực tế đã mua hàng (Lifetime Purchases)
+     */
+    public void updateHangThanhVienDongBo(String maKh) {
         KhachHang kh = khachHangRepository.getById(maKh);
         if (kh != null) {
-            int currentDiem = kh.getDiemTichLuy();
-            int newHang = 1;
-            if (currentDiem >= 500) {
-                newHang = 4;
-            } else if (currentDiem >= 200) {
-                newHang = 3;
-            } else if (currentDiem >= 50) {
-                newHang = 2;
+            int tongChiTieu = getTongChiTieu(maKh);
+            int newHang = 1; // 1: Đồng
+            if (tongChiTieu >= 5000000) {
+                newHang = 4; // VIP / Kim Cương
+            } else if (tongChiTieu >= 2000000) {
+                newHang = 3; // Vàng
+            } else if (tongChiTieu >= 500000) {
+                newHang = 2; // Bạc
             }
+
             if (kh.getMaHang() != newHang) {
                 kh.setMaHang(newHang);
                 khachHangRepository.update(kh);
+                System.out.println("🎉 [CRM UPGRADE] Hội viên " + kh.getTenKh() + " (" + maKh + ") thăng hạng thành công lên Hạng " + newHang + " dựa trên chi tiêu: " + tongChiTieu + "đ.");
             }
         }
     }

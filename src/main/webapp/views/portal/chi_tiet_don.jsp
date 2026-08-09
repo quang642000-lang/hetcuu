@@ -82,6 +82,12 @@
                 </thead>
                 <tbody>
                 <c:forEach var="item" items="${order.chiTietDonHangList}">
+                    <c:set var="itemToppingSum" value="0"/>
+                    <c:forEach var="tp" items="${item.toppingsList}">
+                        <c:set var="itemToppingSum" value="${itemToppingSum + (tp.giaChotTp * tp.soLuong)}"/>
+                    </c:forEach>
+                    <c:set var="itemUnitTotal" value="${item.giaChot + itemToppingSum}"/>
+                    <c:set var="itemRowTotal" value="${itemUnitTotal * item.soLuong}"/>
                     <tr>
                         <td>
                             <strong><c:out value="${item.tenSp}"/></strong>
@@ -96,7 +102,7 @@
                                 <div class="text-success small mt-1">
                                     <i class="bi bi-plus-circle-fill"></i> Toppings:
                                     <c:forEach var="tp" items="${item.toppingsList}" varStatus="tpLoop">
-                                        <span class="fw-bold"><c:out value="${not empty tp.tenTopping ? tp.tenTopping : 'Topping #' += tp.maTp}"/></span> (x${tp.soLuong})${!tpLoop.last ? ', ' : ''}
+                                        <span class="fw-bold"><c:out value="${not empty tp.tenTopping ? tp.tenTopping : 'Topping #' += tp.maTp}"/></span> (x${tp.soLuong} x <fmt:formatNumber value="${tp.giaChotTp}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ)${!tpLoop.last ? ', ' : ''}
                                     </c:forEach>
                                 </div>
                             </c:if>
@@ -105,8 +111,14 @@
                             </c:if>
                         </td>
                         <td class="text-center fw-bold">${item.soLuong}</td>
-                        <td class="text-end font-monospace"><fmt:formatNumber value="${item.giaChot}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
-                        <td class="text-end fw-bold text-success font-monospace"><fmt:formatNumber value="${item.giaChot * item.soLuong}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
+                        <td class="text-end font-monospace">
+                            <div class="small text-muted" style="font-size: 10px; line-height:1.2;">Cốc: <fmt:formatNumber value="${item.giaChot}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</div>
+                            <c:if test="${itemToppingSum > 0}">
+                                <div class="small text-success" style="font-size: 10px; line-height:1.2;">+Topping: <fmt:formatNumber value="${itemToppingSum}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</div>
+                            </c:if>
+                            <div class="fw-bold text-dark" style="font-size: 12px; margin-top:2px;"><fmt:formatNumber value="${itemUnitTotal}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</div>
+                        </td>
+                        <td class="text-end fw-bold text-success font-monospace" style="vertical-align: bottom;"><fmt:formatNumber value="${itemRowTotal}" type="currency" currencySymbol="" maxFractionDigits="0"/>đ</td>
                     </tr>
                 </c:forEach>
                 </tbody>
