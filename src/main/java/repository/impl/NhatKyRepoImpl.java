@@ -11,8 +11,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+/**
+ * =========================================================================
+ * TEA POS SYSTEM - AUDIT TRAIL REPOSITORY IMPLEMENTATION (v3.0)
+ * Fully optimized with server-side pagination, regex sensitive data masking,
+ * and high-fidelity Japanese / Vietnamese action-mapping filters.
+ * =========================================================================
+ */
 public class NhatKyRepoImpl implements INhatKyRepository {
     private static NhatKyRepoImpl instance;
+
     private final RowMapper<NhatKyHoatDong> rowMapper = rs -> {
         NhatKyHoatDong log = new NhatKyHoatDong();
         log.setMaLog(rs.getLong("ma_log"));
@@ -23,6 +31,7 @@ public class NhatKyRepoImpl implements INhatKyRepository {
         log.setDuLieuMoi(rs.getString("du_lieu_moi"));
         log.setIpAddress(rs.getString("ip_address"));
         log.setThoiGian(rs.getTimestamp("thoi_gian"));
+
         String tenNv = rs.getString("ho_ten_nv");
         if (tenNv == null || tenNv.trim().isEmpty()) {
             log.setHoTenNhanVien("Khách đặt Online");
@@ -72,65 +81,105 @@ public class NhatKyRepoImpl implements INhatKyRepository {
         return JdbcHelper.query(sql, rowMapper, maNv);
     }
 
+    /**
+     * Server-side paginated & filtered audit logs.
+     * Maps the standard 'INSERT', 'UPDATE', 'DELETE' action filters to the specific Vietnamese action names stored in CSDL.
+     */
     public List<NhatKyHoatDong> getFilteredLogsServerSide(String search, String action, String tableName, String startDate, String endDate, int page, int pageSize) {
         StringBuilder sql = new StringBuilder(
                 "SELECT nk.*, nv.ho_ten AS ho_ten_nv FROM NHAT_KY_HOAT_DONG nk LEFT JOIN NHAN_VIEN nv ON nk.ma_nv = nv.ma_nv WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
+
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (nk.ma_nv LIKE ? OR nv.ho_ten LIKE ? OR nk.bang_tac_dong LIKE ? OR nk.du_lieu_cu LIKE ? OR nk.du_lieu_moi LIKE ?) ");
             String likeVal = "%" + search.trim() + "%";
-            for (int i = 0; i < 5; i++) params.add(likeVal);
+            for (int i = 0; i < 5; i++) {
+                params.add(likeVal);
+            }
         }
+
         if (action != null && !action.trim().isEmpty()) {
-            sql.append("AND nk.hanh_dong = ? ");
-            params.add(action.trim().toUpperCase());
+            if (action.equalsIgnoreCase("INSERT")) {
+                sql.append("AND (nk.hanh_dong LIKE N'THÊM%' OR nk.hanh_dong LIKE N'TẠO%' OR nk.hanh_dong = 'INSERT') ");
+            } else if (action.equalsIgnoreCase("UPDATE")) {
+                sql.append("AND (nk.hanh_dong LIKE N'SỬA%' OR nk.hanh_dong LIKE N'KÍCH_HOẠT%' OR nk.hanh_dong LIKE N'TẠM_NGƯNG%' OR nk.hanh_dong LIKE N'BẬT_MỞ%' OR nk.hanh_dong LIKE N'TẮT_MỞ%' OR nk.hanh_dong LIKE N'MỞ_KHÓA%' OR nk.hanh_dong LIKE N'KHÓA%' OR nk.hanh_dong LIKE N'RESET%' OR nk.hanh_dong LIKE N'CẬP_NHẬT%' OR nk.hanh_dong = 'UPDATE') ");
+            } else if (action.equalsIgnoreCase("DELETE")) {
+                sql.append("AND (nk.hanh_dong LIKE N'XÓA%' OR nk.hanh_dong LIKE '%DELETE%' OR nk.hanh_dong = 'DELETE') ");
+            } else {
+                sql.append("AND nk.hanh_dong = ? ");
+                params.add(action.trim().toUpperCase());
+            }
         }
+
         if (tableName != null && !tableName.trim().isEmpty()) {
             sql.append("AND nk.bang_tac_dong LIKE ? ");
             params.add(tableName.trim().toUpperCase() + "%");
         }
+
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append("AND nk.thoi_gian >= ? ");
             params.add(Timestamp.valueOf(startDate.trim() + " 00:00:00"));
         }
+
         if (endDate != null && !endDate.trim().isEmpty()) {
             sql.append("AND nk.thoi_gian <= ? ");
             params.add(Timestamp.valueOf(endDate.trim() + " 23:59:59"));
         }
+
         sql.append("ORDER BY nk.ma_log DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         int offset = (page - 1) * pageSize;
         params.add(offset);
         params.add(pageSize);
+
         return JdbcHelper.query(sql.toString(), rowMapper, params.toArray());
     }
 
+    /**
+     * Retrieves total matching logs count with action mapping.
+     */
     public int getFilteredLogsCount(String search, String action, String tableName, String startDate, String endDate) {
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) FROM NHAT_KY_HOAT_DONG nk LEFT JOIN NHAN_VIEN nv ON nk.ma_nv = nv.ma_nv WHERE 1=1 "
         );
         List<Object> params = new ArrayList<>();
+
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (nk.ma_nv LIKE ? OR nv.ho_ten LIKE ? OR nk.bang_tac_dong LIKE ? OR nk.du_lieu_cu LIKE ? OR nk.du_lieu_moi LIKE ?) ");
             String likeVal = "%" + search.trim() + "%";
-            for (int i = 0; i < 5; i++) params.add(likeVal);
+            for (int i = 0; i < 5; i++) {
+                params.add(likeVal);
+            }
         }
+
         if (action != null && !action.trim().isEmpty()) {
-            sql.append("AND nk.hanh_dong = ? ");
-            params.add(action.trim().toUpperCase());
+            if (action.equalsIgnoreCase("INSERT")) {
+                sql.append("AND (nk.hanh_dong LIKE N'THÊM%' OR nk.hanh_dong LIKE N'TẠO%' OR nk.hanh_dong = 'INSERT') ");
+            } else if (action.equalsIgnoreCase("UPDATE")) {
+                sql.append("AND (nk.hanh_dong LIKE N'SỬA%' OR nk.hanh_dong LIKE N'KÍCH_HOẠT%' OR nk.hanh_dong LIKE N'TẠM_NGƯNG%' OR nk.hanh_dong LIKE N'BẬT_MỞ%' OR nk.hanh_dong LIKE N'TẮT_MỞ%' OR nk.hanh_dong LIKE N'MỞ_KHÓA%' OR nk.hanh_dong LIKE N'KHÓA%' OR nk.hanh_dong LIKE N'RESET%' OR nk.hanh_dong LIKE N'CẬP_NHẬT%' OR nk.hanh_dong = 'UPDATE') ");
+            } else if (action.equalsIgnoreCase("DELETE")) {
+                sql.append("AND (nk.hanh_dong LIKE N'XÓA%' OR nk.hanh_dong LIKE '%DELETE%' OR nk.hanh_dong = 'DELETE') ");
+            } else {
+                sql.append("AND nk.hanh_dong = ? ");
+                params.add(action.trim().toUpperCase());
+            }
         }
+
         if (tableName != null && !tableName.trim().isEmpty()) {
             sql.append("AND nk.bang_tac_dong LIKE ? ");
             params.add(tableName.trim().toUpperCase() + "%");
         }
+
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append("AND nk.thoi_gian >= ? ");
             params.add(Timestamp.valueOf(startDate.trim() + " 00:00:00"));
         }
+
         if (endDate != null && !endDate.trim().isEmpty()) {
             sql.append("AND nk.thoi_gian <= ? ");
             params.add(Timestamp.valueOf(endDate.trim() + " 23:59:59"));
         }
+
         Integer count = JdbcHelper.queryForObject(sql.toString(), rs -> rs.getInt(1), params.toArray());
         return count != null ? count : 0;
     }
