@@ -28,7 +28,7 @@
         <c:set var="maHang" value="${requestScope.customer.maHang}" />
         <c:set var="trangThaiVal" value="${requestScope.customer.trangThai}" />
     </c:if>
-    <title>TEA POS - Quản Lý Khách Hàng CRM</title>
+    <title>TEA POS - Quản Lý Khách Hàng</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -86,7 +86,7 @@
                 <c:when test="${not empty requestScope.customer}">
                     <div class="mb-3 text-start">
                         <a href="${pageContext.request.contextPath}/admin/khachhang" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1.5 fw-bold" style="border-radius: 6px;">
-                            <i class="bi bi-arrow-left"></i> Quay lại danh sách CRM
+                            <i class="bi bi-arrow-left"></i> Quay lại danh sách
                         </a>
                     </div>
                     <div class="row g-4 text-start">
@@ -191,7 +191,7 @@
                                                 </div>
                                             </div>
                                             <button type="submit" class="btn btn-success px-4 fw-bold mt-4" style="border-radius: 8px;">
-                                                <i class="bi bi-save me-1"></i> Lưu thông tin CRM
+                                                <i class="bi bi-save me-1"></i> Lưu thông tin
                                             </button>
                                         </form>
                                     </div>
@@ -298,7 +298,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                             <div>
                                 <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
-                                <p class="text-muted small mb-0">Quản lý hội viên CRM và ví điểm tích lũy.</p>
+                                <p class="text-muted small mb-0">Quản lý hội viên và ví điểm tích lũy.</p>
                             </div>
                         </div>
                         <div class="filter-wrapper mb-4 text-start">
@@ -341,7 +341,7 @@
                                     <th>Số điện thoại</th>
                                     <th>Địa chỉ Email</th>
                                     <th>Hạng thẻ</th>
-                                    <th>Ví Điểm CRM</th>
+                                    <th>Ví Điểm</th>
                                     <th>Trạng Thái</th>
                                     <th class="text-end" style="width: 150px;">Hành động</th>
                                 </tr>
@@ -447,8 +447,8 @@
                                                 </div>
                                                 <div class="d-flex gap-2 border-top pt-2 mt-2">
                                                     <a href="${pageContext.request.contextPath}/admin/khachhang?action=view&id=${item.maKh}" class="btn btn-success btn-sm w-100 fw-bold py-2" style="border-radius: 8px;">
-                                                        <i class="bi bi-eye-fill"></i> Xem chi tiết hồ sơ CRM
-                                                    </a>
+                                                        <i class="bi bi-eye-fill"></i> Xem chi tiết hồ sơ
+                                                    </a
                                                 </div>
                                             </div>
                                         </div>
@@ -507,7 +507,7 @@
                         <strong id="billDiscount"></strong>
                     </div>
                     <div class="d-flex justify-content-between text-primary" id="billPointsRow" style="display: none;">
-                        <span>Tiêu điểm CRM:</span>
+                        <span>Tiêu điểm:</span>
                         <strong id="billPointsDiscount"></strong>
                     </div>
                     <div class="d-flex justify-content-between">

@@ -9,10 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
     <link href="${pageContext.request.contextPath}/assets/css/global.css" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/assets/css/admin.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-light">
 <div class="admin-wrapper">
@@ -36,6 +35,7 @@
                         </button>
                     </div>
                 </div>
+
                 <!-- ==================== VIEW 1: DESKTOP LAYOUT ==================== -->
                 <div class="d-none d-lg-block table-responsive admin-table-container">
                     <table class="table admin-table align-middle" id="employeeTable">
@@ -64,14 +64,14 @@
                                         <td>${item.email}</td>
                                         <td><code><c:out value="${item.tenDangNhap}"/></code></td>
                                         <td class="text-center">
-                                                <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
-                                                        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
-                                                </span>
+<span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} border px-2.5 py-1">
+        ${item.maVt == 1 ? 'Quản lý (Admin)' : 'Thu ngân (Staff)'}
+</span>
                                         </td>
                                         <td class="text-center">
-                                                <span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-2.5 py-1">
-                                                        ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
-                                                </span>
+<span class="badge ${item.trangThai ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border px-2.5 py-1">
+        ${item.trangThai ? 'Hoạt động' : 'Khóa ca'}
+</span>
                                         </td>
                                         <td class="text-end">
                                             <div class="d-flex justify-content-end gap-1.5 align-items-center">
@@ -99,6 +99,7 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- ==================== VIEW 2: MOBILE LAYOUT ==================== -->
                 <div class="d-block d-lg-none" id="employeeMobileCards">
                     <c:choose>
@@ -107,15 +108,15 @@
                                 <div class="employee-card-col mb-3" data-id="${item.maNv}" data-name="<c:out value='${item.hoTen}'/>">
                                     <div class="card p-3 border shadow-sm position-relative text-start" style="border-radius: 12px; background: #ffffff; border-color: var(--border-color) !important;">
                                         <div class="position-absolute" style="top: 15px; right: 15px; cursor: pointer; z-index: 10;" onclick="toggleMobileCardDetails(this)">
-                                            <span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
-                                                <i class="bi bi-chevron-down fs-6"></i>
-                                            </span>
+<span class="badge bg-light rounded-circle text-success d-flex align-items-center justify-content-center border" style="width: 28px; height: 28px; border-color: var(--border-color) !important;">
+<i class="bi bi-chevron-down fs-6"></i>
+</span>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 pe-4">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge bg-light text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-weight: bold; border: 1px solid var(--border-color);">
-                                                        ${loop.index + 1}
-                                                </span>
+                                            <div>
+<span class="badge bg-light text-success rounded-circle border me-1" style="font-size: 11px;">
+        ${loop.index + 1}
+</span>
                                                 <code class="fw-bold text-dark font-monospace">${item.maNv}</code>
                                             </div>
                                             <span class="badge ${item.maVt == 1 ? 'bg-danger' : 'bg-info'} text-white px-2.5 py-1" style="font-size: 11px;">
@@ -167,6 +168,7 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
+
                 <!-- PHÂN TRANG -->
                 <div class="pagination-container" id="paginationWrapper" style="display: none;">
                     <span class="small text-muted" id="paginationInfo">Hiển thị từ 1 đến 10 dòng dữ liệu</span>
@@ -273,6 +275,7 @@
     const pageSize = 10;
     let filteredDesktopRows = [];
     let filteredMobileCards = [];
+
     function filterAndPaginateEmployees() {
         const searchVal = document.getElementById("employeeSearchInput").value.trim().toLowerCase();
         const allRows = Array.from(document.querySelectorAll("#employeeTableBody .employee-row"));
@@ -281,6 +284,7 @@
             const name = row.dataset.name.toLowerCase();
             return id.includes(searchVal) || name.includes(searchVal);
         });
+
         const allCards = Array.from(document.querySelectorAll("#employeeMobileCards .employee-card-col"));
         filteredMobileCards = allCards.filter(card => {
             const id = card.dataset.id.toLowerCase();
@@ -290,20 +294,26 @@
         currentPage = 1;
         renderTableRows();
     }
+
     function renderTableRows() {
-        const allRows = document.querySelectorAll("#employeeTableBody .employee-row");
-        allRows.forEach(row => row.style.display = "none");
+        const allDesktopRows = document.querySelectorAll("#employeeTableBody .employee-row");
+        allDesktopRows.forEach(row => row.style.display = "none");
+
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
+
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
+
         const startIdx = (currentPage - 1) * pageSize;
         const endIdx = Math.min(startIdx + pageSize, totalRows);
+
         const pageRows = filteredDesktopRows.slice(startIdx, endIdx);
         pageRows.forEach((row, idx) => {
             row.style.display = "table-row";
             row.querySelector(".row-stt strong").innerText = startIdx + idx + 1;
         });
+
         const allCards = document.querySelectorAll("#employeeMobileCards .employee-card-col");
         allCards.forEach(card => card.style.setProperty('display', 'none', 'important'));
         const pageCards = filteredMobileCards.slice(startIdx, endIdx);
@@ -312,6 +322,7 @@
         });
         updatePaginationControls();
     }
+
     function updatePaginationControls() {
         const totalRows = filteredDesktopRows.length;
         const totalPages = Math.ceil(totalRows / pageSize) || 1;
@@ -319,36 +330,43 @@
         const btnContainer = document.getElementById("paginationButtons");
         const wrapper = document.getElementById("paginationWrapper");
         if (!infoEl || !btnContainer || !wrapper) return;
+
         const start = totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0;
         const end = Math.min(currentPage * pageSize, totalRows);
         infoEl.innerText = 'Hiển thị từ ' + start + ' đến ' + end + ' dòng trên tổng số ' + totalRows + ' dòng nhân viên';
+
         btnContainer.innerHTML = "";
         if (totalPages <= 1) {
             wrapper.style.setProperty('display', 'none', 'important');
             return;
         }
         wrapper.style.setProperty('display', 'flex', 'important');
+
         const prevLi = document.createElement("li");
         prevLi.className = "page-item " + (currentPage === 1 ? "disabled" : "");
         prevLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage - 1) + ')">&laquo; Trước</a>';
         btnContainer.appendChild(prevLi);
+
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement("li");
             li.className = "page-item " + (currentPage === i ? "active" : "");
             li.innerHTML = '<a class="page-link ' + (currentPage === i ? "bg-success border-success text-white" : "text-success") + '" href="javascript:void(0)" onclick="changePage(' + i + ')">' + i + '</a>';
             btnContainer.appendChild(li);
         }
+
         const nextLi = document.createElement("li");
         nextLi.className = "page-item " + (currentPage === totalPages ? "disabled" : "");
         nextLi.innerHTML = '<a class="page-link text-success" href="javascript:void(0)" onclick="changePage(' + (currentPage + 1) + ')">Sau &raquo;</a>';
         btnContainer.appendChild(nextLi);
     }
+
     function changePage(page) {
         const totalPages = Math.ceil(filteredDesktopRows.length / pageSize) || 1;
         if (page < 1 || page > totalPages) return;
         currentPage = page;
         renderTableRows();
     }
+
     function openCreateEmployeeModal() {
         document.getElementById("employeeForm").reset();
         document.getElementById("empModalTitle").innerText = "THÊM MỚI NHÂN VIÊN";
@@ -358,6 +376,7 @@
         document.getElementById("matKhau").required = true;
         empModal.show();
     }
+
     function handleResetPasswordClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -365,6 +384,7 @@
         document.getElementById("resetTenNv").innerText = hoTen;
         passModal.show();
     }
+
     function handleEditEmployeeClick(button) {
         const maNv = button.getAttribute("data-id");
         const hoTen = button.getAttribute("data-name");
@@ -373,6 +393,7 @@
         const username = button.getAttribute("data-user");
         const maVt = button.getAttribute("data-role");
         const trangThai = parseInt(button.getAttribute("data-status"));
+
         document.getElementById("empModalTitle").innerText = "CẬP NHẬT NHÂN VIÊN: " + maNv;
         document.getElementById("formAction").value = "edit";
         document.getElementById("formMaNv").value = maNv;
@@ -386,6 +407,7 @@
         document.getElementById("matKhau").required = false;
         empModal.show();
     }
+
     function confirmDeleteEmployee(maNv) {
         Swal.fire({
             title: 'Xóa tài khoản nhân viên?',
@@ -402,6 +424,7 @@
             }
         });
     }
+
     function toggleMobileCardDetails(element) {
         const card = element.closest('.card');
         const details = card.querySelector('.mobile-card-details');
@@ -414,14 +437,33 @@
             icon.className = 'bi bi-chevron-down fs-6';
         }
     }
+
     function getContextPath() {
         return window.location.pathname.substring(0, window.location.pathname.indexOf('/', 1));
     }
+
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
         const msg = urlParams.get('msg');
+
         if (msg === 'createsuccess') showToast('success', 'Thêm mới tài khoản nhân viên thành công!');
         if (msg === 'updatesuccess') showToast('success', 'Đã lưu thay đổi hồ sơ nhân viên!');
+        if (msg === 'self_lock_forbidden') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Thao tác bị cấm!',
+                text: 'Bạn không được phép tự khóa tài khoản của chính mình để tránh làm nghẽn hệ thống quản trị!',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+        if (msg === 'self_delete_forbidden') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Thao tác bị cấm!',
+                text: 'Bạn không được phép tự xóa tài khoản đang đăng nhập hệ thống!',
+                confirmButtonColor: '#ef4444'
+            });
+        }
         if (msg === 'softdeletesuccess') {
             Swal.fire({
                 icon: 'info',
@@ -431,7 +473,12 @@
             });
         }
         if (msg === 'harddeletesuccess') showToast('success', 'Đã xóa cứng vĩnh viễn nhân viên khỏi CSDL!');
-        filterAndPaginateEmployees();
+
+        const allRows = document.querySelectorAll("#employeeTableBody .employee-row");
+        filteredDesktopRows = Array.from(allRows);
+        const allMobileCards = document.querySelectorAll("#employeeMobileCards .employee-card-col");
+        filteredMobileCards = Array.from(allMobileCards);
+        renderTableRows();
     });
 </script>
 </body>
