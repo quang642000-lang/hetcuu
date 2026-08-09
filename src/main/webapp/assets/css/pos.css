@@ -19,14 +19,14 @@
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-.pos-container {
+.pos-container, .pos-main-container {
     display: flex;
     height: calc(100vh - 60px);
     overflow: hidden;
     background-color: #f1f5f9;
 }
 
-.pos-categories-col {
+.pos-categories-col, .pos-category-sidebar {
     width: 120px;
     background-color: #ffffff;
     border-right: 1px solid var(--border-color);
@@ -36,7 +36,7 @@
     flex-shrink: 0;
     scrollbar-width: none; /* Hide standard scrollbar */
 }
-.pos-categories-col::-webkit-scrollbar {
+.pos-categories-col::-webkit-scrollbar, .pos-category-sidebar::-webkit-scrollbar {
     display: none;
 }
 
@@ -368,16 +368,14 @@ TABLET & MOBILE RESPONSIVE DRAWER (< 1024px)
         max-width: 85vw !important;
         z-index: 1050 !important;
         transform: translateX(100%) !important; /* Hide to the right */
-        visibility: hidden !important; /* Completely hide from touch & layout when closed */
         pointer-events: none !important; /* Prevent capturing clicks when off-screen */
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         border-left: 1.5px solid var(--border-color) !important;
         height: calc(100vh - 60px) !important;
     }
 
     .pos-checkout-sidebar.show {
         transform: translateX(0) !important;
-        visibility: visible !important; /* Restore when open */
         pointer-events: auto !important; /* Restore clicks when open */
     }
 
@@ -410,8 +408,7 @@ TABLET & MOBILE RESPONSIVE DRAWER (< 1024px)
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
         border: none !important;
         box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
-        z-index: 999999 !important;
-        pointer-events: auto !important;
+        z-index: 1046 !important;
         display: flex !important;
         align-items: center;
         justify-content: center;

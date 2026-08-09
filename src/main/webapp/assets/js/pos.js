@@ -911,7 +911,16 @@ document.addEventListener("DOMContentLoaded", function() {
         const backdrop = document.createElement("div");
         backdrop.id = "posCartBackdrop";
         backdrop.className = "pos-cart-backdrop";
-        backdrop.onclick = toggleMobileCart;
+
+        // Add click listener
+        backdrop.addEventListener('click', toggleMobileCart);
+        // Add touchstart listener to bypass 300ms mobile delay and resolve stuck clicks
+        backdrop.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMobileCart();
+        }, { passive: false });
+
         document.body.appendChild(backdrop);
     }
     if (!document.getElementById("posMobileCartToggleBtn")) {
@@ -920,7 +929,16 @@ document.addEventListener("DOMContentLoaded", function() {
         toggleBtn.type = "button";
         toggleBtn.className = "pos-mobile-cart-toggle";
         toggleBtn.innerHTML = '<i class="bi bi-cart-fill text-white"></i><span id="posMobileCartCount" class="badge">0</span>';
-        toggleBtn.onclick = toggleMobileCart;
+
+        // Add click listener
+        toggleBtn.addEventListener('click', toggleMobileCart);
+        // Add touchstart listener to bypass 300ms mobile delay and resolve stuck clicks
+        toggleBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMobileCart();
+        }, { passive: false });
+
         document.body.appendChild(toggleBtn);
     }
 });
