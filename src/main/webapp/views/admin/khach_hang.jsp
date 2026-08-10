@@ -297,7 +297,7 @@
                     <div class="card card-teapos p-4 border-0 shadow-sm" style="border-radius: 12px; background-color: #ffffff;">
                         <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                             <div>
-                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG CRM</h3>
+                                <h3 class="fw-bold mb-1 text-success text-uppercase"><i class="bi bi-people-fill me-2"></i>HỆ THỐNG KHÁCH HÀNG</h3>
                                 <p class="text-muted small mb-0">Quản lý hội viên và ví điểm tích lũy.</p>
                             </div>
                         </div>

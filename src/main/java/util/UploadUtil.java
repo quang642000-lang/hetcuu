@@ -7,13 +7,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - CENTRALIZED FILE UPLOAD UTILITY
- * Consolidates duplicate upload logic from DanhMuc, SanPham, Topping Controllers.
- * Reads directory from application.properties dynamically with safe OS fallbacks.
- * =========================================================================
- */
 public class UploadUtil {
 
     private static String uploadDir;
@@ -46,12 +39,7 @@ public class UploadUtil {
 
     private UploadUtil() {}
 
-    /**
-     * Thao tác upload tệp tin từ Form Multipart và lưu trữ an toàn dưới ổ đĩa cứng máy chủ
-     * @param request Servlet Request chứa luồng Part
-     * @param inputFieldName Tên trường input file (ví dụ: "hinhAnhFile")
-     * @return Đường dẫn URL tương đối truy cập ảnh hoặc null nếu upload thất bại
-     */
+
     public static String uploadFile(HttpServletRequest request, String inputFieldName) {
         try {
             Part filePart = request.getPart(inputFieldName);

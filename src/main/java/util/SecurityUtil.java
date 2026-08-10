@@ -3,19 +3,11 @@ package util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - CRYPTOGRAPHY & SECURITY UTILITIES
- * Optimized and cleaned of redundant/gray code.
- * =========================================================================
- */
+
 public class SecurityUtil {
 
     private SecurityUtil() {}
 
-    /**
-     * Hàm băm mật khẩu một chiều bằng thuật toán SHA-256 (Phòng thủ Null-Safe)
-     */
     public static String hashSHA256(String password) {
         if (password == null || password.trim().isEmpty()) {
             return null;

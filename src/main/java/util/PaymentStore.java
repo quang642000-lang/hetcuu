@@ -3,17 +3,6 @@ package util;
 import model.entity.DonHang;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * =========================================================================
- * TEA POS SYSTEM - CENTRALIZED PURE IN-MEMORY PAYMENT CACHE
- *
- * TOÀN DIỆN & TINH GỌN (ĐÃ LOẠI BỎ HOÀN TOÀN REDIS / JEDIS):
- * 1. Lưu trữ tạm thời các đơn hàng chờ quét mã QR thanh toán (pendingOrders)
- *    và các giao dịch chuyển khoản VietQR thành công (transactions) bằng ConcurrentHashMap.
- * 2. Triệt tiêu hoàn toàn các lỗi kết nối, lỗi biên dịch liên quan đến Redis/Jedis.
- * 3. Đảm bảo log khởi động Tomcat cực kỳ sạch sẽ, không có cảnh báo lỗi kết nối mạng.
- * =========================================================================
- */
 public class PaymentStore {
     // Bộ nhớ đệm cục bộ dạng Thread-safe ConcurrentHashMap
     private static final ConcurrentHashMap<String, Boolean> localTransactions = new ConcurrentHashMap<>();

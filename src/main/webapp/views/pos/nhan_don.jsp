@@ -19,17 +19,17 @@
     <nav class="navbar navbar-dark bg-dark px-2 px-sm-3 sticky-top" style="height: 60px; z-index: 1040; flex-shrink: 0;">
         <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-1 gap-sm-3">
-                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 16px; font-size:18px;">
+                <a class="navbar-brand fw-bold text-success d-flex align-items-center mb-0" href="${pageContext.request.contextPath}/pos" style="color: #10b981 !important; font-size: 16px; font-size: 18px;">
                     <i class="bi bi-cup-hot-fill me-1 me-sm-2 fs-4 text-success animate-pulse"></i>
                     <span class="d-none d-sm-inline">TEA POS PRO</span>
                     <span class="d-inline d-sm-none">TEA POS</span>
                 </a>
                 <div class="d-flex align-items-center gap-1 gap-sm-2 border-start ps-1.5 ps-sm-3 border-secondary" style="height: 30px;">
-                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size:12px;">
+                    <a href="${pageContext.request.contextPath}/pos" class="btn btn-sm btn-outline-light fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
                         <i class="bi bi-cart-fill text-warning"></i>
                         <span class="d-none d-sm-inline">TẠI QUẦY</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size:12px;">
+                    <a href="${pageContext.request.contextPath}/pos/nhandon" class="btn btn-sm btn-success fw-bold px-2 px-sm-3 d-flex align-items-center gap-1" style="font-size: 11px; font-size: 12px;">
                         <i class="bi bi-bell-fill me-1 text-warning animate-pulse"></i>
                         <span class="d-none d-sm-inline">ONLINE</span>
                     </a>
@@ -37,7 +37,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-1.5 gap-sm-3 text-white ms-auto">
-                <span class="badge p-1.5 p-sm-2 px-sm-3 fw-bold live-polling-badge d-flex align-items-center gap-1" style="font-size: 10px; font-size:11px;">
+                <span class="badge p-1.5 p-sm-2 px-sm-3 fw-bold live-polling-badge d-flex align-items-center gap-1" style="font-size: 10px; font-size: 11px;">
                     <span class="animate-pulse">🔴</span>
                     <span class="d-none d-sm-inline">LIVE POLLING</span>
                 </span>
@@ -175,7 +175,7 @@
                                      data-sdt="${dh.maKh}"
                                      data-date="<fmt:formatDate value="${dh.thoiGianTao}" pattern="yyyy-MM-dd"/>"
                                      data-paymentstatus="${dh.trangThaiThanhToan}">
-                                    <div class="order-card p-3">
+                                    <div class="order-card p-3 ${dh.trangThaiDon == 5 ? 'border-danger border-opacity-25' : ''}" style="${dh.trangThaiDon == 5 ? 'border-top: 4px solid #ef4444 !important; background-color: #fafbfd;' : ''}">
                                         <!-- Header đơn hàng -->
                                         <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                                             <div class="text-start">
@@ -259,8 +259,12 @@
                                                 </div>
                                             </c:if>
                                             <c:if test="${dh.trangThaiDon == 5 && not empty dh.lyDoHuy}">
-                                                <div class="p-2 border border-danger border-opacity-10 rounded bg-danger bg-opacity-5 small mb-2 text-danger" style="font-size: 11px;">
-                                                    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Lý do hủy:</strong> <c:out value="${dh.lyDoHuy}"/>
+                                                <div class="p-2.5 mb-2 rounded-3 text-danger small shadow-sm d-flex align-items-start gap-2" style="background-color: #fef2f2 !important; border-left: 4.5px solid #ef4444 !important; font-size: 11.5px; border-top: 1px solid #fee2e2 !important; border-right: 1px solid #fee2e2 !important; border-bottom: 1px solid #fee2e2 !important;">
+                                                    <i class="bi bi-exclamation-octagon-fill text-danger fs-6" style="margin-top: 1px;"></i>
+                                                    <div>
+                                                        <strong class="fw-bold" style="color: #991b1b !important;">LÝ DO HỦY ĐƠN:</strong>
+                                                        <span class="ms-1" style="color: #b91c1c !important; font-weight: 500;"><c:out value="${dh.lyDoHuy}"/></span>
+                                                    </div>
                                                 </div>
                                             </c:if>
                                         </div>

@@ -208,7 +208,7 @@
         <li class="sidebar-item ${cPath eq '/admin/khachhang' || uri.contains('khach_hang.jsp') ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/khachhang">
                 <i class="bi bi-people-fill"></i>
-                <span>Khách hàng (CRM)</span>
+                <span>Khách hàng</span>
             </a>
         </li>
         <!-- 8. Quản lý Nhân viên -->
