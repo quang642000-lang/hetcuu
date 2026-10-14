@@ -1,0 +1,19 @@
+{
+  "name": "tea-pos-project",
+  "version": "1.0.0",
+  "description": "TEA POS - Quản Lý Quán Trà Sữa & Cafe (POS & Customer Portal)",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1"
+  }
+}

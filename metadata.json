@@ -1,0 +1,7 @@
+{
+  "name": "TEA POS - Quản Lý Quán Trà Sữa & Cafe",
+  "description": "Hệ thống POS bán hàng tại quầy và cổng đặt đồ uống online cho quán cafe, trà sữa với quản lý danh mục, sản phẩm, topping, voucher và bảng thống kê doanh thu.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
